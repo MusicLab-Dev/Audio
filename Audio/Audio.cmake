@@ -54,7 +54,13 @@ add_library(${PROJECT_NAME} ${AudioSources} ${AudioDSPSources})
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${AudioDir}/..)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC Core SDL2::SDL2)
+target_link_libraries(${PROJECT_NAME} PUBLIC Core)
+
+if(MSVC)
+    target_link_libraries(${PROJECT_NAME} PUBLIC SDL2::SDL2)
+else()
+    target_link_libraries(${PROJECT_NAME} PUBLIC SDL2)
+endif()
 
 if(CODE_COVERAGE)
     target_compile_options(${PROJECT_NAME} PUBLIC --coverage)
