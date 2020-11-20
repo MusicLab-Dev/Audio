@@ -20,6 +20,9 @@ jobs:
     - name: Install google test
       run: sudo apt-get install -y libgtest-dev
 
+    - name: Install SDL2
+      run: sudo apt-get install -y libsdl2-dev
+
     - name: Build & test
       working-directory: ${{github.workspace}}
       shell: bash
