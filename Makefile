@@ -46,7 +46,7 @@ coverage:
 run_coverage: coverage
 	ninja -C $(DEBUG_DIR) test
 	lcov --directory . --capture --no-external --output-file $(COVERAGE_OUTPUT)
-	lcov --remove $(COVERAGE_OUTPUT) "*/Tests/*" -o $(COVERAGE_OUTPUT)
+	lcov --remove $(COVERAGE_OUTPUT) "*/Tests/*" "*/Core/*" -o $(COVERAGE_OUTPUT)
 	lcov --list $(COVERAGE_OUTPUT)
 
 # Benchmarks rules
