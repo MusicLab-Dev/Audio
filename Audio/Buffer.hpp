@@ -1,0 +1,155 @@
+/**
+ * @ Author: Pierre Veysseyre
+ * @ Description: Buffer
+ */
+
+#pragma once
+
+#include "Base.hpp"
+
+#include <cstddef>
+#include <cstring>
+#include <memory>
+
+namespace Audio
+{
+    class Buffer;
+    class BufferView;
+
+    using BufferViews = Core::TinyVector<BufferView>;
+
+    namespace Internal
+    {
+        class BufferBase;
+    };
+};
+
+/** @brief A BufferBase is a helper base class for any Buffer or BufferView */
+class alignas_quarter_cacheline Audio::Internal::BufferBase
+{
+public:
+    /** @brief Get data pointer reintrepreted to a given type */
+    template<typename Type>
+    [[nodiscard]] Type *data(const Channel channel) noexcept
+        { return reinterpret_cast<Type *>(_data + _channelByteSize * static_cast<std::uint32_t>(channel)); }
+
+    /** @brief Get constant data pointer reintrepreted to a given type */
+    template<typename Type>
+    [[nodiscard]] const Type *data(const Channel channel) const noexcept
+        { return reinterpret_cast<const Type *>(_data + _channelByteSize * static_cast<std::uint32_t>(channel)); }
+
+    /** @brief Get the byte data pointer */
+    [[nodiscard]] std::byte *byteData(void) noexcept { return _data; }
+    [[nodiscard]] const std::byte *byteData(void) const noexcept { return _data; }
+
+
+    /** @brief Get the byte size per channel */
+    [[nodiscard]] std::uint32_t channelByteSize(void) const noexcept { return _channelByteSize; }
+
+    /** @brief Get the buffer size relative to a given type */
+    template<typename Type>
+    [[nodiscard]] std::uint32_t size(void) const noexcept { return _channelByteSize / sizeof(Type); }
+
+    /** @brief Get the channel arrangement of the buffer */
+    [[nodiscard]] ChannelArrangement channelArrangement(void) const noexcept { return _arrangement; }
+
+
+    /** @brief Copy constructor */
+    BufferBase(const BufferBase &other) noexcept = default;
+
+    /** @brief Move constructor */
+    BufferBase(BufferBase &&other) noexcept { swap(other); }
+
+    /** @brief Destruct the view */
+    ~BufferBase(void) noexcept = default;
+
+    /** @brief Copy assignment */
+    BufferBase &operator=(const BufferBase &other) noexcept = default;
+
+    /** @brief Move assignment */
+    BufferBase &operator=(BufferBase &&other) noexcept { swap(other); return *this; }
+
+    /** @brief Swap two instances */
+    void swap(BufferBase &other) noexcept
+        { std::swap(_data, other._data); std::swap(_channelByteSize, other._channelByteSize); std::swap(_arrangement, other._arrangement); }
+
+protected:
+    std::byte *_data { nullptr };
+    std::uint32_t _channelByteSize { 0 };
+    ChannelArrangement _arrangement { ChannelArrangement::Mono };
+
+    /** @brief Private constructor */
+    BufferBase(std::byte * const data, const std::uint32_t channelByteSize, const ChannelArrangement arrangement) noexcept
+        : _data(data), _channelByteSize(channelByteSize), _arrangement(arrangement) {}
+};
+
+static_assert_fit_quarter_cacheline(Audio::Internal::BufferBase);
+
+/** @brief A Buffer manage ownership of his data */
+class alignas_quarter_cacheline Audio::Buffer : public Audio::Internal::BufferBase
+{
+public:
+    /** @brief Allocate the buffer */
+    Buffer(const std::uint32_t channelByteSize, const ChannelArrangement arrangement)
+        : Internal::BufferBase(
+            new std::byte[channelByteSize * static_cast<std::uint32_t>(arrangement)],
+            channelByteSize,
+            arrangement
+        ) {}
+
+    /** @brief Default constructor */
+    Buffer(void) : BufferBase(nullptr, 0, ChannelArrangement::Mono) {}
+
+    /** @brief Move constructor */
+    Buffer(Buffer &&other) noexcept = default;
+
+    /** @brief Delete the allocated buffer */
+    ~Buffer(void) noexcept { if (_data) delete[] _data; }
+
+    /** @brief Move assignment */
+    Buffer &operator=(Buffer &&other) noexcept = default;
+};
+
+static_assert_fit_quarter_cacheline(Audio::Buffer);
+
+/** @brief A BufferView holds a reference to an existing buffer without managing data ownership */
+class Audio::BufferView : public Audio::Internal::BufferBase
+{
+public:
+    /** @brief Construct the view using an existing buffer */
+    BufferView(const Buffer &source) noexcept : Internal::BufferBase(source) {}
+
+    /** @brief Copy constructor */
+    BufferView(const BufferView &other) noexcept = default;
+
+    /** @brief Move constructor */
+    BufferView(BufferView &&other) noexcept = default;
+
+    /** @brief Destruct the view */
+    ~BufferView(void) noexcept = default;
+
+    /** @brief Copy assignment */
+    BufferView &operator=(const BufferView &other) noexcept = default;
+
+    /** @brief Move assignment */
+    BufferView &operator=(BufferView &&other) noexcept = default;
+
+    // /** @brief Merge multiple BufferView in this one */
+    // template<typename Type>
+    // [[nodiscard]] BufferView &merge(const BufferViews &views) noexcept {
+    //     const auto totalCount = views.size();
+    //     const auto bufferSize = size<Type>();
+
+    //     for (auto channel = 0u; channel < static_cast<std::uint32_t>(_arrangement); ++channel) {
+    //         auto &channelData = data<Type>(Channel(channel));
+    //         for (auto i = 0u; i < bufferSize; ++i) {
+    //             auto newData = 0;// channelData[i] / totalCount;
+    //             for (auto &view : views) {
+    //                 newData += view.data<Type>(Channel(channel))[i] / totalCount;
+    //             }
+    //             channelData[i] = newData;
+    //         }
+    //     }
+    //     return *this;
+    // }
+};
