@@ -5,7 +5,7 @@ get_filename_component(AudioRoot ${CMAKE_CURRENT_LIST_FILE} PATH)
 
 include(${AudioRoot}/CompileOptions/CompileOptions.cmake)
 
-add_subdirectory(${AudioRoot}/Core)
+add_submodule_directory(${AudioRoot}/Core)
 
 include(${AudioRoot}/Audio/Audio.cmake)
 

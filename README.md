@@ -2,6 +2,6 @@
 
 [![Linux Tests](https://github.com/MusicLab-Dev/Audio/workflows/Linux%20Tests/badge.svg)](https://github.com/MusicLab-Dev/Audio/actions?query=workflow%3A%22Linux+Tests%22) [![codecov](https://codecov.io/gh/MusicLab-Dev/Audio/branch/main/graph/badge.svg?token=OC8IPUBVIV)](https://codecov.io/gh/MusicLab-Dev/Audio)
 
-[![Windows Build](https://github.com/MusicLab-Dev/Audio/workflows/Windows%20Build/badge.svg)](https://github.com/MusicLab-Dev/Audio/actions?query=workflow%3A%22Windows+Build%22)
+[![Windows Tests](https://github.com/MusicLab-Dev/Audio/workflows/Windows%20Tests/badge.svg)](https://github.com/MusicLab-Dev/Audio/actions?query=workflow%3A%22Windows+Tests%22)
 
 # Audio library

@@ -3,6 +3,12 @@ project(Audio)
 
 find_package(SDL2 REQUIRED)
 
+if(WIN32)
+    set(SDL2Target SDL2::SDL2)
+elseif()
+    set(SDL2Target SDL2)
+endif()
+
 get_filename_component(AudioDir ${CMAKE_CURRENT_LIST_FILE} PATH)
 
 set(AudioSources
@@ -24,7 +30,6 @@ set(AudioSources
     ${AudioDir}/InternalFactory.hpp
     ${AudioDir}/IPlugin.hpp
     ${AudioDir}/IPluginFactory.hpp
-    ${AudioDir}/MLAudioLib.cmake
     ${AudioDir}/Node.hpp
     ${AudioDir}/Node.ipp
     ${AudioDir}/Note.hpp
@@ -55,7 +60,7 @@ add_library(${PROJECT_NAME} ${AudioSources} ${AudioDSPSources})
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${AudioDir}/..)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC Core SDL2::SDL2)
+target_link_libraries(${PROJECT_NAME} PUBLIC Core ${SDL2Target})
 
 if(CODE_COVERAGE)
     target_compile_options(${PROJECT_NAME} PUBLIC --coverage)
