@@ -43,11 +43,11 @@ set(AudioSources
 set(AudioDSPDir ${AudioDir}/DSP)
 
 set(AudioDSPSources
-    # ${AudioDSPDir}/Biquad.cpp
-    # ${AudioDSPDir}/Biquad.hpp
-    # ${AudioDSPDir}/Biquad.ipp
-    # ${AudioDSPDir}/EnveloppeGenerator.hpp
-    # ${AudioDSPDir}/EnveloppeGenerator.ipp
+    ${AudioDSPDir}/Biquad.cpp
+    ${AudioDSPDir}/Biquad.hpp
+    ${AudioDSPDir}/Biquad.ipp
+    ${AudioDSPDir}/EnveloppeGenerator.hpp
+    ${AudioDSPDir}/EnveloppeGenerator.ipp
 )
 
 add_library(${PROJECT_NAME} ${AudioSources} ${AudioDSPSources})
