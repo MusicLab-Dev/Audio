@@ -64,4 +64,5 @@ target_link_libraries(${PROJECT_NAME} PUBLIC Core ${SDL2Target})
 
 if(CODE_COVERAGE)
     target_compile_options(${PROJECT_NAME} PUBLIC --coverage)
+    target_link_options(${PROJECT_NAME} PUBLIC --coverage)
 endif()
