@@ -4,9 +4,11 @@ project(Audio)
 find_package(SDL2 REQUIRED)
 
 if(WIN32)
-    set(SDL2Target SDL2::SDL2)
-elseif()
-    set(SDL2Target SDL2)
+    add_library(SDL2Target INTERFACE)
+    target_link_libraries(SDL2::SDL2)
+else()
+    add_library(SDL2Target INTERFACE)
+    target_link_libraries(SDL2)
 endif()
 
 get_filename_component(AudioDir ${CMAKE_CURRENT_LIST_FILE} PATH)
@@ -60,7 +62,7 @@ add_library(${PROJECT_NAME} ${AudioSources} ${AudioDSPSources})
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${AudioDir}/..)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC Core ${SDL2Target})
+target_link_libraries(${PROJECT_NAME} PUBLIC Core SDL2Target)
 
 if(CODE_COVERAGE)
     target_compile_options(${PROJECT_NAME} PUBLIC --coverage)
