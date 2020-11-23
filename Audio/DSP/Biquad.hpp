@@ -10,6 +10,8 @@
 
 #include <cstdint>
 
+#include "immintrin.h"
+
 namespace DSP
 {
     struct BiquadParam {
@@ -60,6 +62,7 @@ class DSP::Biquad
 {
 public:
     static constexpr auto Type = Form;
+    static double SR;
 
     /** @brief Default constructor */
     Biquad(const double sampleRate, const double freq, const double gain, const double q, bool qAsBandWidth) {
@@ -70,15 +73,24 @@ public:
     template<BiquadParam::FilterType Filter>
     void setup(const double sampleRate, const double freq, const double gain, const double q, bool qAsBandWidth) noexcept {
         _coefs = BiquadParam::GenerateCoefficients<Filter>(sampleRate, freq, gain, q, qAsBandWidth);
+        SR = sampleRate;
     }
 
     /** Process a block of samples */
-    void processBlock(float *block, std::size_t len) noexcept { for (; len; --len) *block = process(*(block)++); }
+    void processBlock(float *block, std::size_t len) noexcept;
+    void processBlock1(float *block, std::size_t len) noexcept;
 
     /** Get the internal biquad coefficients */
     [[nodiscard]] const BiquadParam::Coefficients &coefficients(void) const noexcept { return _coefs; }
     // [[nodiscard]] BiquadParam::Coefficients &coefficients(void) noexcept { return _coefs; }
 
+
+    float foo1(const float a, const float b, const float c) noexcept {
+        return a * b + c;
+    }
+    float foo2(const float a, const float b, const float c) noexcept {
+        return std::fma(a, b, c);
+    }
 
 protected:
     BiquadParam::Coefficients   _coefs;
@@ -86,6 +98,7 @@ protected:
 
     /** @brief Process a sample into the biquad */
     [[nodiscard]] float process(const float in) noexcept;
+    [[nodiscard]] float process1(const float in) noexcept;
 };
 
 
