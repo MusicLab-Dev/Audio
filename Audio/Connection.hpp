@@ -22,7 +22,7 @@ public:
     };
 
 private:
-    PluginPtr   _plugin { nullptr };
+    PluginPtr   _plugin;
     Type        _type { Type::Audio };
 };
 

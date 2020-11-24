@@ -22,25 +22,14 @@ inline void Audio::SimpleDelay::receiveAudio(BufferView output) noexcept
 {
     // need to merge the buffers in _cache[_readIdx]
     output = _cache[_readIdx][0];
-}
-
-
-inline void Audio::SimpleDelay::onAudioGenerationStarted(void) noexcept
-{
-
-}
-
-inline void Audio::SimpleDelay::onAudioGenerationStopped(void) noexcept
-{
-    _readIdx = 0u;
-    _writeIdx = 0u;
-}
-
-inline void Audio::SimpleDelay::onAudioBlockGenerated(void) noexcept
-{
     incrementIdx(_readIdx);
 }
 
+
+inline void Audio::SimpleDelay::onAudioGenerationStarted(const BeatRange &range) noexcept
+{
+
+}
 
 inline void Audio::SimpleDelay::incrementIdx(Index &index) noexcept
 {

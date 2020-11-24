@@ -35,8 +35,8 @@ set(AudioSources
     ${AudioDir}/PluginTable.cpp
     ${AudioDir}/PluginTable.hpp
     ${AudioDir}/PluginTable.ipp
-    ${AudioDir}/Project.cpp
     ${AudioDir}/Project.hpp
+    ${AudioDir}/Project.ipp
     ${AudioDir}/UtilsMidi.hpp
 )
 
@@ -54,7 +54,7 @@ add_library(${PROJECT_NAME} ${AudioSources} ${AudioDSPSources})
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${AudioDir}/..)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC Core)
+target_link_libraries(${PROJECT_NAME} PUBLIC Core Taskflow)
 
 if(MSVC)
     target_link_libraries(${PROJECT_NAME} PUBLIC SDL2::SDL2)

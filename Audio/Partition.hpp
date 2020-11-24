@@ -26,10 +26,10 @@ public:
 
 
     /** @brief Get the internal intances */
-    [[nodiscard]] TimeRanges &instances(void) noexcept { return _instances; }
+    [[nodiscard]] BeatRanges &instances(void) noexcept { return _instances; }
 
     /** @brief Set the internal intances */
-    [[nodiscard]] const TimeRanges &instances(void) const noexcept { return _instances; }
+    [[nodiscard]] const BeatRanges &instances(void) const noexcept { return _instances; }
 
 
     /** @brief Check if the partition is muted (not active) or not */
@@ -54,17 +54,17 @@ public:
 
 
     template<typename Functor>
-    bool apply(const TimeRange &range, Functor &&functor) noexcept;
+    bool apply(const BeatRange &range, Functor &&functor) noexcept;
 
 private:
     Notes               _notes {};
-    TimeRanges          _instances {};
+    BeatRanges          _instances {};
     Core::FlatString    _name {};
     NoteIndex           _lastID {};
     MidiChannels        _channel { 0u };
     bool                _muted { false };
 };
 
-#include "Partition.ipp"
-
 static_assert_fit_half_cacheline(Audio::Partition);
+
+#include "Partition.ipp"

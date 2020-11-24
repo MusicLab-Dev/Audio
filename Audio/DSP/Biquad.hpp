@@ -17,10 +17,10 @@ namespace DSP
     struct BiquadParam {
         struct Coefficients
         {
-            double a[3] { 0.0 };
-            double b[3] { 0.0 };
+            float a[3] { 0.0 };
+            float b[3] { 0.0 };
         };
-        static_assert(sizeof(Coefficients) == 48, "Coefficients must take 48 bytes !");
+        static_assert(sizeof(Coefficients) == 24, "Coefficients must take 24 bytes !");
 
         enum class Optimization : uint8_t {
             Classic, Optimized
@@ -94,7 +94,7 @@ public:
 
 protected:
     BiquadParam::Coefficients   _coefs;
-    double                      _regs[(Form == BiquadParam::InternalForm::Direct1 || Form == BiquadParam::InternalForm::Transposed1) ? 4 : 2] { 0.0 };
+    float                      _regs[(Form == BiquadParam::InternalForm::Direct1 || Form == BiquadParam::InternalForm::Transposed1) ? 4 : 2] { 0.0 };
 
     /** @brief Process a sample into the biquad */
     [[nodiscard]] float process(const float in) noexcept;

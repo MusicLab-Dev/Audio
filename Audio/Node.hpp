@@ -62,13 +62,6 @@ public:
     bool setMuted(const bool muted) noexcept;
 
 
-    /** @brief Check if the control is dirty or not */
-    [[nodiscard]] bool dirty(void) const noexcept { return _dirty; }
-
-    /** @brief Set the dirty state of the control */
-    void setDirty(const bool dirty) noexcept { _dirty = dirty; }
-
-
     /** @brief Get the plugin's flags associated to this node */
     [[nodiscard]] const IPlugin::Flags flags(void) const noexcept { return _flags; }
 
@@ -122,14 +115,8 @@ public:
     [[nodiscard]] const Buffer &cache(void) const noexcept { return _cache; }
 
 
-    /** @brief Generate an audio block */
-    void generateAudioBlock(void) const noexcept;
-
     /** @brief Signal called when the generation of the audio block start */
-    void onAudioGenerationStarted(const BeatRange &range) const noexcept;
-
-    /** @brief Signal called when the generation of the audio block is stopped */
-    void onAudioGenerationStopped(void) const noexcept;
+    void onAudioGenerationStarted(const BeatRange &range) noexcept;
 
 
 private:
@@ -139,10 +126,9 @@ private:
     Partitions          _partitions {}; // 8
     Buffer              _cache; // 16
     Controls            _controls {}; // 8
-    bool                _muted { false }; // 1
-    bool                _dirty { false }; // 1
-    IPlugin::Flags      _flags {}; // 2
     Color               _color { 0u }; // 4
+    IPlugin::Flags      _flags {}; // 2
+    bool                _muted { false }; // 1
     Core::FlatString    _name {}; // 8
 };
 

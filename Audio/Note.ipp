@@ -9,11 +9,9 @@ inline bool Note::operator==(const Note &other) const noexcept
 {
     return (
         (range == other.range) &&
-        (type == other.type) &&
         (key == other.key) &&
         (velocity == other.velocity) &&
-        (tunning == other.tunning) &&
-        (noteIndex == other.noteIndex)
+        (tunning == other.tunning)
     );
 }
 

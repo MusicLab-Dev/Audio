@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 
 #include <Audio/Plugins/Managers/NoteManager.hpp>
+#include <Audio/AScheduler.hpp>
 
 using namespace Audio;
 
@@ -20,8 +21,11 @@ TEST(NoteManager, Initialization)
         Note({ 3, 4 }, 3, 40, 3)
     };
 
-    manager.processNotes(input);
-    auto activeNotes = manager.getActiveNotes();
+    // AScheduler sc;
+
+
+    // manager.processNotes(input);
+    // auto activeNotes = manager.getActiveNotes();
 
     // EXPECT_EQ(activeNotes.size(), 4);
 

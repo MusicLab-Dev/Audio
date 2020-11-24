@@ -8,7 +8,8 @@
 #include <functional>
 #include <atomic>
 #include <future>
-#include <queue>
+
+#include <taskflow/taskflow.hpp>
 
 #include "Project.hpp"
 #include "Buffer.hpp"
@@ -19,78 +20,67 @@ namespace Audio
 
     using ApplyFunctor = std::function<void(void)>;
     using NotifyFunctor = std::function<void(void)>;
-
-    // Replace std::queue with SPSCQueue
-    using StreamPtr = std::unique_ptr<std::queue<std::byte>>;
 };
 
-class Audio::AScheduler
+class alignas_cacheline Audio::AScheduler
 {
 public:
-    struct Event
-    {
-        ApplyFunctor    apply { nullptr };
-        NotifyFunctor   notify { nullptr };
-    };
-
-    using Events = Core::FlatVector<Event>;
-
-    enum class State : std::uint32_t {
+    enum class State {
         Pause, Play
     };
+    /** @brief Structure of an internal event */
+    struct Event
+    {
+        ApplyFunctor apply {}; // The apply event is called when the scheduler is IDLE
+        NotifyFunctor notify {}; // The notify event is called when the scheduler is RUNNING
+    };
 
-    void run(void) noexcept;
+    /** @brief Get / set internal state */
+    [[nodiscard]] State state(void) const noexcept { return _state.load(); }
+    void setState(const State state) noexcept;
 
-    void generateBlock(void) noexcept;
+    /** @brief Get / set internal current beat range */
+    [[nodiscard]] BeatRange currentBeatRange(void) const noexcept { return _currentBeatRange; }
+    void setBeatRange(const BeatRange beatRange) noexcept { _currentBeatRange = beatRange; }
 
+    /** @brief Add apply event to be dispatched */
+    template<typename Apply, typename Notify>
+    void addEvent(Apply &&apply) { addEvent(std::forward<Apply>(), NotifyFunctor()); }
 
-    bool play(void) noexcept;
+    /** @brief Add apply and notify events to be dispatched */
+    template<typename Apply, typename Notify>
+    void addEvent(Apply &&apply, Notify &&notify);
 
-    bool pause(void) noexcept;
-
-    bool stop(void) noexcept;
-
-
-    [[nodiscard]] Beat currentBeat(void) const noexcept;
-
-    bool setCurrentBeat(const Beat beat) const noexcept;
-
-
-    [[nodiscard]] Project &project(void) noexcept { return *_project; }
-
-    [[nodiscard]] const Project &project(void) const noexcept { return *_project; }
-
-    void setProject(ProjectPtr &&project) noexcept { _project = std::move(project); }
-
-
-    void pushEvent(ApplyFunctor &&apply, NotifyFunctor &&notify);
-
-    bool applyEvent(void);
-
-    void notifyEvent(void);
+    /** @brief Invalidates the project graph */
+    void invalidateProjectGraph(void);
 
 
-    bool moveBlockToStream(void);
+    /** @brief Callback called when scheduler is set to play */
+    void onAudioProcessStarted(const BeatRange &beatRange);
 
-    bool readFromStream(Buffer &buffer);
-
-
-protected:
-    template<typename Functor, typename ...Args>
-    std::future<decltype(std::declval<Functor>()(std::declval<Args>()...))>
-        postWork(Functor &&functor, Args &&...args) = 0;
-
-
+    /** @brief Virtual callback called when a frame is generated */
     virtual void onAudioBlockGenerated(void) = 0;
 
+protected:
+    /** @brief Dispatch apply events without clearing event list */
+    void dispatchApplyEvents(void);
+
+    /** @brief Dispatch notify events and clear event list */
+    void dispatchNotifyEvents(void);
+
 private:
-    std::atomic<State>      _state { State::Pause };
-    char                    __pad[4];
-    Events                  _events { 0u };
-    BeatRange               _currentBeatRange {};
-    ProjectPtr              _project { nullptr };
-    StreamPtr               _stream { nullptr };
+    std::unique_ptr<tf::Executor> _executor { std::make_unique<tf::Executor>() };
+    std::unique_ptr<tf::Taskflow> _flow { std::make_unique<tf::Taskflow>("AudioGenerationFlow") };
+    Core::TinyVector<Event> _events {};
+    BeatRange _currentBeatRange {};
+    ProjectPtr _project {};
+    std::atomic<State> _state { State::Pause };
+
+    /** @brief Build the project graph */
+    void buildProjectGraph(void);
+
+    /** @brief Schedule the project graph */
+    void scheduleProjectGraph(void);
 };
 
-
-static_assert(sizeof(Audio::AScheduler) == 56, "AScheduler must take 56 bytes !");
+#include "AScheduler.ipp"

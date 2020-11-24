@@ -8,8 +8,7 @@
 #include <array>
 #include <memory>
 
-#include "../../Note.hpp"
-#include "../../FlatNote.hpp"
+#include "Audio/Note.hpp"
 
 namespace Audio
 {
@@ -18,31 +17,47 @@ namespace Audio
     using NoteManagerPtr = std::unique_ptr<NoteManager>;
 };
 
-class Audio::NoteManager
+/** @brief Note manager store states of each note */
+class alignas_double_cacheline Audio::NoteManager
 {
 public:
-    /** @brief Max cache size, deduced from Key type */
-    static constexpr auto CacheSize = std::numeric_limits<Key>::max() + 1;
+    /** @brief Modifiers of a note */
+    struct NoteModifiers
+    {
+        Velocity velocity { 0u };
+        Tuning tuning { 0u };
+    };
+
+    /** @brief Store the cache of a note */
+    struct alignas_eighth_cacheline NoteCache
+    {
+        NoteModifiers noteModifiers {};
+        NoteModifiers polyPressureModifiers {};
+    };
+
+    static_assert_fit_eighth_cacheline(NoteCache);
 
     /** @brief Describe the internal cache */
-    using FlatNotes = std::array<FlatNote, CacheSize>;
-    using ActiveNotes = Core::TinyVector<FlatNote>;
+    struct alignas_double_cacheline Cache
+    {
+        alignas_quarter_cacheline Core::TinyVector<Key> actives {};
+        std::array<NoteCache, KeyCount> notes;
+    };
+
+    static_assert_alignof_double_cacheline(Cache);
 
 
     /** @brief Process a list of notes and update the internal cache */
-    void processNotes(const Notes &notes) noexcept;
-
-    /** @brief Get the actual active notes */
-    [[nodiscard]] ActiveNotes getActiveNotes(void) const noexcept;
+    void processNotes(const NoteEvents &notes) noexcept;
 
     /** @brief Reset the internal cache. All notes are turned off */
     void resetCache(void) noexcept;
 
 
 private:
-    FlatNotes   _cache {};
+    Cache   _cache;
 };
 
-static_assert_sizeof(Audio::NoteManager, (sizeof(Audio::FlatNote) * Audio::NoteManager::CacheSize));
+static_assert_alignof_double_cacheline(Audio::NoteManager);
 
 #include "NoteManager.ipp"

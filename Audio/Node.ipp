@@ -32,3 +32,12 @@ inline bool Audio::Node::setName(Core::FlatString &&name) noexcept
     _name = std::move(name);
     return true;
 }
+
+inline void Audio::Node::onAudioGenerationStarted(const BeatRange &range) noexcept
+{
+    // We process plugins from bottom to top
+    for (auto &child : _children) {
+        child->onAudioGenerationStarted(range);
+    }
+    plugin()->onAudioGenerationStarted(range);
+}
