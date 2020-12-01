@@ -7,6 +7,10 @@ get_filename_component(AudioDir ${CMAKE_CURRENT_LIST_FILE} PATH)
 
 set(AudioSources
     ${AudioDir}/AScheduler.hpp
+    ${AudioDir}/AScheduler.ipp
+    ${AudioDir}/AScheduler.cpp
+    ${AudioDir}/TaskBase.hpp
+    ${AudioDir}/TaskAudio.hpp
     ${AudioDir}/Automation.hpp
     ${AudioDir}/Base.hpp
     ${AudioDir}/BaseDevice.hpp
@@ -40,6 +44,19 @@ set(AudioSources
     ${AudioDir}/UtilsMidi.hpp
 )
 
+
+set(AudioPluginsDir ${AudioDir}/Plugins)
+
+set(AudioPluginsSources
+    ${AudioPluginsDir}/Oscillator.hpp
+    ${AudioPluginsDir}/Oscillator.ipp
+    ${AudioPluginsDir}/SimpleDelay.hpp
+    ${AudioPluginsDir}/SimpleDelay.ipp
+    ${AudioPluginsDir}/Mixer.hpp
+    ${AudioPluginsDir}/Mixer.ipp
+)
+
+
 set(AudioDSPDir ${AudioDir}/DSP)
 
 set(AudioDSPSources
@@ -50,7 +67,11 @@ set(AudioDSPSources
     ${AudioDSPDir}/EnveloppeGenerator.ipp
 )
 
-add_library(${PROJECT_NAME} ${AudioSources} ${AudioDSPSources})
+add_library(${PROJECT_NAME}
+    ${AudioSources}
+    ${AudioPluginsSources}
+    ${AudioDSPSources}
+)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${AudioDir}/..)
 

@@ -5,9 +5,10 @@
 
 #pragma once
 
-#include "../IPlugin.hpp"
+#include <Audio/IPlugin.hpp>
+#include <Audio/DSP/EnveloppeGenerator.hpp>
+
 #include "Managers/NoteManager.hpp"
-#include "../DSP/EnveloppeGenerator.hpp"
 
 namespace Audio
 {

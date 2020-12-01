@@ -35,6 +35,10 @@ public:
         NotifyFunctor notify {}; // The notify event is called when the scheduler is RUNNING
     };
 
+    // AScheduler(const Project &project) : _project(std::make_shared<Project>(project)) {}
+    AScheduler(ProjectPtr &&project) : _project(std::move(project)) {}
+
+
     /** @brief Get / set internal state */
     [[nodiscard]] State state(void) const noexcept { return _state.load(); }
     void setState(const State state) noexcept;

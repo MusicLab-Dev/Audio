@@ -118,6 +118,8 @@ public:
     /** @brief Signal called when the generation of the audio block start */
     void onAudioGenerationStarted(const BeatRange &range) noexcept;
 
+    // Remove
+    void generateAudioBlock(void) noexcept;
 
 private:
     PluginPtr           _plugin { nullptr }; // 8

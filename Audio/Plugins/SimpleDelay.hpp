@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "../IPlugin.hpp"
+#include <Audio/IPlugin.hpp>
 
 namespace Audio
 {
@@ -21,6 +21,7 @@ public:
     /** @brief Init a simple delay with a fixed max size
      * @param cacheSize In block, use SampleRate / 'SizeInSec'
      */
+    // SimpleDelay(void) : SimpleDelay(4096, ChannelArrangement::Mono, 1) {}
     SimpleDelay(const std::size_t blockSize, const ChannelArrangement channelArrangement, const std::size_t cacheSize) : _cache(cacheSize) {
         for (auto i = 0u; i < cacheSize; ++i)
             _cache[i].push(Buffer(blockSize, channelArrangement));

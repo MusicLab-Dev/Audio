@@ -37,7 +37,7 @@ inline void Audio::AScheduler::dispatchNotifyEvents(void)
 inline void Audio::AScheduler::scheduleProjectGraph(void)
 {
     onAudioProcessStarted(currentBeatRange());
-    _executor->run_until(_flow, [this] -> bool {
+    _executor->run_until(*_flow, [this](void) -> bool {
         onAudioBlockGenerated();
         return state() == State::Play;
     });
