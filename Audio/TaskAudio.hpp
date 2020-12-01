@@ -15,37 +15,38 @@ namespace Audio
     class TaskAudioHub;
 
     using AudioStack = std::unique_ptr<BufferViews>;
-
 };
 
 
-class Audio::TaskAudioRead : public Audio::TaskBase
+class Audio::TaskAudioRead : public Audio::Internal::TaskBase
 {
 public:
-    TaskAudioRead(Node *node) : TaskBase(node), _audioCache(std::make_unique<BufferViews>()) {}
-
-    void operator()(void) noexcept { std::cout << "Audio read\n"; }
-
-private:
-    AudioStack     _audioCache;
-};
-
-class Audio::TaskAudioWrite : public Audio::TaskBase
-{
-public:
-    // TaskAudioWrite(Node *node) : TaskBase(node), _audioCache(std::make_unique<BufferViews>(1)) {}
-
     void operator()(void) noexcept {
-        std::cout << "Audio write\n";
-        node().plugin()->receiveAudio((*_audioCache)[1]);
+        std::cout << "Audio read\n";
+        for (auto &child : node().children()) {
+            _audioCache->push(child->cache());
+        }
+        node().plugin()->sendAudio(*_audioCache);
     }
 
 private:
     AudioStack     _audioCache;
 };
 
+class Audio::TaskAudioWrite : public Audio::Internal::TaskBase
+{
+public:
+    void operator()(void) noexcept {
+        std::cout << "Audio write\n";
+        node().plugin()->receiveAudio(node().cache());
+    }
+};
 
-// class Audio::TaskAudioHub : public Audio::TaskAudioRead, Audio::TaskAudioWrite
-// {
-//     // TaskAudioHub(Node *node)
-// };
+
+class Audio::TaskAudioHub : public Audio::Internal::TaskBase
+{
+    void operator()(void) noexcept {
+        std::cout << "Audio write\n";
+        node().plugin()->receiveAudio(node().cache());
+    }
+};
