@@ -29,7 +29,7 @@ void AScheduler::setState(const State state) noexcept
 
 void AScheduler::buildProjectGraph(void)
 {
-    auto *parent = _project->master().get();
+    // auto *parent = _project->master().get();
 
     // TaskSchedulerAudioWrite task(parent, this);
     // task();

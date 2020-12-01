@@ -25,8 +25,8 @@ TEST(AScheduler, Initialization)
     PluginTable::Init();
     {
         auto *mixer = new Mixer();
-        auto *osc = new Oscillator();
-        auto *delay = new SimpleDelay(4096, ChannelArrangement::Mono, 1);
+        // auto *osc = new Oscillator();
+        // auto *delay = new SimpleDelay(4096, ChannelArrangement::Mono, 1);
 
         auto project = std::make_shared<Project>(Core::FlatString("project"));
         project->master() = std::make_unique<Node>(PluginPtr((IPlugin *)(mixer)));
