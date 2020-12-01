@@ -30,6 +30,9 @@ public:
     /** @brief Set the muted state of the control */
     bool setMuted(const bool muted) noexcept;
 
+    /** @brief Get the automation list */
+    [[nodiscard]] Automations &automations(void) noexcept { return _automations; }
+    [[nodiscard]] const Automations &automations(void) const noexcept { return _automations; }
 
     /** @brief Get the the whole automation muted states */
     [[nodiscard]] std::uint16_t automationMutedState(void) const noexcept { return _automationMutedStates; }
