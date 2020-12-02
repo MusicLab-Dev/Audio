@@ -96,7 +96,7 @@ public:
     static Descriptors GetDeviceDescriptors(void);
 
 private:
-    SDL_AudioDeviceID   _deviceID { 0u };
+    SDL_AudioDeviceID   _deviceID {};
     AudioCallback       _callback { nullptr };
     int                 _sampleRate { 48000 };
     Format              _format { Format::Floating32 };

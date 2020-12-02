@@ -55,8 +55,8 @@ public:
     [[nodiscard]] const BeatRanges &instances(void) const noexcept { return _instances; }
 
 private:
-    Points          _points { 0u };
-    BeatRanges      _instances { 0u };
+    Points          _points {};
+    BeatRanges      _instances {};
 };
 
 static_assert_fit_quarter_cacheline(Audio::Automation);

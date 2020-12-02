@@ -48,7 +48,7 @@ struct Audio::Note
     EventType   type { EventType::On };
     Key         key { 69u };
     Velocity    velocity { 0x7F };
-    Tuning      tunning { 0u };
+    Tuning      tunning {};
     NoteIndex   noteIndex {};
 };
 

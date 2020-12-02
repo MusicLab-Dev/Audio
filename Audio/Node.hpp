@@ -142,7 +142,7 @@ private:
     bool                _muted { false }; // 1
     bool                _dirty { false }; // 1
     IPlugin::Flags      _flags {}; // 2
-    Color               _color { 0u }; // 4
+    Color               _color {}; // 4
     Core::FlatString    _name {}; // 8
 };
 
