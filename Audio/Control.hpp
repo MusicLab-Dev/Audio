@@ -62,7 +62,7 @@ public:
 
 private:
     Point           _manualPoint {};
-    Automations     _automations { 0u };
+    Automations     _automations {};
     ParamID         _paramID {};
     std::uint16_t   _automationMutedStates {};
     bool            _manualMode { false };

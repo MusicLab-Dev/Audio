@@ -86,7 +86,7 @@ protected:
 private:
     std::atomic<State>      _state { State::Pause };
     char                    __pad[4];
-    Events                  _events { 0u };
+    Events                  _events {};
     BeatRange               _currentBeatRange {};
     ProjectPtr              _project { nullptr };
     StreamPtr               _stream { nullptr };
