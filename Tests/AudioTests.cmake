@@ -19,6 +19,7 @@ set(AudioTestsSources
     ${AudioTestsDir}/tests_UtilsMidi.cpp
 
     # ${AudioTestsDir}/tests_Biquad.cpp
+    ${AudioTestsDir}/tests_Merge.cpp
     ${AudioTestsDir}/tests_EnveloppeGenerator.cpp
 )
 
