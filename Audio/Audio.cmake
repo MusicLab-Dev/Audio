@@ -48,12 +48,12 @@ set(AudioSources
 set(AudioPluginsDir ${AudioDir}/Plugins)
 
 set(AudioPluginsSources
-    ${AudioPluginsDir}/Oscillator.hpp
-    ${AudioPluginsDir}/Oscillator.ipp
-    ${AudioPluginsDir}/SimpleDelay.hpp
-    ${AudioPluginsDir}/SimpleDelay.ipp
-    ${AudioPluginsDir}/Mixer.hpp
-    ${AudioPluginsDir}/Mixer.ipp
+    # ${AudioPluginsDir}/Oscillator.hpp
+    # ${AudioPluginsDir}/Oscillator.ipp
+    # ${AudioPluginsDir}/SimpleDelay.hpp
+    # ${AudioPluginsDir}/SimpleDelay.ipp
+    # ${AudioPluginsDir}/Mixer.hpp
+    # ${AudioPluginsDir}/Mixer.ipp
 )
 
 
