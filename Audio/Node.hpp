@@ -125,12 +125,13 @@ private:
     Partitions          _partitions {}; // 8
     Buffer              _cache; // 16
     Controls            _controls {}; // 8
-    Color               _color { 0u }; // 4
-    IPlugin::Flags      _flags {}; // 2
     bool                _muted { false }; // 1
+    bool                _dirty { false }; // 1
+    IPlugin::Flags      _flags {}; // 2
+    Color               _color {}; // 4
+
+    // Cacheline 2
     Core::FlatString    _name {}; // 8
 };
-
-static_assert_fit_double_cacheline(Audio::Node);
 
 #include "Node.ipp"

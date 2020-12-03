@@ -73,6 +73,7 @@ protected:
     void dispatchNotifyEvents(void);
 
 private:
+<<<<<<< HEAD
     std::unique_ptr<tf::Executor> _executor { std::make_unique<tf::Executor>() };
     std::unique_ptr<tf::Taskflow> _flow { std::make_unique<tf::Taskflow>("AudioGenerationFlow") };
     Core::TinyVector<Event> _events {};
@@ -85,6 +86,14 @@ private:
 
     /** @brief Schedule the project graph */
     void scheduleProjectGraph(void);
+=======
+    std::atomic<State>      _state { State::Pause };
+    char                    __pad[4];
+    Events                  _events {};
+    BeatRange               _currentBeatRange {};
+    ProjectPtr              _project { nullptr };
+    StreamPtr               _stream { nullptr };
+>>>>>>> 087f309d11bbcd91f35fa62055cd2fe945e7d340
 };
 
 #include "AScheduler.ipp"

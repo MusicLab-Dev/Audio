@@ -52,8 +52,8 @@ public:
 
 private:
     Cache   _cache;
-    Index   _readIdx { 0u };
-    Index   _writeIdx { 0u };
+    Index   _readIdx {};
+    Index   _writeIdx {};
 
     /** @brief Delay parameter range from 0 to 1
      * If delay == 0, this plugin as no effect

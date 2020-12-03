@@ -45,7 +45,7 @@ public:
 
 protected:
     float           _index  { 0.0 };
-    std::uint8_t    _noteCount  { 0u };
+    std::uint8_t    _noteCount  {};
 };
 
 
