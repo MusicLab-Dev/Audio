@@ -62,13 +62,6 @@ public:
     bool setMuted(const bool muted) noexcept;
 
 
-    /** @brief Check if the control is dirty or not */
-    [[nodiscard]] bool dirty(void) const noexcept { return _dirty; }
-
-    /** @brief Set the dirty state of the control */
-    void setDirty(const bool dirty) noexcept { _dirty = dirty; }
-
-
     /** @brief Get the plugin's flags associated to this node */
     [[nodiscard]] const IPlugin::Flags flags(void) const noexcept { return _flags; }
 
@@ -122,15 +115,8 @@ public:
     [[nodiscard]] const Buffer &cache(void) const noexcept { return _cache; }
 
 
-    /** @brief Generate an audio block */
-    void generateAudioBlock(void) const noexcept;
-
     /** @brief Signal called when the generation of the audio block start */
-    void onAudioGenerationStarted(const BeatRange &range) const noexcept;
-
-    /** @brief Signal called when the generation of the audio block is stopped */
-    void onAudioGenerationStopped(void) const noexcept;
-
+    void onAudioGenerationStarted(const BeatRange &range) noexcept;
 
 private:
     PluginPtr           _plugin { nullptr }; // 8
@@ -143,9 +129,9 @@ private:
     bool                _dirty { false }; // 1
     IPlugin::Flags      _flags {}; // 2
     Color               _color {}; // 4
+
+    // Cacheline 2
     Core::FlatString    _name {}; // 8
 };
-
-static_assert_fit_double_cacheline(Audio::Node);
 
 #include "Node.ipp"

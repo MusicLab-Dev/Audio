@@ -37,6 +37,9 @@ namespace Audio
     /** @brief Key of a note */
     using Key = std::uint8_t;
 
+    /** @brief Number of different handled keys */
+    constexpr Key KeyCount = 127u;
+
     /** @brief Velocity of a note */
     using Velocity = std::uint16_t;
 

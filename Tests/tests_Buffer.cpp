@@ -14,12 +14,15 @@ static constexpr auto ChannelNumber = 2u;
 
 using T = int;
 
-static Buffer GetBuffer(void) noexcept { return Buffer(Size * sizeof(T), ChannelArrangement::Stereo); }
+static Buffer GetBuffer(void) noexcept { return Buffer(Size * sizeof(T), 48000, ChannelArrangement::Stereo); }
 
 TEST(Buffer, Initialization)
 {
     Buffer buf(GetBuffer());
 
+    ASSERT_EQ(buf.sampleRate(), 48000);
+    buf.setSampleRate(44000);
+    ASSERT_EQ(buf.sampleRate(), 44000);
     for (auto i = 0u; i < Size; ++i) {
         buf.data<T>(Channel::Left)[i] = i;
         buf.data<T>(Channel::Right)[i] = i;

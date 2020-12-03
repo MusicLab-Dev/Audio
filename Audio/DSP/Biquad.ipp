@@ -3,12 +3,19 @@
  * @ Description: Biquad implementation
  */
 
+#include <iostream>
+#include <chrono>
+
+
+template<DSP::BiquadParam::InternalForm Form>
+double DSP::Biquad<Form>::SR = 0;
+
+
 template<>
-float DSP::Biquad<DSP::BiquadParam::InternalForm::Direct1>::process(const float in) noexcept
+inline float DSP::Biquad<DSP::BiquadParam::InternalForm::Direct1>::process(const float in) noexcept
 {
     float out = _coefs.b[0] * in + _coefs.b[1] * _regs[0] + _coefs.b[2] * _regs[1] -
                 _coefs.a[1] * _regs[2] - _coefs.a[2] * _regs[3];
-
 
     // Shift registers
     _regs[1] = _regs[0];
@@ -16,23 +23,60 @@ float DSP::Biquad<DSP::BiquadParam::InternalForm::Direct1>::process(const float 
     _regs[3] = _regs[2];
     _regs[2] = out;
     return out;
-
 }
 
 template<>
-float DSP::Biquad<DSP::BiquadParam::InternalForm::Transposed2>::process(const float in) noexcept
+void DSP::Biquad<DSP::BiquadParam::InternalForm::Direct1>::processBlock(float *block, std::size_t len) noexcept
+{
+    for (; len; --len, ++block)
+        *block = process(*block);
+}
+
+template<>
+inline float DSP::Biquad<DSP::BiquadParam::InternalForm::Transposed2>::process(const float in) noexcept
 {
     const float out = in * _coefs.a[0] + _regs[0];
 
+    // return out;
     _regs[0] = in * _coefs.a[1] + _regs[1] - _coefs.b[1] * out;
     _regs[1] = in * _coefs.a[2] - _coefs.b[2] * out;
     return out;
 }
 
+template<>
+inline float DSP::Biquad<DSP::BiquadParam::InternalForm::Transposed2>::process1(const float in) noexcept
+{
+    const float out = _regs[0] + in * _coefs.b[0];
+
+    _regs[0] = _regs[1] + in * _coefs.b[1] - (_coefs.a[1] * out);
+    _regs[1] = in * _coefs.b[2] - (_coefs.a[2] * out);
+    return out;
+}
+
+template<>
+inline void DSP::Biquad<DSP::BiquadParam::InternalForm::Transposed2>::processBlock(float *block, std::size_t len) noexcept
+{
+    for (; len; --len, ++block)
+        *block = process(*block);
+}
+
+template<>
+inline void DSP::Biquad<DSP::BiquadParam::InternalForm::Transposed2>::processBlock1(float *block, std::size_t len) noexcept
+{
+    for (; len; --len, ++block)
+        *block = process1(*block);
+
+    //     const auto in = *block;
+    //     const float out = in * _coefs.a[0] + _regs[0];
+    //     _regs[0] = in * _coefs.a[1] + _regs[1] - _coefs.b[1] * out;
+    //     _regs[1] = in * _coefs.a[2] - _coefs.b[2] * out;
+    //     *block = out;
+    // }
+}
 
 
 template<>
-DSP::BiquadParam::Coefficients DSP::BiquadParam::GenerateCoefficients<DSP::BiquadParam::FilterType::LowPass>(const double sampleRate, const double freq, const double gain, const double q, bool qAsBandWidth) noexcept
+inline DSP::BiquadParam::Coefficients DSP::BiquadParam::GenerateCoefficients<DSP::BiquadParam::FilterType::LowPass>(const double sampleRate, const double freq, const double gain, const double q, bool qAsBandWidth) noexcept
 {
     const auto omega = 2.0 * M_PI * freq / sampleRate;
     const auto tsin = std::sin(omega);
@@ -57,7 +101,7 @@ DSP::BiquadParam::Coefficients DSP::BiquadParam::GenerateCoefficients<DSP::Biqua
 }
 
 template<>
-DSP::BiquadParam::Coefficients DSP::BiquadParam::GenerateCoefficients<DSP::BiquadParam::FilterType::HighPass>(const double sampleRate, const double freq, const double gain, const double q, bool qAsBandWidth) noexcept
+inline DSP::BiquadParam::Coefficients DSP::BiquadParam::GenerateCoefficients<DSP::BiquadParam::FilterType::HighPass>(const double sampleRate, const double freq, const double gain, const double q, bool qAsBandWidth) noexcept
 {
     const auto omega = 2.0 * M_PI * freq / sampleRate;
     const auto tsin = std::sin(omega);
@@ -82,7 +126,7 @@ DSP::BiquadParam::Coefficients DSP::BiquadParam::GenerateCoefficients<DSP::Biqua
 }
 
 template<>
-DSP::BiquadParam::Coefficients DSP::BiquadParam::GenerateCoefficients<DSP::BiquadParam::FilterType::BandPass>(const double sampleRate, const double freq, const double gain, const double q, bool qAsBandWidth) noexcept
+inline DSP::BiquadParam::Coefficients DSP::BiquadParam::GenerateCoefficients<DSP::BiquadParam::FilterType::BandPass>(const double sampleRate, const double freq, const double gain, const double q, bool qAsBandWidth) noexcept
 {
     const auto omega = 2.0 * M_PI * freq / sampleRate;
     const auto tsin = std::sin(omega);
@@ -107,7 +151,7 @@ DSP::BiquadParam::Coefficients DSP::BiquadParam::GenerateCoefficients<DSP::Biqua
 }
 
 template<>
-DSP::BiquadParam::Coefficients DSP::BiquadParam::GenerateCoefficients<DSP::BiquadParam::FilterType::BandStop>(const double sampleRate, const double freq, const double gain, const double q, bool qAsBandWidth) noexcept
+inline DSP::BiquadParam::Coefficients DSP::BiquadParam::GenerateCoefficients<DSP::BiquadParam::FilterType::BandStop>(const double sampleRate, const double freq, const double gain, const double q, bool qAsBandWidth) noexcept
 {
     const auto omega = 2.0 * M_PI * freq / sampleRate;
     const auto tsin = std::sin(omega);
@@ -132,7 +176,7 @@ DSP::BiquadParam::Coefficients DSP::BiquadParam::GenerateCoefficients<DSP::Biqua
 }
 
 template<>
-DSP::BiquadParam::Coefficients DSP::BiquadParam::GenerateCoefficients<DSP::BiquadParam::FilterType::Peak>(const double sampleRate, const double freq, const double gain, const double q, bool qAsBandWidth) noexcept
+inline DSP::BiquadParam::Coefficients DSP::BiquadParam::GenerateCoefficients<DSP::BiquadParam::FilterType::Peak>(const double sampleRate, const double freq, const double gain, const double q, bool qAsBandWidth) noexcept
 {
     const auto amp = std::pow(10.0, gain / 40.0);
     const auto omega = 2.0 * M_PI * freq / sampleRate;
@@ -158,7 +202,7 @@ DSP::BiquadParam::Coefficients DSP::BiquadParam::GenerateCoefficients<DSP::Biqua
 }
 
 template<>
-DSP::BiquadParam::Coefficients DSP::BiquadParam::GenerateCoefficients<DSP::BiquadParam::FilterType::LowShelf>(const double sampleRate, const double freq, const double gain, const double q, bool qAsBandWidth) noexcept
+inline DSP::BiquadParam::Coefficients DSP::BiquadParam::GenerateCoefficients<DSP::BiquadParam::FilterType::LowShelf>(const double sampleRate, const double freq, const double gain, const double q, bool qAsBandWidth) noexcept
 {
     const auto amp = std::pow(10.0, gain / 40.0);
     const auto omega = 2.0 * M_PI * freq / sampleRate;
@@ -184,7 +228,7 @@ DSP::BiquadParam::Coefficients DSP::BiquadParam::GenerateCoefficients<DSP::Biqua
 }
 
 template<>
-DSP::BiquadParam::Coefficients DSP::BiquadParam::GenerateCoefficients<DSP::BiquadParam::FilterType::HighShelf>(const double sampleRate, const double freq, const double gain, const double q, bool qAsBandWidth) noexcept
+inline DSP::BiquadParam::Coefficients DSP::BiquadParam::GenerateCoefficients<DSP::BiquadParam::FilterType::HighShelf>(const double sampleRate, const double freq, const double gain, const double q, bool qAsBandWidth) noexcept
 {
     const auto amp = std::pow(10.0, gain / 40.0);
     const auto omega = 2.0 * M_PI * freq / sampleRate;

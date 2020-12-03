@@ -13,7 +13,7 @@ namespace Audio
 {
     class Project;
 
-    using ProjectPtr = Project *;
+    using ProjectPtr = std::shared_ptr<Project>;
 };
 
 class alignas_half_cacheline Audio::Project
@@ -27,32 +27,31 @@ public:
         Production, Live
     };
 
-    Project(Core::FlatString &&name, PlaybackMode mode) noexcept
+    /** @brief Construct a new project with a given name */
+    Project(Core::FlatString &&name, PlaybackMode mode = PlaybackMode::Production) noexcept
         : _playbackMode(mode), _name(std::move(name)) {}
 
-    /** @brief  */
-    void invalidateFlatTree(void);
+    /** @brief Destroy the project */
+    ~Project(void) = default;
 
-    /** @brief  */
-    void generateAudioBlock(void);
+    /** @brief Get the master node */
+    [[nodiscard]] NodePtr &master(void) noexcept { return _master; }
+    [[nodiscard]] const NodePtr &master(void) const noexcept { return _master; }
 
-    /** @brief  */
+    /** @brief Get the name node */
+    [[nodiscard]] Core::FlatString &name(void) noexcept { return _name; }
+    [[nodiscard]] const Core::FlatString &name(void) const noexcept { return _name; }
+
+
+    /** @brief Signal called when the generation of the audio block start */
     void onAudioGenerationStarted(const BeatRange &range);
 
-    /** @brief  */
-    void onAudioGenerationStopped(void);
-
-    /** @brief  */
-    void onAudioBlockGenerated(void);
-
 private:
-    NodePtr             _master { nullptr };
+    NodePtr             _master {};
     PlaybackMode        _playbackMode { PlaybackMode::Production };
-    FlatTree            _flatTree {};
     Core::FlatString    _name {};
-
-    /** @brief  */
-    void computeFlatTree(void);
 };
 
 static_assert_fit_half_cacheline(Audio::Project);
+
+#include "Project.ipp"

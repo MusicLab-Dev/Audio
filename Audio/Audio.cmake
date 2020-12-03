@@ -7,6 +7,10 @@ get_filename_component(AudioDir ${CMAKE_CURRENT_LIST_FILE} PATH)
 
 set(AudioSources
     ${AudioDir}/AScheduler.hpp
+    ${AudioDir}/AScheduler.ipp
+    ${AudioDir}/AScheduler.cpp
+    ${AudioDir}/SchedulerTask.hpp
+    ${AudioDir}/SchedulerTask.ipp
     ${AudioDir}/Automation.hpp
     ${AudioDir}/Base.hpp
     ${AudioDir}/BaseDevice.hpp
@@ -35,10 +39,23 @@ set(AudioSources
     ${AudioDir}/PluginTable.cpp
     ${AudioDir}/PluginTable.hpp
     ${AudioDir}/PluginTable.ipp
-    ${AudioDir}/Project.cpp
     ${AudioDir}/Project.hpp
+    ${AudioDir}/Project.ipp
     ${AudioDir}/UtilsMidi.hpp
 )
+
+
+set(AudioPluginsDir ${AudioDir}/Plugins)
+
+set(AudioPluginsSources
+    ${AudioPluginsDir}/Oscillator.hpp
+    ${AudioPluginsDir}/Oscillator.ipp
+    ${AudioPluginsDir}/SimpleDelay.hpp
+    ${AudioPluginsDir}/SimpleDelay.ipp
+    ${AudioPluginsDir}/Mixer.hpp
+    ${AudioPluginsDir}/Mixer.ipp
+)
+
 
 set(AudioDSPDir ${AudioDir}/DSP)
 
@@ -52,11 +69,15 @@ set(AudioDSPSources
     # ${AudioDSPDir}/EnveloppeGenerator.ipp
 )
 
-add_library(${PROJECT_NAME} ${AudioSources} ${AudioDSPSources})
+add_library(${PROJECT_NAME}
+    ${AudioSources}
+    #${AudioPluginsSources}
+    ${AudioDSPSources}
+)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${AudioDir}/..)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC Core)
+target_link_libraries(${PROJECT_NAME} PUBLIC Core Taskflow)
 
 if(MSVC)
     target_link_libraries(${PROJECT_NAME} PUBLIC SDL2::SDL2)

@@ -7,6 +7,7 @@ inline void Audio::Node::setPlugin(PluginPtr &&plugin)
 {
     // reset affected members
     _plugin = std::move(plugin);
+    _flags = _plugin->getFlags();
 }
 
 inline bool Audio::Node::setMuted(const bool muted) noexcept
@@ -31,4 +32,13 @@ inline bool Audio::Node::setName(Core::FlatString &&name) noexcept
         return false;
     _name = std::move(name);
     return true;
+}
+
+inline void Audio::Node::onAudioGenerationStarted(const BeatRange &range) noexcept
+{
+    // We process plugins from bottom to top
+    for (auto &child : _children) {
+        child->onAudioGenerationStarted(range);
+    }
+    plugin()->onAudioGenerationStarted(range);
 }

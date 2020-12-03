@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "../IPlugin.hpp"
+#include <Audio/IPlugin.hpp>
 
 namespace Audio
 {
@@ -21,6 +21,7 @@ public:
     /** @brief Init a simple delay with a fixed max size
      * @param cacheSize In block, use SampleRate / 'SizeInSec'
      */
+    // SimpleDelay(void) : SimpleDelay(4096, ChannelArrangement::Mono, 1) {}
     SimpleDelay(const std::size_t blockSize, const ChannelArrangement channelArrangement, const std::size_t cacheSize) : _cache(cacheSize) {
         for (auto i = 0u; i < cacheSize; ++i)
             _cache[i].push(Buffer(blockSize, channelArrangement));
@@ -32,17 +33,15 @@ public:
     virtual void sendAudio(const BufferViews &inputs) noexcept;
     virtual void receiveAudio(BufferView output) noexcept;
 
-    virtual void sendNotes(const Notes &notes) noexcept {}
-    virtual void receiveNotes(Notes &notes) noexcept {}
+    virtual void sendNotes(const NoteEvents &notes) noexcept {}
+    virtual void receiveNotes(NoteEvents &notes) noexcept {}
 
     virtual void sendControls(const Controls &controls) noexcept {}
 
     virtual void sendSync(const Tempo &tempo) noexcept {}
     virtual void receiveSync(Tempo &tempo) noexcept {}
 
-    virtual void onAudioGenerationStarted(void) noexcept;
-    virtual void onAudioGenerationStopped(void) noexcept;
-    virtual void onAudioBlockGenerated(void) noexcept;
+    virtual void onAudioGenerationStarted(const BeatRange &range) noexcept;
 
 
     Index readIdx(void) const noexcept { return _readIdx; }

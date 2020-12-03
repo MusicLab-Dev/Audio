@@ -5,11 +5,12 @@
 
 #pragma once
 
-#include "Base.hpp"
-
 #include <cstddef>
 #include <cstring>
 #include <memory>
+#include <memory_resource>
+
+#include "Base.hpp"
 
 namespace Audio
 {
@@ -46,6 +47,9 @@ public:
     /** @brief Get the byte size per channel */
     [[nodiscard]] std::uint32_t channelByteSize(void) const noexcept { return _channelByteSize; }
 
+    /** @brief Get the internal sample rate */
+    [[nodiscard]] SampleRate sampleRate(void) const noexcept { return _sampleRate; }
+
     /** @brief Get the buffer size relative to a given type */
     template<typename Type>
     [[nodiscard]] std::uint32_t size(void) const noexcept { return _channelByteSize / sizeof(Type); }
@@ -76,11 +80,12 @@ public:
 protected:
     std::byte *_data { nullptr };
     std::uint32_t _channelByteSize { 0 };
+    SampleRate _sampleRate : 3;
     ChannelArrangement _arrangement { ChannelArrangement::Mono };
 
     /** @brief Private constructor */
-    BufferBase(std::byte * const data, const std::uint32_t channelByteSize, const ChannelArrangement arrangement) noexcept
-        : _data(data), _channelByteSize(channelByteSize), _arrangement(arrangement) {}
+    BufferBase(std::byte * const data, const std::uint32_t channelByteSize, const SampleRate sampleRate, const ChannelArrangement arrangement) noexcept
+        : _data(data), _channelByteSize(channelByteSize), _sampleRate(sampleRate), _arrangement(arrangement) {}
 };
 
 static_assert_fit_quarter_cacheline(Audio::Internal::BufferBase);
@@ -90,34 +95,49 @@ class alignas_quarter_cacheline Audio::Buffer : public Audio::Internal::BufferBa
 {
 public:
     /** @brief Allocate the buffer */
-    Buffer(const std::uint32_t channelByteSize, const ChannelArrangement arrangement)
+    Buffer(const std::uint32_t channelByteSize, const SampleRate sampleRate, const ChannelArrangement arrangement)
         : Internal::BufferBase(
-            new std::byte[channelByteSize * static_cast<std::uint32_t>(arrangement)],
+            reinterpret_cast<std::byte *>(
+                _Allocator.allocate(channelByteSize * static_cast<std::uint32_t>(arrangement), Core::CacheLineSize)
+            ),
             channelByteSize,
+            sampleRate,
             arrangement
         ) {}
 
     /** @brief Default constructor */
-    Buffer(void) : BufferBase(nullptr, 0, ChannelArrangement::Mono) {}
+    Buffer(void) : BufferBase(nullptr, 0, 0, ChannelArrangement::Mono) {}
 
     /** @brief Move constructor */
     Buffer(Buffer &&other) noexcept = default;
 
     /** @brief Delete the allocated buffer */
-    ~Buffer(void) noexcept { if (_data) delete[] _data; }
+    ~Buffer(void) noexcept { if (_data) _Allocator.deallocate(_data, _channelByteSize * static_cast<std::uint32_t>(_arrangement), Core::CacheLineSize); }
 
     /** @brief Move assignment */
     Buffer &operator=(Buffer &&other) noexcept = default;
-};
 
-static_assert_fit_quarter_cacheline(Audio::Buffer);
+
+    /** @brief Set the sample rate (does NOT change data) */
+    void setSampleRate(const SampleRate sampleRate) noexcept
+        { _sampleRate = sampleRate; }
+
+private:
+    static inline std::pmr::synchronized_pool_resource _Allocator {};
+};
 
 /** @brief A BufferView holds a reference to an existing buffer without managing data ownership */
 class Audio::BufferView : public Audio::Internal::BufferBase
 {
 public:
     /** @brief Construct the view using an existing buffer */
-    BufferView(const Buffer &source) noexcept : Internal::BufferBase(source) {}
+    BufferView(Buffer &source) noexcept
+        : Internal::BufferBase(
+            source.byteData(),
+            source.channelByteSize(),
+            source.sampleRate(),
+            source.channelArrangement()
+        ) {}
 
     /** @brief Copy constructor */
     BufferView(const BufferView &other) noexcept = default;

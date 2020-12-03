@@ -27,13 +27,14 @@ static Buffer GetBuffer(void) noexcept {
 
 TEST(IPlugin, SimpleDelay)
 {
+    auto dummy = GetBuffer();
     SimpleDelay delay (Size, Arrangement, 10);
 
     EXPECT_EQ(delay.delay(), 1);
     EXPECT_EQ(delay.readIdx(), 0);
     EXPECT_EQ(delay.writeIdx(), 0);
 
-    delay.onAudioBlockGenerated();
+    delay.receiveAudio(dummy);
     EXPECT_EQ(delay.readIdx(), 1);
     EXPECT_EQ(delay.writeIdx(), 0);
 

@@ -19,7 +19,6 @@ namespace Audio
     struct TimeRange;
 }
 
-
 /** @brief Beat range */
 struct alignas(8) Audio::BeatRange
 {
