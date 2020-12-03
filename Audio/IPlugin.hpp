@@ -34,6 +34,7 @@ public:
     /** @brief  */
     virtual Flags getFlags(void) const noexcept = 0;
 
+
     /** @brief  */
     virtual void sendAudio(const BufferViews &inputs) noexcept = 0;
     /** @brief  */
@@ -44,14 +45,9 @@ public:
     /** @brief  */
     virtual void receiveNotes(NoteEvents &notes) noexcept = 0;
 
-
     /** @brief  */
     virtual void sendControls(const Controls &controls) noexcept = 0;
-
-    /** @brief  */
-    virtual void sendSync(const Tempo &tempo) noexcept = 0;
-    /** @brief  */
-    virtual void receiveSync(Tempo &tempo) noexcept = 0;
+    // virtual void sendControls(const ControlEvents &controls) noexcept = 0;
 
 
     /** @brief Signal called when the generation of the audio block start */

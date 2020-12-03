@@ -69,7 +69,7 @@ set(AudioDSPSources
 
 add_library(${PROJECT_NAME}
     ${AudioSources}
-    ${AudioPluginsSources}
+    #${AudioPluginsSources}
     ${AudioDSPSources}
 )
 
