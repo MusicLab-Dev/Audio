@@ -9,8 +9,8 @@ set(AudioSources
     ${AudioDir}/AScheduler.hpp
     ${AudioDir}/AScheduler.ipp
     ${AudioDir}/AScheduler.cpp
-    ${AudioDir}/TaskBase.hpp
-    ${AudioDir}/TaskAudio.hpp
+    ${AudioDir}/SchedulerTask.hpp
+    ${AudioDir}/SchedulerTask.ipp
     ${AudioDir}/Automation.hpp
     ${AudioDir}/Base.hpp
     ${AudioDir}/BaseDevice.hpp

@@ -3,9 +3,7 @@
  * @ Description: AScheduler
  */
 
-#include "AScheduler.hpp"
-#include "TaskAudio.hpp"
-#include "TaskNote.hpp"
+#include "SchedulerTask.hpp"
 
 using namespace Audio;
 
