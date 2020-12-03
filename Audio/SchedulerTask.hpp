@@ -15,7 +15,7 @@ namespace Audio
     /** @brief Make a task from a runtime flags */
     template<bool ProcessNotesAndControls, bool ProcessAudio, IPlugin::Flags Deduced = IPlugin::Flags::None,
             IPlugin::Flags Begin = IPlugin::Flags::AudioInput, IPlugin::Flags End = IPlugin::Flags::ControlInput>
-    [[nodiscard]] auto MakeSchedulerTask(const IPlugin::Flags flags,
+    [[nodiscard]] std::pair<tf::Task, const NoteEvents *> MakeSchedulerTask(tf::Taskflow &taskflow, const IPlugin::Flags flags,
             const AScheduler *scheduler, Node *node, const NoteEvents * const parentNoteStack);
 };
 
@@ -34,13 +34,14 @@ public:
         : _scheduler(scheduler), _node(node), _parentNoteStack(parentNoteStack) {}
 
     /** @brief POD semantics */
-    SchedulerTask(const SchedulerTask &other) noexcept = default;
     SchedulerTask(SchedulerTask &&other) noexcept = default;
-    SchedulerTask &operator=(const SchedulerTask &other) noexcept = default;
     SchedulerTask &operator=(SchedulerTask &&other) noexcept = default;
 
     /** @brief Execution operator */
     void operator()(void) noexcept;
+
+    /** @brief Get the internal note stack */
+    [[nodiscard]] const NoteEvents *noteStack(void) const noexcept { return _noteStack.get(); }
 
 private:
     const AScheduler *_scheduler { nullptr };

@@ -3,31 +3,35 @@
  * @ Description: Scheduler Task
  */
 
-// #include "SchedulerTask.hpp"
-
 template<bool ProcessNotesAndControls, bool ProcessAudio, IPlugin::Flags Deduced, IPlugin::Flags Begin, IPlugin::Flags End>
-inline auto Audio::MakeSchedulerTask(const IPlugin::Flags flags,
+inline std::pair<tf::Task, const NoteEvents *> Audio::MakeSchedulerTask(tf::Taskflow &taskflow, const IPlugin::Flags flags,
         const AScheduler *scheduler, Node *node, const NoteEvents * const parentNoteStack)
 {
-    if constexpr (Begin > End)
-        return SchedulerTask<Deduced, ProcessNotesAndControls, ProcessAudio>(scheduler, node, parentNoteStack);
-
-    if (static_cast<std::size_t>(flags) & static_cast<std::size_t>(Begin)) {
-        return MakeSchedulerTask<
-            ProcessNotesAndControls,
-            ProcessAudio,
-            static_cast<IPlugin::Flags>(static_cast<std::size_t>(Deduced) | static_cast<std::size_t>(Begin)),
-            static_cast<IPlugin::Flags>(static_cast<std::size_t>(Begin) << 1),
-            End
-        >(flags, scheduler, node, parentNoteStack);
+    if constexpr (Begin > End) {
+        Audio::SchedulerTask<Deduced, ProcessNotesAndControls, ProcessAudio> schedulerTask(scheduler, node, parentNoteStack);
+        const auto * const noteStack = schedulerTask.noteStack();
+        return std::make_pair(
+            taskflow.emplace(SchedulerTaskWrapper(std::move(schedulerTask))),
+            noteStack
+        );
     } else {
-        return MakeSchedulerTask<
-            ProcessNotesAndControls,
-            ProcessAudio,
-            static_cast<IPlugin::Flags>(Deduced),
-            static_cast<IPlugin::Flags>(static_cast<std::size_t>(Begin) << 1),
-            End
-        >(flags, scheduler, node, parentNoteStack);
+        if (static_cast<std::size_t>(flags) & static_cast<std::size_t>(Begin)) {
+            return MakeSchedulerTask<
+                ProcessNotesAndControls,
+                ProcessAudio,
+                static_cast<IPlugin::Flags>(static_cast<std::size_t>(Deduced) | static_cast<std::size_t>(Begin)),
+                static_cast<IPlugin::Flags>(static_cast<std::size_t>(Begin) << 1),
+                End
+            >(taskflow, flags, scheduler, node, parentNoteStack);
+        } else {
+            return MakeSchedulerTask<
+                ProcessNotesAndControls,
+                ProcessAudio,
+                Deduced,
+                static_cast<IPlugin::Flags>(static_cast<std::size_t>(Begin) << 1),
+                End
+            >(taskflow, flags, scheduler, node, parentNoteStack);
+        }
     }
 }
 
