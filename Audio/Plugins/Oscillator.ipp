@@ -33,7 +33,7 @@ inline void Audio::Oscillator::receiveNotes(NoteEvents &notes) noexcept
 }
 
 
-inline void Audio::Oscillator::sendControls(const Controls &controls) noexcept
+inline void Audio::Oscillator::sendControls(const ControlEvents &controls) noexcept
 {
 
 }

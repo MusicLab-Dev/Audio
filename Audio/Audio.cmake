@@ -16,6 +16,7 @@ set(AudioSources
     ${AudioDir}/BaseDevice.hpp
     ${AudioDir}/BaseIndex.hpp
     ${AudioDir}/Buffer.hpp
+    ${AudioDir}/Buffer.ipp
     ${AudioDir}/Connection.hpp
     ${AudioDir}/Control.hpp
     ${AudioDir}/Control.ipp
@@ -48,12 +49,12 @@ set(AudioSources
 set(AudioPluginsDir ${AudioDir}/Plugins)
 
 set(AudioPluginsSources
-    # ${AudioPluginsDir}/Oscillator.hpp
-    # ${AudioPluginsDir}/Oscillator.ipp
-    # ${AudioPluginsDir}/SimpleDelay.hpp
-    # ${AudioPluginsDir}/SimpleDelay.ipp
-    # ${AudioPluginsDir}/Mixer.hpp
-    # ${AudioPluginsDir}/Mixer.ipp
+    ${AudioPluginsDir}/Oscillator.hpp
+    ${AudioPluginsDir}/Oscillator.ipp
+    ${AudioPluginsDir}/SimpleDelay.hpp
+    ${AudioPluginsDir}/SimpleDelay.ipp
+    ${AudioPluginsDir}/Mixer.hpp
+    ${AudioPluginsDir}/Mixer.ipp
 )
 
 
@@ -71,7 +72,7 @@ set(AudioDSPSources
 
 add_library(${PROJECT_NAME}
     ${AudioSources}
-    #${AudioPluginsSources}
+    ${AudioPluginsSources}
     ${AudioDSPSources}
 )
 

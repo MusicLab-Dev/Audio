@@ -13,5 +13,5 @@ TEST(SchedulerTask, Basics)
     Audio::IPlugin::Flags flags = static_cast<Audio::IPlugin::Flags>(static_cast<std::size_t>(Audio::IPlugin::Flags::AudioInput)
         | static_cast<std::size_t>(Audio::IPlugin::Flags::AudioOutput));
 
-    // auto res = Audio::MakeSchedulerTask<false, false>(taskflow, flags, nullptr, nullptr, nullptr);
+    auto res = Audio::MakeSchedulerTask<false, false>(taskflow, flags, nullptr, nullptr, nullptr);
 }
