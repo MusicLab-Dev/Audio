@@ -6,6 +6,7 @@
 #include <iostream>
 #include <chrono>
 
+// #include <omp.h>
 
 template<DSP::BiquadParam::InternalForm Form>
 double DSP::Biquad<Form>::SR = 0;
@@ -25,12 +26,6 @@ inline float DSP::Biquad<DSP::BiquadParam::InternalForm::Direct1>::process(const
     return out;
 }
 
-template<>
-void DSP::Biquad<DSP::BiquadParam::InternalForm::Direct1>::processBlock(float *block, std::size_t len) noexcept
-{
-    for (; len; --len, ++block)
-        *block = process(*block);
-}
 
 template<>
 inline float DSP::Biquad<DSP::BiquadParam::InternalForm::Transposed2>::process(const float in) noexcept
@@ -56,15 +51,17 @@ inline float DSP::Biquad<DSP::BiquadParam::InternalForm::Transposed2>::process1(
 template<>
 inline void DSP::Biquad<DSP::BiquadParam::InternalForm::Transposed2>::processBlock(float *block, std::size_t len) noexcept
 {
-    for (; len; --len, ++block)
-        *block = process(*block);
+    for (auto i = 0u; i < len; ++i)
+        block[i] = process(block[i]);
 }
 
 template<>
 inline void DSP::Biquad<DSP::BiquadParam::InternalForm::Transposed2>::processBlock1(float *block, std::size_t len) noexcept
 {
-    for (; len; --len, ++block)
-        *block = process1(*block);
+    #pragma omp simd
+    for (auto i = 0u; i < len; ++i)
+        block[i] = process(block[i]);
+        // *block = process1(*block);
 
     //     const auto in = *block;
     //     const float out = in * _coefs.a[0] + _regs[0];

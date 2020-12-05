@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 project(Audio)
 
 find_package(SDL2 REQUIRED)
+find_package(OpenMP REQUIRED)
 
 get_filename_component(AudioDir ${CMAKE_CURRENT_LIST_FILE} PATH)
 
@@ -78,7 +79,7 @@ add_library(${PROJECT_NAME}
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${AudioDir}/..)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC Core Taskflow)
+target_link_libraries(${PROJECT_NAME} PUBLIC Core Taskflow OpenMP::OpenMP_CXX)
 
 if(MSVC)
     target_link_libraries(${PROJECT_NAME} PUBLIC SDL2::SDL2)
@@ -90,3 +91,5 @@ if(CODE_COVERAGE)
     target_compile_options(${PROJECT_NAME} PUBLIC --coverage)
     target_link_options(${PROJECT_NAME} PUBLIC --coverage)
 endif()
+
+target_compile_options(${PROJECT_NAME} PUBLIC -fopenmp -O2)
