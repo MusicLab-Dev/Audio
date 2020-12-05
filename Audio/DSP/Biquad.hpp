@@ -170,6 +170,8 @@ namespace DSP
             __m128 yp1 { _regOuput[0] };
             __m128 yp2 { _regOuput[1] };
 
+            // #pragma omp simd
+            #pragma omp parallel for num_threads(4)
             for (auto i = 0; i < size; i +=4) {
                 __m128 x0 { input[i] };
                 __m128 x1 { input[i + 1] };
