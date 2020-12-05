@@ -16,7 +16,7 @@ inline void Audio::AScheduler::addEvent(Apply &&apply, Notify &&notify)
 
 inline void Audio::AScheduler::invalidateProjectGraph(void)
 {
-    _flow->clear();
+    _graph->clear();
     if (_project)
         buildProjectGraph();
 }
@@ -37,7 +37,7 @@ inline void Audio::AScheduler::dispatchNotifyEvents(void)
 inline void Audio::AScheduler::scheduleProjectGraph(void)
 {
     onAudioProcessStarted(currentBeatRange());
-    _executor->run_until(*_flow, [this](void) -> bool {
+    _scheduler->run_until(*_graph, [this](void) -> bool {
         onAudioBlockGenerated();
         return state() == State::Play;
     });

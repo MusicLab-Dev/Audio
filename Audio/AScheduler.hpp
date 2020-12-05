@@ -9,7 +9,7 @@
 #include <atomic>
 #include <future>
 
-#include <taskflow/taskflow.hpp>
+#include <Flow/Scheduler.hpp>
 
 #include "Project.hpp"
 #include "Buffer.hpp"
@@ -73,8 +73,8 @@ protected:
     void dispatchNotifyEvents(void);
 
 private:
-    std::unique_ptr<tf::Executor> _executor { std::make_unique<tf::Executor>() };
-    std::unique_ptr<tf::Taskflow> _flow { std::make_unique<tf::Taskflow>("AudioGenerationFlow") };
+    std::unique_ptr<Flow::Scheduler> _scheduler { std::make_unique<Flow::Scheduler>() };
+    std::unique_ptr<Flow::Graph> _graph { std::make_unique<Flow::Graph>() };
     Core::TinyVector<Event> _events {};
     BeatRange _currentBeatRange {};
     ProjectPtr _project {};

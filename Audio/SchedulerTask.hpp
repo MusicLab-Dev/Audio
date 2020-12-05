@@ -15,7 +15,7 @@ namespace Audio
     /** @brief Make a task from a runtime flags */
     template<bool ProcessNotesAndControls, bool ProcessAudio, IPlugin::Flags Deduced = IPlugin::Flags::None,
             IPlugin::Flags Begin = IPlugin::Flags::AudioInput, IPlugin::Flags End = IPlugin::Flags::ControlInput>
-    [[nodiscard]] std::pair<tf::Task, const NoteEvents *> MakeSchedulerTask(tf::Taskflow &taskflow, const IPlugin::Flags flags,
+    [[nodiscard]] std::pair<tf::Task, const NoteEvents *> MakeSchedulerTask(Flow::Graph &graph, const IPlugin::Flags flags,
             const AScheduler *scheduler, Node *node, const NoteEvents * const parentNoteStack);
 };
 

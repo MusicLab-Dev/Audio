@@ -4,14 +4,14 @@
  */
 
 template<bool ProcessNotesAndControls, bool ProcessAudio, IPlugin::Flags Deduced, IPlugin::Flags Begin, IPlugin::Flags End>
-inline std::pair<tf::Task, const NoteEvents *> Audio::MakeSchedulerTask(tf::Taskflow &taskflow, const IPlugin::Flags flags,
+inline std::pair<tf::Task, const NoteEvents *> Audio::MakeSchedulerTask(Flow::Graph &graph, const IPlugin::Flags flags,
         const AScheduler *scheduler, Node *node, const NoteEvents * const parentNoteStack)
 {
     if constexpr (Begin > End) {
         Audio::SchedulerTask<Deduced, ProcessNotesAndControls, ProcessAudio> schedulerTask(scheduler, node, parentNoteStack);
         const auto * const noteStack = schedulerTask.noteStack();
         return std::make_pair(
-            taskflow.emplace(SchedulerTaskWrapper(std::move(schedulerTask))),
+            graph.emplace(std::move(schedulerTask)),
             noteStack
         );
     } else {
@@ -22,7 +22,7 @@ inline std::pair<tf::Task, const NoteEvents *> Audio::MakeSchedulerTask(tf::Task
                 static_cast<IPlugin::Flags>(static_cast<std::size_t>(Deduced) | static_cast<std::size_t>(Begin)),
                 static_cast<IPlugin::Flags>(static_cast<std::size_t>(Begin) << 1),
                 End
-            >(taskflow, flags, scheduler, node, parentNoteStack);
+            >(graph, flags, scheduler, node, parentNoteStack);
         } else {
             return MakeSchedulerTask<
                 ProcessNotesAndControls,
@@ -30,7 +30,7 @@ inline std::pair<tf::Task, const NoteEvents *> Audio::MakeSchedulerTask(tf::Task
                 Deduced,
                 static_cast<IPlugin::Flags>(static_cast<std::size_t>(Begin) << 1),
                 End
-            >(taskflow, flags, scheduler, node, parentNoteStack);
+            >(graph, flags, scheduler, node, parentNoteStack);
         }
     }
 }
