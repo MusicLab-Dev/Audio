@@ -56,4 +56,5 @@ std::enable_if_t<std::is_convertible_v<std::tuple_element_t<Index, Tuple>, Unit 
         if constexpr (Index + 1 < std::tuple_size_v<Tuple>)
             MergeUnroll<Unit, BufferSize, Index + 1, InputCount, Tuple>(output, tuple);
     }
+    *
 }

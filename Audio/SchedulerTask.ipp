@@ -4,7 +4,7 @@
  */
 
 template<bool ProcessNotesAndControls, bool ProcessAudio, IPlugin::Flags Deduced, IPlugin::Flags Begin, IPlugin::Flags End>
-inline std::pair<tf::Task, const NoteEvents *> Audio::MakeSchedulerTask(Flow::Graph &graph, const IPlugin::Flags flags,
+inline std::pair<Flow::Task, const NoteEvents *> Audio::MakeSchedulerTask(Flow::Graph &graph, const IPlugin::Flags flags,
         const AScheduler *scheduler, Node *node, const NoteEvents * const parentNoteStack)
 {
     if constexpr (Begin > End) {
@@ -87,7 +87,7 @@ inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio>::
                     break;
                 const Point *last = nullptr;
                 for (const auto &point : automation.points()) {
-                    if (instance.begin + point.beat < beatRange.to)
+                    if (instance.from + point.beat < beatRange.to)
                         last = &point;
                     else {
                         collectInterpolatedPoint(beatRange, control.paramID(), last, point);
@@ -125,8 +125,7 @@ inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio>::
         if (partition.muted())
             continue;
         for (const auto &instance : partition.instances()) {
-            //
-            //_noteStack.push()
+            (void)(instance); // To remove
         }
     }
 }

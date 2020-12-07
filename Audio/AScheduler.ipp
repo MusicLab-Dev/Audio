@@ -3,6 +3,15 @@
  * @ Description: AScheduler
  */
 
+inline Audio::AScheduler::AScheduler(ProjectPtr &&project)
+    : _project(std::move(project))
+{
+    _graph.setRepeatCallback([this](void) -> bool {
+        onAudioBlockGenerated();
+        return state() == State::Play;
+    });
+}
+
 template<typename Apply, typename Notify>
 inline void Audio::AScheduler::addEvent(Apply &&apply, Notify &&notify)
 {
@@ -16,7 +25,7 @@ inline void Audio::AScheduler::addEvent(Apply &&apply, Notify &&notify)
 
 inline void Audio::AScheduler::invalidateProjectGraph(void)
 {
-    _graph->clear();
+    _graph.clear();
     if (_project)
         buildProjectGraph();
 }
@@ -37,10 +46,7 @@ inline void Audio::AScheduler::dispatchNotifyEvents(void)
 inline void Audio::AScheduler::scheduleProjectGraph(void)
 {
     onAudioProcessStarted(currentBeatRange());
-    _scheduler->run_until(*_graph, [this](void) -> bool {
-        onAudioBlockGenerated();
-        return state() == State::Play;
-    });
+    _scheduler->schedule(_graph);
 }
 
 inline void Audio::AScheduler::onAudioProcessStarted(const BeatRange &beatRange)

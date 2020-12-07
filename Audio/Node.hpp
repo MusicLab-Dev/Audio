@@ -66,52 +66,43 @@ public:
     [[nodiscard]] const IPlugin::Flags flags(void) const noexcept { return _flags; }
 
 
-    /** @brief Get the color associated to this node */
+    /** @brief Get / Set the color associated to this node */
     [[nodiscard]] Color color(void) const noexcept { return _color; }
-
-    /** @brief Set the color */
     bool setColor(const Color color) noexcept;
 
 
-    /** @brief Get the name of the node */
+    /** @brief Get / Set the name of the node */
     [[nodiscard]] const Core::FlatString &name(void) const noexcept { return _name; }
-
-    /** @brief Set the node name, return true if the name changed */
     bool setName(Core::FlatString &&name) noexcept;
 
 
     /** @brief Get a reference to the node plugin */
     [[nodiscard]] PluginPtr &plugin(void) noexcept { return _plugin; }
-
-    /** @brief Get a constant reference to the node plugin */
     [[nodiscard]] const PluginPtr &plugin(void) const noexcept { return _plugin; }
 
 
     /** @brief Get a reference to the node partitions */
     [[nodiscard]] Partitions &partitions(void) noexcept { return _partitions; }
-
-    /** @brief Get a constant reference to the node partitions */
     [[nodiscard]] const Partitions &partitions(void) const noexcept { return _partitions; }
+
+
+    /** @brief Get a reference to the node controls */
+    [[nodiscard]] Controls &controls(void) noexcept { return _controls; }
+    [[nodiscard]] const Controls &controls(void) const noexcept { return _controls; }
 
 
     /** @brief Get a reference to the node childrens */
     [[nodiscard]] Nodes &children(void) noexcept { return _children; }
-
-    /** @brief Get a constant reference to the node childrens */
     [[nodiscard]] const Nodes &children(void) const noexcept { return _children; }
 
 
     /** @brief Get a reference to the node connections */
     [[nodiscard]] Connections &connections(void) noexcept { return _connections; }
-
-    /** @brief Get a constant reference to the node connections */
     [[nodiscard]] const Connections &connections(void) const noexcept { return _connections; }
 
 
     /** @brief Get a reference to the node cache */
     [[nodiscard]] Buffer &cache(void) noexcept { return _cache; }
-
-    /** @brief Get a constant reference to the node cache */
     [[nodiscard]] const Buffer &cache(void) const noexcept { return _cache; }
 
 

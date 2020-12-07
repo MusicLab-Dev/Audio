@@ -32,11 +32,14 @@ public:
     struct Event
     {
         ApplyFunctor apply {}; // The apply event is called when the scheduler is IDLE
-        NotifyFunctor notify {}; // The notify event is called when the scheduler is RUNNING
+        NotifyFunctor notify {}; // The notify event is called when the scheduler is RUNNING, after 'apply' dispatcher
     };
 
-    // AScheduler(const Project &project) : _project(std::make_shared<Project>(project)) {}
-    AScheduler(ProjectPtr &&project) : _project(std::move(project)) {}
+    /** @brief Constructor */
+    AScheduler(ProjectPtr &&project);
+
+    /** @brief Virtual destructor */
+    virtual ~AScheduler(void) = default;
 
 
     /** @brief Get / set internal state */
@@ -47,6 +50,7 @@ public:
     [[nodiscard]] BeatRange currentBeatRange(void) const noexcept { return _currentBeatRange; }
     void setBeatRange(const BeatRange beatRange) noexcept { _currentBeatRange = beatRange; }
 
+
     /** @brief Add apply event to be dispatched */
     template<typename Apply, typename Notify>
     void addEvent(Apply &&apply) { addEvent(std::forward<Apply>(), NotifyFunctor()); }
@@ -54,6 +58,7 @@ public:
     /** @brief Add apply and notify events to be dispatched */
     template<typename Apply, typename Notify>
     void addEvent(Apply &&apply, Notify &&notify);
+
 
     /** @brief Invalidates the project graph */
     void invalidateProjectGraph(void);
@@ -74,7 +79,7 @@ protected:
 
 private:
     std::unique_ptr<Flow::Scheduler> _scheduler { std::make_unique<Flow::Scheduler>() };
-    std::unique_ptr<Flow::Graph> _graph { std::make_unique<Flow::Graph>() };
+    Flow::Graph _graph {};
     Core::TinyVector<Event> _events {};
     BeatRange _currentBeatRange {};
     ProjectPtr _project {};
