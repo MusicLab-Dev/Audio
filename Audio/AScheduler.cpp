@@ -14,14 +14,12 @@ void AScheduler::setState(const State state) noexcept
         _state = state;
         break;
     case State::Play:
-    {
         for (State expected = State::Pause; !_state.compare_exchange_strong(expected, State::Play);) {
             if (expected == State::Play)
                 return;
         }
         scheduleProjectGraph();
         break;
-    }
     }
 }
 

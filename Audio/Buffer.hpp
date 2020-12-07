@@ -55,7 +55,7 @@ public:
     [[nodiscard]] std::uint32_t size(void) const noexcept { return _channelByteSize / sizeof(Type); }
 
     /** @brief Get the channel arrangement of the buffer */
-    [[nodiscard]] ChannelArrangement channelArrangement(void) const noexcept { return _arrangement; }
+    [[nodiscard]] ChannelArrangement channelArrangement(void) const noexcept { return static_cast<ChannelArrangement>(_arrangement); }
 
 
     /** @brief Copy constructor */
@@ -74,18 +74,17 @@ public:
     BufferBase &operator=(BufferBase &&other) noexcept { swap(other); return *this; }
 
     /** @brief Swap two instances */
-    void swap(BufferBase &other) noexcept
-        { std::swap(_data, other._data); std::swap(_channelByteSize, other._channelByteSize); std::swap(_arrangement, other._arrangement); }
+    void swap(BufferBase &other) noexcept;
 
 protected:
     std::byte *_data { nullptr };
     std::uint32_t _channelByteSize { 0 };
-    SampleRate _sampleRate : 3;
-    ChannelArrangement _arrangement { ChannelArrangement::Mono };
+    std::uint32_t _sampleRate : 30;
+    std::uint32_t _arrangement : 2;
 
     /** @brief Private constructor */
     BufferBase(std::byte * const data, const std::uint32_t channelByteSize, const SampleRate sampleRate, const ChannelArrangement arrangement) noexcept
-        : _data(data), _channelByteSize(channelByteSize), _sampleRate(sampleRate), _arrangement(arrangement) {}
+        : _data(data), _channelByteSize(channelByteSize), _sampleRate(sampleRate), _arrangement(static_cast<std::uint32_t>(arrangement)) {}
 };
 
 static_assert_fit_quarter_cacheline(Audio::Internal::BufferBase);
@@ -173,3 +172,4 @@ public:
     //     return *this;
     // }
 };
+#include "Buffer.ipp"

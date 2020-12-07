@@ -16,6 +16,7 @@ set(AudioSources
     ${AudioDir}/BaseDevice.hpp
     ${AudioDir}/BaseIndex.hpp
     ${AudioDir}/Buffer.hpp
+    ${AudioDir}/Buffer.ipp
     ${AudioDir}/Connection.hpp
     ${AudioDir}/Control.hpp
     ${AudioDir}/Control.ipp
@@ -48,12 +49,12 @@ set(AudioSources
 set(AudioPluginsDir ${AudioDir}/Plugins)
 
 set(AudioPluginsSources
-    # ${AudioPluginsDir}/Oscillator.hpp
-    # ${AudioPluginsDir}/Oscillator.ipp
-    # ${AudioPluginsDir}/SimpleDelay.hpp
-    # ${AudioPluginsDir}/SimpleDelay.ipp
-    # ${AudioPluginsDir}/Mixer.hpp
-    # ${AudioPluginsDir}/Mixer.ipp
+    ${AudioPluginsDir}/Oscillator.hpp
+    ${AudioPluginsDir}/Oscillator.ipp
+    ${AudioPluginsDir}/SimpleDelay.hpp
+    ${AudioPluginsDir}/SimpleDelay.ipp
+    ${AudioPluginsDir}/Mixer.hpp
+    ${AudioPluginsDir}/Mixer.ipp
 )
 
 
@@ -71,13 +72,13 @@ set(AudioDSPSources
 
 add_library(${PROJECT_NAME}
     ${AudioSources}
-    #${AudioPluginsSources}
+    ${AudioPluginsSources}
     ${AudioDSPSources}
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${AudioDir}/..)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC Core Taskflow)
+target_link_libraries(${PROJECT_NAME} PUBLIC Core Flow)
 
 if(MSVC)
     target_link_libraries(${PROJECT_NAME} PUBLIC SDL2::SDL2)

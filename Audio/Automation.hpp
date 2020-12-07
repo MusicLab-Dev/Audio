@@ -46,14 +46,10 @@ class alignas_quarter_cacheline Audio::Automation
 public:
     /** @brief Get a reference to automation points */
     [[nodiscard]] Points &points(void) noexcept { return _points; }
-
-    /** @brief Get a constant reference to automation points */
     [[nodiscard]] const Points &points(void) const noexcept { return _points; }
 
     /** @brief Get a reference to automation instances */
     [[nodiscard]] BeatRanges &instances(void) noexcept { return _instances; }
-
-    /** @brief Get a constant reference to automation instances */
     [[nodiscard]] const BeatRanges &instances(void) const noexcept { return _instances; }
 
 private:

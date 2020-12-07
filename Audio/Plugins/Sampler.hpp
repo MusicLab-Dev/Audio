@@ -24,15 +24,9 @@ public:
     virtual void sendNotes(const Notes &notes) noexcept {}
     virtual void receiveNotes(Notes &notes) noexcept {}
 
-    virtual void sendControls(const Controls &controls) noexcept {}
+    virtual void sendControls(const ControlEvents &controls) noexcept {}
 
-    virtual void sendSync(const Tempo &tempo) noexcept {}
-    virtual void receiveSync(Tempo &tempo) noexcept {}
-
-    virtual void onAudioGenerationStarted(void) noexcept {}
-    virtual void onAudioGenerationStopped(void) noexcept {}
-    virtual void onAudioBlockGenerated(void) noexcept {}
-
+    virtual void onAudioGenerationStarted(const BeatRange &range) noexcept;
 
 private:
 };

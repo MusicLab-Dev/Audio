@@ -33,12 +33,10 @@ public:
     virtual void sendNotes(const NoteEvents &notes) noexcept;
     virtual void receiveNotes(NoteEvents &notes) noexcept;
 
-    virtual void sendControls(const Controls &controls) noexcept;
-
-    virtual void sendSync(const Tempo &tempo) noexcept {}
-    virtual void receiveSync(Tempo &tempo) noexcept {}
+    virtual void sendControls(const ControlEvents &controls) noexcept;
 
     virtual void onAudioGenerationStarted(const BeatRange &range) noexcept {}
+
 
     const NoteManager *noteManager(void) const noexcept { return _noteManager.get(); }
     NoteManager *noteManager(void) noexcept { return _noteManager.get(); }
