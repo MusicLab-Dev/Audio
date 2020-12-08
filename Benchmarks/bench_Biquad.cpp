@@ -32,21 +32,21 @@ static void BlockProcessBasic(benchmark::State &state)
 }
 
 BENCHMARK(BlockProcessBasic)
-    ->Args({ 44100, 512 })
-    ->Args({ 44100, 1024 })
-    ->Args({ 44100, 2048 })
-    ->Args({ 44100, 4096 })
-    ->Args({ 44100, 8192 })
-
-    // ->Args({ 48000, 512 })
-    // ->Args({ 48000, 1024 })
-    // ->Args({ 48000, 2048 })
-    // ->Args({ 48000, 4096 })
-
-    // ->Args({ 92000, 512 })
-    // ->Args({ 92000, 1024 })
-    // ->Args({ 92000, 2048 })
-    // ->Args({ 92000, 4096 })
+    ->Args({ 44100, 512, static_cast<int>(512.f/44100*1000) })
+    ->Args({ 44100, 1024, static_cast<int>(1024.f/44100*1000) })
+    ->Args({ 44100, 2048, static_cast<int>(2048.f/44100*1000) })
+    ->Args({ 44100, 4096, static_cast<int>(4096.f/44100*1000) })
+    ->Args({ 44100, 8192, static_cast<int>(8192.f/44100*1000) })
+    // ->Args({ 48100, 512, static_cast<int>(512.f/48100*1000) })
+    // ->Args({ 48100, 1024, static_cast<int>(1024.f/48100*1000) })
+    // ->Args({ 48100, 2048, static_cast<int>(2048.f/48100*1000) })
+    // ->Args({ 48100, 4096, static_cast<int>(4096.f/48100*1000) })
+    // ->Args({ 48100, 8192, static_cast<int>(8192.f/48100*1000) })
+    // ->Args({ 92000, 512, static_cast<int>(512.f/92000*1000) })
+    // ->Args({ 92000, 1024, static_cast<int>(1024.f/92000*1000) })
+    // ->Args({ 92000, 2048, static_cast<int>(2048.f/92000*1000) })
+    // ->Args({ 92000, 4096, static_cast<int>(4096.f/92000*1000) })
+    // ->Args({ 92000, 8192, static_cast<int>(8192.f/92000*1000) })
 ;
 
 static void BlockProcessBasicFMA(benchmark::State &state)
@@ -60,22 +60,22 @@ static void BlockProcessBasicFMA(benchmark::State &state)
     }
 }
 
-BENCHMARK(BlockProcessBasicFMA)
-    ->Args({ 44100, 512 })
-    ->Args({ 44100, 1024 })
-    ->Args({ 44100, 2048 })
-    ->Args({ 44100, 4096 })
-    ->Args({ 44100, 8192 })
-
-    // ->Args({ 48000, 512 })
-    // ->Args({ 48000, 1024 })
-    // ->Args({ 48000, 2048 })
-    // ->Args({ 48000, 4096 })
-
-    // ->Args({ 92000, 512 })
-    // ->Args({ 92000, 1024 })
-    // ->Args({ 92000, 2048 })
-    // ->Args({ 92000, 4096 })
+// BENCHMARK(BlockProcessBasicFMA)
+    // ->Args({ 44100, 512, static_cast<int>(512.f/44100*1000) })
+    // ->Args({ 44100, 1024, static_cast<int>(1024.f/44100*1000) })
+    // ->Args({ 44100, 2048, static_cast<int>(2048.f/44100*1000) })
+    // ->Args({ 44100, 4096, static_cast<int>(4096.f/44100*1000) })
+    // ->Args({ 44100, 8192, static_cast<int>(8192.f/44100*1000) })
+    // ->Args({ 48100, 512, static_cast<int>(512.f/48100*1000) })
+    // ->Args({ 48100, 1024, static_cast<int>(1024.f/48100*1000) })
+    // ->Args({ 48100, 2048, static_cast<int>(2048.f/48100*1000) })
+    // ->Args({ 48100, 4096, static_cast<int>(4096.f/48100*1000) })
+    // ->Args({ 48100, 8192, static_cast<int>(8192.f/48100*1000) })
+    // ->Args({ 92000, 512, static_cast<int>(512.f/92000*1000) })
+    // ->Args({ 92000, 1024, static_cast<int>(1024.f/92000*1000) })
+    // ->Args({ 92000, 2048, static_cast<int>(2048.f/92000*1000) })
+    // ->Args({ 92000, 4096, static_cast<int>(4096.f/92000*1000) })
+    // ->Args({ 92000, 8192, static_cast<int>(8192.f/92000*1000) })
 ;
 
 static void MatrixFiler(benchmark::State &state)
@@ -84,15 +84,25 @@ static void MatrixFiler(benchmark::State &state)
     benchmark::DoNotOptimize(filter);
 
     for (auto _ : state) {
-        float in[state.range(1)];
-        float out[state.range(1)];
+        float alignas(16) in[state.range(1)];
+        float alignas(16) out[state.range(1)];
         filter.processX(in, out, state.range(1));
     }
 }
 BENCHMARK(MatrixFiler)
-    ->Args({ 44100, 512 })
-    ->Args({ 44100, 1024 })
-    ->Args({ 44100, 2048 })
-    ->Args({ 44100, 4096 })
-    ->Args({ 44100, 8192 })
+    ->Args({ 44100, 512, static_cast<int>(512.f/44100*1000) })
+    ->Args({ 44100, 1024, static_cast<int>(1024.f/44100*1000) })
+    ->Args({ 44100, 2048, static_cast<int>(2048.f/44100*1000) })
+    ->Args({ 44100, 4096, static_cast<int>(4096.f/44100*1000) })
+    ->Args({ 44100, 8192, static_cast<int>(8192.f/44100*1000) })
+    // ->Args({ 48100, 512, static_cast<int>(512.f/48100*1000) })
+    // ->Args({ 48100, 1024, static_cast<int>(1024.f/48100*1000) })
+    // ->Args({ 48100, 2048, static_cast<int>(2048.f/48100*1000) })
+    // ->Args({ 48100, 4096, static_cast<int>(4096.f/48100*1000) })
+    // ->Args({ 48100, 8192, static_cast<int>(8192.f/48100*1000) })
+    // ->Args({ 92000, 512, static_cast<int>(512.f/92000*1000) })
+    // ->Args({ 92000, 1024, static_cast<int>(1024.f/92000*1000) })
+    // ->Args({ 92000, 2048, static_cast<int>(2048.f/92000*1000) })
+    // ->Args({ 92000, 4096, static_cast<int>(4096.f/92000*1000) })
+    // ->Args({ 92000, 8192, static_cast<int>(8192.f/92000*1000) })
 ;

@@ -57,43 +57,53 @@ namespace DSP
 
     struct alignas(16) Vec4 {
 
+        Vec4(void) noexcept : mData(_mm_setzero_ps()) {}
+        Vec4(const float fData_) noexcept : mData(_mm_set_ss(fData_)) {}
+        Vec4(const float f1, const float f2, const float f3, const float f4) noexcept : mData(_mm_set_ps(f1, f2, f3, f4)) {}
+        Vec4& operator=(const Vec4 &other) noexcept { mData = other.mData; return *this;}
+
         Vec4 &operator+=(const Vec4 &other) noexcept {
-            #pragma omp simd
-            for (auto i = 0; i < 4; ++i)
-                data[i] += other.data[i];
+            mData = _mm_add_ps(mData, other.mData);
             return *this;
         }
         Vec4 &operator*=(const Vec4 &other) noexcept {
-            #pragma omp simd
-            for (auto i = 0; i < 4; ++i)
-                data[i] *= other.data[i];
+            mData = _mm_mul_ps(mData, other.mData);
             return *this;
         }
+        Vec4 operator+(const Vec4 &other) const noexcept {
+            return Vec4(_mm_add_ps(mData, other.mData));
+        }
         Vec4 operator*(const Vec4 &other) const noexcept {
-            Vec4 res(*this);
-            for (auto i = 0; i < 4; ++i)
-                res.data[i] *= other.data[i];
-            return res;
+            return Vec4(_mm_mul_ps(mData, other.mData));
         }
 
         void print(void) const noexcept {
-            std::cout << "[";
-            for (auto i = 0; i < 4; ++i)
-                std::cout << data[i] << ((i + 1) % 4 ? "," : "]");
-            std::cout << std::endl;
+            // std::cout << "[";
+            // for (auto i = 0u; i < 4; ++i)
+            //     std::cout << data[i] << ((i + 1) % 4 ? "," : "]");
+            // std::cout << std::endl;
         }
-        float data[4];
+
+        union
+        {
+            float   fData[4];
+            __m128  mData;
+        };
+
+        constexpr Vec4(__m128 mData_) noexcept : mData(mData_) {}
+    private:
     };
+
     struct alignas(16) Mat4 {
 
         Vec4 multVect(const Vec4 &vector) noexcept {
-            Vec4 out { 0, 0, 0, 0 };
+            Vec4 out { 0 };
 
             return out;
         }
 
         void print(void) const noexcept {
-            for (auto i = 0; i < 4; ++i) {
+            for (auto i = 0u; i < 4; ++i) {
                 data[i].print();
             }
             std::cout << std::endl;
@@ -118,91 +128,90 @@ namespace DSP
             // Transpose
             for (auto i = 0u; i < 8; ++i) {
                 for (auto j = 0u; j < 4; ++j) {
-                    _coefs[i].data[j] = coefsTmp[j][i];
+                    _coefs[i].fData[j] = coefsTmp[j][i];
                 }
             }
         }
 
-        // void process(const float *input, float *output, const std::uint32_t size) noexcept {
-        //     Vec4 xp1 { _regInput[0] };
-        //     Vec4 xp2 { _regInput[1] };
-        //     Vec4 yp1 { _regOuput[0] };
-        //     Vec4 yp2 { _regOuput[1] };
+        void process(const float *input, float *output, const std::uint32_t size) noexcept {
+            // Vec4 xp1 { _regInput[0] };
+            // Vec4 xp2 { _regInput[1] };
+            // Vec4 yp1 { _regOuput[0] };
+            // Vec4 yp2 { _regOuput[1] };
 
-        //     for (auto i = 0; i < size; i +=4) {
-        //         const Vec4 x0 { input[i] };
-        //         const Vec4 x1 { input[i + 1] };
-        //         const Vec4 x2 { input[i + 2] };
-        //         const Vec4 x3 { input[i + 3] };
+            // for (auto i = 0; i < size; i +=4) {
+            //     const Vec4 x0 { input[i] };
+            //     const Vec4 x1 { input[i + 1] };
+            //     const Vec4 x2 { input[i + 2] };
+            //     const Vec4 x3 { input[i + 3] };
 
 
-        //         Vec4 outY { 0, 0, 0, 0 };
-        //         outY += _coefs[0] * x3;
-        //         outY += _coefs[1] * x2;
-        //         outY += _coefs[2] * x1;
-        //         outY += _coefs[3] * x0;
-        //         outY += _coefs[4] * xp1;
-        //         outY += _coefs[5] * xp2;
-        //         outY += _coefs[6] * yp1;
-        //         outY += _coefs[7] * yp2;
+            //     Vec4 outY;
+            //     outY = _coefs[0] * x3;
+            //     outY += _coefs[1] * x2;
+            //     outY += _coefs[2] * x1;
+            //     outY += _coefs[3] * x0;
+            //     outY += _coefs[4] * xp1;
+            //     outY += _coefs[5] * xp2;
+            //     outY += _coefs[6] * yp1;
+            //     outY += _coefs[7] * yp2;
 
-        //         output[i] = outY.data[0];
-        //         output[i + 1] = outY.data[1];
-        //         output[i + 2] = outY.data[2];
-        //         output[i + 3] = outY.data[3];
+            //     output[i] = outY.fData[0];
+            //     output[i + 1] = outY.fData[1];
+            //     output[i + 2] = outY.fData[2];
+            //     output[i + 3] = outY.fData[3];
 
-        //         xp1.data[0] = x3.data[0];
-        //         xp2.data[0] = x2.data[0];
-        //         yp1.data[0] = outY.data[3];
-        //         yp2.data[0] = outY.data[2];
+            //     xp1.fData[0] = x3.fData[0];
+            //     xp2.fData[0] = x2.fData[0];
+            //     yp1.fData[0] = outY.fData[3];
+            //     yp2.fData[0] = outY.fData[2];
 
-        //     }
+            // }
 
-        //     _regInput[0] = xp1.data[0];
-        //     _regInput[1] = xp2.data[0];
-        //     _regOuput[0] = yp1.data[0];
-        //     _regOuput[1] = yp2.data[0];
+            // _regInput[0] = xp1.fData[0];
+            // _regInput[1] = xp2.fData[0];
+            // _regOuput[0] = yp1.fData[0];
+            // _regOuput[1] = yp2.fData[0];
+        }
 
-        // }
         void processX(const float *input, float *output, const std::uint32_t size) noexcept {
             __m128 xp1 { _regInput[0] };
             __m128 xp2 { _regInput[1] };
             __m128 yp1 { _regOuput[0] };
             __m128 yp2 { _regOuput[1] };
 
-            // #pragma omp simd
-            #pragma omp parallel for num_threads(4)
-            for (auto i = 0; i < size; i +=4) {
+            for (auto i = 0u; i < size; i += 4) {
                 __m128 x0 { input[i] };
                 __m128 x1 { input[i + 1] };
                 __m128 x2 { input[i + 2] };
                 __m128 x3 { input[i + 3] };
 
                 __m128 outY;
-
-                outY += _mm_mul_ps(*reinterpret_cast<__m128 *>(&_coefs[0].data), x3);
-                outY += _mm_mul_ps(*reinterpret_cast<__m128 *>(&_coefs[1].data), x2);
-                outY += _mm_mul_ps(*reinterpret_cast<__m128 *>(&_coefs[2].data), x1);
-                outY += _mm_mul_ps(*reinterpret_cast<__m128 *>(&_coefs[3].data), x0);
-                outY += _mm_mul_ps(*reinterpret_cast<__m128 *>(&_coefs[4].data), xp1);
-                outY += _mm_mul_ps(*reinterpret_cast<__m128 *>(&_coefs[5].data), xp2);
-                outY += _mm_mul_ps(*reinterpret_cast<__m128 *>(&_coefs[6].data), yp1);
-                outY += _mm_mul_ps(*reinterpret_cast<__m128 *>(&_coefs[7].data), yp2);
+                outY = _coefs[0].mData * x3;
+                outY += _coefs[1].mData * x2;
+                outY += _coefs[2].mData * x1;
+                outY += _coefs[3].mData * x0;
+                outY += _coefs[4].mData * xp1;
+                outY += _coefs[5].mData * xp2;
+                outY += _coefs[6].mData * yp1;
+                outY += _coefs[7].mData * yp2;
 
                 _mm_store_ps(&output[i], outY);
 
-                // _mm_storeh_pd
-                // xp1.data[0] = x3.data[0];
-                // xp2.data[0] = x2.data[0];
-                // yp1.data[0] = outY.data[3];
-                // yp2.data[0] = outY.data[2];
+
+                xp1 = x3;
+                xp2 = x2;
+                auto tmp = Vec4(outY);
+                _mm_storeh_pi((__m64*)&_regInput, outY);
+                yp1 = _mm_set_ss(tmp.fData[3]);
+                yp2 = _mm_set_ss(tmp.fData[2]);
 
             }
 
-            _mm_store_ps1(&_regInput[0], xp1);
-            _mm_store_ps1(&_regInput[1], xp2);
-            _mm_store_ps1(&_regOuput[0], yp1);
-            _mm_store_ps1(&_regOuput[1], yp2);
+            _mm_store_ss(&_regInput[0], xp1);
+            _mm_store_ss(&_regInput[1], xp2);
+            _mm_store_ss(&_regOuput[0], yp1);
+            _mm_store_ss(&_regOuput[1], yp2);
 
         }
 

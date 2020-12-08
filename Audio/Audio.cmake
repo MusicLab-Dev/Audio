@@ -92,4 +92,4 @@ if(CODE_COVERAGE)
     target_link_options(${PROJECT_NAME} PUBLIC --coverage)
 endif()
 
-target_compile_options(${PROJECT_NAME} PUBLIC -fopenmp -O2)
+target_compile_options(${PROJECT_NAME} PUBLIC -fopenmp)
