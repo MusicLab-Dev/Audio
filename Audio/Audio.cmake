@@ -9,13 +9,14 @@ set(AudioSources
     ${AudioDir}/AScheduler.hpp
     ${AudioDir}/AScheduler.ipp
     ${AudioDir}/AScheduler.cpp
-    ${AudioDir}/TaskBase.hpp
-    ${AudioDir}/TaskAudio.hpp
+    ${AudioDir}/SchedulerTask.hpp
+    ${AudioDir}/SchedulerTask.ipp
     ${AudioDir}/Automation.hpp
     ${AudioDir}/Base.hpp
     ${AudioDir}/BaseDevice.hpp
     ${AudioDir}/BaseIndex.hpp
     ${AudioDir}/Buffer.hpp
+    ${AudioDir}/Buffer.ipp
     ${AudioDir}/Connection.hpp
     ${AudioDir}/Control.hpp
     ${AudioDir}/Control.ipp
@@ -60,11 +61,13 @@ set(AudioPluginsSources
 set(AudioDSPDir ${AudioDir}/DSP)
 
 set(AudioDSPSources
-    ${AudioDSPDir}/Biquad.cpp
-    ${AudioDSPDir}/Biquad.hpp
-    ${AudioDSPDir}/Biquad.ipp
-    ${AudioDSPDir}/EnveloppeGenerator.hpp
-    ${AudioDSPDir}/EnveloppeGenerator.ipp
+    ${AudioDSPDir}/Merge.hpp
+    ${AudioDSPDir}/Merge.ipp
+    # ${AudioDSPDir}/Biquad.cpp
+    # ${AudioDSPDir}/Biquad.hpp
+    # ${AudioDSPDir}/Biquad.ipp
+    # ${AudioDSPDir}/EnveloppeGenerator.hpp
+    # ${AudioDSPDir}/EnveloppeGenerator.ipp
 )
 
 add_library(${PROJECT_NAME}
@@ -75,7 +78,7 @@ add_library(${PROJECT_NAME}
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${AudioDir}/..)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC Core Taskflow)
+target_link_libraries(${PROJECT_NAME} PUBLIC Core Flow)
 
 if(MSVC)
     target_link_libraries(${PROJECT_NAME} PUBLIC SDL2::SDL2)

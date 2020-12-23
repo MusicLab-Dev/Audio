@@ -61,7 +61,7 @@ private:
     BeatRanges          _instances {};
     Core::FlatString    _name {};
     NoteIndex           _lastID {};
-    MidiChannels        _channel { 0u };
+    MidiChannels        _channel {};
     bool                _muted { false };
 };
 

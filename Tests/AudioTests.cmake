@@ -7,6 +7,7 @@ get_filename_component(AudioTestsDir ${CMAKE_CURRENT_LIST_FILE} PATH)
 set(AudioTestsSources
     ${AudioTestsDir}/tests_Automation.cpp
     ${AudioTestsDir}/tests_AScheduler.cpp
+    ${AudioTestsDir}/tests_SchedulerTask.cpp
     ${AudioTestsDir}/tests_Buffer.cpp
     ${AudioTestsDir}/tests_Control.cpp
     ${AudioTestsDir}/tests_Device.cpp
@@ -19,7 +20,8 @@ set(AudioTestsSources
     ${AudioTestsDir}/tests_Project.cpp
     ${AudioTestsDir}/tests_UtilsMidi.cpp
 
-    ${AudioTestsDir}/tests_Biquad.cpp
+    # ${AudioTestsDir}/tests_Biquad.cpp
+    # ${AudioTestsDir}/tests_Merge.cpp
     ${AudioTestsDir}/tests_EnveloppeGenerator.cpp
 )
 

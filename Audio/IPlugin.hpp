@@ -14,6 +14,9 @@
 namespace Audio
 {
     class IPlugin;
+
+    /** @brief A list of points events */
+    using ControlEvents = Core::TinyVector<ControlEvent>;
 };
 
 class Audio::IPlugin
@@ -34,6 +37,7 @@ public:
     /** @brief  */
     virtual Flags getFlags(void) const noexcept = 0;
 
+
     /** @brief  */
     virtual void sendAudio(const BufferViews &inputs) noexcept = 0;
     /** @brief  */
@@ -44,14 +48,8 @@ public:
     /** @brief  */
     virtual void receiveNotes(NoteEvents &notes) noexcept = 0;
 
-
     /** @brief  */
-    virtual void sendControls(const Controls &controls) noexcept = 0;
-
-    /** @brief  */
-    virtual void sendSync(const Tempo &tempo) noexcept = 0;
-    /** @brief  */
-    virtual void receiveSync(Tempo &tempo) noexcept = 0;
+    virtual void sendControls(const ControlEvents &controls) noexcept = 0;
 
 
     /** @brief Signal called when the generation of the audio block start */
@@ -64,7 +62,5 @@ public:
     [[nodiscard]] inline bool hasNoteInput(void) const noexcept     { return static_cast<std::size_t>(getFlags()) & static_cast<std::size_t>(Flags::NoteInput); }
     [[nodiscard]] inline bool hasNoteOutput(void) const noexcept    { return static_cast<std::size_t>(getFlags()) & static_cast<std::size_t>(Flags::NoteOutput); }
     [[nodiscard]] inline bool hasControlInput(void) const noexcept  { return static_cast<std::size_t>(getFlags()) & static_cast<std::size_t>(Flags::ControlInput); }
-    [[nodiscard]] inline bool hasSyncInput(void) const noexcept     { return static_cast<std::size_t>(getFlags()) & static_cast<std::size_t>(Flags::SyncInput); }
-    [[nodiscard]] inline bool hasSyncOutput(void) const noexcept    { return static_cast<std::size_t>(getFlags()) & static_cast<std::size_t>(Flags::SyncOutput); }
 
 };

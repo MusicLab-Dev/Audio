@@ -42,10 +42,3 @@ inline void Audio::Node::onAudioGenerationStarted(const BeatRange &range) noexce
     }
     plugin()->onAudioGenerationStarted(range);
 }
-
-inline void Audio::Node::generateAudioBlock(void) noexcept
-{
-    // switch (_flags) {
-    // case IPlugin::Flags::
-    // }
-}

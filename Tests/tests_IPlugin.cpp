@@ -11,13 +11,14 @@
 using namespace Audio;
 
 static constexpr BlockSize Size = 1024u;
+static constexpr SampleRate SR = 48000u;
 static constexpr auto Arrangement = ChannelArrangement::Stereo;
 static constexpr auto MaxInputs = 4;
 
 using T = int;
 
 static Buffer GetBuffer(void) noexcept {
-    Buffer dumb(Size * sizeof(T), Arrangement);
+    Buffer dumb(Size * sizeof(T), SR, Arrangement);
     for (auto c = 0u; c < static_cast<std::uint32_t>(Arrangement); ++c) {
         for (auto i = 0u; i < Size; ++i)
             dumb.data<T>(static_cast<Channel>(c))[i] = static_cast<T>(i);
@@ -28,7 +29,7 @@ static Buffer GetBuffer(void) noexcept {
 TEST(IPlugin, SimpleDelay)
 {
     auto dummy = GetBuffer();
-    SimpleDelay delay (Size, Arrangement, 10);
+    SimpleDelay delay (SR, Size * sizeof(T), Arrangement, 10);
 
     EXPECT_EQ(delay.delay(), 1);
     EXPECT_EQ(delay.readIdx(), 0);

@@ -66,60 +66,48 @@ public:
     [[nodiscard]] const IPlugin::Flags flags(void) const noexcept { return _flags; }
 
 
-    /** @brief Get the color associated to this node */
+    /** @brief Get / Set the color associated to this node */
     [[nodiscard]] Color color(void) const noexcept { return _color; }
-
-    /** @brief Set the color */
     bool setColor(const Color color) noexcept;
 
 
-    /** @brief Get the name of the node */
+    /** @brief Get / Set the name of the node */
     [[nodiscard]] const Core::FlatString &name(void) const noexcept { return _name; }
-
-    /** @brief Set the node name, return true if the name changed */
     bool setName(Core::FlatString &&name) noexcept;
 
 
     /** @brief Get a reference to the node plugin */
     [[nodiscard]] PluginPtr &plugin(void) noexcept { return _plugin; }
-
-    /** @brief Get a constant reference to the node plugin */
     [[nodiscard]] const PluginPtr &plugin(void) const noexcept { return _plugin; }
 
 
     /** @brief Get a reference to the node partitions */
     [[nodiscard]] Partitions &partitions(void) noexcept { return _partitions; }
-
-    /** @brief Get a constant reference to the node partitions */
     [[nodiscard]] const Partitions &partitions(void) const noexcept { return _partitions; }
+
+
+    /** @brief Get a reference to the node controls */
+    [[nodiscard]] Controls &controls(void) noexcept { return _controls; }
+    [[nodiscard]] const Controls &controls(void) const noexcept { return _controls; }
 
 
     /** @brief Get a reference to the node childrens */
     [[nodiscard]] Nodes &children(void) noexcept { return _children; }
-
-    /** @brief Get a constant reference to the node childrens */
     [[nodiscard]] const Nodes &children(void) const noexcept { return _children; }
 
 
     /** @brief Get a reference to the node connections */
     [[nodiscard]] Connections &connections(void) noexcept { return _connections; }
-
-    /** @brief Get a constant reference to the node connections */
     [[nodiscard]] const Connections &connections(void) const noexcept { return _connections; }
 
 
     /** @brief Get a reference to the node cache */
     [[nodiscard]] Buffer &cache(void) noexcept { return _cache; }
-
-    /** @brief Get a constant reference to the node cache */
     [[nodiscard]] const Buffer &cache(void) const noexcept { return _cache; }
 
 
     /** @brief Signal called when the generation of the audio block start */
     void onAudioGenerationStarted(const BeatRange &range) noexcept;
-
-    // Remove
-    void generateAudioBlock(void) noexcept;
 
 private:
     PluginPtr           _plugin { nullptr }; // 8
@@ -128,12 +116,13 @@ private:
     Partitions          _partitions {}; // 8
     Buffer              _cache; // 16
     Controls            _controls {}; // 8
-    Color               _color { 0u }; // 4
-    IPlugin::Flags      _flags {}; // 2
     bool                _muted { false }; // 1
+    bool                _dirty { false }; // 1
+    IPlugin::Flags      _flags {}; // 2
+    Color               _color {}; // 4
+
+    // Cacheline 2
     Core::FlatString    _name {}; // 8
 };
-
-static_assert_fit_double_cacheline(Audio::Node);
 
 #include "Node.ipp"

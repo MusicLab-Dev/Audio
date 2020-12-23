@@ -14,14 +14,16 @@ inline Audio::IPlugin::Flags Audio::SimpleDelay::getFlags(void) const noexcept
 
 inline void Audio::SimpleDelay::sendAudio(const BufferViews &inputs) noexcept
 {
-    _cache[_writeIdx] = BufferViews(inputs);
+    const auto byteSize = _cache[0].channelByteSize() * static_cast<std::uint32_t>(_cache[0].channelArrangement());
+
+    std::memcpy(_cache[_readIdx].byteData(), inputs[0].byteData(), byteSize);
     incrementIdx(_writeIdx);
 }
 
 inline void Audio::SimpleDelay::receiveAudio(BufferView output) noexcept
 {
     // need to merge the buffers in _cache[_readIdx]
-    output = _cache[_readIdx][0];
+    output = _cache[_readIdx];
     incrementIdx(_readIdx);
 }
 

@@ -25,7 +25,7 @@ struct alignas_eighth_cacheline Audio::FlatNote
 
     Key         key { 69u };
     Velocity    velocity { 0x7F };
-    Tuning      tunning { 0u };
+    Tuning      tunning {};
     bool        active { false };
 };
 

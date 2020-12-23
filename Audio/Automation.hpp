@@ -12,9 +12,6 @@ namespace Audio
     class Automation;
     struct Point;
 
-    /** @brief A list of automations */
-    using Automations = Core::FlatVector<Automation>;
-
     /** @brief A sorted list of points */
     using Points = Core::SortedFlatVector<Point>;
 };
@@ -27,8 +24,13 @@ struct alignas_quarter_cacheline Audio::Point
         Linear, Fast, Slow
     };
 
-    Point(void) = default;
-    Point(const ParamValue value_) : value(value_) {}
+    /** @brief POD semantics */
+    Point(void) noexcept = default;
+    Point(const ParamValue value_) noexcept : value(value_) {}
+    Point(const Point &other) noexcept = default;
+    Point(Point &&other) noexcept = default;
+    Point &operator=(const Point &other) noexcept = default;
+    Point &operator=(Point &&other) noexcept = default;
 
     Beat                    beat {};
     alignas(2) CurveType    type { CurveType::Linear };
@@ -44,14 +46,10 @@ class alignas_quarter_cacheline Audio::Automation
 public:
     /** @brief Get a reference to automation points */
     [[nodiscard]] Points &points(void) noexcept { return _points; }
-
-    /** @brief Get a constant reference to automation points */
     [[nodiscard]] const Points &points(void) const noexcept { return _points; }
 
     /** @brief Get a reference to automation instances */
     [[nodiscard]] BeatRanges &instances(void) noexcept { return _instances; }
-
-    /** @brief Get a constant reference to automation instances */
     [[nodiscard]] const BeatRanges &instances(void) const noexcept { return _instances; }
 
 private:

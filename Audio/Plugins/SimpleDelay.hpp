@@ -15,18 +15,17 @@ namespace Audio
 class alignas_half_cacheline Audio::SimpleDelay : public Audio::IPlugin
 {
 public:
-    using Cache = Core::TinyVector<BufferViews>;
+    using Cache = Core::TinyVector<Buffer>;
     using Index = std::uint16_t;
 
     /** @brief Init a simple delay with a fixed max size
      * @param cacheSize In block, use SampleRate / 'SizeInSec'
      */
-    // SimpleDelay(void) : SimpleDelay(4096, ChannelArrangement::Mono, 1) {}
-    SimpleDelay(const std::size_t blockSize, const ChannelArrangement channelArrangement, const std::size_t cacheSize) : _cache(cacheSize) {
-        for (auto i = 0u; i < cacheSize; ++i)
-            _cache[i].push(Buffer(blockSize, channelArrangement));
+    SimpleDelay(const std::size_t blockSize, const SampleRate sampleRate, const ChannelArrangement channelArrangement, const std::size_t cacheSize) {
+        for (auto i = 0u; i < cacheSize; ++i) {
+            _cache.push(Buffer(blockSize, sampleRate, channelArrangement));
+        }
     }
-
 
     virtual Flags getFlags(void) const noexcept;
 
@@ -36,10 +35,7 @@ public:
     virtual void sendNotes(const NoteEvents &notes) noexcept {}
     virtual void receiveNotes(NoteEvents &notes) noexcept {}
 
-    virtual void sendControls(const Controls &controls) noexcept {}
-
-    virtual void sendSync(const Tempo &tempo) noexcept {}
-    virtual void receiveSync(Tempo &tempo) noexcept {}
+    virtual void sendControls(const ControlEvents &controls) noexcept {}
 
     virtual void onAudioGenerationStarted(const BeatRange &range) noexcept;
 
@@ -52,8 +48,8 @@ public:
 
 private:
     Cache   _cache;
-    Index   _readIdx { 0u };
-    Index   _writeIdx { 0u };
+    Index   _readIdx {};
+    Index   _writeIdx {};
 
     /** @brief Delay parameter range from 0 to 1
      * If delay == 0, this plugin as no effect
@@ -62,6 +58,7 @@ private:
     float   _delay { 1.0 };
 
     void incrementIdx(Index &index) noexcept;
+
 };
 
 static_assert_fit_half_cacheline(Audio::SimpleDelay);

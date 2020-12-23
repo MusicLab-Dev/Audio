@@ -9,7 +9,7 @@
 #include <atomic>
 #include <future>
 
-#include <taskflow/taskflow.hpp>
+#include <Flow/Scheduler.hpp>
 
 #include "Project.hpp"
 #include "Buffer.hpp"
@@ -32,11 +32,19 @@ public:
     struct Event
     {
         ApplyFunctor apply {}; // The apply event is called when the scheduler is IDLE
-        NotifyFunctor notify {}; // The notify event is called when the scheduler is RUNNING
+        NotifyFunctor notify {}; // The notify event is called when the scheduler is RUNNING, after 'apply' dispatcher
     };
 
-    // AScheduler(const Project &project) : _project(std::make_shared<Project>(project)) {}
-    AScheduler(ProjectPtr &&project) : _project(std::move(project)) {}
+    /** @brief Constructor */
+    AScheduler(ProjectPtr &&project);
+
+    /** @brief Virtual destructor */
+    virtual ~AScheduler(void) = default;
+
+
+    Flow::Graph &graph(void) noexcept {
+        return _graph;
+    }
 
 
     /** @brief Get / set internal state */
@@ -47,6 +55,7 @@ public:
     [[nodiscard]] BeatRange currentBeatRange(void) const noexcept { return _currentBeatRange; }
     void setBeatRange(const BeatRange beatRange) noexcept { _currentBeatRange = beatRange; }
 
+
     /** @brief Add apply event to be dispatched */
     template<typename Apply, typename Notify>
     void addEvent(Apply &&apply) { addEvent(std::forward<Apply>(), NotifyFunctor()); }
@@ -54,6 +63,7 @@ public:
     /** @brief Add apply and notify events to be dispatched */
     template<typename Apply, typename Notify>
     void addEvent(Apply &&apply, Notify &&notify);
+
 
     /** @brief Invalidates the project graph */
     void invalidateProjectGraph(void);
@@ -73,8 +83,8 @@ protected:
     void dispatchNotifyEvents(void);
 
 private:
-    std::unique_ptr<tf::Executor> _executor { std::make_unique<tf::Executor>() };
-    std::unique_ptr<tf::Taskflow> _flow { std::make_unique<tf::Taskflow>("AudioGenerationFlow") };
+    std::unique_ptr<Flow::Scheduler> _scheduler { std::make_unique<Flow::Scheduler>() };
+    Flow::Graph _graph {};
     Core::TinyVector<Event> _events {};
     BeatRange _currentBeatRange {};
     ProjectPtr _project {};
@@ -82,6 +92,9 @@ private:
 
     /** @brief Build the project graph */
     void buildProjectGraph(void);
+
+    void buildNodeTask(const Node *node, std::pair<Flow::Task, const NoteEvents *> &parentNoteTask, std::pair<Flow::Task, const NoteEvents *> &parentAudioTask);
+    void buildNodeTask(const Node *node);
 
     /** @brief Schedule the project graph */
     void scheduleProjectGraph(void);
