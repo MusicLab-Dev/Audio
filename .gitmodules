@@ -4,3 +4,6 @@
 [submodule "Flow"]
 	path = Flow
 	url = git@github.com:MusicLab-Dev/Flow.git
+[submodule "Fourier"]
+	path = Fourier
+	url = git@github.com:mborgerding/kissfft.git
