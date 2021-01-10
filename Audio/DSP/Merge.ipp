@@ -32,7 +32,7 @@ std::enable_if_t<std::is_convertible_v<std::tuple_element_t<Index, Tuple>, Unit 
     constexpr std::size_t CacheLineCount = BufferByteSize / Core::CacheLineSize;
     constexpr std::size_t UnitPerCacheLine = Core::CacheLineSize / sizeof(Unit);
 
-    static_assert(!(BufferByteSize == 0ul) && !(BufferByteSize & (BufferByteSize - 1ul)),
+    static_assert(!(BufferByteSize == 0ul) && (BufferByteSize >= Core::CacheLineSize) && !(BufferByteSize & (BufferByteSize - 1ul)),
         "BufferByteSize must be a power of two of at least one cacheline size");
 
     constexpr auto Process = [](Unit * const output, const Unit * const input, const Unit ratio) {
@@ -56,5 +56,4 @@ std::enable_if_t<std::is_convertible_v<std::tuple_element_t<Index, Tuple>, Unit 
         if constexpr (Index + 1 < std::tuple_size_v<Tuple>)
             MergeUnroll<Unit, BufferSize, Index + 1, InputCount, Tuple>(output, tuple);
     }
-    *
 }

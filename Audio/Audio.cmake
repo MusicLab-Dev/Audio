@@ -63,6 +63,8 @@ set(AudioDSPDir ${AudioDir}/DSP)
 set(AudioDSPSources
     ${AudioDSPDir}/Merge.hpp
     ${AudioDSPDir}/Merge.ipp
+    ${AudioDSPDir}/Convert.hpp
+    ${AudioDSPDir}/Convert.ipp
     # ${AudioDSPDir}/Biquad.cpp
     # ${AudioDSPDir}/Biquad.hpp
     # ${AudioDSPDir}/Biquad.ipp

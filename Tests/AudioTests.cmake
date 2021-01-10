@@ -20,8 +20,10 @@ set(AudioTestsSources
     ${AudioTestsDir}/tests_Project.cpp
     ${AudioTestsDir}/tests_UtilsMidi.cpp
 
+
     # ${AudioTestsDir}/tests_Biquad.cpp
-    # ${AudioTestsDir}/tests_Merge.cpp
+    ${AudioTestsDir}/tests_Convert.cpp
+    #${AudioTestsDir}/tests_Merge.cpp
     ${AudioTestsDir}/tests_EnveloppeGenerator.cpp
 )
 
