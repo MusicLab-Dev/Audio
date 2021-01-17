@@ -25,6 +25,22 @@ void AScheduler::setState(const State state) noexcept
 
 #include <iostream>
 
+void AScheduler::setBeatRange(const BeatRange range) noexcept
+{
+    if (range == _currentBeatRange)
+        return;
+    _currentBeatRange = range;
+    // for (auto it = _graph.begin(); it != _graph.end(); ++it) {
+    //     auto workData = std::get_if<0>(&it->node()->workData);
+    //     auto schedulerTask = (SchedulerTask<static_cast<IPlugin::Flags>(static_cast<std::size_t>(IPlugin::Flags::NoteInput) |
+    //                                                         static_cast<std::size_t>(IPlugin::Flags::AudioOutput) |
+    //                                                         static_cast<std::size_t>(IPlugin::Flags::ControlInput))
+    //                                             , true, true>*)(&it->node()->workData);
+    //     std::cout << workData << std::endl;
+    //     std::cout << schedulerTask->noteStack()->size() << std::endl;
+    // }
+}
+
 // void AScheduler::buildNoteTasks(const Node *node,
 //         std::pair<Flow::Task, const NoteEvents *> &parentNoteTask, std::pair<Flow::Task, const NoteEvents *> &parentAudioTask,
 //         bool isMaster)
@@ -64,32 +80,43 @@ void AScheduler::setState(const State state) noexcept
 void AScheduler::buildNodeTask(const Node *node,
         std::pair<Flow::Task, const NoteEvents *> &parentNoteTask, std::pair<Flow::Task, const NoteEvents *> &parentAudioTask)
 {
-    // std::cout << "Build task: " << node << " - " << static_cast<std::size_t>(node->plugin()->getFlags()) << std::endl;
+    std::cout << node->name().toStdString() << ":\n";
     if (node->children().empty()) {
+        // std::cout << "make note&audio\n";
         auto task = MakeSchedulerTask<true, true>(_graph, node->flags(), this, const_cast<Node *>(node), parentNoteTask.second);
+        task.first.setName(node->name().toStdView() + "_note&audio");
         task.first.succeed(parentNoteTask.first);
         task.first.precede(parentAudioTask.first);
+        // std::cout << "bind note&audio: " << node->name().toStdString() << std::endl;
         // std::cout << "\t-> create audio (final)" << std::endl;
         // std::cout << "\t-> bind note&audio" << std::endl;
         return;
     }
-    // std::cout << "\t-> create note&audio " << std::endl;
-    // std::cout << "\t-> bind note" << std::endl;
+    // std::cout << "make note\n";
+    // std::cout << "make audio\n";
     auto noteTask = MakeSchedulerTask<true, false>(_graph, node->flags(), this, const_cast<Node *>(node), parentNoteTask.second);
+    noteTask.first.setName(node->name().toStdView() + "_note");
     auto audioTask = MakeSchedulerTask<false, true>(_graph, node->flags(), this, const_cast<Node *>(node), parentNoteTask.second);
+    audioTask.first.setName(node->name().toStdView() + "_audio");
     noteTask.first.succeed(parentNoteTask.first);
+    // std::cout << "bind audio: " << node->name().toStdString() << std::endl;
 
     for (auto &child : node->children()) {
         buildNodeTask(child.get(), noteTask, audioTask);
     }
-    // std::cout << "\t-> bind audio" << std::endl;
+    // std::cout << "bind note: " << node->name().toStdString() << std::endl;
     audioTask.first.precede(parentAudioTask.first);
 }
 
 void AScheduler::buildNodeTask(const Node *node)
 {
+    // std::cout << node->name().toStdString() << ":" << std::endl;
+    // std::cout << "make note\n";
+    // std::cout << "make audio\n";
     auto noteTask = MakeSchedulerTask<true, false>(_graph, node->flags(), this, const_cast<Node *>(node), nullptr);
+    noteTask.first.setName(node->name().toStdView() + "_note");
     auto audioTask = MakeSchedulerTask<false, true>(_graph, node->flags(), this, const_cast<Node *>(node), nullptr);
+    audioTask.first.setName(node->name().toStdView() + "_audio");
 
     for (auto &child : node->children()) {
         buildNodeTask(child.get(), noteTask, audioTask);

@@ -30,6 +30,13 @@ inline void Audio::AScheduler::invalidateProjectGraph(void)
         buildProjectGraph();
 }
 
+inline void Audio::AScheduler::wait(void) noexcept_ndebug
+{
+    coreAssert(state() == State::Pause,
+        throw std::logic_error("Audio::AScheduler::wait: Scheduler must be in paused mode before wait is called"));
+    _graph.wait();
+}
+
 inline void Audio::AScheduler::dispatchApplyEvents(void)
 {
     for (const auto &event : _events)

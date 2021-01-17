@@ -5,7 +5,7 @@
 
 inline void Audio::NoteManager::processNotes(const NoteEvents &notes) noexcept
 {
-    for (auto &note : notes) {
+    for (const auto &note : notes) {
         auto &target = _cache.notes[note.key];
         switch (note.type) {
         case NoteEvent::EventType::On:

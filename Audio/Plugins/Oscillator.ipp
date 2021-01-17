@@ -24,7 +24,7 @@ inline void Audio::Oscillator::receiveAudio(BufferView output) noexcept
 
 inline void Audio::Oscillator::sendNotes(const NoteEvents &notes) noexcept
 {
-    _noteManager->processNotes(notes);
+    _noteManager.processNotes(notes);
 }
 
 inline void Audio::Oscillator::receiveNotes(NoteEvents &notes) noexcept

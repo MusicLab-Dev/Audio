@@ -3,6 +3,8 @@
  * @ Description: Scheduler Task
  */
 
+#include <iostream>
+
 template<bool ProcessNotesAndControls, bool ProcessAudio, IPlugin::Flags Deduced, IPlugin::Flags Begin, IPlugin::Flags End>
 inline std::pair<Flow::Task, const NoteEvents *> Audio::MakeSchedulerTask(Flow::Graph &graph, const IPlugin::Flags flags,
         const AScheduler *scheduler, Node *node, const NoteEvents * const parentNoteStack)
@@ -38,7 +40,13 @@ inline std::pair<Flow::Task, const NoteEvents *> Audio::MakeSchedulerTask(Flow::
 template<Audio::IPlugin::Flags Flags, bool ProcessNotesAndControls, bool ProcessAudio>
 inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio>::operator()(void) noexcept
 {
-    *_noteStack = *_parentNoteStack;
+    std::cout << "run task: " << node().name().toStdString() << std::endl;
+    // std::cout << "_noteStack: " << _noteStack->size() << std::endl;
+    // std::cout << "_parentNoteStack: " << _parentNoteStack << std::endl;
+    _noteStack->clear();
+    if (_parentNoteStack)
+        *_noteStack = *_parentNoteStack;
+    // std::cout << "_parentNoteStack final: " << _noteStack->size() << std::endl;
     const auto beatRange = scheduler().currentBeatRange();
     auto &plugin = *node().plugin();
     if (ProcessNotesAndControls) {
@@ -68,6 +76,7 @@ inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio>::
             //mergeBufferStack(); '_buffersCache' -> node().cache()
         }
     }
+    // _noteStack->clear();
 }
 
 template<Audio::IPlugin::Flags Flags, bool ProcessNotesAndControls, bool ProcessAudio>
@@ -121,13 +130,61 @@ inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio>::
 template<Audio::IPlugin::Flags Flags, bool ProcessNotesAndControls, bool ProcessAudio>
 inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio>::collectNotes(const BeatRange &beatRange) noexcept
 {
+    // std::cout << "\t-collect notes: " << node().name().toStdView() << std::endl;
     for (const auto &partition : node().partitions()) {
         if (partition.muted())
             continue;
         for (const auto &instance : partition.instances()) {
-            (void)(instance); // To remove
+            // Skip instance ending before the beatrange
+            if (instance.to <= beatRange.from)
+                continue;
+            // Skip instance begining after the beatrange
+            if (instance.from >= beatRange.to)
+                continue;
+            for (const auto &note : partition.notes()) {
+                const auto noteFrom = instance.from + note.range.from;
+                const auto noteTo = instance.from + note.range.to;
+                // std::cout << "note: " << noteFrom << " - " << noteTo << std::endl;
+                // Skip note ending after the beatrange
+                if (noteTo <= beatRange.from)
+                    continue;
+                // Skip note begining after the beatrange
+                if (noteFrom >= beatRange.to)
+                    continue;
+                // Note is overlapping the end of the beatrange
+                if (noteTo > beatRange.to) {
+                    // std::cout << "On\n";
+                    _noteStack->push(NoteEvent({
+                        type: NoteEvent::EventType::On,
+                        key: note.key,
+                        velocity: note.velocity,
+                        tuning: note.tuning
+                    }));
+                }
+                // Note is overlapping the begining of the beatrange
+                else if (noteFrom < beatRange.from) {
+                    _noteStack->push(NoteEvent({
+                        type: NoteEvent::EventType::Off,
+                        key: note.key,
+                        velocity: note.velocity,
+                        tuning: note.tuning
+                    }));
+                    // std::cout << "Off\n";
+                }
+                // Note fits in the beatrange
+                else {
+                    _noteStack->push(NoteEvent({
+                        type: NoteEvent::EventType::OnOff,
+                        key: note.key,
+                        velocity: note.velocity,
+                        tuning: note.tuning
+                    }));
+                    // std::cout << "OnOff\n";
+                }
+            }
         }
     }
+    // std::cout << _noteStack->size() << std::endl;
 }
 
 template<Audio::IPlugin::Flags Flags, bool ProcessNotesAndControls, bool ProcessAudio>

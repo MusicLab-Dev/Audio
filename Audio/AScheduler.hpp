@@ -41,10 +41,10 @@ public:
     /** @brief Virtual destructor */
     virtual ~AScheduler(void) = default;
 
+    ProjectPtr &project(void) noexcept { return _project; }
 
-    Flow::Graph &graph(void) noexcept {
-        return _graph;
-    }
+
+    [[nodiscard]] Flow::Graph &graph(void) noexcept { return _graph; }
 
 
     /** @brief Get / set internal state */
@@ -53,8 +53,7 @@ public:
 
     /** @brief Get / set internal current beat range */
     [[nodiscard]] BeatRange currentBeatRange(void) const noexcept { return _currentBeatRange; }
-    void setBeatRange(const BeatRange beatRange) noexcept { _currentBeatRange = beatRange; }
-
+    void setBeatRange(const BeatRange beatRange) noexcept;
 
     /** @brief Add apply event to be dispatched */
     template<typename Apply, typename Notify>
@@ -74,6 +73,10 @@ public:
 
     /** @brief Virtual callback called when a frame is generated */
     virtual void onAudioBlockGenerated(void) = 0;
+
+    /** @brief Will wait until the processing graph is completed
+     *  Never call this without setting state to 'Pause' during the whole wait call */
+    void wait(void) noexcept_ndebug;
 
 protected:
     /** @brief Dispatch apply events without clearing event list */
