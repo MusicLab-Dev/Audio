@@ -39,7 +39,7 @@ void AScheduler::buildNodeTask(const Node *node,
     if (node->children().empty()) {
         // std::cout << "make note&audio\n";
         auto task = MakeSchedulerTask<true, true>(_graph, node->flags(), this, const_cast<Node *>(node), parentNoteTask.second);
-        task.first.setName(node->name().toStdView() + "_note&audio");
+        task.first.setName(node->name().toStdString() + "_note&audio");
         task.first.succeed(parentNoteTask.first);
         task.first.precede(parentAudioTask.first);
         // std::cout << "bind note&audio: " << node->name().toStdString() << std::endl;
@@ -50,9 +50,9 @@ void AScheduler::buildNodeTask(const Node *node,
     // std::cout << "make note\n";
     // std::cout << "make audio\n";
     auto noteTask = MakeSchedulerTask<true, false>(_graph, node->flags(), this, const_cast<Node *>(node), parentNoteTask.second);
-    noteTask.first.setName(node->name().toStdView() + "_note");
+    noteTask.first.setName(node->name().toStdString() + "_note");
     auto audioTask = MakeSchedulerTask<false, true>(_graph, node->flags(), this, const_cast<Node *>(node), parentNoteTask.second);
-    audioTask.first.setName(node->name().toStdView() + "_audio");
+    audioTask.first.setName(node->name().toStdString() + "_audio");
     noteTask.first.succeed(parentNoteTask.first);
     // std::cout << "bind audio: " << node->name().toStdString() << std::endl;
 
@@ -68,9 +68,9 @@ void AScheduler::buildProjectGraph(void)
     auto *parent = _project->master().get();
 
     auto noteTask = MakeSchedulerTask<true, false>(_graph, parent->flags(), this, const_cast<Node *>(parent), nullptr);
-    noteTask.first.setName(std::string(parent->name().toStdView() + "_note"));
+    noteTask.first.setName(parent->name().toStdString() + "_note");
     auto audioTask = MakeSchedulerTask<false, true>(_graph, parent->flags(), this, const_cast<Node *>(parent), nullptr);
-    audioTask.first.setName(parent->name().toStdView() + "_audio");
+    audioTask.first.setName(parent->name().toStdString() + "_audio");
 
     for (auto &child : parent->children()) {
         buildNodeTask(child.get(), noteTask, audioTask);

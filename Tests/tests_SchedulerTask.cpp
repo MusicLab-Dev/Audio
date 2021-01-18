@@ -243,6 +243,26 @@ static constexpr BlockSize BS = 4096;
 #define MAKE_DUMMY(PluginClass) \
     std::make_unique<Node>(PluginPtr(new PluginClass()));
 
+#define MAKE_DUMMY_BIND(PluginClass, Parent) \
+    parent.push(std::make_unique<Node>(PluginPtr(new PluginClass())));
+
+// { DummyAudioIO, { DummyAudioIO, DummyNoteInAudioOut, DummyNoteInAudioOut } }
+// DummyAudioIO<DummyAudioIO<DummyNoteInAudioOut, DummyNoteInAudioOut>>
+
+struct Main
+{
+
+    Scheduler scheduler { std::make_shared<Project>(Core::FlatString("project")) };
+
+    void build(const std::initializer_list<std::initializer_list<const char *>> && nodes) noexcept {
+        for (const auto &i : nodes) {
+            for (const auto &j : i)
+                std::cout << j << std::endl;
+        }
+    }
+};
+
+
 TEST(SchedulerTask, NotesCollection)
 {
     static constexpr auto MaxFrames = 2u;
@@ -251,6 +271,11 @@ TEST(SchedulerTask, NotesCollection)
     GlobalCounter = 0;
     PluginTable::Init();
     {
+
+        // Main main;
+
+
+        // return;
         auto master = MAKE_DUMMY(DummyAudioIO);
         master->setName(Core::FlatString("master"));
         auto mixer1 = MAKE_DUMMY(DummyAudioIO);
