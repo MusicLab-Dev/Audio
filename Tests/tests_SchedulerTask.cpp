@@ -22,7 +22,9 @@ public:
 
     virtual ~Scheduler(void) override = default;
 
-    virtual void onAudioBlockGenerated(void) { std::cout << " <onAudioBlockGenerated> \n"; }
+    virtual void onAudioBlockGenerated(void) {
+        std::cout << " <onAudioBlockGenerated> \n";
+    }
 };
 
 static constexpr SampleRate SR = 48000;
@@ -279,15 +281,15 @@ TEST(SchedulerTask, NotesCollection)
 
         mixer1->children().push(std::move(osc1));
         mixer1->children().push(std::move(osc2));
-        // master->children().push(std::move(mixer1));
-        project->master() = std::move(mixer1);
+        master->children().push(std::move(mixer1));
+        project->master() = std::move(master);
 
         Scheduler scheduler(std::move(project));
 
         scheduler.invalidateProjectGraph();
 
         auto graph = scheduler.graph();
-        // EXPECT_EQ(graph.size(), 4);
+        EXPECT_EQ(graph.size(), 6);
 
 
         std::cout << "=====\n\n";
@@ -298,13 +300,13 @@ TEST(SchedulerTask, NotesCollection)
             scheduler.wait();
         }
 
-        for (auto &child : scheduler.project()->master()->children()) {
-            auto plugin = reinterpret_cast<std::size_t *>(child->getPlugin());
-            auto dummy = reinterpret_cast<DummyPluginBase *>(&(plugin[1]));
-            std::cout << child->name().toStdView() << ": " << std::endl;
-            std::cout << "notes: " << dummy->noteData.size() <<std::endl;
-            std::cout << "audio: " << dummy->audioData.size() <<std::endl;
-        }
+        // for (auto &child : scheduler.project()->master()->children()) {
+        //     auto plugin = reinterpret_cast<std::size_t *>(child->getPlugin());
+        //     auto dummy = reinterpret_cast<DummyPluginBase *>(&(plugin[1]));
+        //     std::cout << child->name().toStdView() << ": " << std::endl;
+        //     std::cout << "notes: " << dummy->noteData.size() <<std::endl;
+        //     std::cout << "audio: " << dummy->audioData.size() <<std::endl;
+        // }
     }
     PluginTable::Destroy();
 }

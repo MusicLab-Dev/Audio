@@ -6,6 +6,8 @@
 #pragma once
 
 #include <Audio/IPlugin.hpp>
+#include <Audio/Plugins/Managers/NoteManager.hpp>
+
 
 static std::atomic<int> GlobalCounter { 0 };
 
@@ -29,6 +31,12 @@ struct AudioTestData : public TestDataBase
     BufferViews audioData {};
 };
 
+struct DummyPluginBase
+{
+    std::vector<NoteTestData> noteData;
+    std::vector<AudioTestData> audioData;
+};
+
 static void FeedNoteTestData(std::vector<NoteTestData> &testData, const NoteEvents &noteEvents, const TestDataBase::Dir dir)
 {
     std::cout << (dir == TestDataBase::Dir::Out ? "receive: " : "send: ") << noteEvents.size() << " notes" << std::endl;
@@ -40,6 +48,7 @@ static void FeedNoteTestData(std::vector<NoteTestData> &testData, const NoteEven
     testData.push_back(data);
     std::cout << testData.size() << std::endl;
 }
+
 static void FeedAudioTestData(std::vector<AudioTestData> &testData, const BufferViews &audioBuffers, const TestDataBase::Dir dir)
 {
     AudioTestData data;
@@ -50,14 +59,12 @@ static void FeedAudioTestData(std::vector<AudioTestData> &testData, const Buffer
     testData.push_back(data);
 }
 
-struct DummyPluginBase
-{
-    std::vector<NoteTestData> noteData;
-    std::vector<AudioTestData> audioData;
-};
 
 struct DummyCompleteIO : public IPlugin, public DummyPluginBase
 {
+    NoteManager noteManager;
+    Buffer buffer;
+
     virtual ~DummyCompleteIO(void) override = default;
 
     IPlugin::Flags getFlags(void) const noexcept
@@ -73,10 +80,13 @@ struct DummyCompleteIO : public IPlugin, public DummyPluginBase
 
     virtual void sendAudio(const BufferViews &inputs) noexcept
     {
+        FeedAudioTestData(audioData, inputs, TestDataBase::Dir::In);
     }
 
     virtual void receiveAudio(BufferView output) noexcept
     {
+        FeedAudioTestData(audioData, BufferViews({ output }), TestDataBase::Dir::Out);
+        noteManager.resetBlockCache();
     }
 
     virtual void sendNotes(const NoteEvents &notes) noexcept
@@ -89,17 +99,16 @@ struct DummyCompleteIO : public IPlugin, public DummyPluginBase
         FeedNoteTestData(noteData, notes, TestDataBase::Dir::Out);
     }
 
-    virtual void sendControls(const ControlEvents &controls) noexcept
-    {
-    }
+    virtual void sendControls(const ControlEvents &controls) noexcept {}
 
-    virtual void onAudioGenerationStarted(const BeatRange &range) noexcept
-    {
-    }
+    virtual void onAudioGenerationStarted(const BeatRange &range) noexcept {}
 };
 
 struct DummyNoteInAudioOut : public DummyPluginBase, public IPlugin
 {
+    NoteManager noteManager;
+    Buffer buffer;
+
     virtual ~DummyNoteInAudioOut(void) override = default;
 
     IPlugin::Flags getFlags(void) const noexcept
@@ -110,13 +119,13 @@ struct DummyNoteInAudioOut : public DummyPluginBase, public IPlugin
             static_cast<std::size_t>(Flags::ControlInput)
         );
     }
-
-    virtual void sendAudio(const BufferViews &inputs) noexcept
-    {
-    }
+    virtual void sendAudio(const BufferViews &inputs) noexcept {}
+    virtual void receiveNotes(NoteEvents &notes) noexcept {}
 
     virtual void receiveAudio(BufferView output) noexcept
     {
+        FeedAudioTestData(audioData, BufferViews({ output }), TestDataBase::Dir::Out);
+        noteManager.resetBlockCache();
     }
 
     virtual void sendNotes(const NoteEvents &notes) noexcept
@@ -124,22 +133,15 @@ struct DummyNoteInAudioOut : public DummyPluginBase, public IPlugin
         FeedNoteTestData(noteData, notes, TestDataBase::Dir::In);
     }
 
-    virtual void receiveNotes(NoteEvents &notes) noexcept
-    {
-        FeedNoteTestData(noteData, notes, TestDataBase::Dir::Out);
-    }
+    virtual void sendControls(const ControlEvents &controls) noexcept {}
 
-    virtual void sendControls(const ControlEvents &controls) noexcept
-    {
-    }
-
-    virtual void onAudioGenerationStarted(const BeatRange &range) noexcept
-    {
-    }
+    virtual void onAudioGenerationStarted(const BeatRange &range) noexcept {}
 };
 
 struct DummyAudioIO : public IPlugin, public DummyPluginBase
 {
+    Buffer buffer;
+
     virtual ~DummyAudioIO(void) override = default;
 
     IPlugin::Flags getFlags(void) const noexcept
@@ -150,28 +152,28 @@ struct DummyAudioIO : public IPlugin, public DummyPluginBase
             static_cast<std::size_t>(Flags::ControlInput)
         );
     }
+    virtual void sendNotes(const NoteEvents &notes) noexcept {}
+    virtual void receiveNotes(NoteEvents &notes) noexcept {}
 
     virtual void sendAudio(const BufferViews &inputs) noexcept
     {
+        FeedAudioTestData(audioData, inputs, TestDataBase::Dir::In);
     }
 
     virtual void receiveAudio(BufferView output) noexcept
     {
+        FeedAudioTestData(audioData, BufferViews({ output }), TestDataBase::Dir::Out);
     }
 
-    virtual void sendNotes(const NoteEvents &notes) noexcept {}
-
-    virtual void receiveNotes(NoteEvents &notes) noexcept {}
-
-    virtual void sendControls(const ControlEvents &controls) noexcept
-    {
-    }
+    virtual void sendControls(const ControlEvents &controls) noexcept {}
 
     virtual void onAudioGenerationStarted(const BeatRange &range) noexcept {}
 };
 
 struct DummyNoteIO : public IPlugin, public DummyPluginBase
 {
+    NoteManager noteManager;
+
     virtual ~DummyNoteIO(void) override = default;
 
     IPlugin::Flags getFlags(void) const noexcept
@@ -182,10 +184,9 @@ struct DummyNoteIO : public IPlugin, public DummyPluginBase
             static_cast<std::size_t>(Flags::ControlInput)
         );
     }
-
     virtual void sendAudio(const BufferViews &inputs) noexcept {}
-
     virtual void receiveAudio(BufferView output) noexcept {}
+
 
     virtual void sendNotes(const NoteEvents &notes) noexcept
     {
@@ -197,9 +198,7 @@ struct DummyNoteIO : public IPlugin, public DummyPluginBase
         FeedNoteTestData(noteData, notes, TestDataBase::Dir::Out);
     }
 
-    virtual void sendControls(const ControlEvents &controls) noexcept
-    {
-    }
+    virtual void sendControls(const ControlEvents &controls) noexcept {}
 
     virtual void onAudioGenerationStarted(const BeatRange &range) noexcept {}
 };

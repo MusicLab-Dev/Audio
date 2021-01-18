@@ -97,7 +97,6 @@ private:
     void buildProjectGraph(void);
 
     void buildNodeTask(const Node *node, std::pair<Flow::Task, const NoteEvents *> &parentNoteTask, std::pair<Flow::Task, const NoteEvents *> &parentAudioTask);
-    void buildNodeTask(const Node *node);
 
     /** @brief Schedule the project graph */
     void scheduleProjectGraph(void);

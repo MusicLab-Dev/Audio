@@ -76,7 +76,6 @@ inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio>::
             //mergeBufferStack(); '_buffersCache' -> node().cache()
         }
     }
-    // _noteStack->clear();
 }
 
 template<Audio::IPlugin::Flags Flags, bool ProcessNotesAndControls, bool ProcessAudio>

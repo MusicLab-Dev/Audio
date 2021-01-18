@@ -24,7 +24,7 @@ TEST(NoteManager, Initialization)
     // AScheduler sc;
 
 
-    // manager.processNotes(input);
+    // manager.feedNotes(input);
     // auto activeNotes = manager.getActiveNotes();
 
     // EXPECT_EQ(activeNotes.size(), 4);

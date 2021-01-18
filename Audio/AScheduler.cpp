@@ -30,57 +30,12 @@ void AScheduler::setBeatRange(const BeatRange range) noexcept
     if (range == _currentBeatRange)
         return;
     _currentBeatRange = range;
-    // for (auto it = _graph.begin(); it != _graph.end(); ++it) {
-    //     auto workData = std::get_if<0>(&it->node()->workData);
-    //     auto schedulerTask = (SchedulerTask<static_cast<IPlugin::Flags>(static_cast<std::size_t>(IPlugin::Flags::NoteInput) |
-    //                                                         static_cast<std::size_t>(IPlugin::Flags::AudioOutput) |
-    //                                                         static_cast<std::size_t>(IPlugin::Flags::ControlInput))
-    //                                             , true, true>*)(&it->node()->workData);
-    //     std::cout << workData << std::endl;
-    //     std::cout << schedulerTask->noteStack()->size() << std::endl;
-    // }
 }
-
-// void AScheduler::buildNoteTasks(const Node *node,
-//         std::pair<Flow::Task, const NoteEvents *> &parentNoteTask, std::pair<Flow::Task, const NoteEvents *> &parentAudioTask,
-//         bool isMaster)
-// {
-//     std::cout << "Build task: " << node << " - " << static_cast<std::size_t>(node->plugin()->getFlags()) << std::endl;
-//     // Actual node has no children, we can create a audio task
-//     if (node->children().empty()) {
-//         auto task = MakeSchedulerTask<true, true>(_graph, node->flags(), this, const_cast<Node *>(node), parentNoteTask.second);
-//         task.first.succeed(parentNoteTask.first);
-//         task.first.precede(parentAudioTask.first);
-//         std::cout << "\t-> create audio task (final)" << std::endl;
-//         return;
-//     }
-
-//     // Create note task recursively on children
-//     std::cout << "\t-> create note task" << std::endl;
-//     if (!isMaster) {
-//         auto noteTask = MakeSchedulerTask<true, false>(_graph, node->flags(), this, const_cast<Node *>(node), parentNoteTask.second);
-//         noteTask.first.succeed(parentNoteTask.first);
-
-//         std::cout << "\t-> create audio task" << std::endl;
-//         auto audioTask = MakeSchedulerTask<false, true>(_graph, node->flags(), this, const_cast<Node *>(node), parentNoteTask.second);
-
-//         std::cout << "\t- begin recursion children: " << node << std::endl;
-//         for (auto &child : node->children()) {
-//             buildNoteTasks(child.get(), noteTask, audioTask);
-//         }
-//     } else {
-//         for (auto &child : node->children()) {
-//             buildNoteTasks(child.get(), parentNoteTask, parentAudioTask);
-//         }
-//     }
-//     std::cout << "\t- end recursion children: " << node << std::endl;
-
-// }
 
 void AScheduler::buildNodeTask(const Node *node,
         std::pair<Flow::Task, const NoteEvents *> &parentNoteTask, std::pair<Flow::Task, const NoteEvents *> &parentAudioTask)
 {
-    std::cout << node->name().toStdString() << ":\n";
+    // std::cout << node->name().toStdString() << ":\n";
     if (node->children().empty()) {
         // std::cout << "make note&audio\n";
         auto task = MakeSchedulerTask<true, true>(_graph, node->flags(), this, const_cast<Node *>(node), parentNoteTask.second);
@@ -108,26 +63,18 @@ void AScheduler::buildNodeTask(const Node *node,
     audioTask.first.precede(parentAudioTask.first);
 }
 
-void AScheduler::buildNodeTask(const Node *node)
-{
-    // std::cout << node->name().toStdString() << ":" << std::endl;
-    // std::cout << "make note\n";
-    // std::cout << "make audio\n";
-    auto noteTask = MakeSchedulerTask<true, false>(_graph, node->flags(), this, const_cast<Node *>(node), nullptr);
-    noteTask.first.setName(node->name().toStdView() + "_note");
-    auto audioTask = MakeSchedulerTask<false, true>(_graph, node->flags(), this, const_cast<Node *>(node), nullptr);
-    audioTask.first.setName(node->name().toStdView() + "_audio");
-
-    for (auto &child : node->children()) {
-        buildNodeTask(child.get(), noteTask, audioTask);
-    }
-}
-
 void AScheduler::buildProjectGraph(void)
 {
     auto *parent = _project->master().get();
 
-    buildNodeTask(parent);
+    auto noteTask = MakeSchedulerTask<true, false>(_graph, parent->flags(), this, const_cast<Node *>(parent), nullptr);
+    noteTask.first.setName(std::string(parent->name().toStdView() + "_note"));
+    auto audioTask = MakeSchedulerTask<false, true>(_graph, parent->flags(), this, const_cast<Node *>(parent), nullptr);
+    audioTask.first.setName(parent->name().toStdView() + "_audio");
+
+    for (auto &child : parent->children()) {
+        buildNodeTask(child.get(), noteTask, audioTask);
+    }
 
     // Master -> controls / partitions
     // Mixer 1 -> controls / partitions
