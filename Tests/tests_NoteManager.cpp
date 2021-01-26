@@ -24,7 +24,7 @@ TEST(NoteManager, Initialization)
     // AScheduler sc;
 
 
-    // manager.processNotes(input);
+    // manager.feedNotes(input);
     // auto activeNotes = manager.getActiveNotes();
 
     // EXPECT_EQ(activeNotes.size(), 4);
@@ -32,7 +32,7 @@ TEST(NoteManager, Initialization)
     // for (auto i = 0; i < 4; ++i) {
     //     EXPECT_EQ(activeNotes[i].active, true);
     //     EXPECT_EQ(activeNotes[i].velocity, (i + 1) * 10);
-    //     EXPECT_EQ(activeNotes[i].tunning, i);
+    //     EXPECT_EQ(activeNotes[i].tuning, i);
     //     EXPECT_EQ(activeNotes[i].key, i);
     // }
 

@@ -28,6 +28,8 @@ public:
 
     virtual void onAudioGenerationStarted(const BeatRange &range) noexcept;
 
+    virtual void onAudioBlockGenerated(void) noexcept {}
+
 private:
 };
 

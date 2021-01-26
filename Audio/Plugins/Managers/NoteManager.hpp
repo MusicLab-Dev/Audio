@@ -41,6 +41,7 @@ public:
     struct alignas_double_cacheline Cache
     {
         alignas_quarter_cacheline Core::TinyVector<Key> actives {};
+        alignas_quarter_cacheline Core::TinyVector<Key> activesBlock {};
         std::array<NoteCache, KeyCount> notes;
     };
 
@@ -48,11 +49,13 @@ public:
 
 
     /** @brief Process a list of notes and update the internal cache */
-    void processNotes(const NoteEvents &notes) noexcept;
+    void feedNotes(const NoteEvents &notes) noexcept;
 
     /** @brief Reset the internal cache. All notes are turned off */
     void resetCache(void) noexcept;
 
+    /** @brief Reset the internal cache for this block. On&Off notes are turned off */
+    void resetBlockCache(void) noexcept;
 
 private:
     Cache   _cache;

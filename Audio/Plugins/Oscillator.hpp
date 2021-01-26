@@ -38,17 +38,17 @@ public:
     virtual void onAudioGenerationStarted(const BeatRange &range) noexcept {}
 
 
-    const NoteManager *noteManager(void) const noexcept { return _noteManager.get(); }
-    NoteManager *noteManager(void) noexcept { return _noteManager.get(); }
+    const NoteManager &noteManager(void) const noexcept { return _noteManager; }
+    NoteManager &noteManager(void) noexcept { return _noteManager; }
 
     const Enveloppe &enveloppe(void) const noexcept { return _enveloppe; }
     Enveloppe &enveloppe(void) noexcept { return _enveloppe; }
 
 private:
-    NoteManagerPtr  _noteManager;
     Enveloppe       _enveloppe;
+    NoteManager     _noteManager;
 };
 
-static_assert_fit_cacheline(Audio::Oscillator);
+// static_assert_fit_cacheline(Audio::Oscillator);
 
 #include "Oscillator.ipp"

@@ -11,7 +11,7 @@ inline bool Note::operator==(const Note &other) const noexcept
         (range == other.range) &&
         (key == other.key) &&
         (velocity == other.velocity) &&
-        (tunning == other.tunning)
+        (tuning == other.tuning)
     );
 }
 

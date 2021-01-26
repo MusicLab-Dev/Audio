@@ -32,6 +32,7 @@ set(AudioSources
     ${AudioDir}/Node.hpp
     ${AudioDir}/Node.ipp
     ${AudioDir}/Note.hpp
+    ${AudioDir}/Note.cpp
     ${AudioDir}/Note.ipp
     ${AudioDir}/Partition.hpp
     ${AudioDir}/Partition.ipp
@@ -63,6 +64,8 @@ set(AudioDSPDir ${AudioDir}/DSP)
 set(AudioDSPSources
     ${AudioDSPDir}/Merge.hpp
     ${AudioDSPDir}/Merge.ipp
+    ${AudioDSPDir}/Vocoder.hpp
+    ${AudioDSPDir}/Vocoder.cpp
     # ${AudioDSPDir}/Biquad.cpp
     # ${AudioDSPDir}/Biquad.hpp
     # ${AudioDSPDir}/Biquad.ipp

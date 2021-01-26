@@ -22,7 +22,7 @@ namespace Audio
 struct alignas_eighth_cacheline Audio::NoteEvent
 {
     enum class EventType : std::uint8_t {
-        On, Off, PolyPressure
+        On, Off, OnOff, PolyPressure
     };
 
     EventType   type { EventType::On };
@@ -40,8 +40,10 @@ struct alignas_quarter_cacheline Audio::Note
         On, Off, PolyPressure
     };
 
-    Note(const BeatRange &range_, Key key_ = 69, Velocity velocity_ = 0xFFFF, Tuning tunning_ = 0u)
-        : range(range_), key(key_), velocity(velocity_), tunning(tunning_) {}
+    static const std::vector<const char *> NoteNamesSharp;
+
+    Note(const BeatRange &range_, Key key_ = 69, Velocity velocity_ = 0xFFFF, Tuning tuning_ = 0u)
+        : range(range_), key(key_), velocity(velocity_), tuning(tuning_) {}
 
     /** @brief Check if an another note is the same */
     [[nodiscard]] inline bool operator==(const Note &other) const noexcept;
@@ -65,8 +67,11 @@ struct alignas_quarter_cacheline Audio::Note
     BeatRange   range {};
     Key         key { 0u };
     Velocity    velocity { 0u };
-    Tuning      tunning { 0u };
+    Tuning      tuning { 0u };
 };
+
+std::ostream &operator<<(std::ostream &out, const Audio::Note &note);
+std::ostream &operator<<(std::ostream &out, const Audio::NoteEvent &note);
 
 // static_assert_fit_quarter_cacheline(Audio::NoteEvent);
 

@@ -43,6 +43,8 @@ public:
     /** @brief Get the internal note stack */
     [[nodiscard]] const NoteEvents *noteStack(void) const noexcept { return _noteStack.get(); }
 
+    void clearNoteStack(void) noexcept { _noteStack->clear(); }
+
 private:
     const AScheduler *_scheduler { nullptr };
     Node *_node { nullptr };
