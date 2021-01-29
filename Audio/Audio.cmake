@@ -66,6 +66,9 @@ set(AudioDSPSources
     ${AudioDSPDir}/Merge.ipp
     ${AudioDSPDir}/Vocoder.hpp
     ${AudioDSPDir}/Vocoder.cpp
+    ${AudioDSPDir}/PitchShift.cpp
+    ${AudioDSPDir}/PitchShift.hpp
+    ${AudioDSPDir}/PitchShift.ipp
     # ${AudioDSPDir}/Biquad.cpp
     # ${AudioDSPDir}/Biquad.hpp
     # ${AudioDSPDir}/Biquad.ipp
