@@ -8,6 +8,7 @@
 #include <Audio/SchedulerTask.hpp>
 
 #include <Audio/Plugins/Oscillator.hpp>
+#include <Audio/Plugins/Sampler.hpp>
 #include <Audio/Plugins/SimpleDelay.hpp>
 #include <Audio/Plugins/Mixer.hpp>
 
@@ -239,6 +240,7 @@ static constexpr BlockSize BS = 4096;
 
 
 #include "DummyPlugin.hpp"
+#include <Audio/DSP/PitchShift.hpp>
 
 #define MAKE_DUMMY(PluginClass) \
     std::make_unique<Node>(PluginPtr(new PluginClass()));
@@ -275,7 +277,16 @@ TEST(SchedulerTask, NotesCollection)
         // Main main;
 
 
-        // return;
+        auto sampler = MAKE_DUMMY(Sampler);
+        auto samplerP = reinterpret_cast<Sampler *>(sampler->getPlugin());
+
+        samplerP->loadSample("/home/Pedro/Documents/AUDIO/Kick.wav");
+        // samplerP->loadSample("/home/Pedro/Musique/Zaå Wezs.wav");
+
+        auto samplerBuffer = BufferView(samplerP->getBuffers()[0]);
+        auto b = PitchShift::Shift<float>(samplerBuffer, 1);
+
+        return;
         auto master = MAKE_DUMMY(DummyAudioIO);
         master->setName(Core::FlatString("master"));
         auto mixer1 = MAKE_DUMMY(DummyAudioIO);
@@ -325,13 +336,13 @@ TEST(SchedulerTask, NotesCollection)
             scheduler.wait();
         }
 
-        // for (auto &child : scheduler.project()->master()->children()) {
-        //     auto plugin = reinterpret_cast<std::size_t *>(child->getPlugin());
-        //     auto dummy = reinterpret_cast<DummyPluginBase *>(&(plugin[1]));
-        //     std::cout << child->name().toStdView() << ": " << std::endl;
-        //     std::cout << "notes: " << dummy->noteData.size() <<std::endl;
-        //     std::cout << "audio: " << dummy->audioData.size() <<std::endl;
-        // }
+        for (auto &child : scheduler.project()->master()->children()) {
+            auto plugin = reinterpret_cast<std::size_t *>(child->getPlugin());
+            auto dummy = reinterpret_cast<DummyPluginBase *>(&(plugin[1]));
+            std::cout << child->name().toStdView() << ": " << std::endl;
+            std::cout << "notes: " << dummy->noteData.size() <<std::endl;
+            std::cout << "audio: " << dummy->audioData.size() <<std::endl;
+        }
     }
     PluginTable::Destroy();
 }

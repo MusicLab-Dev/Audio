@@ -44,6 +44,8 @@ set(AudioSources
     ${AudioDir}/Project.hpp
     ${AudioDir}/Project.ipp
     ${AudioDir}/UtilsMidi.hpp
+    ${AudioDir}/KissFFT.hpp
+    ${AudioDir}/KissFFT.ipp
 )
 
 
@@ -56,6 +58,13 @@ set(AudioPluginsSources
     ${AudioPluginsDir}/SimpleDelay.ipp
     ${AudioPluginsDir}/Mixer.hpp
     ${AudioPluginsDir}/Mixer.ipp
+)
+
+set(AudioPluginManagerDir ${AudioPluginsDir}/Managers)
+
+set(AudioPluginManagersSources
+    ${AudioPluginManagerDir}/SampleLoader.hpp
+    ${AudioPluginManagerDir}/SampleLoader.cpp
 )
 
 
@@ -76,13 +85,25 @@ set(AudioDSPSources
     # ${AudioDSPDir}/EnveloppeGenerator.ipp
 )
 
+set(AudioKissFFTDir ${PROJECT_SOURCE_DIR}/kissfft)
+
+set(AudioKissFFTSources
+    ${AudioKissFFTDir}/kiss_fft.h
+    ${AudioKissFFTDir}/kiss_fft.c
+    ${AudioKissFFTDir}/tools/kiss_fftr.h
+    ${AudioKissFFTDir}/tools/kiss_fftr.c
+)
+
 add_library(${PROJECT_NAME}
     ${AudioSources}
     ${AudioPluginsSources}
+    ${AudioPluginManagersSources}
     ${AudioDSPSources}
+    ${AudioKissFFTSources}
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${AudioDir}/..)
+target_include_directories(${PROJECT_NAME} PUBLIC ${AudioDir}/../kissfft/)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC Core Flow)
 
