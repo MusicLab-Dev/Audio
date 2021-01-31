@@ -14,8 +14,8 @@ namespace Audio::DSP
 
 /**
  * @brief
- * Interpolate: insert L zero-sample between each pair of sample, then filter
- * Decimate: remove M sample between each pair of sample, then filter
+ * Interpolate (stretch the signal): insert L zero-sample between each pair of sample, then filter
+ * Decimate (compress the signal): filter, then remove M sample between each pair of sample
  */
 struct Audio::DSP::Resampler
 {
@@ -38,4 +38,19 @@ struct Audio::DSP::Resampler
      */
     template<typename T>
     static Buffer Decimate(const BufferView &inputBuffer, const std::size_t decimationSamples) noexcept;
+
+    template<typename T>
+    static Buffer Interpolate(const BufferView &inputBuffer, const Semitone semitone) noexcept {
+        return Interpolate(inputBuffer, GetResamplingSize(inputBuffer.size<T>(), semitone));
+    }
+
+    template<typename T>
+    static Buffer Decimate(const BufferView &inputBuffer, const Semitone semitone) noexcept {
+        return Decimate(inputBuffer, GetResamplingSize(inputBuffer.size<T>(), semitone));
+    }
+
+private:
+    static std::size_t GetResamplingSize(const std::size_t inputSize, const Semitone semitone) noexcept;
 };
+
+#include "Resampler.ipp"

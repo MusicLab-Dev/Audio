@@ -283,8 +283,8 @@ TEST(SchedulerTask, NotesCollection)
         samplerP->loadSample("/home/Pedro/Documents/AUDIO/Kick.wav");
         // samplerP->loadSample("/home/Pedro/Musique/Zaå Wezs.wav");
 
-        auto samplerBuffer = BufferView(samplerP->getBuffers()[0]);
-        auto b = PitchShift::Shift<float>(samplerBuffer, 1);
+        // auto samplerBuffer = BufferView(samplerP->getBuffers()[0]);
+        // auto b = PitchShift::Shift<float>(samplerBuffer, 1);
 
         return;
         auto master = MAKE_DUMMY(DummyAudioIO);

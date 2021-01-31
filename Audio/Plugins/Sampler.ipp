@@ -3,6 +3,7 @@
  * @ Description: Sampler implementation
  */
 
+#include <Audio/DSP/Resampler.hpp>
 #include "Managers/SampleLoader.hpp"
 
 inline Audio::IPlugin::Flags Audio::Sampler::getFlags(void) const noexcept
@@ -19,4 +20,8 @@ inline void Audio::Sampler::loadSample(const std::string &path)
     auto buf = SampleLoader::LoadWAV(path);
 
     _buffers.push(buf);
+    for (auto i = 0u; i < 11; ++i) {
+        // _buffers.push(DSP::Resampler::Decimate(buf, b));
+    }
+
 }

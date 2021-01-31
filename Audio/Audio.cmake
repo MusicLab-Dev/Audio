@@ -78,6 +78,8 @@ set(AudioDSPSources
     ${AudioDSPDir}/PitchShift.cpp
     ${AudioDSPDir}/PitchShift.hpp
     ${AudioDSPDir}/PitchShift.ipp
+    ${AudioDSPDir}/Resampler.hpp
+    ${AudioDSPDir}/Resampler.ipp
     # ${AudioDSPDir}/Biquad.cpp
     # ${AudioDSPDir}/Biquad.hpp
     # ${AudioDSPDir}/Biquad.ipp
