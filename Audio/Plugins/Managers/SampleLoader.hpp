@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <utility>
+
 #include <Audio/Buffer.hpp>
 
 namespace Audio
@@ -15,6 +17,14 @@ namespace Audio
 struct Audio::SampleLoader
 {
     // http://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/WAVE.html
+    // https://wavefilegem.com/how_wave_files_work.html
+
+    struct Specs_WAV {
+        std::uint16_t format { 0u }; // 1: PCM, 3: IEEE float
+        std::uint16_t channels { 0u };
+        std::uint32_t sampleRate { 0u };
+        std::uint16_t bytePerSample { 0u };
+    };
 
     struct HeaderChunk_WAV {
         char riff[4]; // "RIFF"
@@ -26,12 +36,12 @@ struct Audio::SampleLoader
         char fmt[4]; //"fmt "
         std::uint32_t blockSize { 0u }; // 16 (0x10)
 
-        std::uint16_t audioFormat { 0u }; // 1: PCM
+        std::uint16_t audioFormat { 0u }; // 1: PCM, 3: IEEE float
         std::uint16_t channelArrangement { 0u };
         std::uint32_t sampleRate { 0u };
         std::uint32_t bytePerSec { 0u }; // sampleRate * BytePerBlock
         std::uint16_t bytePerBlock { 0u }; // channelArrangement * BitsPerSample / 8
-        std::uint16_t bitsPerSample { 0u };
+        std::uint16_t bitsPerSample { 0u }; // 8: char, 16: short, 32: int
     };
 
     struct HeaderNonPCM_WAV {
@@ -53,7 +63,11 @@ struct Audio::SampleLoader
         std::uint32_t dataSize { 0u }; // (in bytes) fileSize - 44
     };
 
-
-
+    template<typename T>
     static Buffer LoadWAV(const std::string &path);
+
+    /** @brief Load a audio WAV file into a buffer */
+    static Buffer LoadWAV(const std::string &path, Specs_WAV &specs);
 };
+
+#include "SampleLoader.ipp"

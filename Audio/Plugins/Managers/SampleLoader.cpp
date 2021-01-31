@@ -9,9 +9,10 @@
 #include "SampleLoader.hpp"
 
 #include <iostream>
+
 using namespace Audio;
 
-Buffer SampleLoader::LoadWAV(const std::string &path)
+Buffer SampleLoader::LoadWAV(const std::string &path, Specs_WAV &specs)
 {
     auto realPath = std::filesystem::path(path);
 
@@ -83,6 +84,9 @@ Buffer SampleLoader::LoadWAV(const std::string &path)
         }
     }
 
-
+    specs.format = fmt.audioFormat;
+    specs.channels = fmt.channelArrangement;
+    specs.sampleRate = fmt.sampleRate;
+    specs.bytePerSample = fmt.bitsPerSample / 8;
     return outBuffer;
 }

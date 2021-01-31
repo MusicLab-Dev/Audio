@@ -18,6 +18,7 @@ inline Buffer DSP::Resampler::Interpolate(const BufferView &inputBuffer, const s
 {
     const auto inputSize = inputBuffer.size<T>();
     const auto newSize = inputSize + (inputSize - 1) * interpolationSamples;
+    std::cout << "interpolate: " << inputSize << " - " << newSize << std::endl;
 }
 
 template<typename T>
@@ -25,4 +26,5 @@ inline Buffer DSP::Resampler::Decimate(const BufferView &inputBuffer, const std:
 {
     const auto inputSize = inputBuffer.size<T>();
     const auto newSize = std::ceil(static_cast<float>(inputSize) / decimationSamples);
+    std::cout << "decimate: " << inputSize << " - " << newSize << std::endl;
 }

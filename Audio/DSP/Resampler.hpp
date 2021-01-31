@@ -41,12 +41,12 @@ struct Audio::DSP::Resampler
 
     template<typename T>
     static Buffer Interpolate(const BufferView &inputBuffer, const Semitone semitone) noexcept {
-        return Interpolate(inputBuffer, GetResamplingSize(inputBuffer.size<T>(), semitone));
+        return Interpolate<T>(inputBuffer, GetResamplingSize(inputBuffer.size<T>(), semitone));
     }
 
     template<typename T>
     static Buffer Decimate(const BufferView &inputBuffer, const Semitone semitone) noexcept {
-        return Decimate(inputBuffer, GetResamplingSize(inputBuffer.size<T>(), semitone));
+        return Decimate<T>(inputBuffer, GetResamplingSize(inputBuffer.size<T>(), semitone));
     }
 
 private:

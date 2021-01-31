@@ -28,7 +28,9 @@ public:
     virtual void onAudioGenerationStarted(const BeatRange &range) noexcept {}
 
 public:
+    template<typename T>
     void loadSample(const std::string &path);
+
     const BufferViews &getBuffers(void) const noexcept { return _buffers; }
 
 private:

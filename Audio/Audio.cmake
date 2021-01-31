@@ -65,6 +65,7 @@ set(AudioPluginManagerDir ${AudioPluginsDir}/Managers)
 set(AudioPluginManagersSources
     ${AudioPluginManagerDir}/SampleLoader.hpp
     ${AudioPluginManagerDir}/SampleLoader.cpp
+    ${AudioPluginManagerDir}/SampleLoader.ipp
 )
 
 

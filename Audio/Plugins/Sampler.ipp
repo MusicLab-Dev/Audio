@@ -15,13 +15,17 @@ inline Audio::IPlugin::Flags Audio::Sampler::getFlags(void) const noexcept
     );
 }
 
+template<typename T>
 inline void Audio::Sampler::loadSample(const std::string &path)
 {
-    auto buf = SampleLoader::LoadWAV(path);
+    auto buf = SampleLoader::LoadWAV<T>(path);
 
-    _buffers.push(buf);
+    Buffer b(buf.channelByteSize(), buf.sampleRate(), buf.channelArrangement());
+    // for (auto i = 0u; i
+    // _buffers.push(buf);
     for (auto i = 0u; i < 11; ++i) {
-        // _buffers.push(DSP::Resampler::Decimate(buf, b));
+        // BufferView v(Buffer(buf));
+        // _buffers.push(DSP::Resampler::Decimate<float>(v, static_cast<Semitone>(i)));
     }
 
 }
