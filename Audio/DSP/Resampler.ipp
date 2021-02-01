@@ -63,7 +63,6 @@ inline Buffer DSP::Resampler<T>::Interpolate(const BufferView &inputBuffer, cons
 
     const auto inputSize = inputBuffer.size<T>();
     const auto newSize = inputSize + (inputSize - 1) * (interpolationSamples - 1);
-    std::cout << "interpolate: " << inputSize << " - " << newSize << std::endl;
 
     return Buffer(newSize * sizeof(T), inputBuffer.sampleRate(), inputBuffer.channelArrangement());
 }
@@ -95,7 +94,6 @@ inline Buffer DSP::Resampler<T>::Decimate(const BufferView &inputBuffer, const s
 
     const auto inputSize = inputBuffer.size<T>();
     const auto newSize = std::ceil(static_cast<float>(inputSize) / decimationSamples);
-    std::cout << "decimate: " << inputSize << " - " << newSize << std::endl;
 
     return Buffer(newSize * sizeof(T), inputBuffer.sampleRate(), inputBuffer.channelArrangement());
 }
@@ -142,4 +140,19 @@ inline Buffer DSP::Resampler<T>::ResampleSemitone(const BufferView &inputBuffer,
     }
 
     return ptr->deepCopy();
+}
+
+template<typename T>
+inline void DSP::Resampler<T>::GenerateDefaultOctave(const BufferView &inputBuffer, BufferViews &outBuffers) noexcept
+{
+    static constexpr std::int8_t RootKey = 6; // Within the range [0, 12[
+
+    // Lower sample buffers
+    for (auto i = 0u; i < RootKey; ++i) {
+    }
+    // Higher sample buffers
+    for (auto i = 0u; i < 11 - RootKey; ++i) {
+    }
+
+    std::cout << "ii: " << ii << std::endl;
 }

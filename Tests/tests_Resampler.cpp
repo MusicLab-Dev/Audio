@@ -47,5 +47,6 @@ TEST(Resampler, ResamplingSize)
         EXPECT_EQ(up.size<T>(), std::ceil(inputSize / std::pow(2.0, octave)));
     }
 
-    // EXPECT_EQ(DSP::Resampler<T>::GetOptimalResamplingSize(inputSize, -1), GetSemitoneRateSize(-1) * inputSize);
+    BufferViews b;
+    DSP::Resampler<T>::GenerateDefaultOctave(buf, b);
 }
