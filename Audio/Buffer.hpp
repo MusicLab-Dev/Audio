@@ -107,6 +107,9 @@ public:
     /** @brief Default constructor */
     Buffer(void) : BufferBase(nullptr, 0, 0, ChannelArrangement::Mono) {}
 
+    /** @brief A buffer cannot be copied, use a BufferView instead */
+    Buffer(const Buffer &other) = delete;
+
     /** @brief Move constructor */
     Buffer(Buffer &&other) noexcept = default;
 
@@ -115,6 +118,15 @@ public:
 
     /** @brief Move assignment */
     Buffer &operator=(Buffer &&other) noexcept = default;
+
+
+    /** @brief Deep copy the buffer */
+    [[nodiscard]] Buffer deepCopy(void) const noexcept
+    {
+        Buffer other(channelByteSize(), sampleRate(), channelArrangement());
+        // other.
+        return other;
+    }
 
 
     /** @brief Set the sample rate (does NOT change data) */

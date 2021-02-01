@@ -38,7 +38,7 @@ namespace Audio
     using Key = std::uint8_t;
 
     /** @brief Semitone */
-    using Semitone = char;
+    using Semitone = std::int8_t;
 
     /** @brief Number of different handled keys */
     constexpr Key KeyCount = 128u;
