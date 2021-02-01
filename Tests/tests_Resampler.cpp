@@ -30,23 +30,38 @@ TEST(Resampler, ResamplingSize)
     EXPECT_EQ(inputSize, Size);
 
     for (auto i = 0u; i < 11; ++i) {
-        auto down = DSP::Resampler<T>::ResampleSemitone(BufferView(buf), i + 1);
-        auto up = DSP::Resampler<T>::ResampleSemitone(BufferView(buf), -(i + 1));
-        EXPECT_EQ(down.size<T>(), SizesDown[i]);
+        auto up = DSP::Resampler<T>::ResampleSemitone(BufferView(buf), i + 1);
+        auto down = DSP::Resampler<T>::ResampleSemitone(BufferView(buf), -(i + 1));
         EXPECT_EQ(up.size<T>(), SizesUp[i]);
+        EXPECT_EQ(down.size<T>(), SizesDown[i]);
     }
 
     for (auto i = 0u; i < 3; ++i) {
         auto octave = i + 1;
         std::cout << octave <<std::endl;
-        auto down = DSP::Resampler<T>::InterpolateOctave(BufferView(buf), octave);
         auto up = DSP::Resampler<T>::DecimateOctave(BufferView(buf), octave);
+        auto down = DSP::Resampler<T>::InterpolateOctave(BufferView(buf), octave);
         std::cout << "up: " << up.size<T>() << std::endl;
         std::cout << "down: " << down.size<T>() << std::endl;
-        EXPECT_EQ(down.size<T>(), inputSize * std::pow(2.0, octave));
         EXPECT_EQ(up.size<T>(), std::ceil(inputSize / std::pow(2.0, octave)));
+        EXPECT_EQ(down.size<T>(), inputSize * std::pow(2.0, octave));
     }
+}
 
-    BufferViews b;
-    DSP::Resampler<T>::GenerateDefaultOctave(buf, b);
+TEST(Resampler, DefaultOctave)
+{
+    Buffer buf(Size * sizeof(T), 48000, ChannelArrangement::Mono);
+    const auto inputSize = buf.size<T>();
+    EXPECT_EQ(inputSize, Size);
+
+    BufferViews octaveBuffer;
+    DSP::Resampler<T>::GenerateDefaultOctave(buf, octaveBuffer);
+    EXPECT_EQ(octaveBuffer.size(), 11);
+
+    for (auto i = 0u; i < 11; ++i) {
+        if (i < DSP::Resampler<T>::RootKeyDefaultOctave)
+            EXPECT_EQ(octaveBuffer[i].size<T>(), SizesDown[i]);
+        else
+            EXPECT_EQ(octaveBuffer[i].size<T>(), SizesUp[i - DSP::Resampler<T>::RootKeyDefaultOctave]);
+    }
 }

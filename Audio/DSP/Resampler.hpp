@@ -26,6 +26,8 @@ struct Audio::DSP::Resampler
     /** @brief Decimation factor of 1 semitone */
     static constexpr auto M_Factor = 196; //7893u;
 
+    static constexpr std::int8_t RootKeyDefaultOctave = 6; // Within the range [0, 12[
+
 
     /** @brief Interpolate a buffer with a specific sample number */
     static Buffer Interpolate(const BufferView &inputBuffer, const std::size_t interpolationSamples) noexcept;

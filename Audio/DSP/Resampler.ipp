@@ -103,8 +103,8 @@ template<typename T>
 inline Buffer DSP::Resampler<T>::ResampleOneSemitone(const BufferView &inputBuffer, bool upScale) noexcept
 {
     const auto inputSize = inputBuffer.size<T>();
-    const auto iFactor = upScale ? M_Factor : L_Factor;
-    const auto dFactor = upScale ? L_Factor : M_Factor;
+    const auto iFactor = upScale ? L_Factor : M_Factor;
+    const auto dFactor = upScale ? M_Factor : L_Factor;
     // const std::size_t interpolateBufferSize = (inputSize + (inputSize - 1) * ((iFactor - 1));
     // const std::size_t outputSize = static_cast<float>(interpolateBufferSize) / dFactor;
 
@@ -145,14 +145,23 @@ inline Buffer DSP::Resampler<T>::ResampleSemitone(const BufferView &inputBuffer,
 template<typename T>
 inline void DSP::Resampler<T>::GenerateDefaultOctave(const BufferView &inputBuffer, BufferViews &outBuffers) noexcept
 {
-    static constexpr std::int8_t RootKey = 6; // Within the range [0, 12[
+    Buffer firstLow = ResampleOneSemitone(inputBuffer, false);
+    Buffer firstHigh = ResampleOneSemitone(inputBuffer, true);
+    BufferView view(firstLow);
 
     // Lower sample buffers
-    for (auto i = 0u; i < RootKey; ++i) {
+    outBuffers.push(view);
+    for (auto i = 0u; i < RootKeyDefaultOctave - 1; ++i) {
+        Buffer buf = ResampleOneSemitone(view, false);
+        view = buf;
+        outBuffers.push(view);
     }
     // Higher sample buffers
-    for (auto i = 0u; i < 11 - RootKey; ++i) {
+    view = firstHigh;
+    outBuffers.push(view);
+    for (auto i = 0u; i < 11 - RootKeyDefaultOctave - 1; ++i) {
+        Buffer buf = ResampleOneSemitone(view, true);
+        view = buf;
+        outBuffers.push(view);
     }
-
-    std::cout << "ii: " << ii << std::endl;
 }
