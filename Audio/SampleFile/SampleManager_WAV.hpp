@@ -60,7 +60,7 @@ struct Audio::SampleManager_WAV
     };
 
     /** @brief Load a audio WAV file into a buffer */
-    static Buffer LoadFile(const std::string &path, SampleSpecs &specs);
+    [[nodiscard]] static Buffer LoadFile(const std::string &path, SampleSpecs &specs);
 
     static void WriteFile(const std::string &path, const BufferView &inputBuffer) {}
 };

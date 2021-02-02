@@ -30,9 +30,9 @@ struct Audio::SampleManager
         { SampleManager_WAV::Extension, &SampleManager_WAV::LoadFile, &SampleManager_WAV::WriteFile }
     };
 
-    static Buffer LoadSampleFile(const std::string &path, SampleSpecs &specs);
+    [[nodiscard]] static Buffer LoadSampleFile(const std::string &path, SampleSpecs &specs);
 
-    static Buffer LoadSampleFileExtension(const std::string &path, const std::string &ext, SampleSpecs &specs);
+    [[nodiscard]] static Buffer LoadSampleFileExtension(const std::string &path, const std::string &ext, SampleSpecs &specs);
 };
 
 #include "SampleManager.ipp"

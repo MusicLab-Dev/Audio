@@ -31,7 +31,7 @@ public:
     template<typename T>
     void loadSample(const std::string &path);
 
-    const BufferViews &getBuffers(void) const noexcept { return _buffers; }
+    [[nodiscard]] const BufferViews &getBuffers(void) const noexcept { return _buffers; }
 
 private:
     BufferViews     _buffers;
