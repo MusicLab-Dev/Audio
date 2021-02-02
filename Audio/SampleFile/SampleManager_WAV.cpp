@@ -1,18 +1,17 @@
 /**
  * @ Author: Pierre Veysseyre
- * @ Description: SampleLoader.cpp
+ * @ Description: SampleManager_WAV.cpp
  */
 
-#include <filesystem>
 #include <fstream>
 
-#include "SampleLoader.hpp"
+#include "SampleManager_WAV.hpp"
 
 #include <iostream>
 
 using namespace Audio;
 
-Buffer SampleLoader::LoadWAV(const std::string &path, Specs_WAV &specs)
+Buffer SampleManager_WAV::LoadFile(const std::string &path, SampleSpecs &specs)
 {
     auto realPath = std::filesystem::path(path);
 
@@ -32,13 +31,13 @@ Buffer SampleLoader::LoadWAV(const std::string &path, Specs_WAV &specs)
     if (!file.is_open())
         throw std::runtime_error("Wav file doesn't open !");
 
-    HeaderChunk_WAV chunk;
+    HeaderChunk chunk;
     file.read(reinterpret_cast<char *>(&chunk), sizeof(chunk));
     std::cout << "riff: '" << chunk.riff[0] << chunk.riff[1] << chunk.riff[2] << chunk.riff[3] << "'" << std::endl;
     std::cout << "fileSize: " << chunk.fileSize << std::endl;
     std::cout << "wave: '" << chunk.wave[0] << chunk.wave[1] << chunk.wave[2] << chunk.wave[3] << "'" << std::endl;
 
-    HeaderFmt_WAV fmt;
+    HeaderFmt fmt;
     file.read(reinterpret_cast<char *>(&fmt), sizeof(fmt));
     std::cout << "fmt: '" << fmt.fmt[0] << fmt.fmt[1] << fmt.fmt[2] << fmt.fmt[3] << "'" << std::endl;
     std::cout << "blockSize: " << fmt.blockSize << std::endl;
@@ -50,12 +49,12 @@ Buffer SampleLoader::LoadWAV(const std::string &path, Specs_WAV &specs)
     std::cout << "bitsPerSample: " << fmt.bitsPerSample << std::endl;
 
     if (fmt.audioFormat != 1) {
-        HeaderFact_WAV fact;
+        HeaderFact fact;
         file.read(reinterpret_cast<char *>(&fact), sizeof(fact));
         std::cout << "fact: '" << fact.fact[0] << fact.fact[1] << fact.fact[2] << fact.fact[3] << "'" << std::endl;
         std::cout << "factSize: " << fact.factSize << std::endl;
 
-        HeaderNonPCM_WAV nonPCM;
+        HeaderNonPCM nonPCM;
         file.read(reinterpret_cast<char *>(&nonPCM), sizeof(nonPCM));
         std::cout << "extensionSize: " << nonPCM.extensionSize << std::endl;
         std::cout << "validBitsPerSample: " << nonPCM.validBitsPerSample << std::endl;
@@ -64,7 +63,7 @@ Buffer SampleLoader::LoadWAV(const std::string &path, Specs_WAV &specs)
         std::cout << "subFormat_1: " << nonPCM.subFormat_1 << std::endl;
     }
 
-    HeaderData_WAV data;
+    HeaderData data;
     file.read(reinterpret_cast<char *>(&data), sizeof(data));
     std::cout << "data: '" << data.data[0] << data.data[1] << data.data[2] << data.data[3] << "'" << std::endl;
     std::cout << "dataSize: " << data.dataSize << std::endl;

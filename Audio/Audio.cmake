@@ -63,9 +63,20 @@ set(AudioPluginsSources
 set(AudioPluginManagerDir ${AudioPluginsDir}/Managers)
 
 set(AudioPluginManagersSources
-    ${AudioPluginManagerDir}/SampleLoader.hpp
-    ${AudioPluginManagerDir}/SampleLoader.cpp
-    ${AudioPluginManagerDir}/SampleLoader.ipp
+    ${AudioPluginManagerDir}/NoteManager.hpp
+    ${AudioPluginManagerDir}/NoteManager.ipp
+    )
+
+set(AudioSampleFileDir ${AudioDir}/SampleFile)
+
+set(AudioPluginManagersSources
+    ${AudioSampleFileDir}/SampleManager.hpp
+    ${AudioSampleFileDir}/SampleManager.ipp
+    ${AudioSampleFileDir}/SampleManager.cpp
+    ${AudioSampleFileDir}/SampleManagerSpecs.hpp
+    ${AudioSampleFileDir}/SampleManager_WAV.hpp
+    ${AudioSampleFileDir}/SampleManager_WAV.cpp
+    ${AudioSampleFileDir}/SampleManager_WAV.ipp
 )
 
 

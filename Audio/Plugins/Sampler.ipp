@@ -4,7 +4,7 @@
  */
 
 #include <Audio/DSP/Resampler.hpp>
-#include "Managers/SampleLoader.hpp"
+#include <Audio/SampleFile/SampleManager.hpp>
 
 inline Audio::IPlugin::Flags Audio::Sampler::getFlags(void) const noexcept
 {
@@ -20,7 +20,8 @@ inline Audio::IPlugin::Flags Audio::Sampler::getFlags(void) const noexcept
 template<typename T>
 inline void Audio::Sampler::loadSample(const std::string &path)
 {
-    Buffer buf = SampleLoader::LoadWAV<T>(path);
+    SampleSpecs specs;
+    Buffer buf = SampleManager<T>::LoadSampleFile(path, specs);
 
     std::cout << "SIZE: " << buf.size<T>() << std::endl;
     auto a = DSP::Resampler<T>::ResampleSemitone(BufferView(buf), -11);
