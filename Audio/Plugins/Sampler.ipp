@@ -24,7 +24,7 @@ inline void Audio::Sampler::loadSample(const std::string &path)
     Buffer buf = SampleManager<T>::LoadSampleFile(path, specs);
 
     std::cout << "SIZE: " << buf.size<T>() << std::endl;
-    auto a = DSP::Resampler<T>::ResampleSemitone(BufferView(buf), -11);
+    auto a = DSP::Resampler<T>::ResampleBySemitone(BufferView(buf), -11);
     // _buffers.push(a);
 
     for (auto i = 0u; i < 11; ++i) {

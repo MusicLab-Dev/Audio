@@ -30,21 +30,21 @@ struct Audio::DSP::Resampler
 
 
     /** @brief Interpolate a buffer with a specific sample number */
-    [[nodiscard]] static Buffer Interpolate(const BufferView &inputBuffer, const std::size_t interpolationSamples) noexcept;
+    [[nodiscard]] static Buffer Interpolate(const BufferView &inputBuffer, const std::size_t interpolationSamples) noexcept_ndebug;
     /** @brief Interpolate a buffer with nOctave */
-    [[nodiscard]] static Buffer InterpolateOctave(const BufferView &inputBuffer, const std::uint8_t nOctave) noexcept;
+    [[nodiscard]] static Buffer InterpolateByOctave(const BufferView &inputBuffer, const std::uint8_t nOctave) noexcept;
 
     /** @brief Decimate a buffer with a specific sample number */
-    [[nodiscard]] static Buffer Decimate(const BufferView &inputBuffer, const std::size_t decimationSamples) noexcept;
+    [[nodiscard]] static Buffer Decimate(const BufferView &inputBuffer, const std::size_t decimationSamples) noexcept_ndebug;
     /** @brief Decimate a buffer with nOctave */
-    [[nodiscard]] static Buffer DecimateOctave(const BufferView &inputBuffer, const std::uint8_t nOctave) noexcept;
+    [[nodiscard]] static Buffer DecimateByOctave(const BufferView &inputBuffer, const std::uint8_t nOctave) noexcept;
 
 
     /**
      * @brief Resample a buffer by semitone
      * @param semitone Semitone within the range [-11, 11] and != 0
      */
-    [[nodiscard]] static Buffer ResampleSemitone(const BufferView &inputBuffer, const Semitone semitone) noexcept;
+    [[nodiscard]] static Buffer ResampleBySemitone(const BufferView &inputBuffer, const Semitone semitone) noexcept_ndebug;
 
 
     static void GenerateDefaultOctave(const BufferView &inputBuffer, BufferViews &outBuffers) noexcept;

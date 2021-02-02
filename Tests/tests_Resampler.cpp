@@ -30,8 +30,8 @@ TEST(Resampler, ResamplingSize)
     EXPECT_EQ(inputSize, Size);
 
     for (auto i = 0u; i < 11; ++i) {
-        auto up = DSP::Resampler<T>::ResampleSemitone(BufferView(buf), i + 1);
-        auto down = DSP::Resampler<T>::ResampleSemitone(BufferView(buf), -(i + 1));
+        auto up = DSP::Resampler<T>::ResampleBySemitone(BufferView(buf), i + 1);
+        auto down = DSP::Resampler<T>::ResampleBySemitone(BufferView(buf), -(i + 1));
         EXPECT_EQ(up.size<T>(), SizesUp[i]);
         EXPECT_EQ(down.size<T>(), SizesDown[i]);
     }
@@ -39,8 +39,8 @@ TEST(Resampler, ResamplingSize)
     for (auto i = 0u; i < 3; ++i) {
         auto octave = i + 1;
         std::cout << octave <<std::endl;
-        auto up = DSP::Resampler<T>::DecimateOctave(BufferView(buf), octave);
-        auto down = DSP::Resampler<T>::InterpolateOctave(BufferView(buf), octave);
+        auto up = DSP::Resampler<T>::DecimateByOctave(BufferView(buf), octave);
+        auto down = DSP::Resampler<T>::InterpolateByOctave(BufferView(buf), octave);
         std::cout << "up: " << up.size<T>() << std::endl;
         std::cout << "down: " << down.size<T>() << std::endl;
         EXPECT_EQ(up.size<T>(), std::ceil(inputSize / std::pow(2.0, octave)));

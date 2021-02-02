@@ -37,7 +37,7 @@ inline std::size_t DSP::Resampler<T>::GetRealResamplingSize(const std::size_t in
 }
 
 template<typename T>
-inline Buffer DSP::Resampler<T>::InterpolateOctave(const BufferView &inputBuffer, const std::uint8_t nOctave) noexcept
+inline Buffer DSP::Resampler<T>::InterpolateByOctave(const BufferView &inputBuffer, const std::uint8_t nOctave) noexcept
 {
     const auto inputSize = inputBuffer.size<T>();
     Buffer outBuffer(inputBuffer.channelByteSize() * std::pow(2.0, nOctave), inputBuffer.sampleRate(), inputBuffer.channelArrangement());
@@ -54,21 +54,21 @@ inline Buffer DSP::Resampler<T>::InterpolateOctave(const BufferView &inputBuffer
 }
 
 template<typename T>
-inline Buffer DSP::Resampler<T>::Interpolate(const BufferView &inputBuffer, const std::size_t interpolationSamples) noexcept
+inline Buffer DSP::Resampler<T>::Interpolate(const BufferView &inputBuffer, const std::size_t interpolationSamples) noexcept_ndebug
 {
     coreAssert(interpolationSamples > 1,
         throw std::logic_error("DSP::Resampler::Interpolate: interpolationSamples must be greater than 1"));
     if (interpolationSamples == 2)
-        return InterpolateOctave(inputBuffer, 1);
+        return InterpolateByOctave(inputBuffer, 1);
 
     const auto inputSize = inputBuffer.size<T>();
-    const auto newSize = inputSize + (inputSize - 1) * (interpolationSamples - 1);
+    const auto newSize = inputSize + (inputSize - 1) * (interpolationSamples);
 
     return Buffer(newSize * sizeof(T), inputBuffer.sampleRate(), inputBuffer.channelArrangement());
 }
 
 template<typename T>
-inline Buffer DSP::Resampler<T>::DecimateOctave(const BufferView &inputBuffer, const std::uint8_t nOctave) noexcept
+inline Buffer DSP::Resampler<T>::DecimateByOctave(const BufferView &inputBuffer, const std::uint8_t nOctave) noexcept
 {
     const auto inputSize = inputBuffer.size<T>();
     Buffer outBuffer(std::ceil(inputSize / std::pow(2.0, nOctave)) * sizeof(T), inputBuffer.sampleRate(), inputBuffer.channelArrangement());
@@ -85,12 +85,12 @@ inline Buffer DSP::Resampler<T>::DecimateOctave(const BufferView &inputBuffer, c
 }
 
 template<typename T>
-inline Buffer DSP::Resampler<T>::Decimate(const BufferView &inputBuffer, const std::size_t decimationSamples) noexcept
+inline Buffer DSP::Resampler<T>::Decimate(const BufferView &inputBuffer, const std::size_t decimationSamples) noexcept_ndebug
 {
     coreAssert(decimationSamples > 1,
         throw std::logic_error("DSP::Resampler::Decimate: decimationSamples must be greater than 1"));
     if (decimationSamples == 2)
-        return DecimateOctave(inputBuffer, 1);
+        return DecimateByOctave(inputBuffer, 1);
 
     const auto inputSize = inputBuffer.size<T>();
     const auto newSize = std::ceil(static_cast<float>(inputSize) / decimationSamples);
@@ -108,7 +108,7 @@ inline Buffer DSP::Resampler<T>::ResampleOneSemitone(const BufferView &inputBuff
     // const std::size_t interpolateBufferSize = (inputSize + (inputSize - 1) * ((iFactor - 1));
     // const std::size_t outputSize = static_cast<float>(interpolateBufferSize) / dFactor;
 
-    auto interpolatedBuffer = Interpolate(inputBuffer, iFactor);
+    auto interpolatedBuffer = Interpolate(inputBuffer, iFactor - 1);
     // Filter interpolatedBuffer !
     auto outBuffer = Decimate(interpolatedBuffer, dFactor);
 
@@ -117,10 +117,10 @@ inline Buffer DSP::Resampler<T>::ResampleOneSemitone(const BufferView &inputBuff
 
 
 template<typename T>
-inline Buffer DSP::Resampler<T>::ResampleSemitone(const BufferView &inputBuffer, const Semitone semitone) noexcept
+inline Buffer DSP::Resampler<T>::ResampleBySemitone(const BufferView &inputBuffer, const Semitone semitone) noexcept_ndebug
 {
     coreAssert((semitone != 0) && (semitone < 12 && semitone > -12),
-        throw std::logic_error("DSP::Resampler<T>::ResampleSemitone: semitone arguments must fit an octave [-11, 11]"));
+        throw std::logic_error("DSP::Resampler<T>::ResampleBySemitone: semitone arguments must fit an octave [-11, 11]"));
     const bool upScale = semitone > 0;
     const auto nSemitone = std::abs(semitone);
     const auto inputSize = inputBuffer.size<T>();
