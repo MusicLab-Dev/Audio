@@ -11,15 +11,26 @@
 
 using namespace DSP;
 
-TEST(Biquad, Instantiation)
-{
-    // auto filterD1 = BiquadMaker<BiquadParam::Optimization::Classic, char>::MakeBiquad(48000, 0.2);
-    // auto filterD2 = BiquadMaker<BiquadParam::Optimization::Optimized, int>::MakeBiquad(48000, 0.2);
-    // auto filterTP1 = BiquadMaker<BiquadParam::Optimization::Classic, float>::MakeBiquad(48000, 0.2);
-    // auto filterTP2 = BiquadMaker<BiquadParam::Optimization::Optimized, double>::MakeBiquad(48000, 0.2);
+using TypeD1 = std::uint8_t;
+using TypeD2 = std::int8_t;
+using TypeT1 = float;
+using TypeT2 = double;
 
-    // ASSERT_EQ(decltype(filterD1)::Type == BiquadParam::InternalForm::Direct1, true);
-    // ASSERT_EQ(decltype(filterD2)::Type == BiquadParam::InternalForm::Direct2, true);
-    // ASSERT_EQ(decltype(filterTP1)::Type == BiquadParam::InternalForm::Transposed1, true);
-    // ASSERT_EQ(decltype(filterTP2)::Type == BiquadParam::InternalForm::Transposed2, true);
-}
+static constexpr auto Size = 1024u;
+
+// TEST(Biquad, Instantiation)
+// {
+//     auto filterD1 = BiquadMaker<BiquadParam::Optimization::Classic>::MakeBiquad<TypeD1>(48000, 0.2);
+//     auto filterD2 = BiquadMaker<BiquadParam::Optimization::Optimized>::MakeBiquad<TypeD2>(48000, 0.2);
+//     // auto filterTP1 = BiquadMaker<BiquadParam::Optimization::Classic>::MakeBiquad<TypeD3>(48000, 0.2);
+//     // auto filterTP2 = BiquadMaker<BiquadParam::Optimization::Optimized>::MakeBiquad<TypeD4>(48000, 0.2);
+
+//     TypeD1 bufD1[Size] {};
+//     TypeD2 bufD2[Size] {};
+//     TypeT1 bufT1[Size] {};
+//     TypeT2 bufT2[Size] {};
+
+//     filterD1.processBlock(bufD1, Size);
+//     filterD1.processBlock(bufD2, Size);
+
+// }

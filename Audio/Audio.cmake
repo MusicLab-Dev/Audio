@@ -17,6 +17,7 @@ set(AudioSources
     ${AudioDir}/BaseIndex.hpp
     ${AudioDir}/Buffer.hpp
     ${AudioDir}/Buffer.ipp
+    ${AudioDir}/Buffer.cpp
     ${AudioDir}/Connection.hpp
     ${AudioDir}/Control.hpp
     ${AudioDir}/Control.ipp
@@ -44,8 +45,8 @@ set(AudioSources
     ${AudioDir}/Project.hpp
     ${AudioDir}/Project.ipp
     ${AudioDir}/UtilsMidi.hpp
-    ${AudioDir}/KissFFT.hpp
-    ${AudioDir}/KissFFT.ipp
+    # ${AudioDir}/KissFFT.hpp
+    # ${AudioDir}/KissFFT.ipp
 )
 
 
@@ -65,7 +66,7 @@ set(AudioPluginManagerDir ${AudioPluginsDir}/Managers)
 set(AudioPluginManagersSources
     ${AudioPluginManagerDir}/NoteManager.hpp
     ${AudioPluginManagerDir}/NoteManager.ipp
-    )
+)
 
 set(AudioSampleFileDir ${AudioDir}/SampleFile)
 
@@ -85,27 +86,25 @@ set(AudioDSPDir ${AudioDir}/DSP)
 set(AudioDSPSources
     ${AudioDSPDir}/Merge.hpp
     ${AudioDSPDir}/Merge.ipp
-    ${AudioDSPDir}/Vocoder.hpp
-    ${AudioDSPDir}/Vocoder.cpp
     ${AudioDSPDir}/PitchShift.cpp
     ${AudioDSPDir}/PitchShift.hpp
     ${AudioDSPDir}/PitchShift.ipp
     ${AudioDSPDir}/Resampler.hpp
     ${AudioDSPDir}/Resampler.ipp
-    # ${AudioDSPDir}/Biquad.cpp
-    # ${AudioDSPDir}/Biquad.hpp
-    # ${AudioDSPDir}/Biquad.ipp
-    # ${AudioDSPDir}/EnveloppeGenerator.hpp
-    # ${AudioDSPDir}/EnveloppeGenerator.ipp
+    ${AudioDSPDir}/Biquad.cpp
+    ${AudioDSPDir}/Biquad.hpp
+    ${AudioDSPDir}/Biquad.ipp
+    ${AudioDSPDir}/EnveloppeGenerator.hpp
+    ${AudioDSPDir}/EnveloppeGenerator.ipp
 )
 
 set(AudioKissFFTDir ${PROJECT_SOURCE_DIR}/kissfft)
 
 set(AudioKissFFTSources
-    ${AudioKissFFTDir}/kiss_fft.h
-    ${AudioKissFFTDir}/kiss_fft.c
-    ${AudioKissFFTDir}/tools/kiss_fftr.h
-    ${AudioKissFFTDir}/tools/kiss_fftr.c
+    # ${AudioKissFFTDir}/kiss_fft.h
+    # ${AudioKissFFTDir}/kiss_fft.c
+    # ${AudioKissFFTDir}/tools/kiss_fftr.h
+    # ${AudioKissFFTDir}/tools/kiss_fftr.c
 )
 
 add_library(${PROJECT_NAME}

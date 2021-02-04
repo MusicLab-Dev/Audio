@@ -8,16 +8,16 @@
 template<typename T>
 inline KissFFT::TimeBuffer KissFFT::ConvertBuffer(const Audio::BufferView &inputBuffer)
 {
-    const auto inputSize = inputBuffer.size<T>();
+    // const auto inputSize = inputBuffer.size<T>();
     TimeBuffer outBuffer;
-    outBuffer.size = inputSize;
+    // outBuffer.size = inputSize;
 
-    for (auto iChannel = 0u; iChannel < static_cast<std::size_t>(inputBuffer.channelArrangement()); ++iChannel) {
-        auto buffer = outBuffer.data.push(TimeArray(inputSize));
-        for (auto i = 0u; i < inputSize; ++i) {
-            buffer[iChannel * inputSize + i] = inputBuffer.data<T>(static_cast<Audio::Channel>(iChannel))[i];
-        }
-    }
+    // for (auto iChannel = 0u; iChannel < static_cast<std::size_t>(inputBuffer.channelArrangement()); ++iChannel) {
+    //     auto buffer = outBuffer.data.push(TimeArray(inputSize));
+    //     for (auto i = 0u; i < inputSize; ++i) {
+    //         buffer[iChannel * inputSize + i] = inputBuffer.data<T>(static_cast<Audio::Channel>(iChannel))[i];
+    //     }
+    // }
     return outBuffer;
 }
 

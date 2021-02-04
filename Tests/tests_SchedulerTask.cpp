@@ -280,7 +280,7 @@ TEST(SchedulerTask, NotesCollection)
         auto sampler = MAKE_DUMMY(Sampler);
         auto samplerP = reinterpret_cast<Sampler *>(sampler->getPlugin());
 
-        samplerP->loadSample<float>("/home/Pedro/Documents/AUDIO/Kick.wav");
+        // samplerP->loadSample<float>("/home/Pedro/Documents/AUDIO/Kick.wav");
         // samplerP->loadSample("/home/Pedro/Musique/Zaå Wezs.wav");
 
 

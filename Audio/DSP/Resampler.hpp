@@ -9,7 +9,7 @@
 
 namespace Audio::DSP
 {
-    template<typename T>
+    template<typename Type>
     struct Resampler;
 };
 
@@ -18,7 +18,7 @@ namespace Audio::DSP
  * Decimate (compress the signal): filter, then remove M sample between each pair of sample
  * Resample (change signal pitch): it's combine both interpolation & decimation procedures
  */
-template<typename T>
+template<typename Type>
 struct Audio::DSP::Resampler
 {
     /** @brief Interpolation factor of 1 semitone */
@@ -46,6 +46,11 @@ struct Audio::DSP::Resampler
      */
     [[nodiscard]] static Buffer ResampleBySemitone(const BufferView &inputBuffer, const Semitone semitone) noexcept_ndebug;
 
+    [[nodiscard]] static Buffer ResampleBySamplerate(const BufferView &inputBuffer, const SampleRate newSampleRate) noexcept_ndebug;
+
+    /** @brief Resample by a specific in & out sampleRate */
+    [[nodiscard]] static Buffer ResampleSpecificSampleRate(const BufferView &inputBuffer, const SampleRate inSampleRate, const SampleRate outSampleRate) noexcept_ndebug;
+
 
     static void GenerateDefaultOctave(const BufferView &inputBuffer, BufferViews &outBuffers) noexcept;
 
@@ -53,6 +58,7 @@ private:
     [[nodiscard]] static std::size_t GetOptimalResamplingSize(const std::size_t inputSize, const Semitone semitone) noexcept;
     [[nodiscard]] static std::size_t GetRealResamplingSize(const std::size_t inputSize, const Semitone semitone) noexcept;
 
+    /** @brief Resample by a one semitone implementation */
     [[nodiscard]] static Buffer ResampleOneSemitone(const BufferView &inputBuffer, bool upScale) noexcept;
 };
 

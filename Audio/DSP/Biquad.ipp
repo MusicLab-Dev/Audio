@@ -6,13 +6,9 @@
 #include <iostream>
 #include <chrono>
 
-
-template<DSP::BiquadParam::InternalForm Form>
-double DSP::Biquad<Form>::SR = 0;
-
-
 template<>
-inline float DSP::Biquad<DSP::BiquadParam::InternalForm::Direct1>::process(const float in) noexcept
+template<typename Type>
+inline Type DSP::Biquad<DSP::BiquadParam::InternalForm::Direct1>::process(const Type in) noexcept
 {
     float out = _coefs.b[0] * in + _coefs.b[1] * _regs[0] + _coefs.b[2] * _regs[1] -
                 _coefs.a[1] * _regs[2] - _coefs.a[2] * _regs[3];
@@ -26,53 +22,54 @@ inline float DSP::Biquad<DSP::BiquadParam::InternalForm::Direct1>::process(const
 }
 
 template<>
-void DSP::Biquad<DSP::BiquadParam::InternalForm::Direct1>::processBlock(float *block, std::size_t len) noexcept
+template<typename Type>
+void DSP::Biquad<DSP::BiquadParam::InternalForm::Direct1>::processBlock(Type *block, std::size_t len) noexcept
 {
     for (; len; --len, ++block)
         *block = process(*block);
 }
 
-template<>
-inline float DSP::Biquad<DSP::BiquadParam::InternalForm::Transposed2>::process(const float in) noexcept
-{
-    const float out = in * _coefs.a[0] + _regs[0];
+// template<>
+// inline float DSP::Biquad<DSP::BiquadParam::InternalForm::Transposed2>::process(const float in) noexcept
+// {
+//     const float out = in * _coefs.a[0] + _regs[0];
 
-    // return out;
-    _regs[0] = in * _coefs.a[1] + _regs[1] - _coefs.b[1] * out;
-    _regs[1] = in * _coefs.a[2] - _coefs.b[2] * out;
-    return out;
-}
+//     // return out;
+//     _regs[0] = in * _coefs.a[1] + _regs[1] - _coefs.b[1] * out;
+//     _regs[1] = in * _coefs.a[2] - _coefs.b[2] * out;
+//     return out;
+// }
 
-template<>
-inline float DSP::Biquad<DSP::BiquadParam::InternalForm::Transposed2>::process1(const float in) noexcept
-{
-    const float out = _regs[0] + in * _coefs.b[0];
+// template<>
+// inline float DSP::Biquad<DSP::BiquadParam::InternalForm::Transposed2>::process1(const float in) noexcept
+// {
+//     const float out = _regs[0] + in * _coefs.b[0];
 
-    _regs[0] = _regs[1] + in * _coefs.b[1] - (_coefs.a[1] * out);
-    _regs[1] = in * _coefs.b[2] - (_coefs.a[2] * out);
-    return out;
-}
+//     _regs[0] = _regs[1] + in * _coefs.b[1] - (_coefs.a[1] * out);
+//     _regs[1] = in * _coefs.b[2] - (_coefs.a[2] * out);
+//     return out;
+// }
 
-template<>
-inline void DSP::Biquad<DSP::BiquadParam::InternalForm::Transposed2>::processBlock(float *block, std::size_t len) noexcept
-{
-    for (; len; --len, ++block)
-        *block = process(*block);
-}
+// template<>
+// inline void DSP::Biquad<DSP::BiquadParam::InternalForm::Transposed2>::processBlock(float *block, std::size_t len) noexcept
+// {
+//     for (; len; --len, ++block)
+//         *block = process(*block);
+// }
 
-template<>
-inline void DSP::Biquad<DSP::BiquadParam::InternalForm::Transposed2>::processBlock1(float *block, std::size_t len) noexcept
-{
-    for (; len; --len, ++block)
-        *block = process1(*block);
+// template<>
+// inline void DSP::Biquad<DSP::BiquadParam::InternalForm::Transposed2>::processBlock1(float *block, std::size_t len) noexcept
+// {
+//     for (; len; --len, ++block)
+//         *block = process1(*block);
 
-    //     const auto in = *block;
-    //     const float out = in * _coefs.a[0] + _regs[0];
-    //     _regs[0] = in * _coefs.a[1] + _regs[1] - _coefs.b[1] * out;
-    //     _regs[1] = in * _coefs.a[2] - _coefs.b[2] * out;
-    //     *block = out;
-    // }
-}
+//     //     const auto in = *block;
+//     //     const float out = in * _coefs.a[0] + _regs[0];
+//     //     _regs[0] = in * _coefs.a[1] + _regs[1] - _coefs.b[1] * out;
+//     //     _regs[1] = in * _coefs.a[2] - _coefs.b[2] * out;
+//     //     *block = out;
+//     // }
+// }
 
 
 template<>

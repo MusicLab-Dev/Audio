@@ -50,7 +50,7 @@ TEST(MergeVariadic, float)
         output.data(), first.data(), ratio, second.data()
     );
     for (auto i = 0ul; i < BufferSize; ++i) {
-        std::cout << "I= " << i << std::endl;
+        // std::cout << "I= " << i << std::endl;
         ASSERT_EQ(
             output.at(i),
             (first.at(i) * ratio / 2.0f) + (second.at(i) * 1.0f / 2.0f)
@@ -61,7 +61,7 @@ TEST(MergeVariadic, float)
         output.data(), first.data(), ratio, second.data(), third.data(), ratio
     );
     for (auto i = 0ul; i < BufferSize; ++i) {
-        std::cout << "I= " << i << std::endl;
+        // std::cout << "I= " << i << std::endl;
         ASSERT_EQ(
             output.at(i),
             (first.at(i) * ratio / 3.0f) + (second.at(i) * 1.0f / 3.0f) + (third.at(i) * ratio / 3.0f)
