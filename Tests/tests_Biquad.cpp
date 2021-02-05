@@ -18,19 +18,26 @@ using TypeT2 = double;
 
 static constexpr auto Size = 1024u;
 
-// TEST(Biquad, Instantiation)
-// {
-//     auto filterD1 = BiquadMaker<BiquadParam::Optimization::Classic>::MakeBiquad<TypeD1>(48000, 0.2);
-//     auto filterD2 = BiquadMaker<BiquadParam::Optimization::Optimized>::MakeBiquad<TypeD2>(48000, 0.2);
-//     // auto filterTP1 = BiquadMaker<BiquadParam::Optimization::Classic>::MakeBiquad<TypeD3>(48000, 0.2);
-//     // auto filterTP2 = BiquadMaker<BiquadParam::Optimization::Optimized>::MakeBiquad<TypeD4>(48000, 0.2);
+TEST(Biquad, Instantiation)
+{
+    auto filterD1 = BiquadMaker<BiquadParam::Optimization::Classic>::MakeBiquad<TypeD1>();
+    auto filterD2 = BiquadMaker<BiquadParam::Optimization::Optimized>::MakeBiquad<TypeD2>();
+    auto filterT1 = BiquadMaker<BiquadParam::Optimization::Classic>::MakeBiquad<TypeT1>();
+    auto filterT2 = BiquadMaker<BiquadParam::Optimization::Optimized>::MakeBiquad<TypeT2>();
 
-//     TypeD1 bufD1[Size] {};
-//     TypeD2 bufD2[Size] {};
-//     TypeT1 bufT1[Size] {};
-//     TypeT2 bufT2[Size] {};
+    ASSERT_EQ(decltype(filterD1)::InternalType, BiquadParam::InternalForm::Direct1);
+    ASSERT_EQ(decltype(filterD2)::InternalType, BiquadParam::InternalForm::Direct2);
+    ASSERT_EQ(decltype(filterT1)::InternalType, BiquadParam::InternalForm::Transposed1);
+    ASSERT_EQ(decltype(filterT2)::InternalType, BiquadParam::InternalForm::Transposed2);
 
-//     filterD1.processBlock(bufD1, Size);
-//     filterD1.processBlock(bufD2, Size);
+    TypeD1 bufD1[Size] {};
+    TypeD2 bufD2[Size] {};
+    TypeT1 bufT1[Size] {};
+    TypeT2 bufT2[Size] {};
 
-// }
+
+
+    // filterD1.processBlock(bufD1, Size);
+    // filterD1.processBlock(bufD2, Size);
+
+}

@@ -9,9 +9,10 @@
 
 using namespace Audio;
 
-using T = float;
+using Type = float;
+static constexpr auto Size = 10u;
 
-static constexpr auto Size { 19'765u };
+// static constexpr auto Size { 19'765u };
 static const std::size_t SizesDown[11] {
     20940, 22185, 23504, 24901, 26381, 27949, 29610, 31370, 33235, 35211, 37304
 };
@@ -21,6 +22,69 @@ static const std::size_t SizesUp[11] {
 
 static std::size_t GetSemitoneRateSize(const Semitone semitone) {
     return std::pow(2.0, semitone / 12.0);
+}
+
+TEST(Resampler, InterpolationOneOctave)
+{
+    Type buffer[Size];
+    Type outInter1[Size * 2];
+    Type outInter2[Size * 2];
+    for (auto i = 0; i < Size; ++i) {
+        buffer[i] = 3;
+        outInter1[i] = 1;
+        outInter1[i + 1] = 1;
+        outInter2[i] = 1;
+        outInter2[i + 1] = 1;
+    }
+    DSP::Resampler<Type>::Interpolate(buffer, outInter1, Size, 2);
+    DSP::Resampler<Type>::Internal::InterpolateOctave(buffer, outInter2, Size, 1);
+
+    for (auto k = 0; k < Size; ++k) {
+        EXPECT_EQ(outInter1[k * 2 + 1], 0);
+        EXPECT_EQ(outInter1[k * 2], 3);
+        EXPECT_EQ(outInter2[k * 2 + 1], 0);
+        EXPECT_EQ(outInter2[k * 2], 3);
+    }
+}
+
+TEST(Resampler, DecimationOneOctave)
+{
+    const std::size_t dRate = 4;
+    Type buffer[Size];
+    Type outDecim1[Size * 2];
+    for (auto i = 0; i < Size; ++i) {
+        buffer[i] = 3;
+        outDecim1[i] = 1;
+        outDecim1[i + 1] = 1;
+    }
+
+    DSP::Resampler<Type>::Decimate(buffer, outDecim1, Size, 4);
+    for (auto k = 0; k < Size; ++k) {
+        // std::cout << outDecim1[k] << std::endl;
+        if (k < Size / 4) {
+            EXPECT_EQ(outDecim1[k], 3);
+        } else {
+            EXPECT_EQ(outDecim1[k], 1);
+        }
+    }
+}
+
+TEST(Resampler, InterpolationSemitone)
+{
+    const std::size_t iRate = 5;
+    Type buffer[Size];
+    Type outBuffer[Size * iRate];
+    for (auto i = 0; i < Size; ++i) {
+        buffer[i] = 3;
+        outBuffer[i] = 1;
+        outBuffer[i + 1] = 1;
+    }
+
+    DSP::Resampler<Type>::Interpolate(buffer, outBuffer, Size, iRate);
+    for (auto k = 0; k < Size; ++k) {
+        EXPECT_EQ(outBuffer[k * iRate], 3);
+        EXPECT_EQ(outBuffer[k * iRate + 1], 0);
+    }
 }
 
 // TEST(Resampler, ResamplingSize)

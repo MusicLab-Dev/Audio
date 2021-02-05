@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <cmath>
 #include <Audio/Buffer.hpp>
 
 namespace Audio::DSP
@@ -28,22 +29,26 @@ struct Audio::DSP::Resampler
 
     static constexpr std::int8_t RootKeyDefaultOctave = 6; // Within the range [0, 12[
 
-
-    /** @brief Interpolate a buffer with a specific sample number */
-    [[nodiscard]] static Buffer Interpolate(const BufferView &inputBuffer, const std::size_t interpolationSamples) noexcept_ndebug;
-    /** @brief Interpolate a buffer with nOctave */
-    [[nodiscard]] static Buffer InterpolateByOctave(const BufferView &inputBuffer, const std::uint8_t nOctave) noexcept;
-
-    /** @brief Decimate a buffer with a specific sample number */
-    [[nodiscard]] static Buffer Decimate(const BufferView &inputBuffer, const std::size_t decimationSamples) noexcept_ndebug;
-    /** @brief Decimate a buffer with nOctave */
-    [[nodiscard]] static Buffer DecimateByOctave(const BufferView &inputBuffer, const std::uint8_t nOctave) noexcept;
+    struct Internal
+    {
+        /** @brief Interpolate the inputBuffer into the outputBuffer, outputBuffer size must be nOctave * inputSize */
+        static void InterpolateOctave(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const std::uint8_t nOctave) noexcept_ndebug;
+    };
 
 
-    /**
-     * @brief Resample a buffer by semitone
-     * @param semitone Semitone within the range [-11, 11] and != 0
-     */
+    /** @brief Interpolate the inputBuffer into the outputBuffer, outputBuffer size must fit with interpolationRatio */
+    static void Interpolate(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const std::size_t interpolationRatio) noexcept_ndebug;
+    /** @brief Decimate the inputBuffer into the outputBuffer, outputBuffer size must fit with decimationRatio */
+    static void Decimate(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const std::size_t decimationRatio) noexcept_ndebug;
+
+    /** @brief Resample the inputBuffer into outputBuffer, outputBuffer size must fit the semitone, call GetResamplingSizeSemitone to get the outputBuffer size */
+    static void ResampleSemitone(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const Semitone semitone) noexcept_ndebug;
+    /** @brief Resample the inputBuffer into outputBuffer, outputBuffer size must fit the outSampleRate, call GetResamplingSize to get the outputBuffer size */
+    static void ResampleSampleRate(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const SampleRate outSampleRate) noexcept_ndebug;
+
+
+
+
     [[nodiscard]] static Buffer ResampleBySemitone(const BufferView &inputBuffer, const Semitone semitone) noexcept_ndebug;
 
     [[nodiscard]] static Buffer ResampleBySamplerate(const BufferView &inputBuffer, const SampleRate newSampleRate) noexcept_ndebug;
@@ -54,12 +59,23 @@ struct Audio::DSP::Resampler
 
     static void GenerateDefaultOctave(const BufferView &inputBuffer, BufferViews &outBuffers) noexcept;
 
+
+    /** @brief Call these funtions to get the outputBuffer size used for the Interpolate/Decimate/Resample functions */
+    [[nodiscard]] static std::size_t GetInterpolationSize(const std::size_t inputSize, const std::size_t interpolationRatio) noexcept;
+    [[nodiscard]] static std::size_t GetDecimationSize(const std::size_t inputSize, const std::size_t decimationRatio) noexcept;
+    [[nodiscard]] static std::size_t GetInterpolationOctaveSize(const std::size_t inputSize, const std::uint8_t nOctave) noexcept;
+    [[nodiscard]] static std::size_t GetDecimationOctaveSize(const std::size_t inputSize, const std::uint8_t nOctave) noexcept;
+    [[nodiscard]] static std::size_t GetResamplingSizeSemitone(const std::size_t inputSize, const Semitone semitone) noexcept;
+    [[nodiscard]] static std::size_t GetResamplingSize(const std::size_t inputSize, const SampleRate inSampleRate, const SampleRate outSampleRate) noexcept;
+
 private:
     [[nodiscard]] static std::size_t GetOptimalResamplingSize(const std::size_t inputSize, const Semitone semitone) noexcept;
-    [[nodiscard]] static std::size_t GetRealResamplingSize(const std::size_t inputSize, const Semitone semitone) noexcept;
+    // [[nodiscard]] static std::size_t GetResamplingSize(const std::size_t inputSize, const std::size_t newSize) noexcept;
 
     /** @brief Resample by a one semitone implementation */
-    [[nodiscard]] static Buffer ResampleOneSemitone(const BufferView &inputBuffer, bool upScale) noexcept;
+    static void ResampleClosestSemitoneImpl(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, bool upScale) noexcept;
+    /** @brief Resample by semitones implementation within an octave */
+    static void ResampleSemitoneOctaveImpl(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const Semitone semitone) noexcept;
 };
 
 #include "Resampler.ipp"

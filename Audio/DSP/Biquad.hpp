@@ -9,11 +9,15 @@
 #include <cmath>
 
 #include <cstdint>
+#include <type_traits>
 
 #include "immintrin.h"
 
+#include "Audio/Base.hpp"
+
 namespace DSP
 {
+    /** @brief Describe the parameters used for a second-order IIR filter section */
     struct BiquadParam {
         struct Coefficients
         {
@@ -22,10 +26,21 @@ namespace DSP
         };
         static_assert(sizeof(Coefficients) == 24, "Coefficients must take 24 bytes !");
 
+        struct Parameters
+        {
+            Audio::SampleRate sampleRate;
+            Audio::SampleRate cutoff;
+            double gain;
+            double qFactor;
+            bool qAsBandWidth;
+        };
+
+        /** @brief Select the internal implementation: classic form or optimized (for memory) form */
         enum class Optimization : uint8_t {
             Classic, Optimized
         };
 
+        /** @brief Different possible implementation */
         enum class InternalForm : uint8_t {
             Direct1,        // 4 registers, 3 addOp -> better for fixed-points
             Direct2,        // 2 registers, 4 addOp -> better for fixed-points
@@ -33,6 +48,7 @@ namespace DSP
             Transposed2     // 2 registers, 3 addOp -> better for floating-points
         };
 
+        /** @brief Describe type used for a second-order IIR filter section */
         enum class FilterType : uint8_t {
             LowPass,
             HighPass,
@@ -46,7 +62,7 @@ namespace DSP
 
         template<BiquadParam::FilterType Filter>
         [[nodiscard]] static Coefficients GenerateCoefficients(
-            const double sampleRate, const double freq, const double gain, const double q, bool qAsBandWidth) noexcept;
+                const Audio::SampleRate sampleRate, const double freq, const double gain, const double q, bool qAsBandWidth) noexcept;
 
     };
 
@@ -64,14 +80,19 @@ template<DSP::BiquadParam::InternalForm Form>
 class DSP::Biquad
 {
 public:
+    static constexpr auto InternalType = Form;
+    static constexpr auto Filter = BiquadParam::FilterType::LowPass;
+
     /** @brief Default constructor */
-    Biquad(const double sampleRate, const double freq, const double gain, const double q, bool qAsBandWidth) {
-        setup<BiquadParam::FilterType::LowPass>(sampleRate, freq, gain, q, qAsBandWidth);
-    }
+    Biquad(void) = default;
+
+    // Biquad(const double sampleRate, const double freq, const double gain, const double q, bool qAsBandWidth) {
+    //     setup<Filter>(sampleRate, freq, gain, q, qAsBandWidth);
+    // }
 
     /** @brief Setup the biquad according to the filter type and characteristics */
     template<BiquadParam::FilterType Filter>
-    void setup(const double sampleRate, const double freq, const double gain, const double q, bool qAsBandWidth) noexcept {
+    void setup(const Audio::SampleRate sampleRate, const double freq, const double gain, const double q, bool qAsBandWidth) noexcept {
         _coefs = BiquadParam::GenerateCoefficients<Filter>(sampleRate, freq, gain, q, qAsBandWidth);
     }
 
@@ -107,17 +128,19 @@ template<DSP::BiquadParam::Optimization Opti>
 struct DSP::BiquadMaker
 {
     template<typename Type>
-    [[nodiscard]] static auto MakeBiquad(const double sampleRate, const double freq, const double gain = 3.0, const double q = 0.707, bool qAsBandWidth = false) noexcept {
+    [[nodiscard]] static auto MakeBiquad(void)
+            // const double sampleRate, const double freq, const double gain = 3.0, const double q = 0.70710678118654752440, bool qAsBandWidth = false
+    noexcept {
         if constexpr (std::is_floating_point_v<Type>) {
             if constexpr (Opti == DSP::BiquadParam::Optimization::Classic)
-                return Biquad<BiquadParam::InternalForm::Transposed1>(sampleRate, freq, gain, q, qAsBandWidth);
+                return Biquad<BiquadParam::InternalForm::Transposed1>();
             else if constexpr (Opti == BiquadParam::Optimization::Optimized)
-                return Biquad<BiquadParam::InternalForm::Transposed2>(sampleRate, freq, gain, q, qAsBandWidth);
-        } else if constexpr (std::is_integral_v<Type>()) {
+                return Biquad<BiquadParam::InternalForm::Transposed2>();
+        } else if constexpr (std::is_integral_v<Type>) {
             if constexpr (Opti == BiquadParam::Optimization::Classic)
-                return Biquad<BiquadParam::InternalForm::Direct1>(sampleRate, freq, gain, q, qAsBandWidth);
+                return Biquad<BiquadParam::InternalForm::Direct1>();
             else if constexpr (Opti == BiquadParam::Optimization::Optimized)
-                return Biquad<BiquadParam::InternalForm::Direct2>(sampleRate, freq, gain, q, qAsBandWidth);
+                return Biquad<BiquadParam::InternalForm::Direct2>();
         }
     }
 };

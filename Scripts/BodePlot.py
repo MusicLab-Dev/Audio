@@ -12,27 +12,25 @@ gain = 6
 q = 0.707
 qAsBandWidth = False
 
-omega = 0
-tsin = 0
-tcos = 0
-alpha = 0
+# omega = 0
+# tsin = 0
+# tcos = 0
+# alpha = 0
 
 def init():
-    print(omega, tsin, tcos, alpha)
     omega = 2.0 * np.pi * cutOff / sampleRate
     tsin = np.sin(omega)
     tcos = np.cos(omega)
-    print(omega, tsin, tcos, alpha)
-    # if qAsBandWidth:
-    #     alpha = (tsin * np.sinh(np.log(2.0) / 2.0 * q * omega / tsin))
-    # else:
-    #     alpha = (tsin / (2.0 * q))
+    if qAsBandWidth:
+        alpha = (tsin * np.sinh(np.log(2.0) / 2.0 * q * omega / tsin))
+    else:
+        alpha = (tsin / (2.0 * q))
 
 a = [0.0] * 3
 b = [0.0] * 3
 
+init()
 def lp():
-    init()
     print(omega, tsin, tcos, alpha)
     b[0] = (1.0 - tcos) / 2.0
     b[1] = 1.0 - tcos
@@ -40,13 +38,6 @@ def lp():
     a[0] = 1.0 + alpha
     a[1] = -2.0 * tcos
     a[2] = 1.0 - alpha
-
-    b[0] = b[0] / a[0]
-    b[1] = b[1] / a[0]
-    b[2] = b[2] / a[0]
-    a[1] = a[1] / a[0]
-    a[2] = a[2] / a[0]
-    a[0] = 1
 
 def hp():
     init()
@@ -57,13 +48,6 @@ def hp():
     a[1] = -2.0 * tcos
     a[2] = 1.0 - alpha
 
-    b[0] = b[0] / a[0]
-    b[1] = b[1] / a[0]
-    b[2] = b[2] / a[0]
-    a[1] = a[1] / a[0]
-    a[2] = a[2] / a[0]
-    a[0] = 1
-
 def bp():
     init()
     b[0] = alpha
@@ -72,13 +56,6 @@ def bp():
     a[0] = 1.0 + alpha
     a[1] = -2.0 * tcos
     a[2] = 1.0 - alpha
-
-    b[0] = b[0] / a[0]
-    b[1] = b[1] / a[0]
-    b[2] = b[2] / a[0]
-    a[1] = a[1] / a[0]
-    a[2] = a[2] / a[0]
-    a[0] = 1
 
 
 ax = plt.subplot(111)
