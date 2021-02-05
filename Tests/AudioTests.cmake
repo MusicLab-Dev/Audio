@@ -12,17 +12,17 @@ set(AudioTestsSources
     ${AudioTestsDir}/tests_Control.cpp
     ${AudioTestsDir}/tests_Device.cpp
     # ${AudioTestsDir}/tests_IPlugin.cpp
-    ${AudioTestsDir}/tests_Note.cpp
-    ${AudioTestsDir}/tests_NoteManager.cpp
-    ${AudioTestsDir}/tests_Partition.cpp
-    ${AudioTestsDir}/tests_PluginTable.cpp
-    ${AudioTestsDir}/tests_Point.cpp
-    ${AudioTestsDir}/tests_Project.cpp
-    ${AudioTestsDir}/tests_UtilsMidi.cpp
+    # ${AudioTestsDir}/tests_Note.cpp
+    # ${AudioTestsDir}/tests_NoteManager.cpp
+    # ${AudioTestsDir}/tests_Partition.cpp
+    # ${AudioTestsDir}/tests_PluginTable.cpp
+    # ${AudioTestsDir}/tests_Point.cpp
+    # ${AudioTestsDir}/tests_Project.cpp
+    # ${AudioTestsDir}/tests_UtilsMidi.cpp
 
-    ${AudioTestsDir}/tests_Biquad.cpp
-    ${AudioTestsDir}/tests_Merge.cpp
-    ${AudioTestsDir}/tests_EnveloppeGenerator.cpp
+    # ${AudioTestsDir}/tests_Biquad.cpp
+    # ${AudioTestsDir}/tests_Merge.cpp
+    # ${AudioTestsDir}/tests_EnveloppeGenerator.cpp
 )
 
 add_executable(${PROJECT_NAME} ${AudioTestsSources})

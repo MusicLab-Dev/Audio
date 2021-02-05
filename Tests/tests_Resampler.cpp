@@ -10,7 +10,9 @@
 using namespace Audio;
 
 using Type = float;
-static constexpr auto Size = 10u;
+static constexpr auto Size = 16u;
+
+using Rs = DSP::Resampler<Type>;
 
 // static constexpr auto Size { 19'765u };
 static const std::size_t SizesDown[11] {
@@ -24,20 +26,71 @@ static std::size_t GetSemitoneRateSize(const Semitone semitone) {
     return std::pow(2.0, semitone / 12.0);
 }
 
+static void ResetBuffer(Type *buffer, const std::size_t len, const Type value)
+{
+    for (auto i = 0u; i < len; ++i)
+        buffer[i] = value;
+}
+
+
+TEST(Resampler, SizesHelper)
+{
+    ASSERT_EQ(Rs::GetInterpolationOctaveSize(Size, 1), Size * 2);
+    ASSERT_EQ(Rs::GetInterpolationOctaveSize(Size, 2), Size * 4);
+    ASSERT_EQ(Rs::GetInterpolationOctaveSize(Size, 3), Size * 8);
+
+    ASSERT_EQ(Rs::GetInterpolationSize(Size, 2), Size * 2);
+    ASSERT_EQ(Rs::GetInterpolationSize(Size, 3), Size + (Size - 1) * 2);
+    ASSERT_EQ(Rs::GetInterpolationSize(Size, 4), Size * 4);
+    ASSERT_EQ(Rs::GetInterpolationSize(Size, 5), Size + (Size - 1) * 4);
+
+
+    ASSERT_EQ(Rs::GetDecimationOctaveSize(Size, 1), Size / 2);
+    ASSERT_EQ(Rs::GetDecimationOctaveSize(Size, 2), Size / 4);
+    ASSERT_EQ(Rs::GetDecimationOctaveSize(Size, 3), Size / 8);
+
+    ASSERT_EQ(Rs::GetDecimationSize(Size, 2), Size / 2);
+    ASSERT_EQ(Rs::GetDecimationSize(Size, 3), std::ceil(static_cast<float>(Size) / 3));
+    ASSERT_EQ(Rs::GetDecimationSize(Size, 4), Size / 4);
+    ASSERT_EQ(Rs::GetDecimationSize(Size, 5), std::ceil(static_cast<float>(Size) / 5));
+
+
+    ASSERT_EQ(Rs::GetResamplingSizeOctave(Size, 1), Size / 2);
+    ASSERT_EQ(Rs::GetResamplingSizeOctave(Size, -1), Size * 2);
+    ASSERT_EQ(Rs::GetResamplingSizeOctave(Size, 2), Size / 4);
+    ASSERT_EQ(Rs::GetResamplingSizeOctave(Size, -2), Size * 4);
+    ASSERT_EQ(Rs::GetResamplingSizeOctave(Size, 3), Size / 8);
+    ASSERT_EQ(Rs::GetResamplingSizeOctave(Size, -3), Size * 8);
+
+    ASSERT_EQ(Rs::GetResamplingSizeSampleRate(44100, 44100, 48000), 47999);
+    ASSERT_EQ(Rs::GetResamplingSizeSampleRate(48000, 48000, 44100), 44100);
+    // Interpolation of 1 semitone (== resample 1 semitone down)
+    ASSERT_EQ(Rs::GetResamplingSizeSampleRate(44100, Rs::L_Factor, Rs::M_Factor), 46722);
+    // Decimation of 1 semiton (== resample 1 semitone up)
+    ASSERT_EQ(Rs::GetResamplingSizeSampleRate(44100, Rs::M_Factor, Rs::L_Factor), 41625);
+
+    ASSERT_EQ(Rs::GetResamplingSizeSemitone(44100, -1), 46722);
+    ASSERT_EQ(Rs::GetResamplingSizeSemitone(44100, 1), 41625);
+    ASSERT_EQ(Rs::GetResamplingSizeSemitone(44100, -12), 44100 * 2);
+    ASSERT_EQ(Rs::GetResamplingSizeSemitone(44100, 12), 44100 / 2);
+    ASSERT_EQ(Rs::GetResamplingSizeSemitone(44100, -13), 93444);
+    ASSERT_EQ(Rs::GetResamplingSizeSemitone(44100, 13), 20812);
+}
+
 TEST(Resampler, InterpolationOneOctave)
 {
+    const std::size_t outSize = Rs::GetInterpolationOctaveSize(Size, 1);
+    ASSERT_EQ(outSize, Size * 2);
+
     Type buffer[Size];
-    Type outInter1[Size * 2];
-    Type outInter2[Size * 2];
-    for (auto i = 0; i < Size; ++i) {
-        buffer[i] = 3;
-        outInter1[i] = 1;
-        outInter1[i + 1] = 1;
-        outInter2[i] = 1;
-        outInter2[i + 1] = 1;
-    }
-    DSP::Resampler<Type>::Interpolate(buffer, outInter1, Size, 2);
-    DSP::Resampler<Type>::Internal::InterpolateOctave(buffer, outInter2, Size, 1);
+    Type outInter1[outSize];
+    Type outInter2[outSize];
+    ResetBuffer(buffer, Size, 3);
+    ResetBuffer(outInter1, outSize, 1);
+    ResetBuffer(outInter1, outSize, 1);
+
+    Rs::Interpolate(buffer, outInter1, Size, 2);
+    Rs::Internal::InterpolateOctave(buffer, outInter2, Size, 1);
 
     for (auto k = 0; k < Size; ++k) {
         EXPECT_EQ(outInter1[k * 2 + 1], 0);
@@ -49,68 +102,56 @@ TEST(Resampler, InterpolationOneOctave)
 
 TEST(Resampler, DecimationOneOctave)
 {
-    const std::size_t dRate = 4;
-    Type buffer[Size];
-    Type outDecim1[Size * 2];
-    for (auto i = 0; i < Size; ++i) {
-        buffer[i] = 3;
-        outDecim1[i] = 1;
-        outDecim1[i + 1] = 1;
-    }
+    const std::size_t outSize = Rs::GetDecimationOctaveSize(Size, 1);
+    ASSERT_EQ(outSize, Size / 2);
 
-    DSP::Resampler<Type>::Decimate(buffer, outDecim1, Size, 4);
-    for (auto k = 0; k < Size; ++k) {
-        // std::cout << outDecim1[k] << std::endl;
-        if (k < Size / 4) {
-            EXPECT_EQ(outDecim1[k], 3);
-        } else {
-            EXPECT_EQ(outDecim1[k], 1);
-        }
+    Type buffer[Size];
+    Type outDecim1[outSize];
+    ResetBuffer(buffer, Size, 3);
+    ResetBuffer(outDecim1, outSize, 1);
+
+    Rs::Decimate(buffer, outDecim1, Size, 2);
+    for (auto k = 0; k < outSize; ++k) {
+        EXPECT_EQ(outDecim1[k], 3);
     }
 }
 
 TEST(Resampler, InterpolationSemitone)
 {
     const std::size_t iRate = 5;
+    const std::size_t outSize = Size * iRate;
     Type buffer[Size];
-    Type outBuffer[Size * iRate];
+    Type outBuffer[outSize];
+    ResetBuffer(buffer, Size, 3);
+    ResetBuffer(outBuffer, outSize, 1);
+
     for (auto i = 0; i < Size; ++i) {
         buffer[i] = 3;
         outBuffer[i] = 1;
         outBuffer[i + 1] = 1;
     }
 
-    DSP::Resampler<Type>::Interpolate(buffer, outBuffer, Size, iRate);
+    Rs::Interpolate(buffer, outBuffer, Size, iRate);
     for (auto k = 0; k < Size; ++k) {
         EXPECT_EQ(outBuffer[k * iRate], 3);
         EXPECT_EQ(outBuffer[k * iRate + 1], 0);
     }
 }
 
-// TEST(Resampler, ResamplingSize)
-// {
-//     Buffer buf(Size * sizeof(T), 48000, ChannelArrangement::Mono);
-//     const auto inputSize = buf.size<T>();
-//     EXPECT_EQ(inputSize, Size);
+TEST(Resampler, ResampleOctave)
+{
+    const std::size_t nOctave = 1;
+    const std::size_t outSize = Rs::GetResamplingSizeOctave(Size, nOctave);
+    Type buffer[Size];
+    Type outBuffer[outSize];
+    ResetBuffer(buffer, Size, 3);
+    ResetBuffer(outBuffer, outSize, 1);
 
-//     for (auto i = 0u; i < 11; ++i) {
-//         auto up = DSP::Resampler<T>::ResampleBySemitone(BufferView(buf), i + 1);
-//         auto down = DSP::Resampler<T>::ResampleBySemitone(BufferView(buf), -(i + 1));
-//         EXPECT_EQ(up.size<T>(), SizesUp[i]);
-//         EXPECT_EQ(down.size<T>(), SizesDown[i]);
-//     }
-
-//     for (auto i = 0u; i < 3; ++i) {
-//         auto octave = i + 1;
-//         std::cout << octave <<std::endl;
-//         auto up = DSP::Resampler<T>::DecimateByOctave(BufferView(buf), octave);
-//         auto down = DSP::Resampler<T>::InterpolateByOctave(BufferView(buf), octave);
-//         std::cout << "up: " << up.size<T>() << std::endl;
-//         std::cout << "down: " << down.size<T>() << std::endl;
-//         EXPECT_EQ(up.size<T>(), std::ceil(inputSize / std::pow(2.0, octave)));
-//         EXPECT_EQ(down.size<T>(), inputSize * std::pow(2.0, octave));
-//     }
-// }
+    Rs::ResampleOctave(buffer, outBuffer, Size, 1);
+    for (auto k = 0; k < outSize; ++k) {
+        EXPECT_EQ(outBuffer[k], 3);
+    }
+}
 
 // TEST(Resampler, DefaultOctave)
 // {
