@@ -19,7 +19,7 @@ namespace Audio
             const AScheduler *scheduler, Node *node, const NoteEvents * const parentNoteStack);
 };
 
-template<IPlugin::Flags Flags, bool ProcessNotesAndControls, bool ProcessAudio>
+template<Audio::IPlugin::Flags Flags, bool ProcessNotesAndControls, bool ProcessAudio>
 class alignas_cacheline Audio::SchedulerTask
 {
 public:

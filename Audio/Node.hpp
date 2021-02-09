@@ -13,8 +13,6 @@
 #include "Connection.hpp"
 #include "Buffer.hpp"
 
-#pragma once
-
 namespace Audio
 {
     class Node;

@@ -42,6 +42,9 @@ public:
     [[nodiscard]] Core::FlatString &name(void) noexcept { return _name; }
     [[nodiscard]] const Core::FlatString &name(void) const noexcept { return _name; }
 
+    /** @brief Get / Set the playback mode */
+    [[nodiscard]] PlaybackMode playbackMode(void) const noexcept { return _playbackMode; }
+    bool setPlaybackMode(const PlaybackMode mode) noexcept;
 
     /** @brief Signal called when the generation of the audio block start */
     void onAudioGenerationStarted(const BeatRange &range);
