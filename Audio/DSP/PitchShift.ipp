@@ -6,14 +6,11 @@
 #include <iostream>
 #include <Audio/KissFFT.hpp>
 
-using namespace Audio;
-using namespace DSP;
-using namespace KissFFT;
-
-
 template<typename T>
-inline Buffer PitchShift::Shift(const BufferView &inputBuffer, const Semitone semitone)
+inline Buffer Audio::DSP::PitchShift::Shift(const BufferView &inputBuffer, const Semitone semitone)
 {
+    using namespace KissFFT;
+
     const auto inputSize = inputBuffer.size<T>();
     const auto ZeroPadRate = 3u;
     const auto ZeroPadSize = FrameHopSize * ZeroPadRate; // must be less than BlockSize && multiple of FrameHopSize
