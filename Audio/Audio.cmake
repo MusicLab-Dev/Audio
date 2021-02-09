@@ -17,6 +17,7 @@ set(AudioSources
     ${AudioDir}/BaseIndex.hpp
     ${AudioDir}/Buffer.hpp
     ${AudioDir}/Buffer.ipp
+    ${AudioDir}/Buffer.cpp
     ${AudioDir}/Connection.hpp
     ${AudioDir}/Control.hpp
     ${AudioDir}/Control.ipp
@@ -44,6 +45,8 @@ set(AudioSources
     ${AudioDir}/Project.hpp
     ${AudioDir}/Project.ipp
     ${AudioDir}/UtilsMidi.hpp
+    # ${AudioDir}/KissFFT.hpp
+    # ${AudioDir}/KissFFT.ipp
 )
 
 
@@ -58,28 +61,62 @@ set(AudioPluginsSources
     ${AudioPluginsDir}/Mixer.ipp
 )
 
+set(AudioPluginManagerDir ${AudioPluginsDir}/Managers)
+
+set(AudioPluginManagersSources
+    ${AudioPluginManagerDir}/NoteManager.hpp
+    ${AudioPluginManagerDir}/NoteManager.ipp
+)
+
+set(AudioSampleFileDir ${AudioDir}/SampleFile)
+
+set(AudioPluginManagersSources
+    ${AudioSampleFileDir}/SampleManager.hpp
+    ${AudioSampleFileDir}/SampleManager.ipp
+    ${AudioSampleFileDir}/SampleManager.cpp
+    ${AudioSampleFileDir}/SampleManagerSpecs.hpp
+    ${AudioSampleFileDir}/SampleManager_WAV.hpp
+    ${AudioSampleFileDir}/SampleManager_WAV.cpp
+    ${AudioSampleFileDir}/SampleManager_WAV.ipp
+)
+
 
 set(AudioDSPDir ${AudioDir}/DSP)
 
 set(AudioDSPSources
     ${AudioDSPDir}/Merge.hpp
     ${AudioDSPDir}/Merge.ipp
-    ${AudioDSPDir}/Vocoder.hpp
-    ${AudioDSPDir}/Vocoder.cpp
-    # ${AudioDSPDir}/Biquad.cpp
-    # ${AudioDSPDir}/Biquad.hpp
-    # ${AudioDSPDir}/Biquad.ipp
-    # ${AudioDSPDir}/EnveloppeGenerator.hpp
-    # ${AudioDSPDir}/EnveloppeGenerator.ipp
+    ${AudioDSPDir}/PitchShift.cpp
+    ${AudioDSPDir}/PitchShift.hpp
+    ${AudioDSPDir}/PitchShift.ipp
+    ${AudioDSPDir}/Resampler.hpp
+    ${AudioDSPDir}/Resampler.ipp
+    ${AudioDSPDir}/Biquad.cpp
+    ${AudioDSPDir}/Biquad.hpp
+    ${AudioDSPDir}/Biquad.ipp
+    ${AudioDSPDir}/EnveloppeGenerator.hpp
+    ${AudioDSPDir}/EnveloppeGenerator.ipp
+)
+
+set(AudioKissFFTDir ${PROJECT_SOURCE_DIR}/kissfft)
+
+set(AudioKissFFTSources
+    # ${AudioKissFFTDir}/kiss_fft.h
+    # ${AudioKissFFTDir}/kiss_fft.c
+    # ${AudioKissFFTDir}/tools/kiss_fftr.h
+    # ${AudioKissFFTDir}/tools/kiss_fftr.c
 )
 
 add_library(${PROJECT_NAME}
     ${AudioSources}
     ${AudioPluginsSources}
+    ${AudioPluginManagersSources}
     ${AudioDSPSources}
+    ${AudioKissFFTSources}
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${AudioDir}/..)
+target_include_directories(${PROJECT_NAME} PUBLIC ${AudioDir}/../kissfft/)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC Core Flow)
 

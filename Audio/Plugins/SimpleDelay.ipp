@@ -16,7 +16,7 @@ inline void Audio::SimpleDelay::sendAudio(const BufferViews &inputs) noexcept
 {
     const auto byteSize = _cache[0].channelByteSize() * static_cast<std::uint32_t>(_cache[0].channelArrangement());
 
-    std::memcpy(_cache[_readIdx].byteData(), inputs[0].byteData(), byteSize);
+    // std::memcpy(_cache[_readIdx].byteData(), inputs[0].byteData(), byteSize);
     incrementIdx(_writeIdx);
 }
 
