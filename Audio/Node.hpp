@@ -13,8 +13,6 @@
 #include "Connection.hpp"
 #include "Buffer.hpp"
 
-#pragma once
-
 namespace Audio
 {
     class Node;
@@ -33,7 +31,7 @@ namespace Audio
 };
 
 /** @brief A node contains a plugin, a partition table and an automation table */
-class alignas_double_cacheline Audio::Node
+class alignas_cacheline Audio::Node
 {
 public:
     /** @brief Default constructor */
@@ -114,14 +112,12 @@ private:
     Nodes               _children {}; // 8
     Connections         _connections {}; // 8
     Partitions          _partitions {}; // 8
-    Buffer              _cache; // 16
+    Buffer              _cache; // 8
     Controls            _controls {}; // 8
     bool                _muted { false }; // 1
     bool                _dirty { false }; // 1
     IPlugin::Flags      _flags {}; // 2
     Color               _color {}; // 4
-
-    // Cacheline 2
     Core::FlatString    _name {}; // 8
 };
 

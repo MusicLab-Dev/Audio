@@ -37,8 +37,11 @@ namespace Audio
     /** @brief Key of a note */
     using Key = std::uint8_t;
 
+    /** @brief Semitone */
+    using Semitone = std::int8_t;
+
     /** @brief Number of different handled keys */
-    constexpr Key KeyCount = 127u;
+    constexpr Key KeyCount = 128u;
 
     /** @brief Velocity of a note */
     using Velocity = std::uint16_t;

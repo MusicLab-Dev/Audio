@@ -5,9 +5,7 @@
 
 #include <stdexcept>
 
-using namespace Audio;
-
-inline bool Partition::setMuted(const bool muted) noexcept
+inline bool Audio::Partition::setMuted(const bool muted) noexcept
 {
     if (muted == _muted)
         return false;
@@ -15,15 +13,15 @@ inline bool Partition::setMuted(const bool muted) noexcept
     return true;
 }
 
-inline bool Partition::setMidiChannels(const MidiChannels midiChannels) noexcept
+inline bool Audio::Partition::setMidiChannels(const MidiChannels midiChannels) noexcept
 {
-    if (midiChannels == _channel)
+    if (midiChannels == _midiChannels)
         return false;
-    _channel = midiChannels;
+    _midiChannels = midiChannels;
     return true;
 }
 
-inline bool Partition::setName(Core::FlatString &&name) noexcept
+inline bool Audio::Partition::setName(Core::FlatString &&name) noexcept
 {
     if (name == _name)
         return false;
