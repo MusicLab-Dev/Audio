@@ -3,10 +3,13 @@
  * @ Description: Buffer implementation
  */
 
+#include "DSP/Resampler.hpp"
+
 inline Audio::Internal::AllocationHeader *Audio::Internal::BufferAllocator::AllocateFallback(
         const std::size_t channelByteSize, const SampleRate sampleRate, const ChannelArrangement channelArrangement,
         const std::size_t usedSize, const std::size_t capacity, const std::size_t bucketIndex) noexcept
 {
+    // std::cout << "AllocateFallback: " << channelByteSize << ", " << usedSize << ", " << capacity << ", " << bucketIndex << std::endl;
     if (const auto data = Core::Utils::AlignedAlloc<Core::CacheLineSize>(capacity + Core::CacheLineSize); data) {
         return new (data) AllocationHeader {
             /* bucketIndex: */ bucketIndex,
@@ -46,4 +49,23 @@ inline void Audio::Buffer::copy(const Internal::BufferBase &target)
         *this = Buffer(target.channelByteSize(), target.sampleRate(), target.channelArrangement());
         std::memcpy(byteData(), target.byteData(), target.size<std::byte>());
     }
+}
+
+#include <iostream>
+
+template<typename Type>
+inline void Audio::Buffer::resample(const SampleRate newSampleRate) noexcept
+{
+    if (!newSampleRate || newSampleRate == sampleRate())
+        return;
+    const auto newSize = DSP::Resampler<Type>::GetResamplingSizeSampleRate(size<Type>(), sampleRate(), newSampleRate) * static_cast<std::size_t>(channelArrangement());
+    std::cout << "size: " << channelByteSize() << std::endl;
+    std::cout << "new size: " << newSize << std::endl;
+    std::cout << "capacity: " << capacity<Type>() << std::endl;
+    // Check if the resampled buffer fit in the actual one
+    if (newSampleRate > sampleRate() && (capacity<Type>() < newSize)) {
+        std::cout << "RESIZE\n";
+        resize(newSize * sizeof(Type), newSampleRate, channelArrangement());
+    }
+    // return DSP::Resampler<Type>::ResampleOctave(data<Type>)
 }

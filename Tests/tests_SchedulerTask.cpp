@@ -288,7 +288,7 @@ TEST(SchedulerTask, NotesCollection)
 
         // auto b = PitchShift::Shift<float>(samplerBuffer, 1);
 
-        return;
+        // return;
         auto master = MAKE_DUMMY(DummyAudioIO);
         master->setName(Core::FlatString("master"));
         auto mixer1 = MAKE_DUMMY(DummyAudioIO);

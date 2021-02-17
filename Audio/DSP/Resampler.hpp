@@ -6,7 +6,9 @@
 #pragma once
 
 #include <cmath>
-#include <Audio/Buffer.hpp>
+
+#include <Audio/Base.hpp>
+// #include <Audio/Buffer.hpp>
 
 namespace Audio::DSP
 {
@@ -60,7 +62,7 @@ struct Audio::DSP::Resampler
     // [[nodiscard]] static Buffer ResampleSpecificSampleRate(const BufferView &inputBuffer, const SampleRate inSampleRate, const SampleRate outSampleRate) noexcept_ndebug;
 
 
-    static void GenerateDefaultOctave(const BufferView &inputBuffer, BufferViews &outBuffers) noexcept;
+    // static void GenerateDefaultOctave(const BufferView &inputBuffer, BufferViews &outBuffers) noexcept;
 
 
     /** @brief Call these funtions to get the outputBuffer size used for the Interpolate/Decimate/Resample functions */

@@ -3,6 +3,8 @@
  * @ Description: Buffer
  */
 
+#include <bitset>
+
 #include "Buffer.hpp"
 
 using namespace Audio;
@@ -22,17 +24,24 @@ Internal::AllocationHeader *Internal::BufferAllocator::allocate(
         return AllocateFallback(channelByteSize, sampleRate, channelArrangement, usedSize, capacity, OutOfRangeAllocationPower);
     // Else, determines the real bucket capacity and index
     else {
-        capacity >>= (MinAllocationPower + 1);
-        if (capacity == 0u)
+        if (capacity <= MinAllocationSize)
             capacity = MinAllocationSize;
         else {
+            const std::bitset<64> capacityBit(capacity);
+            capacity >>= (MinAllocationPower + 1);
             while (capacity != 0) {
                 capacity >>= 1;
                 ++bucketIndex;
             }
-            capacity = (1ull << (bucketIndex + MinAllocationPower));
+            if (capacityBit.count() > 1) {
+                capacity = (1ull << (bucketIndex + MinAllocationPower + 1));
+                bucketIndex++;
+            } else {
+                capacity = (1ull << (bucketIndex + MinAllocationPower));
+            }
         }
     }
+        // std::cout << "final alloc: " << capacity << std::endl;
 
     // Search if a bucket is available for a given size
     auto &bucket = _buckets.at(bucketIndex);

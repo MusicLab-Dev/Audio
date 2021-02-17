@@ -3,9 +3,7 @@
  * @ Description: Note implementation
  */
 
-using namespace Audio;
-
-inline bool Note::operator==(const Note &other) const noexcept
+inline bool Audio::Note::operator==(const Note &other) const noexcept
 {
     return (
         (range == other.range) &&
@@ -15,12 +13,12 @@ inline bool Note::operator==(const Note &other) const noexcept
     );
 }
 
-inline bool Note::operator!=(const Note &other) const noexcept
+inline bool Audio::Note::operator!=(const Note &other) const noexcept
 {
     return !(operator==(other));
 }
 
-inline bool Note::operator>(const Note &other) const noexcept
+inline bool Audio::Note::operator>(const Note &other) const noexcept
 {
     if (range.from > other.range.from)
         return true;
@@ -29,7 +27,7 @@ inline bool Note::operator>(const Note &other) const noexcept
     return false;
 }
 
-inline bool Note::operator>=(const Note &other) const noexcept
+inline bool Audio::Note::operator>=(const Note &other) const noexcept
 {
     if (range.from > other.range.from)
         return true;
@@ -38,7 +36,7 @@ inline bool Note::operator>=(const Note &other) const noexcept
     return false;
 }
 
-inline bool Note::operator<(const Note &other) const noexcept
+inline bool Audio::Note::operator<(const Note &other) const noexcept
 {
     if (range.from < other.range.from)
         return true;
@@ -47,7 +45,7 @@ inline bool Note::operator<(const Note &other) const noexcept
     return false;
 }
 
-inline bool Note::operator<=(const Note &other) const noexcept
+inline bool Audio::Note::operator<=(const Note &other) const noexcept
 {
     if (range.from < other.range.from)
         return true;

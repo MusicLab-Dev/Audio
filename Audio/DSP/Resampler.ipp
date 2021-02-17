@@ -8,17 +8,15 @@
 
 #include <Core/Assert.hpp>
 
-using namespace Audio;
-
 template<typename Type>
-inline std::size_t DSP::Resampler<Type>::GetOptimalResamplingSize(const std::size_t inputSize, const Semitone semitone) noexcept
+inline std::size_t Audio::DSP::Resampler<Type>::GetOptimalResamplingSize(const std::size_t inputSize, const Semitone semitone) noexcept
 {
     const auto rate = std::pow(2.0, -semitone / 12.0);
     return std::ceil(inputSize * rate);
 }
 
 template<typename Type>
-inline std::size_t DSP::Resampler<Type>::GetInterpolationSize(const std::size_t inputSize, const std::size_t interpolationRatio) noexcept
+inline std::size_t Audio::DSP::Resampler<Type>::GetInterpolationSize(const std::size_t inputSize, const std::size_t interpolationRatio) noexcept
 {
     std::bitset<64> rate(interpolationRatio);
     constexpr auto GetMaxPower = [](const std::bitset<64> &bitset) -> std::int8_t {
@@ -34,7 +32,7 @@ inline std::size_t DSP::Resampler<Type>::GetInterpolationSize(const std::size_t 
 }
 
 template<typename Type>
-inline std::size_t DSP::Resampler<Type>::GetDecimationSize(const std::size_t inputSize, const std::size_t decimationRatio) noexcept
+inline std::size_t Audio::DSP::Resampler<Type>::GetDecimationSize(const std::size_t inputSize, const std::size_t decimationRatio) noexcept
 {
     std::bitset<64> rate(decimationRatio);
     constexpr auto GetMaxPower = [](const std::bitset<64> &bitset) -> std::int8_t {
@@ -50,19 +48,19 @@ inline std::size_t DSP::Resampler<Type>::GetDecimationSize(const std::size_t inp
 }
 
 template<typename Type>
-inline std::size_t DSP::Resampler<Type>::GetInterpolationOctaveSize(const std::size_t inputSize, const std::uint8_t nOctave) noexcept
+inline std::size_t Audio::DSP::Resampler<Type>::GetInterpolationOctaveSize(const std::size_t inputSize, const std::uint8_t nOctave) noexcept
 {
     return inputSize * (std::pow(2u, nOctave));
 }
 
 template<typename Type>
-inline std::size_t DSP::Resampler<Type>::GetDecimationOctaveSize(const std::size_t inputSize, const std::uint8_t nOctave) noexcept
+inline std::size_t Audio::DSP::Resampler<Type>::GetDecimationOctaveSize(const std::size_t inputSize, const std::uint8_t nOctave) noexcept
 {
     return inputSize / (std::pow(2u, nOctave));
 }
 
 template<typename Type>
-inline std::size_t DSP::Resampler<Type>::GetResamplingSizeSemitone(const std::size_t inputSize, const Semitone semitone) noexcept
+inline std::size_t Audio::DSP::Resampler<Type>::GetResamplingSizeSemitone(const std::size_t inputSize, const Semitone semitone) noexcept
 {
     if (!semitone)
         return inputSize;
@@ -88,15 +86,24 @@ inline std::size_t DSP::Resampler<Type>::GetResamplingSizeSemitone(const std::si
     return newSize;
 }
 
+#include <iostream>
+
 template<typename Type>
-inline std::size_t DSP::Resampler<Type>::GetResamplingSizeSampleRate(const std::size_t inputSize, const SampleRate inSampleRate, const SampleRate outSampleRate) noexcept
+inline std::size_t Audio::DSP::Resampler<Type>::GetResamplingSizeSampleRate(const std::size_t inputSize, const SampleRate inSampleRate, const SampleRate outSampleRate) noexcept
 {
     const auto gcd = std::gcd(inSampleRate, outSampleRate);
-    return std::ceil((inputSize + (inputSize - 1) * (static_cast<float>(outSampleRate) / gcd - 1)) / (inSampleRate / gcd));
+    std::cout << "gcd: " << gcd << std::endl;
+    std::cout << "in: " << inSampleRate / gcd << std::endl;
+    std::cout << "out: " << outSampleRate / gcd << std::endl;
+    std::cout << "size: " << inputSize << std::endl;
+
+
+
+    return std::ceil(static_cast<float>(inputSize + (inputSize - 1) * (outSampleRate / gcd - 1)) / (inSampleRate / gcd));
 }
 
 template<typename Type>
-inline std::size_t DSP::Resampler<Type>::GetResamplingSizeOctave(const std::size_t inputSize, const std::int8_t nOctave) noexcept
+inline std::size_t Audio::DSP::Resampler<Type>::GetResamplingSizeOctave(const std::size_t inputSize, const std::int8_t nOctave) noexcept
 {
     if (!nOctave)
         return inputSize;
@@ -106,35 +113,27 @@ inline std::size_t DSP::Resampler<Type>::GetResamplingSizeOctave(const std::size
 }
 
 template<typename Type>
-inline void DSP::Resampler<Type>::Internal::InterpolateOctave(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const std::uint8_t nOctave) noexcept_ndebug
+inline void Audio::DSP::Resampler<Type>::Internal::InterpolateOctave(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const std::uint8_t nOctave) noexcept_ndebug
 {
-    // std::cout << "Interpolate octave: " << inputSize << " - " << static_cast<std::size_t>(nOctave) << std::endl;
     const std::size_t octaveRate = std::pow(2u, nOctave);
-
-    for (auto i = 0u; i < inputSize; ++i) {
-        outputBuffer[i * octaveRate] = inputBuffer[i];
-        outputBuffer[i * octaveRate + 1] = 0;
-    }
-    // Filter outBuffer
+    std::cout << "Interpolate octave: " << inputSize << " - " << static_cast<std::size_t>(nOctave) << ", " << octaveRate << std::endl;
+    return Interpolate(inputBuffer, outputBuffer, inputSize, octaveRate);
 }
 
 template<typename Type>
-inline void DSP::Resampler<Type>::Internal::DecimateOctave(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const std::uint8_t nOctave) noexcept_ndebug
+inline void Audio::DSP::Resampler<Type>::Internal::DecimateOctave(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const std::uint8_t nOctave) noexcept_ndebug
 {
     // std::cout << "Decimate octave: " << inputSize << " - " << nOctave << std::endl;
-    const auto rate = std::pow(2u, nOctave);
-    return Decimate(inputBuffer, outputBuffer, inputSize, rate);
+    const auto octaveRate = std::pow(2u, nOctave);
+    return Decimate(inputBuffer, outputBuffer, inputSize, octaveRate);
 }
 
 template<typename Type>
-inline void DSP::Resampler<Type>::Interpolate(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const std::size_t interpolationRatio) noexcept_ndebug
+inline void Audio::DSP::Resampler<Type>::Interpolate(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const std::size_t interpolationRatio) noexcept_ndebug
 {
     // std::cout << "Interpolate: " << inputSize << " - " << interpolationRatio << std::endl;
     coreAssert(interpolationRatio > 1,
         throw std::logic_error("DSP::Resampler::Interpolate: interpolationRatio must be greater than 1"));
-    if (interpolationRatio == 2)
-        return Resampler<Type>::Internal::InterpolateOctave(inputBuffer, outputBuffer, inputSize, 1);
-
     // const auto interpolationSamples = interpolationRatio - 1;
     for (auto i = 0; i < inputSize; ++i) {
         outputBuffer[i * interpolationRatio] = inputBuffer[i];
@@ -148,7 +147,7 @@ inline void DSP::Resampler<Type>::Interpolate(const Type *inputBuffer, Type *out
 
 
 template<typename Type>
-inline void DSP::Resampler<Type>::Decimate(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const std::size_t decimationRatio) noexcept_ndebug
+inline void Audio::DSP::Resampler<Type>::Decimate(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const std::size_t decimationRatio) noexcept_ndebug
 {
     // std::cout << "Decimate: " << inputSize << " - " << decimationRatio << std::endl;
     coreAssert(decimationRatio > 1,
@@ -161,7 +160,7 @@ inline void DSP::Resampler<Type>::Decimate(const Type *inputBuffer, Type *output
 }
 
 template<typename Type>
-inline void DSP::Resampler<Type>::ResampleClosestSemitoneImpl(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, bool upScale) noexcept
+inline void Audio::DSP::Resampler<Type>::ResampleClosestSemitoneImpl(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, bool upScale) noexcept
 {
     const auto iFactor = upScale ? L_Factor : M_Factor;
     const auto dFactor = upScale ? M_Factor : L_Factor;
@@ -171,7 +170,7 @@ inline void DSP::Resampler<Type>::ResampleClosestSemitoneImpl(const Type *inputB
 }
 
 template<typename Type>
-inline void DSP::Resampler<Type>::ResampleSemitoneOctaveImpl(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const Semitone semitone) noexcept
+inline void Audio::DSP::Resampler<Type>::ResampleSemitoneOctaveImpl(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const Semitone semitone) noexcept
 {
     const auto upScale = semitone > 0;
     const auto nSemitone = std::abs(semitone);
@@ -182,7 +181,7 @@ inline void DSP::Resampler<Type>::ResampleSemitoneOctaveImpl(const Type *inputBu
 }
 
 template<typename Type>
-inline void DSP::Resampler<Type>::ResampleOctave(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const std::int8_t nOctave) noexcept_ndebug
+inline void Audio::DSP::Resampler<Type>::ResampleOctave(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const std::int8_t nOctave) noexcept_ndebug
 {
     coreAssert(nOctave,
         throw std::logic_error("DSP::Resampler::ResampleOctave: nOctave must be different than zero."));
@@ -193,7 +192,7 @@ inline void DSP::Resampler<Type>::ResampleOctave(const Type *inputBuffer, Type *
 }
 
 template<typename Type>
-inline void DSP::Resampler<Type>::ResampleSemitone(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const Semitone semitone) noexcept_ndebug
+inline void Audio::DSP::Resampler<Type>::ResampleSemitone(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const Semitone semitone) noexcept_ndebug
 {
     const bool upScale = semitone > 0;
     const auto nOctave = semitone / 12;
@@ -208,10 +207,10 @@ inline void DSP::Resampler<Type>::ResampleSemitone(const Type *inputBuffer, Type
 
 
 // template<typename Type>
-// inline Buffer DSP::Resampler<Type>::ResampleBySemitone(const BufferView &inputBuffer, const Semitone semitone) noexcept_ndebug
+// inline Buffer Audio::DSP::Resampler<Type>::ResampleBySemitone(const BufferView &inputBuffer, const Semitone semitone) noexcept_ndebug
 // {
 //     coreAssert((semitone != 0) && (semitone < 12 && semitone > -12),
-//         throw std::logic_error("DSP::Resampler<Type>::ResampleBySemitone: semitone arguments must fit an octave [-11, 11]"));
+//         throw std::logic_error("Audio::DSP::Resampler<Type>::ResampleBySemitone: semitone arguments must fit an octave [-11, 11]"));
 //     const bool upScale = semitone > 0;
 //     const auto nSemitone = std::abs(semitone);
 //     const auto inputSize = inputBuffer.size<Type>();
@@ -236,13 +235,13 @@ inline void DSP::Resampler<Type>::ResampleSemitone(const Type *inputBuffer, Type
 
 
 // template<typename Type>
-// inline Buffer DSP::Resampler<Type>::ResampleBySamplerate(const BufferView &inputBuffer, SampleRate newSampleRate) noexcept_ndebug
+// inline Buffer Audio::DSP::Resampler<Type>::ResampleBySamplerate(const BufferView &inputBuffer, SampleRate newSampleRate) noexcept_ndebug
 // {
 //     return ResampleSpecificSampleRate(inputBuffer, inputBuffer.sampleRate(), newSampleRate);
 // }
 
 // template<typename Type>
-// inline Buffer DSP::Resampler<Type>::ResampleSpecificSampleRate(const BufferView &inputBuffer, SampleRate inSampleRate, SampleRate outSampleRate) noexcept_ndebug
+// inline Buffer Audio::DSP::Resampler<Type>::ResampleSpecificSampleRate(const BufferView &inputBuffer, SampleRate inSampleRate, SampleRate outSampleRate) noexcept_ndebug
 // {
 //     coreAssert(inSampleRate && outSampleRate && (inSampleRate != outSampleRate),
 //         throw std::logic_error("DSP::Resampler::ResampleSpecificSampleRate: invalid sampleRate range."));
@@ -259,9 +258,9 @@ inline void DSP::Resampler<Type>::ResampleSemitone(const Type *inputBuffer, Type
 //     return outBuffer;
 // }
 
-template<typename Type>
-inline void DSP::Resampler<Type>::GenerateDefaultOctave(const BufferView &inputBuffer, BufferViews &outBuffers) noexcept
-{
+// template<typename Type>
+// inline void Audio::DSP::Resampler<Type>::GenerateDefaultOctave(const BufferView &inputBuffer, BufferViews &outBuffers) noexcept
+// {
     // Buffer firstLow = ResampleOneSemitone(inputBuffer, false);
     // Buffer firstHigh = ResampleOneSemitone(inputBuffer, true);
     // BufferView view(firstLow);
@@ -281,4 +280,4 @@ inline void DSP::Resampler<Type>::GenerateDefaultOctave(const BufferView &inputB
     //     view = buf;
     //     outBuffers.push(view);
     // }
-}
+// }

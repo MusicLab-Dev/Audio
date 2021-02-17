@@ -133,8 +133,9 @@ public:
     template<typename Type>
     [[nodiscard]] std::size_t size(void) const noexcept { return _header->size / sizeof(Type); }
 
-    /** @brief Get the buffer capacity in bytes */
-    [[nodiscard]] std::size_t capacity(void) const noexcept { return _header->capacity; }
+    /** @brief Get the buffer capacity relative to a given type */
+    template<typename Type = std::byte>
+    [[nodiscard]] std::size_t capacity(void) const noexcept { return _header->capacity / sizeof(Type); }
 
     /** @brief Get the channel arrangement of the buffer */
     [[nodiscard]] ChannelArrangement channelArrangement(void) const noexcept { return _header->channelArrangement; }
@@ -206,6 +207,11 @@ public:
 
     /** @brief Copy the target buffer */
     void copy(const Internal::BufferBase &target);
+
+
+    /** @brief Resample the actual buffer, resize if needed */
+    template<typename Type>
+    void resample(const SampleRate newSampleRate) noexcept;
 };
 
 /** @brief A BufferView holds a reference to an existing buffer without managing data ownership */

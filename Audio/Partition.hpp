@@ -40,7 +40,7 @@ public:
 
 
     /** @brief Get the internal midiChannels */
-    [[nodiscard]] MidiChannels midiChannels(void) const noexcept { return _channel; }
+    [[nodiscard]] MidiChannels midiChannels(void) const noexcept { return _midiChannels; }
 
     /** @brief Set the internal midiChannels */
     bool setMidiChannels(const MidiChannels midiChannels) noexcept;
@@ -61,7 +61,7 @@ private:
     BeatRanges          _instances {};
     Core::FlatString    _name {};
     NoteIndex           _lastID {};
-    MidiChannels        _channel {};
+    MidiChannels        _midiChannels {};
     bool                _muted { false };
 };
 
