@@ -145,7 +145,6 @@ inline void Audio::DSP::Resampler<Type>::Interpolate(const Type *inputBuffer, Ty
     // Filter output
 }
 
-
 template<typename Type>
 inline void Audio::DSP::Resampler<Type>::Decimate(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const std::size_t decimationRatio) noexcept_ndebug
 {

@@ -6,7 +6,6 @@
 #include <iostream>
 #include <Audio/KissFFT.hpp>
 
-
 template<typename T>
 inline Buffer Audio::DSP::PitchShift::Shift(const BufferView &inputBuffer, const Semitone semitone)
 {

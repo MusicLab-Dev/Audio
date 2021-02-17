@@ -6,7 +6,7 @@
 #include <iostream>
 
 template<bool ProcessNotesAndControls, bool ProcessAudio, Audio::IPlugin::Flags Deduced, Audio::IPlugin::Flags Begin, Audio::IPlugin::Flags End>
-inline std::pair<Flow::Task, const Audio::NoteEvents *> Audio::MakeSchedulerTask(Flow::Graph &graph, const Audio::IPlugin::Flags flags,
+inline std::pair<Flow::Task, const Audio::NoteEvents *> Audio::MakeSchedulerTask(Flow::Graph &graph, const IPlugin::Flags flags,
         const AScheduler *scheduler, Node *node, const NoteEvents * const parentNoteStack)
 {
     if constexpr (Begin > End) {
