@@ -330,21 +330,49 @@ TEST(SchedulerTask, NotesCollection)
         EXPECT_EQ(graph.size(), 6);
 
 
+        // scheduler.graph().setRunning(true);
         std::cout << "=====\n\n";
         for (auto i = 0u; i < MaxFrames; ++i) {
             scheduler.setBeatRange(BeatRange({ i * FrameSize, (i + 1) * FrameSize }));
             scheduler.setState(AScheduler::State::Play);
             scheduler.setState(AScheduler::State::Pause);
             scheduler.wait();
+            GlobalCounter++;
+            // std::cout << scheduler.graph().running() << std::endl;
         }
 
-        for (auto &child : scheduler.project()->master()->children()) {
-            auto plugin = reinterpret_cast<std::size_t *>(child->getPlugin());
-            auto dummy = reinterpret_cast<DummyPluginBase *>(&(plugin[1]));
-            std::cout << child->name().toStdView() << ": " << std::endl;
-            std::cout << "notes: " << dummy->noteData.size() <<std::endl;
-            std::cout << "audio: " << dummy->audioData.size() <<std::endl;
+        auto ptrMaster = reinterpret_cast<DummyAudioIO *>(scheduler.project()->master()->plugin().get());
+        EXPECT_EQ(ptrMaster->audioData.size(), MaxFrames * 2);
+        auto ptrMixer1 = reinterpret_cast<DummyAudioIO *>(scheduler.project()->master()->children()[0]->plugin().get());
+        EXPECT_EQ(ptrMixer1->audioData.size(), MaxFrames * 2);
+        auto ptrOsc1 = reinterpret_cast<DummyNoteInAudioOut *>(scheduler.project()->master()->children()[0]->children()[0]->plugin().get());
+        EXPECT_EQ(ptrOsc1->audioData.size(), MaxFrames);
+        EXPECT_EQ(ptrOsc1->noteData.size(), MaxFrames);
+        auto ptrOsc2 = reinterpret_cast<DummyNoteInAudioOut *>(scheduler.project()->master()->children()[0]->children()[1]->plugin().get());
+        EXPECT_EQ(ptrOsc2->audioData.size(), MaxFrames);
+        EXPECT_EQ(ptrOsc2->noteData.size(), MaxFrames);
+
+        for (auto &i : ptrOsc1->noteData) {
+            std::cout << "frame: " << i.frame << std::endl;
+            std::cout << "dir: " << (i.dir == TestDataBase::Dir::In ? "in" : "out") << std::endl;
+            std::cout << "notes: " << std::endl;
+            for (auto n : i.noteData)
+                std::cout << "  - " << n.key << " " << (n.type == NoteEvent::EventType::On ? "on" : (n.type == NoteEvent::EventType::Off ? "off" : "on&off")) << std::endl;
         }
+
+        // for (auto i = 0; i < 10; ++i) {
+        //     std::cout << scheduler.project()->master()->cache().data<float>(Channel::Mono)[i] << std::endl;
+        // }
+
+        // scheduler.project()->setBPM(60);
+
+        // for (auto &child : scheduler.project()->master()->children()) {
+        //     auto plugin = reinterpret_cast<std::size_t *>(child->getPlugin());
+        //     auto dummy = reinterpret_cast<DummyPluginBase *>(&(plugin[1]));
+        //     std::cout << child->name().toStdView() << ": " << std::endl;
+        //     std::cout << "notes: " << dummy->noteData.size() <<std::endl;
+        //     std::cout << "audio: " << dummy->audioData.size() <<std::endl;
+        // }
     }
     PluginTable::Destroy();
 }

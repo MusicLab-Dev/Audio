@@ -12,4 +12,6 @@ using namespace Audio;
 TEST(Project, Instantiation)
 {
     auto project = Project(Core::FlatString("test-project"), Project::PlaybackMode::Production);
+
+
 }

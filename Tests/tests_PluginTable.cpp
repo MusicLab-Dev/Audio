@@ -16,15 +16,17 @@ TEST(PluginTable, Instantiation)
     PluginTable::Init();
     {
         auto &table = PluginTable::Get();
-        // auto builtinsFactory =
-
         auto name = Core::FlatString("osc");
         static const char n1[] { "osc" };
 
-        table.registerFactory<Oscillator, n1, IPluginFactory::Tags::Synth>();
+        auto &factory = table.registerFactory<Oscillator, n1, IPluginFactory::Tags::Synth>();
         auto p = table.instantiate(n1);
-        // table.registerFactory<Oscillator, "osc", IPluginFactory::Tags::Synth>();
+        auto p1 = table.instantiate(factory);
+
+        EXPECT_EQ(factory.getName(), "osc");
+        EXPECT_EQ(factory.getTags(), IPluginFactory::Tags::Synth);
+        EXPECT_EQ(factory.getSDK(), IPluginFactory::SDK::Internal);
+        EXPECT_EQ(factory.getPath(), "_path");
     }
-    // EXPECT_NE(table, nullptr);
     PluginTable::Destroy();
 }

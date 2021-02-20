@@ -19,6 +19,9 @@ namespace Audio
 class alignas_half_cacheline Audio::Project
 {
 public:
+    static constexpr BPM MaxBpmSupported = 400;
+    static constexpr BPM MinBpmSupported = 1;
+
     /** @brief PlaybackMode describe project purpose
      * Production is used when the user want to create art !
      * Live is used when the user want to share its art :)
@@ -46,6 +49,14 @@ public:
     [[nodiscard]] PlaybackMode playbackMode(void) const noexcept { return _playbackMode; }
     bool setPlaybackMode(const PlaybackMode mode) noexcept;
 
+    /** @brief Get / Set the tempo */
+    [[nodiscard]] Tempo tempo(void) const noexcept { return _bpm / 60.f; }
+    bool setTempo(const Tempo tempo) noexcept;
+
+    /** @brief Get / Set the BPM mode */
+    [[nodiscard]] BPM bpm(void) const noexcept { return _bpm; }
+    bool setBPM(const BPM bpm) noexcept;
+
     /** @brief Signal called when the generation of the audio block start */
     void onAudioGenerationStarted(const BeatRange &range);
 
@@ -53,6 +64,7 @@ private:
     NodePtr             _master {};
     PlaybackMode        _playbackMode { PlaybackMode::Production };
     Core::FlatString    _name {};
+    BPM                 _bpm {};
 };
 
 static_assert_fit_half_cacheline(Audio::Project);

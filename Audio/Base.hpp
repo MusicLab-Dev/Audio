@@ -25,8 +25,11 @@ namespace Core
 
 namespace Audio
 {
+    /** @brief BPM (beat per seconds) */
+    using BPM = float;
+
     /** @brief Tempo (beat per seconds) */
-    using Tempo = std::uint16_t;
+    using Tempo = float;
 
     /** @brief Color value */
     using Color = std::uint32_t;

@@ -8,6 +8,7 @@ inline Audio::AScheduler::AScheduler(ProjectPtr &&project)
 {
     _graph.setRepeatCallback([this](void) -> bool {
         onAudioBlockGenerated();
+        // increment BeatRange
         return state() == State::Play;
     });
 }
@@ -52,6 +53,7 @@ inline void Audio::AScheduler::dispatchNotifyEvents(void)
 
 inline void Audio::AScheduler::scheduleProjectGraph(void)
 {
+    std::cout << "< scheduleProjectGraph > " << currentBeatRange().from << " - " << currentBeatRange().to << std::endl;
     onAudioProcessStarted(currentBeatRange());
     _scheduler->schedule(_graph);
 }
