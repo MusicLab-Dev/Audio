@@ -3,8 +3,7 @@
  * @ Description: AScheduler
  */
 
-inline Audio::AScheduler::AScheduler(ProjectPtr &&project)
-    : _project(std::move(project))
+inline Audio::AScheduler::AScheduler(void)
 {
     _graph.setRepeatCallback([this](void) -> bool {
         onAudioBlockGenerated();
@@ -13,11 +12,33 @@ inline Audio::AScheduler::AScheduler(ProjectPtr &&project)
     });
 }
 
+inline Audio::AScheduler::AScheduler(ProjectPtr &&project)
+    : AScheduler()
+{
+    setProject(std::move(project));
+}
+
+template<typename Apply>
+inline void Audio::AScheduler::addEvent(Apply &&apply)
+{
+    if (_graph.running())
+        _events.push(Event {
+            apply: std::forward<Apply>(apply),
+            notify: NotifyFunctor()
+        });
+    else {
+        apply();
+    }
+}
+
 template<typename Apply, typename Notify>
 inline void Audio::AScheduler::addEvent(Apply &&apply, Notify &&notify)
 {
-    if (state() == State::Play)
-        _events.push(std::forward<Apply>(apply), std::forward<Notify>(notify));
+    if (_graph.running())
+        _events.push(Event {
+            apply: std::forward<Apply>(apply),
+            notify: std::forward<Notify>(notify)
+        });
     else {
         apply();
         notify();

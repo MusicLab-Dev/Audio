@@ -9,6 +9,7 @@
 #include <atomic>
 #include <future>
 
+#include <Core/Functor.hpp>
 #include <Flow/Scheduler.hpp>
 
 #include "Project.hpp"
@@ -18,8 +19,8 @@ namespace Audio
 {
     class AScheduler;
 
-    using ApplyFunctor = std::function<void(void)>;
-    using NotifyFunctor = std::function<void(void)>;
+    using ApplyFunctor = Core::Functor<void(void)>;
+    using NotifyFunctor = Core::Functor<void(void)>;
 };
 
 class alignas_cacheline Audio::AScheduler
@@ -35,15 +36,21 @@ public:
         NotifyFunctor notify {}; // The notify event is called when the scheduler is RUNNING, after 'apply' dispatcher
     };
 
+    /** @brief Default constructor (will crash if you play without project !) */
+    AScheduler(void);
+
     /** @brief Constructor */
     AScheduler(ProjectPtr &&project);
 
     /** @brief Virtual destructor */
     virtual ~AScheduler(void) = default;
 
-    ProjectPtr &project(void) noexcept { return _project; }
+    /** @brief Get / Set internal project */
+    [[nodiscard]] ProjectPtr &project(void) noexcept { return _project; }
+    void setProject(ProjectPtr &&project) noexcept { _project = std::move(project); }
 
 
+    /** @brief Get the generation graph */
     [[nodiscard]] Flow::Graph &graph(void) noexcept { return _graph; }
 
 
@@ -56,8 +63,8 @@ public:
     void setBeatRange(const BeatRange beatRange) noexcept;
 
     /** @brief Add apply event to be dispatched */
-    template<typename Apply, typename Notify>
-    void addEvent(Apply &&apply) { addEvent(std::forward<Apply>(), NotifyFunctor()); }
+    template<typename Apply>
+    void addEvent(Apply &&apply);
 
     /** @brief Add apply and notify events to be dispatched */
     template<typename Apply, typename Notify>
