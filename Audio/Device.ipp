@@ -19,32 +19,40 @@ inline void Audio::Device::ReleaseDriver(void)
 
 inline bool Audio::Device::setSampleRate(const int sampleRate) noexcept
 {
-    if (sampleRate == _sampleRate)
+    if (sampleRate == _descriptor.sampleRate)
         return false;
-    _sampleRate = sampleRate;
+    _descriptor.sampleRate = sampleRate;
     return true;
 }
 
 inline bool Audio::Device::setFormat(const Format format) noexcept
 {
-    if (format == _format)
+    if (format == _descriptor.format)
         return false;
-    _format = format;
+    _descriptor.format = format;
     return true;
 }
 
 inline bool Audio::Device::setChannelArrangement(const ChannelArrangement channelArrangement) noexcept
 {
-    if (channelArrangement == _channelArrangement)
+    if (channelArrangement == _descriptor.channelArrangement)
         return false;
-    _channelArrangement = channelArrangement;
+    _descriptor.channelArrangement = channelArrangement;
     return true;
 }
 
 inline bool Audio::Device::setBlockSize(const std::uint16_t blockSize) noexcept
 {
-    if (blockSize == _blockSize)
+    if (blockSize == _descriptor.blockSize)
         return false;
-    _blockSize = blockSize;
+    _descriptor.blockSize = blockSize;
+    return true;
+}
+
+inline bool Audio::Device::setMidiChannels(const MidiChannels midiChannels) noexcept
+{
+    if (midiChannels == _descriptor.midiChannels)
+        return false;
+    _descriptor.midiChannels = midiChannels;
     return true;
 }

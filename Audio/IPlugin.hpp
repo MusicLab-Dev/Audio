@@ -60,24 +60,29 @@ public:
     /** @brief Virtual destructor */
     virtual ~IPlugin(void) noexcept = default;
 
-    // virtual ParameterDescriptors getParameterDescriptors(void) const = 0;
+    /** @brief Update internal audio paramters */
+    void updateAudioParameters(const SampleRate sampleRate, const ChannelArrangement channelArrangement) noexcept
+        { _sampleRate = sampleRate; _channelArrangement = channelArrangement; }
 
-    /** @brief  */
-    static PluginFactoryPtr GetFactory(void);
-    /** @brief  */
-    static void SetFactory(PluginFactoryPtr factory);
+    /** @brief Get the sample rate in plugin's cache */
+    [[nodiscard]] inline SampleRate sampleRate(void) const noexcept { return _sampleRate; }
+
+    /** @brief Get the channel arrangement in plugin's cache */
+    [[nodiscard]] inline ChannelArrangement channelArrangement(void) const noexcept { return _channelArrangement; }
+
 
     /** @brief  */
     virtual Flags getFlags(void) const noexcept = 0;
 
-
     /** @brief  */
     virtual void sendAudio(const BufferViews &inputs) noexcept = 0;
+
     /** @brief  */
     virtual void receiveAudio(BufferView output) noexcept = 0;
 
     /** @brief  */
     virtual void sendNotes(const NoteEvents &notes) noexcept = 0;
+
     /** @brief  */
     virtual void receiveNotes(NoteEvents &notes) noexcept = 0;
 
@@ -103,4 +108,8 @@ public: // See REGISTER_PLUGIN in PluginUtils
 
     /** @brief Get static meta-data about the plugin (DO NOT REIMPLEMENT MANUALLY, see REGISTER_PLUGIN !) */
     [[nodiscard]] virtual const PluginMetaData &getMetaData(void) const noexcept = 0;
+
+private:
+    SampleRate _sampleRate { 0u };
+    ChannelArrangement _channelArrangement { 0u };
 };

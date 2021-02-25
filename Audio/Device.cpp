@@ -10,6 +10,7 @@
 using namespace Audio;
 
 Device::Device(const Descriptor &descriptor, AudioCallback &&callback)
+    : _descriptor(descriptor)
 {
     constexpr auto GetFormat = [](const Format format) -> SDL_AudioFormat {
         switch (format) {
@@ -26,13 +27,13 @@ Device::Device(const Descriptor &descriptor, AudioCallback &&callback)
         }
     };
     SDL_AudioSpec desiredSpec {};
-    desiredSpec.freq = static_cast<int>(descriptor.sampleRate);
-    desiredSpec.format = GetFormat(descriptor.format);
-    desiredSpec.samples = descriptor.blockSize;
+    desiredSpec.freq = static_cast<int>(_descriptor.sampleRate);
+    desiredSpec.format = GetFormat(_descriptor.format);
+    desiredSpec.samples = _descriptor.blockSize;
     desiredSpec.callback = callback;
     desiredSpec.userdata = nullptr;
     SDL_AudioSpec acquiredSpec;
-    if (!(_deviceID = SDL_OpenAudioDevice(NULL, descriptor.isInput, &desiredSpec, &acquiredSpec, 1)))
+    if (!(_deviceID = SDL_OpenAudioDevice(NULL, _descriptor.isInput, &desiredSpec, &acquiredSpec, 1)))
         throw std::runtime_error(std::string("Couldn't open audio: ") + SDL_GetError());
 }
 

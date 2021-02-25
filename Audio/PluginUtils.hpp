@@ -5,7 +5,7 @@
 
 #include <array>
 
-#include <Core/Core/MacroUtils.hpp>
+#include <Core/MacroUtils.hpp>
 
 #include "IPlugin.hpp"
 

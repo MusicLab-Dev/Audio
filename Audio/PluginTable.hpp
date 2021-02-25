@@ -27,6 +27,13 @@ namespace Audio
 class alignas_cacheline Audio::PluginTable
 {
 public:
+    class Instance
+    {
+    public:
+        Instance(void) { PluginTable::Init(); }
+        ~Instance(void) { PluginTable::Destroy(); }
+    };
+
     /** @brief Initialize unique instance */
     static void Init(void) { _Instance.reset(new PluginTable()); }
 
@@ -37,6 +44,9 @@ public:
     [[nodiscard]] static PluginTable &Get(void) noexcept { return *_Instance; }
 
 
+    /** @brief Update the audio parameters of the whole plugin table */
+    void updateAudioParameters(const SampleRate sampleRate, const ChannelArrangement channelArrangement);
+
     /** @brief Register a factory using a path */
     IPluginFactory &registerFactory(const std::string &path);
 
@@ -45,10 +55,10 @@ public:
     IPluginFactory &registerFactory(void);
 
     /** @brief Instantiates a new plugin using its factory name */
-    [[nodiscard]] PluginPtr instantiate(const std::string_view &view);
+    [[nodiscard]] PluginPtr instantiate(const std::string_view &view, const SampleRate sampleRate, const ChannelArrangement channelArrangement);
 
     /** @brief Instantiates a new plugin using its factory */
-    [[nodiscard]] PluginPtr instantiate(IPluginFactory &factory) { return PluginPtr(factory.instantiate()); }
+    [[nodiscard]] PluginPtr instantiate(IPluginFactory &factory, const SampleRate sampleRate, const ChannelArrangement channelArrangement);
 
 
     /** @brief Get a reference of the plugin factories associated to the table */

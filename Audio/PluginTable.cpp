@@ -7,17 +7,8 @@
 
 #include <Core/Assert.hpp>
 
+#include "Project.hpp"
 #include "PluginTable.hpp"
-
-Audio::PluginPtr Audio::PluginTable::instantiate(const std::string_view &view)
-{
-    for (auto &factory : _factories) {
-        if (factory->getName() != view)
-            continue;
-        return instantiate(*factory);
-    }
-    throw std::logic_error("Audio::PluginTable::instantiate: Plugin '" + std::string(view) + "' not found");
-}
 
 void Audio::PluginTable::addPlugin(IPlugin *plugin) noexcept_ndebug
 {

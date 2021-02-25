@@ -57,6 +57,12 @@ benchmarks:
 benchmarks_debug:
 	$(MAKE) debug CMAKE_ARGS+=-DBENCHMARKS=ON
 
+# Tools rules
+tool_interpreter:
+	$(MAKE) release CMAKE_ARGS+=-DTOOL_INTERPRETER=ON
+
+tool_interpreter_debug:
+	$(MAKE) debug CMAKE_ARGS+=-DTOOL_INTERPRETER=ON
 
 # Cleaning rules
 clean_release:
@@ -83,6 +89,7 @@ re: clean all
 	release debug \
 	tests tests_debug run_tests run_tests_debug \
 	benchmarks benchmarks_debug \
+	tool_interpreter tool_interpreter_debug \
 	clean clean_release clean_debug \
 	fclean fclean_release fclean_debug \
 	re

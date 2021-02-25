@@ -18,3 +18,5 @@ endif()
 if(BENCHMARKS)
     include(${AudioRoot}/Benchmarks/AudioBenchmarks.cmake)
 endif()
+
+include(${AudioRoot}/Tools/Tools.cmake)
