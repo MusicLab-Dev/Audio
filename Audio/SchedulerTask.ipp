@@ -78,6 +78,8 @@ inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio>::
     }
 }
 
+#include <iostream>
+
 template<Audio::IPlugin::Flags Flags, bool ProcessNotesAndControls, bool ProcessAudio>
 inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio>::collectControls(const BeatRange &beatRange) noexcept
 {
@@ -95,8 +97,11 @@ inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio>::
                     break;
                 const Point *last = nullptr;
                 for (const auto &point : automation.points()) {
-                    if (instance.from + point.beat < beatRange.to)
+                    std::cout << "eheh\n";
+                    if (instance.from + point.beat < beatRange.to) {
+                        std::cout << "++\n";
                         last = &point;
+                    }
                     else {
                         collectInterpolatedPoint(beatRange, control.paramID(), last, point);
                         break;
@@ -111,6 +116,15 @@ template<Audio::IPlugin::Flags Flags, bool ProcessNotesAndControls, bool Process
 inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio>::collectInterpolatedPoint(
         const BeatRange &beatRange, const ParamID paramID, const Point * const left, const Point &right)
 {
+    std::cout << "collectInterpolatedPoint" << std::endl;
+    std::cout << "range: " << beatRange.from << ", " << beatRange.to << std::endl;
+    std::cout << "paramID: " << paramID << std::endl;
+    std::cout << "left: " << left << std::endl;
+    std::cout << " --" << left->beat << std::endl;
+    std::cout << " -" << left->value << std::endl;
+    std::cout << " --" << right.beat << std::endl;
+    std::cout << " -" << right.value << std::endl;
+
     ParamValue value = left ? 0.0 : right.value;
     switch (right.type) {
     case Point::CurveType::Linear:

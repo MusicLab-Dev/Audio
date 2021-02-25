@@ -21,6 +21,8 @@ set(AudioSources
     ${AudioDir}/Connection.hpp
     ${AudioDir}/Control.hpp
     ${AudioDir}/Control.ipp
+    ${AudioDir}/ParameterTable.hpp
+    ${AudioDir}/ParameterTable.cpp
     ${AudioDir}/Device.cpp
     ${AudioDir}/Device.hpp
     ${AudioDir}/Device.ipp
@@ -53,12 +55,8 @@ set(AudioSources
 set(AudioPluginsDir ${AudioDir}/Plugins)
 
 set(AudioPluginsSources
-    ${AudioPluginsDir}/Oscillator.hpp
-    ${AudioPluginsDir}/Oscillator.ipp
-    ${AudioPluginsDir}/SimpleDelay.hpp
-    ${AudioPluginsDir}/SimpleDelay.ipp
-    ${AudioPluginsDir}/Mixer.hpp
-    ${AudioPluginsDir}/Mixer.ipp
+    ${AudioPluginsDir}/Sampler.hpp
+    ${AudioPluginsDir}/Sampler.ipp
 )
 
 set(AudioPluginManagerDir ${AudioPluginsDir}/Managers)

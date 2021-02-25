@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include <Core/FlatVector.hpp>
+
 #include "Buffer.hpp"
 #include "Control.hpp"
 #include "Note.hpp"
@@ -15,8 +17,39 @@ namespace Audio
 {
     class IPlugin;
 
+    /** @brief Languages tags */
+    constexpr auto English = "EN";
+    constexpr auto French = "FR";
+
     /** @brief A list of points events */
     using ControlEvents = Core::TinyVector<ControlEvent>;
+
+    struct TranslationPair
+    {
+        std::string_view lang {};
+        std::string_view text {};
+    };
+
+    using TranslationTable = Core::TinyVector<TranslationPair>;
+
+    struct TranslationMetaData
+    {
+        TranslationTable names {};
+        TranslationTable descriptions {};
+    };
+
+    struct ControlMetaData
+    {
+        TranslationMetaData translations;
+    };
+
+    using ControlMetaDataList = Core::TinyVector<ControlMetaData>;
+
+    struct PluginMetaData
+    {
+        TranslationMetaData translations;
+        ControlMetaDataList controls;
+    };
 };
 
 class Audio::IPlugin
@@ -63,4 +96,11 @@ public:
     [[nodiscard]] inline bool hasNoteOutput(void) const noexcept    { return static_cast<std::size_t>(getFlags()) & static_cast<std::size_t>(Flags::NoteOutput); }
     [[nodiscard]] inline bool hasControlInput(void) const noexcept  { return static_cast<std::size_t>(getFlags()) & static_cast<std::size_t>(Flags::ControlInput); }
 
+public: // See REGISTER_PLUGIN in PluginUtils
+    /** @brief Get a control value by serial ID (DO NOT REIMPLEMENT MANUALLY, see REGISTER_PLUGIN !) */
+    [[nodiscard]] virtual ParamValue &getControl(const ParamID id) noexcept = 0;
+    [[nodiscard]] virtual ParamValue getControl(const ParamID id) const noexcept = 0;
+
+    /** @brief Get static meta-data about the plugin (DO NOT REIMPLEMENT MANUALLY, see REGISTER_PLUGIN !) */
+    [[nodiscard]] virtual const PluginMetaData &getMetaData(void) const noexcept = 0;
 };

@@ -11,8 +11,10 @@ set(AudioTestsSources
     # ${AudioTestsDir}/tests_Point.cpp
     # ${AudioTestsDir}/tests_Automation.cpp
     # ${AudioTestsDir}/tests_Control.cpp
+    ${AudioTestsDir}/tests_ParameterTable.cpp
     ${AudioTestsDir}/tests_SchedulerTask.cpp
     ${AudioTestsDir}/tests_PluginTable.cpp
+    ${AudioTestsDir}/tests_Sampler.cpp
     # ${AudioTestsDir}/tests_Note.cpp
     # ${AudioTestsDir}/tests_Partition.cpp
     # ${AudioTestsDir}/tests_NoteManager.cpp

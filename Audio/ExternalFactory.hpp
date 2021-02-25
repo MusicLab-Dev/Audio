@@ -7,7 +7,7 @@
 
 #include "Base.hpp"
 #include "IPluginFactory.hpp"
-#include "IPlugin.hpp"
+#include "PluginUtils.hpp"
 
 namespace Audio
 {

@@ -27,6 +27,7 @@ struct alignas_quarter_cacheline Audio::Point
     /** @brief POD semantics */
     Point(void) noexcept = default;
     Point(const ParamValue value_) noexcept : value(value_) {}
+    Point(const Beat beat_, const ParamValue value_) noexcept : beat(beat_), value(value_) {}
     Point(const Point &other) noexcept = default;
     Point(Point &&other) noexcept = default;
     Point &operator=(const Point &other) noexcept = default;

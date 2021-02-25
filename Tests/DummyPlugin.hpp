@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <Audio/IPlugin.hpp>
+#include <Audio/PluginUtils.hpp>
 #include <Audio/Plugins/Managers/NoteManager.hpp>
 
 
@@ -108,6 +108,8 @@ static void FeedAudioTestData(std::vector<AudioTestData> &testData, const Buffer
 
 struct DummyNoteInAudioOut : public IPlugin, public DummyPluginBase
 {
+    _REGISTER_DUMMY_PLUGIN
+
     // NoteManager noteManager;
     Buffer buffer;
 
@@ -143,6 +145,8 @@ struct DummyNoteInAudioOut : public IPlugin, public DummyPluginBase
 
 struct DummyAudioIO : public IPlugin, public DummyPluginBase
 {
+    _REGISTER_DUMMY_PLUGIN
+
     Buffer buffer;
 
     virtual ~DummyAudioIO(void) override = default;
