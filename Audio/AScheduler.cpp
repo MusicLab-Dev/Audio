@@ -23,7 +23,7 @@ void AScheduler::setState(const State state) noexcept
     }
 }
 
-#include <iostream>
+// #include <iostream>
 
 void AScheduler::setProcessBeatSize(const std::uint32_t size) noexcept
 {

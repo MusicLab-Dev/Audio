@@ -3,8 +3,6 @@
  * @ Description: Scheduler Task
  */
 
-#include <iostream>
-
 template<bool ProcessNotesAndControls, bool ProcessAudio, Audio::IPlugin::Flags Deduced, Audio::IPlugin::Flags Begin, Audio::IPlugin::Flags End>
 inline std::pair<Flow::Task, const Audio::NoteEvents *> Audio::MakeSchedulerTask(Flow::Graph &graph, const IPlugin::Flags flags,
         const AScheduler *scheduler, Node *node, const NoteEvents * const parentNoteStack)
@@ -40,7 +38,7 @@ inline std::pair<Flow::Task, const Audio::NoteEvents *> Audio::MakeSchedulerTask
 template<Audio::IPlugin::Flags Flags, bool ProcessNotesAndControls, bool ProcessAudio>
 inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio>::operator()(void) noexcept
 {
-    std::cout << "run task: " << node().name().toStdString() << std::endl;
+    // std::cout << "run task: " << node().name().toStdString() << std::endl;
     // std::cout << "_noteStack: " << _noteStack->size() << std::endl;
     // std::cout << "_parentNoteStack: " << _parentNoteStack << std::endl;
     _noteStack->clear();
@@ -114,14 +112,14 @@ template<Audio::IPlugin::Flags Flags, bool ProcessNotesAndControls, bool Process
 inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio>::collectInterpolatedPoint(
         const BeatRange &beatRange, const ParamID paramID, const Point * const left, const Point &right)
 {
-    std::cout << "collectInterpolatedPoint" << std::endl;
-    std::cout << "range: " << beatRange.from << ", " << beatRange.to << std::endl;
-    std::cout << "paramID: " << paramID << std::endl;
-    std::cout << "left: " << left << std::endl;
-    std::cout << " --" << left->beat << std::endl;
-    std::cout << " -" << left->value << std::endl;
-    std::cout << " --" << right.beat << std::endl;
-    std::cout << " -" << right.value << std::endl;
+    // std::cout << "collectInterpolatedPoint" << std::endl;
+    // std::cout << "range: " << beatRange.from << ", " << beatRange.to << std::endl;
+    // std::cout << "paramID: " << paramID << std::endl;
+    // std::cout << "left: " << left << std::endl;
+    // std::cout << " --" << left->beat << std::endl;
+    // std::cout << " -" << left->value << std::endl;
+    // std::cout << " --" << right.beat << std::endl;
+    // std::cout << " -" << right.value << std::endl;
 
     ParamValue value = left ? 0.0 : right.value;
     switch (right.type) {
@@ -195,7 +193,6 @@ inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio>::
             }
         }
     }
-    std::cout << _noteStack->size() << std::endl;
 }
 
 template<Audio::IPlugin::Flags Flags, bool ProcessNotesAndControls, bool ProcessAudio>

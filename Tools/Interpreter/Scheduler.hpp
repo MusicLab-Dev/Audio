@@ -15,7 +15,7 @@ public:
     ~Scheduler(void) override = default;
 
     void onAudioBlockGenerated(void) override {
-        std::cout << "<onAudioBlockGenerated>" << std::endl;
-        std::cout << _currentBeatRange << std::endl;
+        // std::cout << "<onAudioBlockGenerated>" << std::endl;
+        // std::cout << _currentBeatRange << std::endl;
     }
 };

@@ -39,10 +39,10 @@ public:
     ~Interpreter(void) override = default;
 
     void onAudioBlockGenerated(void) override {
-        std::cout << "<onAudioBlockGenerated>" << std::endl;
-        const auto outputBufferPtr = project()->master()->cache().data<std::uint8_t>(Audio::Channel::Left);
-        const auto outputBufferSize = project()->master()->cache().size<std::uint8_t>();
-        _AudioCallbackBuffer.pushRange(outputBufferPtr, outputBufferPtr + outputBufferSize);
+        // std::cout << "<onAudioBlockGenerated>" << std::endl;
+        // const auto outputBufferPtr = project()->master()->cache().data<std::uint8_t>(Audio::Channel::Left);
+        // const auto outputBufferSize = project()->master()->cache().size<std::uint8_t>();
+        // _AudioCallbackBuffer.pushRange(outputBufferPtr, outputBufferPtr + outputBufferSize);
     }
 
     struct NodeHolder

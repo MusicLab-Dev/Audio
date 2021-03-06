@@ -86,7 +86,7 @@ void Interpreter::AudioCallback(void *, std::uint8_t *stream, const int length)
 
     if (total != length)
         ++_AudioCallbackMissCount;
-    std::cout << "<AudioCallback> " << "(" << length << ")" << total << std::endl;
+    // std::cout << "<AudioCallback> " << "(" << length << ")" << total << std::endl;
 }
 
 void Interpreter::run(void)
@@ -116,6 +116,7 @@ void Interpreter::run(void)
                 audioCallbackMissCount = _AudioCallbackMissCount;
                 std::cout << "An audio callback has been missed or uncompleted (n. " << audioCallbackMissCount << ')' << std::endl;
             }
+            std::cout << "next: \n";
             getNextCommand();
             addEvent([this] {
                 parseCommand();
@@ -180,6 +181,7 @@ void Interpreter::parseLoadCommand(void)
 
 void Interpreter::parseRunningCommand(AudioState state)
 {
+    std::cout << currentBeatRange().from << std::endl;
     if (state == AudioState::Play) {
         if (_audioState == AudioState::Play)
             return;

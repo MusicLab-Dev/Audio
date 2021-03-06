@@ -24,7 +24,7 @@ inline void Audio::Sampler::incrementReadIndex(Key key, std::size_t size) noexce
     }
 }
 
-#include <iostream>
+// #include <iostream>
 
 template<typename T>
 inline void Audio::Sampler::loadSample(const std::string &path)
@@ -49,7 +49,7 @@ inline void Audio::Sampler::sendNotes(const NoteEvents &notes) noexcept
 
 inline void Audio::Sampler::receiveAudio(BufferView output) noexcept
 {
-    std::cout << "receiveAudio:::: " << _noteManager.getActiveNoteNumber() << std::endl;
+    // std::cout << "receiveAudio:::: " << _noteManager.getActiveNoteNumber() << std::endl;
     const auto outSize = output.size<float>();
     const auto outChannel = static_cast<std::uint32_t>(output.channelArrangement());
     const auto noteNumber = _noteManager.getActiveNoteNumber();
