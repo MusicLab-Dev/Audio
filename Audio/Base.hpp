@@ -61,6 +61,9 @@ namespace Audio
     /** @brief Parameter value */
     using ParamValue = double;
 
+    /** @brief Gain value */
+    using Gain = float;
+
     /** @brief Audio channels arrangement */
     enum class ChannelArrangement : std::uint8_t {
         Mono = 1,

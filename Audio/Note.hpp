@@ -42,6 +42,8 @@ struct alignas_quarter_cacheline Audio::Note
 
     static const std::vector<const char *> NoteNamesSharp;
 
+    Note(void) = default;
+
     Note(const BeatRange &range_, Key key_ = 69, Velocity velocity_ = 0xFFFF, Tuning tuning_ = 0u)
         : range(range_), key(key_), velocity(velocity_), tuning(tuning_) {}
 

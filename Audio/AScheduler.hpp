@@ -23,7 +23,7 @@ namespace Audio
     using NotifyFunctor = Core::Functor<void(void)>;
 };
 
-class alignas_cacheline Audio::AScheduler
+class Audio::AScheduler
 {
 public:
     enum class State {
@@ -62,6 +62,10 @@ public:
     [[nodiscard]] BeatRange currentBeatRange(void) const noexcept { return _currentBeatRange; }
     void setBeatRange(const BeatRange beatRange) noexcept;
 
+    /** @brief Get / set internal process beat size */
+    [[nodiscard]] std::uint32_t processBeatSize(void) const noexcept { return _processBeatSize; }
+    void setProcessBeatSize(const std::uint32_t size) noexcept;
+
     /** @brief Add apply event to be dispatched */
     template<typename Apply>
     void addEvent(Apply &&apply);
@@ -85,6 +89,8 @@ public:
      *  Never call this without setting state to 'Pause' during the whole wait call */
     void wait(void) noexcept_ndebug;
 
+    void initCache(const uint32_t channelByteSize, const SampleRate sampleRate, const ChannelArrangement channelArrangement) noexcept;
+
 protected:
     /** @brief Dispatch apply events without clearing event list */
     void dispatchApplyEvents(void);
@@ -96,14 +102,19 @@ private:
     std::unique_ptr<Flow::Scheduler> _scheduler { std::make_unique<Flow::Scheduler>() };
     Flow::Graph _graph {};
     Core::TinyVector<Event> _events {};
+public:
     BeatRange _currentBeatRange {};
+private:
     ProjectPtr _project {};
     std::atomic<State> _state { State::Pause };
+    std::uint32_t   _processBeatSize { 0u };
 
     /** @brief Build the project graph */
     void buildProjectGraph(void);
 
     void buildNodeTask(const Node *node, std::pair<Flow::Task, const NoteEvents *> &parentNoteTask, std::pair<Flow::Task, const NoteEvents *> &parentAudioTask);
+
+    void initCacheImpl(Node *node, const uint32_t channelByteSize, const SampleRate sampleRate, const ChannelArrangement channelArrangement) noexcept;
 
 public:
     /** @brief Schedule the project graph */

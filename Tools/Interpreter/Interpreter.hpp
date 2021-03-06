@@ -35,6 +35,12 @@ public:
 
     void run(void);
 
+    enum class AudioState {
+        Play, Pause, Stop
+    };
+
+    Interpreter(void);
+
 private:
     Scheduler _scheduler;
     Audio::Device _device { DefaultDeviceDescriptor, &Interpreter::AudioCallback };
@@ -50,15 +56,19 @@ private:
     std::string _command {};
     std::string _word {};
     bool _running { false };
+    AudioState _audioState { AudioState::Stop };
 
     void getNextCommand(void);
     void getNextWord(void);
+    bool getNextWordNoThrow(void) noexcept;
 
     template<typename As>
     [[nodiscard]] As getNextWordAs(const char * const what);
 
     void parseCommand(void);
 
+    void parseLoadCommand(void);
+    void parseRunningCommand(AudioState state);
     void parseSettingsCommand(void);
     void parsePluginCommand(void);
     void parseNoteCommand(void);
@@ -73,5 +83,7 @@ private:
 
     void removeNode(NodeHolder &node);
     void removeNodeImpl(Audio::Node &node) noexcept;
+
+    void registerInternalFactories(void) noexcept;
 };
 #include "Interpreter.ipp"

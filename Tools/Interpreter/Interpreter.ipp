@@ -20,6 +20,12 @@ inline void Interpreter::getNextWord(void)
         throw std::logic_error("Interpreter::getNextWord: Invalid command input");
 }
 
+inline bool Interpreter::getNextWordNoThrow(void) noexcept
+{
+    _is >> _word;
+    return (!_is.fail());
+}
+
 template<typename As>
 inline As Interpreter::getNextWordAs(const char * const what)
 {

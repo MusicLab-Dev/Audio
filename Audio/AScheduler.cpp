@@ -25,11 +25,31 @@ void AScheduler::setState(const State state) noexcept
 
 #include <iostream>
 
+void AScheduler::setProcessBeatSize(const std::uint32_t size) noexcept
+{
+    if (size == _processBeatSize)
+        return;
+    _processBeatSize = size;
+}
+
 void AScheduler::setBeatRange(const BeatRange range) noexcept
 {
     if (range == _currentBeatRange)
         return;
     _currentBeatRange = range;
+}
+
+void AScheduler::initCache(const uint32_t channelByteSize, const SampleRate sampleRate, const ChannelArrangement channelArrangement) noexcept
+{
+    initCacheImpl(_project->master().get(), channelByteSize, sampleRate, channelArrangement);
+}
+
+void AScheduler::initCacheImpl(Node *node, const uint32_t channelByteSize, const SampleRate sampleRate, const ChannelArrangement channelArrangement) noexcept
+{
+    for (auto &children : node->children()) {
+        initCacheImpl(children.get(), channelByteSize, sampleRate, channelArrangement);
+    }
+    node->cache() = Audio::Buffer(channelByteSize, sampleRate, channelArrangement);
 }
 
 void AScheduler::buildNodeTask(const Node *node,

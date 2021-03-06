@@ -44,6 +44,8 @@ struct alignas(8) Audio::BeatRange
 
     [[nodiscard]] inline bool operator==(const BeatRange &other) const noexcept { return (from == other.from) && (to == other.to); }
     [[nodiscard]] inline bool operator!=(const BeatRange &other) const noexcept { return !(operator==(other)); }
+
+    inline BeatRange &operator+=(const Beat size) { from += size; to += size; return *this; }
 };
 
 static_assert_fit(Audio::BeatRange, 8);

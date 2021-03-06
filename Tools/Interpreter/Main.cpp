@@ -7,12 +7,19 @@
 
 #include "Interpreter.hpp"
 
+using namespace Audio;
+
+static void CB(void *, std::uint8_t *stream, const int length)
+{
+
+}
+
 
 int main(void)
 {
     try {
-        Audio::Device::DriverInstance driverInstance;
-        Audio::PluginTable::Instance pluginTableInstance;
+        Device::DriverInstance driverInstance;
+        PluginTable::Instance pluginTableInstance;
         Interpreter interpreter;
 
         interpreter.run();

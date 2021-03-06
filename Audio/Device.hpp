@@ -114,10 +114,13 @@ public:
     /** @brief Get all device descriptors */
     static Descriptors GetDeviceDescriptors(void);
 
+    void reloadDriver(AudioCallback &&callback);
+
 private:
     SDL_AudioDeviceID   _deviceID {};
     AudioCallback       _callback { nullptr };
     Descriptor          _descriptor {};
+
 };
 
 #include "Device.ipp"

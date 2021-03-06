@@ -50,6 +50,7 @@ public:
     /** @brief Register a factory using a path */
     IPluginFactory &registerFactory(const std::string &path);
 
+    /** @todo Change Name template parameter by std::string_view ? */
     /** @brief Register a factory using a compiled plugin */
     template<typename Type, const char *Name, IPluginFactory::Tags FactoryTags>
     IPluginFactory &registerFactory(void);

@@ -5,7 +5,10 @@
 
 #pragma once
 
+#include <Core/FlatVector.hpp>
+
 #include <Audio/PluginUtils.hpp>
+#include "Managers/NoteManager.hpp"
 
 namespace Audio
 {
@@ -14,6 +17,8 @@ namespace Audio
 
 class Audio::Sampler final : public Audio::IPlugin
 {
+    using IndexList = std::array<std::size_t, KeyCount>;
+
     REGISTER_PLUGIN(
         /* Plugin's name */
         TR_TABLE(
@@ -60,13 +65,13 @@ public:
     virtual Flags getFlags(void) const noexcept;
 
     virtual void sendAudio(const BufferViews &inputs) noexcept {}
-    virtual void receiveAudio(BufferView output) noexcept {}
+    virtual void receiveAudio(BufferView output) noexcept;
 
-    virtual void sendNotes(const NoteEvents &notes) noexcept {}
+    virtual void sendNotes(const NoteEvents &notes) noexcept;
     virtual void receiveNotes(NoteEvents &notes) noexcept {}
 
-    virtual void sendControls(const ControlEvents &controls) noexcept {
-    }
+    // virtual void sendControls(const ControlEvents &controls) noexcept {
+    // }
 
     virtual void onAudioGenerationStarted(const BeatRange &range) noexcept {}
 
@@ -76,9 +81,16 @@ public:
 
     [[nodiscard]] const BufferViews &getBuffers(void) const noexcept { return _buffers; }
 
-    float           _volume { 1.f };
 private:
+    Gain            _outputGain { 0.5f };
+    NoteManager     _noteManager;
     BufferViews     _buffers;
+    IndexList       _readIndex { 0u };
+
+
+    void incrementReadIndex(Key key, std::size_t size = 1u) noexcept;
+
+    // void fillNo
 };
 
 #include "Sampler.ipp"

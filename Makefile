@@ -64,6 +64,12 @@ tool_interpreter:
 tool_interpreter_debug:
 	$(MAKE) debug CMAKE_ARGS+=-DTOOL_INTERPRETER=ON
 
+run_tool_interpreter: tool_interpreter
+	./$(RELEASE_DIR)/Interpreter
+
+run_tool_interpreter_debug: tool_interpreter_debug
+	./$(DEBUG_DIR)/Interpreter
+
 # Cleaning rules
 clean_release:
 	$(RM) ${RELEASE_DIR}
@@ -89,7 +95,7 @@ re: clean all
 	release debug \
 	tests tests_debug run_tests run_tests_debug \
 	benchmarks benchmarks_debug \
-	tool_interpreter tool_interpreter_debug \
+	tool_interpreter tool_interpreter_debug run_tool_interpreter \
 	clean clean_release clean_debug \
 	fclean fclean_release fclean_debug \
 	re

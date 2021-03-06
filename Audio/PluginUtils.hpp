@@ -29,6 +29,16 @@
 #define _REGISTER_GETTER_CONTROL_EACH_15(prefix, i, x, ...) _CONCATENATE_SECOND(prefix, x) [i]; } _REGISTER_GETTER_CONTROL_EACH_14(prefix, i + 1, __VA_ARGS__)
 #define _REGISTER_GETTER_CONTROL_EACH_16(prefix, i, x, ...) _CONCATENATE_SECOND(prefix, x) [i]; } _REGISTER_GETTER_CONTROL_EACH_15(prefix, i + 1, __VA_ARGS__)
 
+#define REGISTER_SEND_CONTROL(...) \
+    virtual void sendControls(const Audio::ControlEvents &controls) noexcept { \
+        auto i = 0u; \
+        for (auto &control : controls) { \
+            _controls[control.paramID] = control.value; \
+        } \
+    }
+
+
+
 #define REGISTER_PLUGIN(Name, Description, ...) \
 private: \
     static inline const Audio::PluginMetaData _MetaData = [] { \
@@ -46,12 +56,15 @@ public: \
     [[nodiscard]] Audio::ParamValue getControl(const Audio::ParamID id) const noexcept final { return _controls[id]; } \
     REGISTER_GETTER_CONTROL_EACH(_REGISTER_GETTER_, __VA_ARGS__) \
     REGISTER_GETTER_CONTROL_EACH(_REGISTER_GETTER_REF_, __VA_ARGS__) \
+    REGISTER_SEND_CONTROL(__VA_ARGS__) \
 private:
+
 
 #define REGISTER_CONTROL(Variable, Name, Description) CONTROL(Variable, Name, Description)
 
 #define _REGISTER_METADATA_CONTROL(Variable, Name, Description) \
     Audio::ControlMetaData { Audio::TranslationMetaData { Name, Description } }
+
 
 #define _REGISTER_GETTER_REF_CONTROL(Variable, Name, Description) \
     [[nodiscard]] Audio::ParamValue &Variable(void) noexcept { return _controls

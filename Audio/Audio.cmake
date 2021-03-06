@@ -44,6 +44,7 @@ set(AudioSources
     ${AudioDir}/PluginTable.cpp
     ${AudioDir}/PluginTable.hpp
     ${AudioDir}/PluginTable.ipp
+    ${AudioDir}/PluginUtils.hpp
     ${AudioDir}/Project.hpp
     ${AudioDir}/Project.ipp
     ${AudioDir}/UtilsMidi.hpp
@@ -57,6 +58,8 @@ set(AudioPluginsDir ${AudioDir}/Plugins)
 set(AudioPluginsSources
     ${AudioPluginsDir}/Sampler.hpp
     ${AudioPluginsDir}/Sampler.ipp
+    ${AudioPluginsDir}/Mixer.hpp
+    ${AudioPluginsDir}/Mixer.ipp
 )
 
 set(AudioPluginManagerDir ${AudioPluginsDir}/Managers)

@@ -101,7 +101,7 @@ static void FeedAudioTestData(std::vector<AudioTestData> &testData, const Buffer
 //         FeedNoteTestData(noteData, notes, TestDataBase::Dir::Out);
 //     }
 
-//     virtual void sendControls(const ControlEvents &controls) noexcept {}
+// //     virtual void sendControls(const ControlEvents &controls) noexcept {}
 
 //     virtual void onAudioGenerationStarted(const BeatRange &range) noexcept {}
 // };
@@ -135,10 +135,10 @@ struct DummyNoteInAudioOut : public IPlugin, public DummyPluginBase
     virtual void sendNotes(const NoteEvents &notes) noexcept
     {
         FeedNoteTestData(noteData, notes, TestDataBase::Dir::In);
-        std::cout << "jjfdjf: " << noteData.size() << std::endl;
+        std::cout << "send notes: " << noteData.size() << std::endl;
     }
 
-    virtual void sendControls(const ControlEvents &controls) noexcept {}
+    // virtual void sendControls(const ControlEvents &controls) noexcept {}
 
     virtual void onAudioGenerationStarted(const BeatRange &range) noexcept {}
 };
@@ -172,7 +172,7 @@ struct DummyAudioIO : public IPlugin, public DummyPluginBase
         FeedAudioTestData(audioData, BufferViews({ output }), TestDataBase::Dir::Out);
     }
 
-    virtual void sendControls(const ControlEvents &controls) noexcept {}
+    // virtual void sendControls(const ControlEvents &controls) noexcept {}
 
     virtual void onAudioGenerationStarted(const BeatRange &range) noexcept {}
 };
@@ -205,7 +205,7 @@ struct DummyAudioIO : public IPlugin, public DummyPluginBase
 //         FeedNoteTestData(noteData, notes, TestDataBase::Dir::Out);
 //     }
 
-//     virtual void sendControls(const ControlEvents &controls) noexcept {}
+// //     virtual void sendControls(const ControlEvents &controls) noexcept {}
 
 //     virtual void onAudioGenerationStarted(const BeatRange &range) noexcept {}
 // };
