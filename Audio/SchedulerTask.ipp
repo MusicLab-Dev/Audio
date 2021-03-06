@@ -141,9 +141,8 @@ inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio>::
 template<Audio::IPlugin::Flags Flags, bool ProcessNotesAndControls, bool ProcessAudio>
 inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio>::collectNotes(const BeatRange &beatRange) noexcept
 {
-    std::cout << "\t-collect notes: " << node().name().toStdView() << std::endl;
+    // std::cout << "\t-collect notes: " << node().name().toStdView() << std::endl;
     for (const auto &partition : node().partitions()) {
-        std::cout << "INSTA?E\n";
         if (partition.muted())
             continue;
         for (const auto &instance : partition.instances()) {
@@ -156,7 +155,7 @@ inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio>::
             for (const auto &note : partition.notes()) {
                 const auto noteFrom = instance.from + note.range.from;
                 const auto noteTo = instance.from + note.range.to;
-                std::cout << "note: " << noteFrom << " - " << noteTo << std::endl;
+                // std::cout << "note: " << noteFrom << " - " << noteTo << std::endl;
                 // Skip note ending after the beatrange
                 if (noteTo <= beatRange.from)
                     continue;

@@ -11,7 +11,7 @@
 #include <Core/SPSCQueue.hpp>
 #include <Audio/Device.hpp>
 
-#include "Scheduler.hpp"
+#include "Audio/AScheduler.hpp"
 
 static const Audio::Device::Descriptor DefaultDeviceDescriptor {
     /*.name = */ "device-test",
@@ -24,9 +24,27 @@ static const Audio::Device::Descriptor DefaultDeviceDescriptor {
 };
 
 
-class Interpreter
+class Interpreter : public Audio::AScheduler
 {
 public:
+    Interpreter(void) : Audio::AScheduler(std::make_unique<Audio::Project>(Core::FlatString("Interpreter Project")))
+    {
+        registerInternalFactories();
+        setProcessBeatSize(static_cast<float>(_device.blockSize()) / _device.sampleRate() * project()->tempo() * Audio::BarPrecision);
+        // std::cout << " : " << processBeatSize() << std::endl;
+        // std::cout << " : " << static_cast<float>(_device.blockSize()) / _device.sampleRate() * 1 << std::endl;
+        setBeatRange(Audio::BeatRange({ 0u, processBeatSize() }));
+    }
+
+    ~Interpreter(void) override = default;
+
+    void onAudioBlockGenerated(void) override {
+        std::cout << "<onAudioBlockGenerated>" << std::endl;
+        const auto outputBufferPtr = project()->master()->cache().data<std::uint8_t>(Audio::Channel::Left);
+        const auto outputBufferSize = project()->master()->cache().size<std::uint8_t>();
+        _AudioCallbackBuffer.pushRange(outputBufferPtr, outputBufferPtr + outputBufferSize);
+    }
+
     struct NodeHolder
     {
         Audio::Node *ptr { nullptr };
@@ -39,10 +57,9 @@ public:
         Play, Pause, Stop
     };
 
-    Interpreter(void);
 
 private:
-    Scheduler _scheduler;
+    // Scheduler _scheduler;
     Audio::Device _device { DefaultDeviceDescriptor, &Interpreter::AudioCallback };
     Audio::Device::Descriptor _deviceDescriptor { DefaultDeviceDescriptor };
     std::unordered_map<std::string_view, NodeHolder> _map {};

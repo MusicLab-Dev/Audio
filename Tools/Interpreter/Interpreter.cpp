@@ -63,16 +63,6 @@ constexpr auto ControlHelpText =
         "- set {String: Plugin's name} {Integer: Control index} {Float: Control value}\n\tSet a plugin's control\n";
 
 
-Interpreter::Interpreter(void)
-{
-    registerInternalFactories();
-    _scheduler.setProcessBeatSize(static_cast<float>(_device.blockSize()) / _device.sampleRate() * _scheduler.project()->tempo() * Audio::BarPrecision);
-    // std::cout << " : " << _scheduler.processBeatSize() << std::endl;
-    // std::cout << " : " << static_cast<float>(_device.blockSize()) / _device.sampleRate() * 1 << std::endl;
-    _scheduler.setBeatRange(Audio::BeatRange({ 0u, _scheduler.processBeatSize() }));
-}
-
-
 void Interpreter::registerInternalFactories(void) noexcept
 {
     static constexpr char SamplerFactoryName[] = "Sampler";
@@ -84,10 +74,10 @@ void Interpreter::registerInternalFactories(void) noexcept
     static constexpr char MixerNodeName[] = "master";
     auto masterNode = std::make_unique<Audio::Node>(Audio::PluginTable::Get().instantiate(MixerFactoryName, _deviceDescriptor.sampleRate, _deviceDescriptor.channelArrangement));
     masterNode->setName(Core::FlatString(MixerNodeName));
-    std::cout << "master ptr: " << masterNode.get() << std::endl;
-    std::cout << masterNode->name().toStdString() << std::endl;
+    // std::cout << "master ptr: " << masterNode.get() << std::endl;
+    // std::cout << masterNode->name().toStdString() << std::endl;
     _map.insert(std::make_pair(std::string_view(MixerNodeName), NodeHolder { masterNode.get(), nullptr }));
-    _scheduler.project()->master() = std::move(masterNode);
+    project()->master() = std::move(masterNode);
 }
 
 void Interpreter::AudioCallback(void *, std::uint8_t *stream, const int length)
@@ -107,20 +97,18 @@ void Interpreter::run(void)
     _is.clear();
     _is.str("load commands.txt");
     parseCommand();
-    _scheduler.initCache(DefaultDeviceDescriptor.blockSize * sizeof(float), DefaultDeviceDescriptor.sampleRate, DefaultDeviceDescriptor.channelArrangement);
+    initCache(DefaultDeviceDescriptor.blockSize * sizeof(float), DefaultDeviceDescriptor.sampleRate, DefaultDeviceDescriptor.channelArrangement);
 
 
-    _scheduler.setState(Audio::AScheduler::State::Play);
-    _scheduler.setState(Audio::AScheduler::State::Pause);
-    _scheduler.wait();
-    _scheduler.setState(Audio::AScheduler::State::Play);
-    _scheduler.setState(Audio::AScheduler::State::Pause);
-    _scheduler.wait();
-    _scheduler.setState(Audio::AScheduler::State::Play);
-    _scheduler.setState(Audio::AScheduler::State::Pause);
-    _scheduler.wait();
-
-    std::cout << "size: " << _scheduler.project()->master()->cache().size<float>() << std::endl;
+    // setState(Audio::AScheduler::State::Play);
+    // setState(Audio::AScheduler::State::Pause);
+    // wait();
+    // setState(Audio::AScheduler::State::Play);
+    // setState(Audio::AScheduler::State::Pause);
+    // wait();
+    // setState(Audio::AScheduler::State::Play);
+    // setState(Audio::AScheduler::State::Pause);
+    // wait();
 
     while (_running) {
         try {
@@ -129,7 +117,7 @@ void Interpreter::run(void)
                 std::cout << "An audio callback has been missed or uncompleted (n. " << audioCallbackMissCount << ')' << std::endl;
             }
             getNextCommand();
-            _scheduler.addEvent([this] {
+            addEvent([this] {
                 parseCommand();
             });
         } catch (const std::logic_error &e) {
@@ -197,14 +185,14 @@ void Interpreter::parseRunningCommand(AudioState state)
             return;
         _audioState = state;
         // _device.start();
-        _scheduler.setState(Audio::AScheduler::State::Play);
+        setState(Audio::AScheduler::State::Play);
         return;
     } else if (state == AudioState::Pause) {
         if (_audioState != AudioState::Play)
             return;
         _audioState = state;
         // _device.stop();
-        _scheduler.setState(Audio::AScheduler::State::Pause);
+        setState(Audio::AScheduler::State::Pause);
         return;
     }
     _device.stop();
@@ -353,7 +341,7 @@ void Interpreter::parsePluginCommand(void)
     default:
         throw std::logic_error("Interpreter::parsePluginCommand: Unknown plugin command '" + _word + '\'');
     }
-    _scheduler.invalidateProjectGraph();
+    invalidateProjectGraph();
 }
 
 void Interpreter::removeNode(NodeHolder &node)
@@ -438,7 +426,7 @@ void Interpreter::parseNoteCommand(void)
     default:
         throw std::logic_error("Interpreter::parseNoteCommand: Unknown note command '" + _word + '\'');
     }
-    _scheduler.invalidateProjectGraph();
+    invalidateProjectGraph();
 }
 
 void Interpreter::parseControlCommand(void)
@@ -458,5 +446,5 @@ void Interpreter::parseControlCommand(void)
     default:
         throw std::logic_error("Interpreter::parseControlCommand: Unknown control command '" + _word + '\'');
     }
-    _scheduler.invalidateProjectGraph();
+    invalidateProjectGraph();
 }

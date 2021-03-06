@@ -15,7 +15,7 @@ namespace Audio
     /** @brief Time index */
     using TimeIndex = std::uint32_t;
 
-    enum class NoteType : Beat {
+    enum class TimeSignatureType : Beat {
         WholeNote = 1,                  // Ronde
         HalfNote = 2,                   // Blanche
         QuarterNote = 4,                // Noire
@@ -31,6 +31,10 @@ namespace Audio
 
     /** @brief Max beat index */
     static constexpr auto BeatIndexMax = std::numeric_limits<Beat>::max() / BarPrecision;
+
+    /** @brief Retrieve a beat depending of a time signature */
+    // static constexpr auto GetBeatBySignature = [](std::size_t beat)
+
 
     struct BeatRange;
     struct TimeRange;
