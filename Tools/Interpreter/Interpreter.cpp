@@ -76,6 +76,7 @@ void Interpreter::prepareCache(void)
     const auto specs = getAudioSpecs();
 
     _scheduler.setProcessBeatSize(static_cast<float>(specs.processBlockSize) / specs.sampleRate * _scheduler.project()->tempo() * Audio::BarPrecision);
+    _scheduler.setLoopBeatRange(Audio::BeatRange({ 0u, _scheduler.processBeatSize() * 1000u }));
     _scheduler.setBeatRange(Audio::BeatRange({ 0u, _scheduler.processBeatSize() }));
     _scheduler.prepareCache(specs);
 

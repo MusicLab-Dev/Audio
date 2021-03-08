@@ -6,8 +6,8 @@
 inline Audio::AScheduler::AScheduler(void)
 {
     _graph.setRepeatCallback([this](void) -> bool {
-        onAudioBlockGenerated();
         _currentBeatRange += _processBeatSize;
+        onAudioBlockGenerated();
         return state() == State::Play;
     });
 }

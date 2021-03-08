@@ -103,9 +103,7 @@ private:
     std::unique_ptr<Flow::Scheduler> _scheduler { std::make_unique<Flow::Scheduler>() };
     Flow::Graph _graph {};
     Core::TinyVector<Event> _events {};
-public:
     BeatRange _currentBeatRange {};
-private:
     ProjectPtr _project {};
     std::atomic<State> _state { State::Pause };
     std::uint32_t _processBeatSize { 0u };

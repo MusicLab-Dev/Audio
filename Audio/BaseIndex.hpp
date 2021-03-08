@@ -48,6 +48,10 @@ struct alignas_eighth_cacheline Audio::BeatRange
 
     [[nodiscard]] inline bool operator==(const BeatRange &other) const noexcept { return (from == other.from) && (to == other.to); }
     [[nodiscard]] inline bool operator!=(const BeatRange &other) const noexcept { return !(operator==(other)); }
+    [[nodiscard]] inline bool operator>(const BeatRange &other) const noexcept { return (to > other.from); }
+    [[nodiscard]] inline bool operator<=(const BeatRange &other) const noexcept { return !(operator>(other)); }
+    [[nodiscard]] inline bool operator<(const BeatRange &other) const noexcept { return (from < other.to); }
+    [[nodiscard]] inline bool operator>=(const BeatRange &other) const noexcept { return !(operator<(other)); }
 
     inline BeatRange &operator+=(const Beat size) { from += size; to += size; return *this; }
 };
