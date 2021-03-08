@@ -79,6 +79,11 @@ inline void Audio::AScheduler::scheduleProjectGraph(void)
     _scheduler->schedule(_graph);
 }
 
+inline void Audio::AScheduler::prepareCache(const AudioSpecs &specs)
+{
+    _project->master()->prepareCache(specs);
+}
+
 inline void Audio::AScheduler::onAudioProcessStarted(const BeatRange &beatRange)
 {
     _project->onAudioGenerationStarted(beatRange);

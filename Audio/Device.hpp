@@ -72,10 +72,10 @@ public:
 
 
     /** @brief Get the actual sample rate */
-    [[nodiscard]] int sampleRate(void) const noexcept { return _descriptor.sampleRate; }
+    [[nodiscard]] SampleRate sampleRate(void) const noexcept { return _descriptor.sampleRate; }
 
     /** @brief Set the sample rate, return true if the value changed */
-    bool setSampleRate(const int sampleRate) noexcept;
+    bool setSampleRate(const SampleRate sampleRate) noexcept;
 
 
     /** @brief Get the actual format */

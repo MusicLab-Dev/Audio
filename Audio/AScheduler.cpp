@@ -39,19 +39,6 @@ void AScheduler::setBeatRange(const BeatRange range) noexcept
     _currentBeatRange = range;
 }
 
-void AScheduler::initCache(const uint32_t channelByteSize, const SampleRate sampleRate, const ChannelArrangement channelArrangement) noexcept
-{
-    initCacheImpl(_project->master().get(), channelByteSize, sampleRate, channelArrangement);
-}
-
-void AScheduler::initCacheImpl(Node *node, const uint32_t channelByteSize, const SampleRate sampleRate, const ChannelArrangement channelArrangement) noexcept
-{
-    for (auto &children : node->children()) {
-        initCacheImpl(children.get(), channelByteSize, sampleRate, channelArrangement);
-    }
-    node->cache() = Audio::Buffer(channelByteSize, sampleRate, channelArrangement);
-}
-
 void AScheduler::buildNodeTask(const Node *node,
         std::pair<Flow::Task, const NoteEvents *> &parentNoteTask, std::pair<Flow::Task, const NoteEvents *> &parentAudioTask)
 {
@@ -87,9 +74,9 @@ void AScheduler::buildProjectGraph(void)
 {
     auto *parent = _project->master().get();
 
-    auto noteTask = MakeSchedulerTask<true, false>(_graph, parent->flags(), this, const_cast<Node *>(parent), nullptr);
+    auto noteTask = MakeSchedulerTask<true, false>(_graph, parent->flags(), this, parent, nullptr);
     noteTask.first.setName(parent->name().toStdString() + "_note");
-    auto audioTask = MakeSchedulerTask<false, true>(_graph, parent->flags(), this, const_cast<Node *>(parent), nullptr);
+    auto audioTask = MakeSchedulerTask<false, true>(_graph, parent->flags(), this, parent, nullptr);
     audioTask.first.setName(parent->name().toStdString() + "_audio");
 
     for (auto &child : parent->children()) {

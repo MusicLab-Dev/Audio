@@ -9,6 +9,7 @@ set(InterpreterSources
     ${InterpreterDir}/Interpreter.ipp
     ${InterpreterDir}/Interpreter.cpp
     ${InterpreterDir}/Scheduler.hpp
+    ${InterpreterDir}/Scheduler.cpp
     ${InterpreterDir}/Main.cpp
 )
 
@@ -18,5 +19,4 @@ target_link_libraries(${PROJECT_NAME}
 PUBLIC
     Audio
     Threads::Threads
-    PartitionDecoder
 )

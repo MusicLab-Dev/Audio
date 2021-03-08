@@ -82,4 +82,20 @@ namespace Audio
 
     /** @brief A sorted list of time ranges */
     using TimeRanges = Core::SortedFlatVector<TimeRange>;
+
+
+    /** @brief Decribe the audio device behavior */
+    struct AudioSpecs
+    {
+        SampleRate sampleRate { 0u };
+        ChannelArrangement channelArrangement { 0u };
+        Format format { Format::Floating32 };
+        std::size_t processBlockSize { 0u };
+
+        /** @brief Equality operators */
+        [[nodiscard]] bool operator==(const AudioSpecs &other) const noexcept
+            { return sampleRate == other.sampleRate && channelArrangement == other.channelArrangement &&
+                format == other.format && processBlockSize == other.processBlockSize; }
+        [[nodiscard]] bool operator!=(const AudioSpecs &other) const noexcept { return !(*this == other); }
+    };
 };

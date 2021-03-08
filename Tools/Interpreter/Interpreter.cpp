@@ -3,6 +3,7 @@
  * @ Description: Interpreter
  */
 
+#include <thread>
 
 #include <Audio/PluginTable.hpp>
 
@@ -66,12 +67,18 @@ constexpr auto ControlHelpText =
 Interpreter::Interpreter(void)
 {
     registerInternalFactories();
-    _scheduler.setProcessBeatSize(static_cast<float>(_device.blockSize()) / _device.sampleRate() * _scheduler.project()->tempo() * Audio::BarPrecision);
-    // std::cout << " : " << _scheduler.processBeatSize() << std::endl;
-    // std::cout << " : " << static_cast<float>(_device.blockSize()) / _device.sampleRate() * 1 << std::endl;
-    _scheduler.setBeatRange(Audio::BeatRange({ 0u, _scheduler.processBeatSize() }));
+    prepareCache();
 }
 
+
+void Interpreter::prepareCache(void)
+{
+    const auto specs = getAudioSpecs();
+
+    _scheduler.setProcessBeatSize(static_cast<float>(specs.processBlockSize) / specs.sampleRate * _scheduler.project()->tempo() * Audio::BarPrecision);
+    _scheduler.setBeatRange(Audio::BeatRange({ 0u, _scheduler.processBeatSize() }));
+    _scheduler.prepareCache(specs);
+}
 
 void Interpreter::registerInternalFactories(void) noexcept
 {
@@ -81,13 +88,9 @@ void Interpreter::registerInternalFactories(void) noexcept
     static constexpr char MixerFactoryName[] = "Mixer";
     Audio::PluginTable::Get().registerFactory<Audio::Mixer, MixerFactoryName, Audio::IPluginFactory::Tags::Mastering>();
 
-    static constexpr char MixerNodeName[] = "master";
-    auto masterNode = std::make_unique<Audio::Node>(Audio::PluginTable::Get().instantiate(MixerFactoryName, _deviceDescriptor.sampleRate, _deviceDescriptor.channelArrangement));
-    masterNode->setName(Core::FlatString(MixerNodeName));
-    std::cout << "master ptr: " << masterNode.get() << std::endl;
-    std::cout << masterNode->name().toStdString() << std::endl;
-    _map.insert(std::make_pair(std::string_view(MixerNodeName), NodeHolder { masterNode.get(), nullptr }));
-    _scheduler.project()->master() = std::move(masterNode);
+    static constexpr char MixerNodeName[] = "master"; // Wtf quoi
+
+    insertNode(nullptr, Audio::PluginTable::Get().instantiate(MixerFactoryName), MixerNodeName);
 }
 
 void Interpreter::AudioCallback(void *, std::uint8_t *stream, const int length)
@@ -107,20 +110,6 @@ void Interpreter::run(void)
     _is.clear();
     _is.str("load commands.txt");
     parseCommand();
-    _scheduler.initCache(DefaultDeviceDescriptor.blockSize * sizeof(float), DefaultDeviceDescriptor.sampleRate, DefaultDeviceDescriptor.channelArrangement);
-
-
-    _scheduler.setState(Audio::AScheduler::State::Play);
-    _scheduler.setState(Audio::AScheduler::State::Pause);
-    _scheduler.wait();
-    _scheduler.setState(Audio::AScheduler::State::Play);
-    _scheduler.setState(Audio::AScheduler::State::Pause);
-    _scheduler.wait();
-    _scheduler.setState(Audio::AScheduler::State::Play);
-    _scheduler.setState(Audio::AScheduler::State::Pause);
-    _scheduler.wait();
-
-    std::cout << "size: " << _scheduler.project()->master()->cache().size<float>() << std::endl;
 
     while (_running) {
         try {
@@ -132,6 +121,11 @@ void Interpreter::run(void)
             _scheduler.addEvent([this] {
                 parseCommand();
             });
+            // Sleep for the requested duration if specified by a command
+            if (_sleepFor) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(_sleepFor));
+                _sleepFor = 0u;
+            }
         } catch (const std::logic_error &e) {
             std::cout << "Logic error thrown:\n\t" << e.what() << std::endl;
         }
@@ -146,12 +140,6 @@ void Interpreter::parseCommand(void)
     switch (getCurrentHashedWord()) {
     case "load"_hash:
         return parseLoadCommand();
-    case "play"_hash:
-        return parseRunningCommand(AudioState::Play);
-    case "pause"_hash:
-        return parseRunningCommand(AudioState::Pause);
-    case "stop"_hash:
-        return parseRunningCommand(AudioState::Stop);
     case "settings"_hash:
         return parseSettingsCommand();
     case "plugin"_hash:
@@ -162,6 +150,16 @@ void Interpreter::parseCommand(void)
         return parseControlCommand();
     case "exit"_hash:
         _running = false;
+        break;
+    case "play"_hash:
+        return parseRunningCommand(AudioState::Play);
+        break;
+    case "pause"_hash:
+        return parseRunningCommand(AudioState::Pause);
+    case "stop"_hash:
+        return parseRunningCommand(AudioState::Stop);
+    case "sleep"_hash:
+        _sleepFor = getNextWordAs<std::size_t>("Interpreter::parseCommand::sleep: Invalid sleep duration");
         break;
     case "help"_hash:
     case "?"_hash:
@@ -190,21 +188,26 @@ void Interpreter::parseLoadCommand(void)
     }
 }
 
-void Interpreter::parseRunningCommand(AudioState state)
+void Interpreter::parseRunningCommand(const AudioState state)
 {
     if (state == AudioState::Play) {
-        if (_audioState == AudioState::Play)
+        if (_audioState == AudioState::Play) {
+            std::cout << "Interpreter::parseRunningCommand: Scheduler is already running" << std::endl;
             return;
+        }
         _audioState = state;
-        // _device.start();
+        // _device.start(); // audioState c pour le device et aussi le scheduler
         _scheduler.setState(Audio::AScheduler::State::Play);
         return;
     } else if (state == AudioState::Pause) {
-        if (_audioState != AudioState::Play)
+        if (_audioState != AudioState::Play) {
+            std::cout << "Interpreter::parseRunningCommand: Scheduler is already paused" << std::endl;
             return;
+        }
         _audioState = state;
         // _device.stop();
         _scheduler.setState(Audio::AScheduler::State::Pause);
+        _scheduler.wait();
         return;
     }
     _device.stop();
@@ -214,6 +217,8 @@ void Interpreter::parseRunningCommand(AudioState state)
 
 void Interpreter::parseSettingsCommand(void)
 {
+    bool changed = false;
+
     getNextWord();
     switch (getCurrentHashedWord()) {
     case "list"_hash:
@@ -226,16 +231,16 @@ void Interpreter::parseSettingsCommand(void)
         std::cout << "- Channel arrangement: " << (_device.channelArrangement() == Audio::ChannelArrangement::Mono ? "Mono" : "Stereo") << std::endl;
         break;
     case "sampleRate"_hash:
-        _device.setSampleRate(getNextWordAs<int>("Interpreter::parseSettingsCommand: Invalid sample rate input value"));
+        changed = _device.setSampleRate(getNextWordAs<int>("Interpreter::parseSettingsCommand: Invalid sample rate input value"));
         break;
     case "channelArrangement"_hash:
         getNextWord();
         switch (_word[0]) {
         case 'M':
-            _device.setChannelArrangement(Audio::ChannelArrangement::Mono);
+            changed = _device.setChannelArrangement(Audio::ChannelArrangement::Mono);
             break;
         case 'S':
-            _device.setChannelArrangement(Audio::ChannelArrangement::Stereo);
+            changed = _device.setChannelArrangement(Audio::ChannelArrangement::Stereo);
             break;
         default:
             throw std::logic_error("Interpreter::parseSettingsCommand: Invalid 'channelArrangement' settings value '" + _word + '\'');
@@ -246,16 +251,16 @@ void Interpreter::parseSettingsCommand(void)
         getNextWord();
         switch (getCurrentHashedWord()) {
         case "F32"_hash:
-            _device.setFormat(Audio::Format::Floating32);
+            changed = _device.setFormat(Audio::Format::Floating32);
             break;
         case "I32"_hash:
-            _device.setFormat(Audio::Format::Fixed32);
+            changed = _device.setFormat(Audio::Format::Fixed32);
             break;
         case "I16"_hash:
-            _device.setFormat(Audio::Format::Fixed16);
+            changed = _device.setFormat(Audio::Format::Fixed16);
             break;
         case "I8"_hash:
-            _device.setFormat(Audio::Format::Fixed8);
+            changed = _device.setFormat(Audio::Format::Fixed8);
             break;
         default:
             throw std::logic_error("Interpreter::parseSettingsCommand: Invalid 'format' settings value '" + _word + '\'');
@@ -263,10 +268,11 @@ void Interpreter::parseSettingsCommand(void)
         break;
     }
     case "blockSize"_hash:
-    {
-        _device.setBlockSize(getNextWordAs<unsigned int>("Interpreter::parseSettingsCommand: Invalid blockSize input value"));
+        changed = _device.setBlockSize(getNextWordAs<unsigned int>("Interpreter::parseSettingsCommand: Invalid blockSize input value"));
         break;
-    }
+    case "processBlockSize"_hash:
+        changed = _scheduler.setProcessBlockSize(getNextWordAs<unsigned int>("Interpreter::parseSettingsCommand: Invalid blockSize input value"));
+        break;
     case "help"_hash:
     case "?"_hash:
         std::cout << SettingsHelpText << std::endl;
@@ -274,17 +280,24 @@ void Interpreter::parseSettingsCommand(void)
     default:
         throw std::logic_error("Interpreter::parseSettingsCommand: Unknown settings command '" + _word + '\'');
     }
-    if (!_running) {
-        _device.reloadDriver(&Interpreter::AudioCallback);
+
+    if (!changed)
         return;
+    else if (!_running) {
+        _device.reloadDriver(&Interpreter::AudioCallback);
+        prepareCache();
+    } else {
+        _device.stop();
+        _device.reloadDriver(&Interpreter::AudioCallback);
+        prepareCache();
+        _device.start();
     }
-    _device.stop();
-    _device.reloadDriver(&Interpreter::AudioCallback);
-    _device.start();
 }
 
 void Interpreter::parsePluginCommand(void)
 {
+    bool changed = false;
+
     getNextWord();
     switch (getCurrentHashedWord()) {
     case "list_factories"_hash:
@@ -322,12 +335,15 @@ void Interpreter::parsePluginCommand(void)
         bool hasParent = getNextWordNoThrow();
         const std::string &parentName = (hasParent ? _word : "master");
 
-        auto node = std::make_unique<Audio::Node>(Audio::PluginTable::Get().instantiate(factory, _deviceDescriptor.sampleRate, _deviceDescriptor.channelArrangement));
-        node->setName(Core::FlatString(name));
+        Audio::AudioSpecs specs {
+            /* .sampleRate = */         _deviceDescriptor.sampleRate,
+            /* .channelArrangement = */ _deviceDescriptor.channelArrangement,
+            /* .format = */             _deviceDescriptor.format,
+            /* .processBlockSize = */   _scheduler.processBlockSize()
+        };
 
-        auto &parent = getNode(parentName);
-        _map.insert(std::make_pair(std::string_view(name), NodeHolder { node.get(), parent.ptr }));
-        parent.ptr->children().push(std::move(node));
+        insertNode(getNode(parentName).ptr, Audio::PluginTable::Get().instantiate(factory), name);
+        changed = true;
         break;
     }
     case "load_sample"_hash:
@@ -338,12 +354,14 @@ void Interpreter::parsePluginCommand(void)
         const auto samplePath = _word;
         auto &node = getNode(pluginName);
         reinterpret_cast<Audio::Sampler *>(node.ptr->plugin().get())->loadSample<float>(samplePath);
+        changed = true;
         break;
     }
     case "remove"_hash:
     {
         getNextWord();
         removeNode(getNode(_word));
+        changed = true;
         break;
     }
     case "help"_hash:
@@ -353,7 +371,8 @@ void Interpreter::parsePluginCommand(void)
     default:
         throw std::logic_error("Interpreter::parsePluginCommand: Unknown plugin command '" + _word + '\'');
     }
-    _scheduler.invalidateProjectGraph();
+    if (changed)
+        _scheduler.invalidateProjectGraph();
 }
 
 void Interpreter::removeNode(NodeHolder &node)
@@ -438,7 +457,6 @@ void Interpreter::parseNoteCommand(void)
     default:
         throw std::logic_error("Interpreter::parseNoteCommand: Unknown note command '" + _word + '\'');
     }
-    _scheduler.invalidateProjectGraph();
 }
 
 void Interpreter::parseControlCommand(void)
@@ -458,5 +476,21 @@ void Interpreter::parseControlCommand(void)
     default:
         throw std::logic_error("Interpreter::parseControlCommand: Unknown control command '" + _word + '\'');
     }
-    _scheduler.invalidateProjectGraph();
 }
+
+Audio::NodePtr &Interpreter::insertNode(Audio::Node *parent, Audio::PluginPtr &&plugin, const std::string_view &name) noexcept
+{
+    const auto specs = getAudioSpecs();
+
+    Audio::NodePtr *node;
+
+    if (parent)
+        node = &parent->children().push(std::make_unique<Audio::Node>(std::move(plugin)));
+    else
+        node = &(_scheduler.project()->master() = std::make_unique<Audio::Node>(std::move(plugin)));
+    (*node)->setName(Core::FlatString(name));
+    (*node)->prepareCache(specs);
+    _map.insert(std::make_pair(std::string_view(name), NodeHolder { node->get(), parent }));
+    return *node;
+}
+// AHH Build task node

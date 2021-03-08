@@ -103,6 +103,9 @@ public:
     [[nodiscard]] Buffer &cache(void) noexcept { return _cache; }
     [[nodiscard]] const Buffer &cache(void) const noexcept { return _cache; }
 
+    /** @brief Prepare the internal cache for a given audio output specifications
+     *  Note that this function will recusrively call itself for every sub-children */
+    void prepareCache(const AudioSpecs &specs);
 
     /** @brief Signal called when the generation of the audio block start */
     void onAudioGenerationStarted(const BeatRange &range) noexcept;

@@ -13,7 +13,7 @@ Internal::BufferAllocator Internal::BufferAllocator::_Instance {};
 
 
 Internal::AllocationHeader *Internal::BufferAllocator::allocate(
-        const std::size_t channelByteSize, const SampleRate sampleRate, const ChannelArrangement channelArrangement) noexcept
+        const std::size_t channelByteSize, const SampleRate sampleRate, const ChannelArrangement channelArrangement, const Format format) noexcept
 {
     const std::size_t usedSize = channelByteSize * static_cast<std::size_t>(channelArrangement);
     std::size_t capacity = usedSize;
@@ -21,7 +21,7 @@ Internal::AllocationHeader *Internal::BufferAllocator::allocate(
 
     // Check if the capacity is out of range
     if (capacity > MaxAllocationSize)
-        return AllocateFallback(channelByteSize, sampleRate, channelArrangement, usedSize, capacity, OutOfRangeAllocationPower);
+        return AllocateFallback(channelByteSize, sampleRate, channelArrangement, format, usedSize, capacity, OutOfRangeAllocationPower);
     // Else, determines the real bucket capacity and index
     else {
         if (capacity <= MinAllocationSize)
@@ -49,7 +49,7 @@ Internal::AllocationHeader *Internal::BufferAllocator::allocate(
     while (true) {
         expected = bucket.load();
         if (!expected)
-            return AllocateFallback(channelByteSize, sampleRate, channelArrangement, usedSize, capacity, bucketIndex);
+            return AllocateFallback(channelByteSize, sampleRate, channelArrangement, format, usedSize, capacity, bucketIndex);
         desired = expected->next;
         if (bucket.compare_exchange_weak(expected, desired))
             break;

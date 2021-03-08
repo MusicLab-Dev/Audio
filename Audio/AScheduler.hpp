@@ -89,7 +89,8 @@ public:
      *  Never call this without setting state to 'Pause' during the whole wait call */
     void wait(void) noexcept_ndebug;
 
-    void initCache(const uint32_t channelByteSize, const SampleRate sampleRate, const ChannelArrangement channelArrangement) noexcept;
+    /** @brief Init internal cache */
+    void prepareCache(const AudioSpecs &specs);
 
 protected:
     /** @brief Dispatch apply events without clearing event list */
@@ -107,14 +108,21 @@ public:
 private:
     ProjectPtr _project {};
     std::atomic<State> _state { State::Pause };
-    std::uint32_t   _processBeatSize { 0u };
+    std::uint32_t _processBeatSize { 0u };
+
+    /** @brief Cache stucture used to store recursive parameters */
+    struct SpecsParams
+    {
+        std::uint32_t channelByteSize;
+        SampleRate sampleRate;
+        ChannelArrangement channelArrangement;
+        Format format;
+    };
 
     /** @brief Build the project graph */
     void buildProjectGraph(void);
 
     void buildNodeTask(const Node *node, std::pair<Flow::Task, const NoteEvents *> &parentNoteTask, std::pair<Flow::Task, const NoteEvents *> &parentAudioTask);
-
-    void initCacheImpl(Node *node, const uint32_t channelByteSize, const SampleRate sampleRate, const ChannelArrangement channelArrangement) noexcept;
 
 public:
     /** @brief Schedule the project graph */

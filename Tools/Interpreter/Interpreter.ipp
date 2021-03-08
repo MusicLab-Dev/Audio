@@ -3,6 +3,16 @@
  * @ Description: Interpreter
  */
 
+inline Audio::AudioSpecs Interpreter::getAudioSpecs(void) const noexcept
+{
+    return Audio::AudioSpecs {
+        /* sampleRate: */ _device.sampleRate(),
+        /* channelArrangement: */ _device.channelArrangement(),
+        /* format: */ _device.format(),
+        /* processBlockSize: */ _scheduler.processBlockSize()
+    };
+}
+
 inline void Interpreter::getNextCommand(void)
 {
     if (!std::getline(std::cin, _command))
@@ -10,14 +20,14 @@ inline void Interpreter::getNextCommand(void)
     _is.clear();
     _is.str(_command);
     if (_is.fail())
-        throw std::logic_error("Interpreter::getNextCommand: Invalid command input");
+        throw std::logic_error("Interpreter::getNextCommand: Invalid command input '" + _command + '\'');
 }
 
 inline void Interpreter::getNextWord(void)
 {
     _is >> _word;
     if (_is.fail())
-        throw std::logic_error("Interpreter::getNextWord: Invalid command input");
+        throw std::logic_error("Interpreter::getNextWord: Invalid command input '" + _command + '\'');
 }
 
 inline bool Interpreter::getNextWordNoThrow(void) noexcept

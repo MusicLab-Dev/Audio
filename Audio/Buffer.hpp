@@ -35,6 +35,7 @@ namespace Audio
             std::size_t channelByteSize {};
             SampleRate sampleRate {};
             ChannelArrangement channelArrangement {};
+            Format format {};
             // Chrono timestamp {}
             AllocationHeader *next { nullptr };
         };
@@ -54,8 +55,8 @@ public:
 
     /** @brief Allocates a buffer in memory, setting-up its header */
     [[nodiscard]] static inline AllocationHeader *Allocate(
-            const std::size_t channelByteSize, const SampleRate sampleRate, const ChannelArrangement channelArrangement) noexcept
-        { return _Instance.allocate(channelByteSize, sampleRate, channelArrangement); }
+            const std::size_t channelByteSize, const SampleRate sampleRate, const ChannelArrangement channelArrangement, const Format format) noexcept
+        { return _Instance.allocate(channelByteSize, sampleRate, channelArrangement, format); }
 
     /** @brief Deallocates a buffer in memory */
     static inline void Deallocate(AllocationHeader * const header) noexcept
@@ -76,7 +77,7 @@ private:
 
     /** @brief Allocates a buffer in memory, setting-up its header */
     [[nodiscard]] AllocationHeader *allocate(
-            const std::size_t channelByteSize, const SampleRate sampleRate, const ChannelArrangement channelArrangement) noexcept;
+            const std::size_t channelByteSize, const SampleRate sampleRate, const ChannelArrangement channelArrangement, const Format format) noexcept;
 
     /** @brief Deallocates a buffer in memory */
     void deallocate(AllocationHeader * const header) noexcept;
@@ -86,7 +87,7 @@ private:
 
     /** @brief Fallback that allocates memory for a buffer */
     [[nodiscard]] static AllocationHeader *AllocateFallback(
-            const std::size_t channelByteSize, const SampleRate sampleRate, const ChannelArrangement channelArrangement,
+            const std::size_t channelByteSize, const SampleRate sampleRate, const ChannelArrangement channelArrangement, const Format format,
             const std::size_t usedSize, const std::size_t capacity, const std::size_t bucketIndex) noexcept;
 };
 
@@ -94,6 +95,25 @@ private:
 class alignas_quarter_cacheline Audio::Internal::BufferBase
 {
 public:
+    /** @brief Copy constructor */
+    BufferBase(const BufferBase &other) noexcept = default;
+
+    /** @brief Move constructor */
+    BufferBase(BufferBase &&other) noexcept : _header(other._header) { other._header = nullptr; }
+
+    /** @brief Destruct the view */
+    ~BufferBase(void) noexcept = default;
+
+    /** @brief Copy assignment */
+    BufferBase &operator=(const BufferBase &other) noexcept = default;
+
+    /** @brief Move assignment */
+    BufferBase &operator=(BufferBase &&other) noexcept { swap(other); return *this; }
+
+    /** @brief Swap two instances */
+    void swap(BufferBase &other) noexcept { std::swap(_header, other._header); }
+
+
     /** @brief Fast allocation check */
     [[nodiscard]] operator bool(void) const noexcept { return _header; }
 
@@ -126,8 +146,19 @@ public:
     /** @brief Get the byte size per channel */
     [[nodiscard]] std::size_t channelByteSize(void) const noexcept { return _header->channelByteSize; }
 
+    /** @brief Get the sample count per cahnnel */
+    [[nodiscard]] std::size_t channelSampleCount(void) const noexcept { return _header->channelByteSize / GetFormatByteLength(_header->format); }
+
+
     /** @brief Get the internal sample rate */
     [[nodiscard]] SampleRate sampleRate(void) const noexcept { return _header->sampleRate; }
+
+    /** @brief Get the channel arrangement of the buffer */
+    [[nodiscard]] ChannelArrangement channelArrangement(void) const noexcept { return _header->channelArrangement; }
+
+    /** @brief Get the format of the buffer */
+    [[nodiscard]] Format format(void) const noexcept { return _header->format; }
+
 
     /** @brief Get the buffer size relative to a given type */
     template<typename Type>
@@ -136,28 +167,6 @@ public:
     /** @brief Get the buffer capacity relative to a given type */
     template<typename Type = std::byte>
     [[nodiscard]] std::size_t capacity(void) const noexcept { return _header->capacity / sizeof(Type); }
-
-    /** @brief Get the channel arrangement of the buffer */
-    [[nodiscard]] ChannelArrangement channelArrangement(void) const noexcept { return _header->channelArrangement; }
-
-
-    /** @brief Copy constructor */
-    BufferBase(const BufferBase &other) noexcept = default;
-
-    /** @brief Move constructor */
-    BufferBase(BufferBase &&other) noexcept : _header(other._header) { other._header = nullptr; }
-
-    /** @brief Destruct the view */
-    ~BufferBase(void) noexcept = default;
-
-    /** @brief Copy assignment */
-    BufferBase &operator=(const BufferBase &other) noexcept = default;
-
-    /** @brief Move assignment */
-    BufferBase &operator=(BufferBase &&other) noexcept { swap(other); return *this; }
-
-    /** @brief Swap two instances */
-    void swap(BufferBase &other) noexcept { std::swap(_header, other._header); }
 
 
 public: // Internal public functions for buffers compatibility
@@ -183,8 +192,8 @@ public:
     Buffer(void) : BufferBase(nullptr) {}
 
     /** @brief Allocate the buffer */
-    Buffer(const std::uint32_t channelByteSize, const SampleRate sampleRate, const ChannelArrangement channelArrangement)
-        : Internal::BufferBase(Internal::BufferAllocator::Allocate(channelByteSize, sampleRate, channelArrangement)) {}
+    Buffer(const std::uint32_t channelByteSize, const SampleRate sampleRate, const ChannelArrangement channelArrangement, const Format format)
+        : Internal::BufferBase(Internal::BufferAllocator::Allocate(channelByteSize, sampleRate, channelArrangement, format)) {}
 
     /** @brief A buffer cannot be copied, use a BufferView or 'copy' function instead */
     Buffer(const Buffer &other) = delete;
@@ -203,7 +212,7 @@ public:
 
 
     /** @brief Resize the buffer if needed to fit requirements */
-    void resize(const std::uint32_t channelByteSize, const SampleRate sampleRate, const ChannelArrangement channelArrangement) noexcept;
+    void resize(const std::uint32_t channelByteSize, const SampleRate sampleRate, const ChannelArrangement channelArrangement, const Format format) noexcept;
 
     /** @brief Copy the target buffer */
     void copy(const Internal::BufferBase &target);

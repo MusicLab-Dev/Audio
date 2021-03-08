@@ -15,12 +15,12 @@ inline Audio::IPlugin::Flags Audio::Sampler::getFlags(void) const noexcept
     );
 }
 
-inline void Audio::Sampler::incrementReadIndex(Key key, std::size_t size) noexcept
+inline void Audio::Sampler::incrementReadIndex(Key key, std::size_t amount) noexcept
 {
-    if (_readIndex[key] + size >= _buffers[0].size<float>()) {
+    if (_readIndex[key] + amount >= _buffers[0].size<float>()) {
         _readIndex[key] = 0u;
     } else {
-        _readIndex[key] += size;
+        _readIndex[key] += amount;
     }
 }
 
@@ -30,16 +30,32 @@ template<typename T>
 inline void Audio::Sampler::loadSample(const std::string &path)
 {
     SampleSpecs specs;
-    Buffer sampleBuffer = SampleManager<T>::LoadSampleFile(path, specs);
+    _buffers[0] = SampleManager<T>::LoadSampleFile(path, specs);
 
     // std::cout << "SIZE: " << buf.size<T>() << std::endl;
     // auto a = DSP::Resampler<T>::ResampleBySemitone(BufferView(buf), -11);
-    auto &buffer = _buffers.push(sampleBuffer);
 
     for (auto i = 0u; i < 11; ++i) {
         // _buffers.push(DSP::Resampler::Decimate<float>(v, static_cast<Semitone>(i)));
     }
 
+}
+
+inline void Audio::Sampler::onAudioParametersChanged(void)
+{
+    // Buffer sourceBuffer = _buffers[0];
+
+    for (auto &buffer : _buffers) {
+        const auto newSize = GetFormatByteLength(audioSpecs().format) * audioSpecs().processBlockSize;
+        buffer.resize(newSize, audioSpecs().sampleRate, audioSpecs().channelArrangement, audioSpecs().format);
+    }
+
+    // tout genre les paramètres pour resample [oui ]
+
+    // Je vais faire compiler le bordel audio qui a changé en attendant
+    // si oui met moi un term, fullscreen, attends que je te dises, puis X (pas la corbeille)
+
+    // -> this->audioSpecs().format; ?
 }
 
 inline void Audio::Sampler::sendNotes(const NoteEvents &notes) noexcept
@@ -49,20 +65,22 @@ inline void Audio::Sampler::sendNotes(const NoteEvents &notes) noexcept
 
 inline void Audio::Sampler::receiveAudio(BufferView output) noexcept
 {
-    std::cout << "receiveAudio:::: " << _noteManager.getActiveNoteNumber() << std::endl;
-    const auto outSize = output.size<float>();
-    const auto outChannel = static_cast<std::uint32_t>(output.channelArrangement());
-    const auto noteNumber = _noteManager.getActiveNoteNumber();
-    const auto noteBlockNumber = _noteManager.getActiveNoteNumberBlock();
+    // J'avaus eu ce pb pcq le cache dla OK (qui veut ecrtire le scheduleur task) netait pas init
+    // std::cout << "receiveAudio:::: " << _noteManager.getActiveNoteNumber() << std::endl;
 
-    for (auto key : _noteManager.getActiveNote()) {
-        for (auto iChannel = 0u; iChannel < outChannel; ++iChannel) {
-            for (auto i = 0u; i < outSize; ++i) {
-                output.data<float>(static_cast<Channel>(iChannel))[i] = _outputGain * _buffers[0].data<float>(static_cast<Channel>(iChannel))[_readIndex[key]];
-                incrementReadIndex(key);
-            }
-        }
-    }
+    // const auto outSize = output.size<float>();
+    // const auto outChannel = static_cast<std::uint32_t>(output.channelArrangement());
+    // const auto noteNumber = _noteManager.getActiveNoteNumber();
+    // const auto noteBlockNumber = _noteManager.getActiveNoteNumberBlock();
+
+    // for (auto key : _noteManager.getActiveNote()) {
+    //     for (auto iChannel = 0u; iChannel < outChannel; ++iChannel) {
+    //         for (auto i = 0u; i < outSize; ++i) {
+    //             output.data<float>(static_cast<Channel>(iChannel))[i] = _outputGain * _buffers[0].data<float>(static_cast<Channel>(iChannel))[_readIndex[key]];
+    //             incrementReadIndex(key);
+    //         }
+    //     }
+    // }
 
     _noteManager.resetBlockCache();
 }

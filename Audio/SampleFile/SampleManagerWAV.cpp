@@ -1,17 +1,17 @@
 /**
  * @ Author: Pierre Veysseyre
- * @ Description: SampleManager_WAV.cpp
+ * @ Description: SampleManagerWAV.cpp
  */
 
 #include <fstream>
 
-#include "SampleManager_WAV.hpp"
+#include "SampleManagerWAV.hpp"
 
 #include <iostream>
 
 using namespace Audio;
 
-Buffer SampleManager_WAV::LoadFile(const std::string &path, SampleSpecs &specs)
+Buffer SampleManagerWAV::LoadFile(const std::string &path, SampleSpecs &specs)
 {
     auto realPath = std::filesystem::path(path);
 
@@ -69,7 +69,35 @@ Buffer SampleManager_WAV::LoadFile(const std::string &path, SampleSpecs &specs)
     std::cout << "dataSize: " << data.dataSize << std::endl;
 
     const auto channelByteSize = data.dataSize / fmt.channelArrangement;
-    Buffer outBuffer(channelByteSize, fmt.sampleRate, static_cast<ChannelArrangement>(fmt.channelArrangement));
+
+    constexpr std::uint16_t WavIntFlag = 1u;
+    constexpr std::uint16_t WavFloatFlag = 3u;
+    constexpr std::uint16_t WavALawFlag = 6u; // Specific cases
+    constexpr std::uint16_t WavMuLawFlag = 7u; // Specific cases
+
+    /** @brief Get the sample format from a sample bit size */
+    constexpr auto GetSampleFormat = [](const HeaderFmt &fmtHeader) -> Format {
+        constexpr std::size_t BitsPerByte = 8;
+        if (fmtHeader.audioFormat == WavFloatFlag)
+            return Format::Floating32;
+        else if (fmtHeader.audioFormat != WavIntFlag)
+            return Format::Unknown;
+        switch (fmtHeader.bitsPerSample) {
+        case sizeof(std::int8_t) * BitsPerByte:
+            return Format::Fixed8;
+        case sizeof(std::int16_t) * BitsPerByte:
+            return Format::Fixed16;
+        case sizeof(std::int32_t) * BitsPerByte:
+            return Format::Fixed32;
+        default:
+            return Format::Unknown;
+        }
+    };
+
+    Format sampleFormat = GetSampleFormat(fmt);
+    if (sampleFormat == Format::Unknown)
+        throw std::logic_error("SampleManagerWAV::LoadFile: Unsupported audio format.");
+    Buffer outBuffer(channelByteSize, fmt.sampleRate, static_cast<ChannelArrangement>(fmt.channelArrangement), sampleFormat);
     std::vector<char> buf(data.dataSize);
     file.read(buf.data(), data.dataSize);
 

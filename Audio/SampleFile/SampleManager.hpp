@@ -9,7 +9,7 @@
 
 #include <Audio/Buffer.hpp>
 
-#include "SampleManager_WAV.hpp"
+#include "SampleManagerWAV.hpp"
 
 namespace Audio
 {
@@ -27,7 +27,7 @@ struct Audio::SampleManager
         Buffer(*)(const std::string &path, SampleSpecs &specs),
         void(*)(const std::string &path, const BufferView &inputBuffer)
     > SupportedExtension[] {
-        { SampleManager_WAV::Extension, &SampleManager_WAV::LoadFile, &SampleManager_WAV::WriteFile }
+        { SampleManagerWAV::Extension, &SampleManagerWAV::LoadFile, &SampleManagerWAV::WriteFile }
     };
 
     [[nodiscard]] static Buffer LoadSampleFile(const std::string &path, SampleSpecs &specs);

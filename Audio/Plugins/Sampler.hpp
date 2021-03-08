@@ -17,8 +17,6 @@ namespace Audio
 
 class Audio::Sampler final : public Audio::IPlugin
 {
-    using IndexList = std::array<std::size_t, KeyCount>;
-
     REGISTER_PLUGIN(
         /* Plugin's name */
         TR_TABLE(
@@ -62,6 +60,11 @@ class Audio::Sampler final : public Audio::IPlugin
     )
 
 public:
+    static constexpr std::size_t KeysPerOctave = 12u;
+
+    using IndexList = std::array<std::size_t, KeyCount>;
+    using OctaveBuffer = std::array<Buffer, KeysPerOctave>;
+
     virtual Flags getFlags(void) const noexcept;
 
     virtual void sendAudio(const BufferViews &inputs) noexcept {}
@@ -69,6 +72,8 @@ public:
 
     virtual void sendNotes(const NoteEvents &notes) noexcept;
     virtual void receiveNotes(NoteEvents &notes) noexcept {}
+
+    virtual void onAudioParametersChanged(void);
 
     // virtual void sendControls(const ControlEvents &controls) noexcept {
     // }
@@ -79,18 +84,20 @@ public:
     template<typename T>
     void loadSample(const std::string &path);
 
-    [[nodiscard]] const BufferViews &getBuffers(void) const noexcept { return _buffers; }
+    [[nodiscard]] const OctaveBuffer &getBuffers(void) const noexcept { return _buffers; }
 
 private:
-    Gain            _outputGain { 0.5f };
-    NoteManager     _noteManager;
-    BufferViews     _buffers;
-    IndexList       _readIndex { 0u };
+    // Cacheline 1
+    Gain _outputGain { 0.5f };
+    IndexList _readIndex { 0u };
+    // Cacheline 1 & 2
+    OctaveBuffer _buffers {};
+    // Cacheline 3 & 4
+    NoteManager _noteManager {};
 
 
-    void incrementReadIndex(Key key, std::size_t size = 1u) noexcept;
-
-    // void fillNo
+    /** @brief Increment the read index of given key */
+    void incrementReadIndex(Key key, std::size_t amount = 1u) noexcept;
 };
 
 #include "Sampler.ipp"

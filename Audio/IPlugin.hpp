@@ -21,6 +21,7 @@ namespace Audio
     constexpr auto English = "EN";
     constexpr auto French = "FR";
 
+
     /** @brief A list of points events */
     using ControlEvents = Core::TinyVector<ControlEvent>;
 
@@ -60,15 +61,32 @@ public:
     /** @brief Virtual destructor */
     virtual ~IPlugin(void) noexcept = default;
 
-    /** @brief Update internal audio paramters */
-    void updateAudioParameters(const SampleRate sampleRate, const ChannelArrangement channelArrangement) noexcept
-        { _sampleRate = sampleRate; _channelArrangement = channelArrangement; }
+
+    /** @brief Get the audio specs of this plugin */
+    AudioSpecs &audioSpecs(void) noexcept { return _specs; }
+    const AudioSpecs &audioSpecs(void) const noexcept { return _specs; }
+
+    /** @brief Update internal audio specs */
+    void updateAudioSpecs(const AudioSpecs &specs)
+    {
+        if (_specs == specs)
+            return;
+        _specs = specs;
+        onAudioParametersChanged();
+    }
+
+    /** @brief Virtual callback called on audio parameter changes */
+    virtual void onAudioParametersChanged(void) {}
+
 
     /** @brief Get the sample rate in plugin's cache */
-    [[nodiscard]] inline SampleRate sampleRate(void) const noexcept { return _sampleRate; }
+    [[nodiscard]] inline SampleRate sampleRate(void) const noexcept { return _specs.sampleRate; }
 
     /** @brief Get the channel arrangement in plugin's cache */
-    [[nodiscard]] inline ChannelArrangement channelArrangement(void) const noexcept { return _channelArrangement; }
+    [[nodiscard]] inline ChannelArrangement channelArrangement(void) const noexcept { return _specs.channelArrangement; }
+
+    /** @brief Get the channel arrangement in plugin's cache */
+    [[nodiscard]] inline Format format(void) const noexcept { return _specs.format; }
 
 
     /** @brief  */
@@ -110,6 +128,5 @@ public: // See REGISTER_PLUGIN in PluginUtils
     [[nodiscard]] virtual const PluginMetaData &getMetaData(void) const noexcept = 0;
 
 private:
-    SampleRate _sampleRate { 0u };
-    ChannelArrangement _channelArrangement { 0u };
+    AudioSpecs _specs;
 };

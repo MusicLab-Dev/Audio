@@ -47,7 +47,7 @@ private:
     Audio::Device::Descriptor _deviceDescriptor { DefaultDeviceDescriptor };
     std::unordered_map<std::string_view, NodeHolder> _map {};
 
-    static inline Core::SPSCQueue<std::uint8_t> _AudioCallbackBuffer { 16384 };
+    static Core::SPSCQueue<std::uint8_t> _AudioCallbackBuffer;// { 16384 };
     static inline std::atomic<std::size_t> _AudioCallbackMissCount { 0u };
 
     static void AudioCallback(void *, std::uint8_t *stream, const int length);
@@ -55,8 +55,13 @@ private:
     std::istringstream _is {};
     std::string _command {};
     std::string _word {};
-    bool _running { false };
+    std::size_t _sleepFor { 0u };
     AudioState _audioState { AudioState::Stop };
+    bool _running { false };
+
+    void prepareCache(void);
+
+    [[nodiscard]] Audio::AudioSpecs getAudioSpecs(void) const noexcept;
 
     void getNextCommand(void);
     void getNextWord(void);
@@ -65,10 +70,11 @@ private:
     template<typename As>
     [[nodiscard]] As getNextWordAs(const char * const what);
 
+
     void parseCommand(void);
 
     void parseLoadCommand(void);
-    void parseRunningCommand(AudioState state);
+    void parseRunningCommand(const AudioState state);
     void parseSettingsCommand(void);
     void parsePluginCommand(void);
     void parseNoteCommand(void);
@@ -85,5 +91,7 @@ private:
     void removeNodeImpl(Audio::Node &node) noexcept;
 
     void registerInternalFactories(void) noexcept;
+
+    Audio::NodePtr &insertNode(Audio::Node *parent, Audio::PluginPtr &&plugin, const std::string_view &name) noexcept;
 };
 #include "Interpreter.ipp"

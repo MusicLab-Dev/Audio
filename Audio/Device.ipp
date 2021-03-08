@@ -22,6 +22,8 @@ inline void Audio::Device::reloadDriver(AudioCallback &&callback)
     std::cout << "Reload driver" << std::endl;
     constexpr auto GetFormat = [](const Format format) -> SDL_AudioFormat {
         switch (format) {
+        case Format::Unknown:
+            return 0;
         case Format::Floating32:
             return AUDIO_F32;
         case Format::Fixed32:
@@ -46,7 +48,7 @@ inline void Audio::Device::reloadDriver(AudioCallback &&callback)
         throw std::runtime_error(std::string("Couldn't open audio: ") + SDL_GetError());
 }
 
-inline bool Audio::Device::setSampleRate(const int sampleRate) noexcept
+inline bool Audio::Device::setSampleRate(const SampleRate sampleRate) noexcept
 {
     if (sampleRate == _descriptor.sampleRate)
         return false;

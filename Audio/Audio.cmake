@@ -76,9 +76,9 @@ set(AudioPluginManagersSources
     ${AudioSampleFileDir}/SampleManager.ipp
     ${AudioSampleFileDir}/SampleManager.cpp
     ${AudioSampleFileDir}/SampleManagerSpecs.hpp
-    ${AudioSampleFileDir}/SampleManager_WAV.hpp
-    ${AudioSampleFileDir}/SampleManager_WAV.cpp
-    ${AudioSampleFileDir}/SampleManager_WAV.ipp
+    ${AudioSampleFileDir}/SampleManagerWAV.hpp
+    ${AudioSampleFileDir}/SampleManagerWAV.cpp
+    ${AudioSampleFileDir}/SampleManagerWAV.ipp
 )
 
 

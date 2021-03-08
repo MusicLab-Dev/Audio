@@ -45,7 +45,7 @@ public:
 
 
     /** @brief Update the audio parameters of the whole plugin table */
-    void updateAudioParameters(const SampleRate sampleRate, const ChannelArrangement channelArrangement);
+    void updateAudioSpecs(const AudioSpecs &audioSpecs);
 
     /** @brief Register a factory using a path */
     IPluginFactory &registerFactory(const std::string &path);
@@ -56,10 +56,10 @@ public:
     IPluginFactory &registerFactory(void);
 
     /** @brief Instantiates a new plugin using its factory name */
-    [[nodiscard]] PluginPtr instantiate(const std::string_view &view, const SampleRate sampleRate, const ChannelArrangement channelArrangement);
+    [[nodiscard]] PluginPtr instantiate(const std::string_view &view);
 
     /** @brief Instantiates a new plugin using its factory */
-    [[nodiscard]] PluginPtr instantiate(IPluginFactory &factory, const SampleRate sampleRate, const ChannelArrangement channelArrangement);
+    [[nodiscard]] PluginPtr instantiate(IPluginFactory &factory);
 
 
     /** @brief Get a reference of the plugin factories associated to the table */

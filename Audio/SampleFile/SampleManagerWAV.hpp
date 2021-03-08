@@ -1,6 +1,6 @@
 /**
  * @ Author: Pierre Veysseyre
- * @ Description: SampleManager_WAV.hpp
+ * @ Description: SampleManagerWAV.hpp
  */
 
 #pragma once
@@ -12,10 +12,10 @@
 
 namespace Audio
 {
-    struct SampleManager_WAV;
+    struct SampleManagerWAV;
 };
 
-struct Audio::SampleManager_WAV
+struct Audio::SampleManagerWAV
 {
     static constexpr const char * const Extension = ".wav";
 
@@ -65,4 +65,4 @@ struct Audio::SampleManager_WAV
     static void WriteFile(const std::string &path, const BufferView &inputBuffer) {}
 };
 
-#include "SampleManager_WAV.ipp"
+#include "SampleManagerWAV.ipp"

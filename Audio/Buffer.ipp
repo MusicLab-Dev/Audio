@@ -6,7 +6,7 @@
 #include "DSP/Resampler.hpp"
 
 inline Audio::Internal::AllocationHeader *Audio::Internal::BufferAllocator::AllocateFallback(
-        const std::size_t channelByteSize, const SampleRate sampleRate, const ChannelArrangement channelArrangement,
+        const std::size_t channelByteSize, const SampleRate sampleRate, const ChannelArrangement channelArrangement, const Format format,
         const std::size_t usedSize, const std::size_t capacity, const std::size_t bucketIndex) noexcept
 {
     // std::cout << "AllocateFallback: " << channelByteSize << ", " << usedSize << ", " << capacity << ", " << bucketIndex << std::endl;
@@ -17,13 +17,14 @@ inline Audio::Internal::AllocationHeader *Audio::Internal::BufferAllocator::Allo
             /* size: */ usedSize,
             /* channelByteSize: */ channelByteSize,
             /* sampleRate: */ sampleRate,
-            /* channelArrangement: */ channelArrangement
+            /* channelArrangement: */ channelArrangement,
+            /* format: */ format
         };
     } else
         return nullptr;
 }
 
-inline void Audio::Buffer::resize(const std::uint32_t channelByteSize, const SampleRate sampleRate, const ChannelArrangement channelArrangement) noexcept
+inline void Audio::Buffer::resize(const std::uint32_t channelByteSize, const SampleRate sampleRate, const ChannelArrangement channelArrangement, const Format format) noexcept
 {
     const auto totalSize = channelByteSize * static_cast<std::size_t>(channelArrangement);
 
@@ -32,8 +33,9 @@ inline void Audio::Buffer::resize(const std::uint32_t channelByteSize, const Sam
         header()->channelByteSize = channelByteSize;
         header()->sampleRate = sampleRate;
         header()->channelArrangement = channelArrangement;
+        header()->format = format;
     } else {
-        *this = Buffer(channelByteSize, sampleRate, channelArrangement);
+        *this = Buffer(channelByteSize, sampleRate, channelArrangement, format);
     }
 }
 
@@ -44,9 +46,10 @@ inline void Audio::Buffer::copy(const Internal::BufferBase &target)
         header()->channelByteSize = target.header()->channelByteSize;
         header()->sampleRate = target.header()->sampleRate;
         header()->channelArrangement = target.header()->channelArrangement;
+        header()->format = target.header()->format;
         std::memcpy(byteData(), target.byteData(), target.size<std::byte>());
     } else {
-        *this = Buffer(target.channelByteSize(), target.sampleRate(), target.channelArrangement());
+        *this = Buffer(target.channelByteSize(), target.sampleRate(), target.channelArrangement(), target.format());
         std::memcpy(byteData(), target.byteData(), target.size<std::byte>());
     }
 }
@@ -65,7 +68,7 @@ inline void Audio::Buffer::resample(const SampleRate newSampleRate) noexcept
     // Check if the resampled buffer fit in the actual one
     if (newSampleRate > sampleRate() && (capacity<Type>() < newSize)) {
         std::cout << "RESIZE\n";
-        resize(newSize * sizeof(Type), newSampleRate, channelArrangement());
+        resize(newSize * sizeof(Type), newSampleRate, channelArrangement(), format());
     }
     // return DSP::Resampler<Type>::ResampleOctave(data<Type>)
 }
