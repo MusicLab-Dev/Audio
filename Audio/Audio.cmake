@@ -15,6 +15,7 @@ set(AudioSources
     ${AudioDir}/Base.hpp
     ${AudioDir}/BaseDevice.hpp
     ${AudioDir}/BaseIndex.hpp
+    ${AudioDir}/BaseIndex.cpp
     ${AudioDir}/Buffer.hpp
     ${AudioDir}/Buffer.ipp
     ${AudioDir}/Buffer.cpp

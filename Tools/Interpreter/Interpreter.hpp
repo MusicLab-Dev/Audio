@@ -41,6 +41,8 @@ public:
 
     Interpreter(void);
 
+    static Core::SPSCQueue<std::uint8_t> &AudioCallbackBuffer(void) noexcept { return _AudioCallbackBuffer; }
+
 private:
     Scheduler _scheduler;
     Audio::Device _device { DefaultDeviceDescriptor, &Interpreter::AudioCallback };

@@ -78,6 +78,9 @@ void Interpreter::prepareCache(void)
     _scheduler.setProcessBeatSize(static_cast<float>(specs.processBlockSize) / specs.sampleRate * _scheduler.project()->tempo() * Audio::BarPrecision);
     _scheduler.setBeatRange(Audio::BeatRange({ 0u, _scheduler.processBeatSize() }));
     _scheduler.prepareCache(specs);
+
+    std::cout << "processBeatSize: " << _scheduler.processBeatSize() << std::endl;
+    std::cout << "beatRange: " << _scheduler.currentBeatRange() << std::endl;
 }
 
 void Interpreter::registerInternalFactories(void) noexcept
@@ -117,15 +120,19 @@ void Interpreter::run(void)
                 audioCallbackMissCount = _AudioCallbackMissCount;
                 std::cout << "An audio callback has been missed or uncompleted (n. " << audioCallbackMissCount << ')' << std::endl;
             }
+
             getNextCommand();
             _scheduler.addEvent([this] {
                 parseCommand();
-            });
+
             // Sleep for the requested duration if specified by a command
             if (_sleepFor) {
+                std::cout << "sleeping time" << std::endl;
                 std::this_thread::sleep_for(std::chrono::milliseconds(_sleepFor));
                 _sleepFor = 0u;
+                std::cout << "wake up!" << std::endl;
             }
+            });
         } catch (const std::logic_error &e) {
             std::cout << "Logic error thrown:\n\t" << e.what() << std::endl;
         }
@@ -161,6 +168,15 @@ void Interpreter::parseCommand(void)
     case "sleep"_hash:
         _sleepFor = getNextWordAs<std::size_t>("Interpreter::parseCommand::sleep: Invalid sleep duration");
         break;
+    case "playFor"_hash:
+    {
+        parseRunningCommand(AudioState::Play);
+        _sleepFor = getNextWordAs<std::size_t>("Interpreter::parseCommand::sleep: Invalid sleep duration");
+        std::this_thread::sleep_for(std::chrono::milliseconds(_sleepFor));
+        _sleepFor = 0u;
+        parseRunningCommand(AudioState::Pause);
+        break;
+    }
     case "help"_hash:
     case "?"_hash:
         std::cout << GeneralHelpText << std::endl;
@@ -185,6 +201,13 @@ void Interpreter::parseLoadCommand(void)
         _is.clear();
         _is.str(readLine);
         parseCommand();
+            // Sleep for the requested duration if specified by a command
+        if (_sleepFor) {
+            std::cout << "sleeping time" << std::endl;
+            std::this_thread::sleep_for(std::chrono::milliseconds(_sleepFor));
+            _sleepFor = 0u;
+            std::cout << "wake up!" << std::endl;
+        }
     }
 }
 
@@ -196,7 +219,8 @@ void Interpreter::parseRunningCommand(const AudioState state)
             return;
         }
         _audioState = state;
-        // _device.start(); // audioState c pour le device et aussi le scheduler
+        _device.start(); // audioState c pour le device et aussi le scheduler
+        std::cout << " <Play>" << std::endl;
         _scheduler.setState(Audio::AScheduler::State::Play);
         return;
     } else if (state == AudioState::Pause) {
@@ -205,7 +229,8 @@ void Interpreter::parseRunningCommand(const AudioState state)
             return;
         }
         _audioState = state;
-        // _device.stop();
+        _device.stop();
+        std::cout << " <Pause>" << std::endl;
         _scheduler.setState(Audio::AScheduler::State::Pause);
         _scheduler.wait();
         return;

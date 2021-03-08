@@ -50,12 +50,6 @@ inline void Audio::Sampler::onAudioParametersChanged(void)
         buffer.resize(newSize, audioSpecs().sampleRate, audioSpecs().channelArrangement, audioSpecs().format);
     }
 
-    // tout genre les paramètres pour resample [oui ]
-
-    // Je vais faire compiler le bordel audio qui a changé en attendant
-    // si oui met moi un term, fullscreen, attends que je te dises, puis X (pas la corbeille)
-
-    // -> this->audioSpecs().format; ?
 }
 
 inline void Audio::Sampler::sendNotes(const NoteEvents &notes) noexcept
@@ -65,7 +59,6 @@ inline void Audio::Sampler::sendNotes(const NoteEvents &notes) noexcept
 
 inline void Audio::Sampler::receiveAudio(BufferView output) noexcept
 {
-    // J'avaus eu ce pb pcq le cache dla OK (qui veut ecrtire le scheduleur task) netait pas init
     // std::cout << "receiveAudio:::: " << _noteManager.getActiveNoteNumber() << std::endl;
 
     // const auto outSize = output.size<float>();

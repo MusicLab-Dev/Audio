@@ -5,7 +5,11 @@
 
 #pragma once
 
+#include <ostream>
 #include <cstdint>
+#include <limits>
+
+#include <Flow/Core/Core/Utils.hpp>
 
 namespace Audio
 {
@@ -37,7 +41,7 @@ namespace Audio
 }
 
 /** @brief Beat range */
-struct alignas(8) Audio::BeatRange
+struct alignas_eighth_cacheline Audio::BeatRange
 {
     Beat from {};
     Beat to {};
@@ -48,10 +52,10 @@ struct alignas(8) Audio::BeatRange
     inline BeatRange &operator+=(const Beat size) { from += size; to += size; return *this; }
 };
 
-static_assert_fit(Audio::BeatRange, 8);
+static_assert_fit_eighth_cacheline(Audio::BeatRange);
 
 /** @brief Time range */
-struct alignas(8) Audio::TimeRange
+struct alignas_eighth_cacheline Audio::TimeRange
 {
     TimeIndex from {};
     TimeIndex to {};
@@ -60,4 +64,8 @@ struct alignas(8) Audio::TimeRange
     [[nodiscard]] inline bool operator!=(const TimeRange &other) const noexcept { return !(operator==(other)); }
 };
 
-static_assert_fit(Audio::TimeRange, 8);
+static_assert_fit_eighth_cacheline(Audio::TimeRange);
+
+
+std::ostream &operator<<(std::ostream &out, const Audio::BeatRange &range);
+std::ostream &operator<<(std::ostream &out, const Audio::TimeRange &range);
