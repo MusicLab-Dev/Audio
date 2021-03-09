@@ -5,6 +5,7 @@ find_package(GTest REQUIRED)
 get_filename_component(AudioTestsDir ${CMAKE_CURRENT_LIST_FILE} PATH)
 
 set(AudioTestsSources
+    ${AudioTestsDir}/tests_BeatRange.cpp
     # ${AudioTestsDir}/tests_Device.cpp
     # ${AudioTestsDir}/tests_Project.cpp
     # ${AudioTestsDir}/tests_Buffer.cpp
