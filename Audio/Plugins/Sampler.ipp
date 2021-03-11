@@ -54,8 +54,8 @@ inline void Audio::Sampler::onAudioParametersChanged(void)
 
 inline void Audio::Sampler::sendNotes(const NoteEvents &notes) noexcept
 {
-    // std::cout << "_NOTES\n" ;
-    // std::cout << static_cast<int>(notes[0].type) << std::endl;
+    std::cout << "_NOTES\n" ;
+    std::cout << static_cast<int>(notes[0].type) << std::endl;
     _noteManager.feedNotes(notes);
 }
 
@@ -64,12 +64,27 @@ inline void Audio::Sampler::receiveAudio(BufferView output) noexcept
     // std::cout << "AUDIO\n";
     // std::cout << "receiveAudio:::: " << _noteManager.getActiveNoteNumber() << std::endl;
 
-    const auto outSize = output.size<float>();
+    // const auto outSize = output.size<float>();
+    const auto outSize = output.size<std::uint8_t>();
     const auto outChannel = static_cast<std::uint32_t>(output.channelArrangement());
     // const auto noteNumber = _noteManager.getActiveNoteNumber();
     // const auto noteBlockNumber = _noteManager.getActiveNoteNumberBlock();
 
+    static std::size_t cpt = 0u;
+
+    std::cout << "Sampler::output.byteData(): " << outSize << " " << reinterpret_cast<const int *>(output.byteData()) << std::endl;
+    // float *out = reinterpret_cast<float *>(output.byteData());
+    std::uint8_t *out = output.byteData();
+
+    // for (auto i = 0u; i < outSize; ++i) {
+    //     out[i] = std::sin(2 * 3.14 * 440 * cpt / 44100);
+    //     ++cpt;
+    //     if (cpt > 1024)
+    //         cpt = 0;
+    // }
+
     for (auto key : _noteManager.getActiveNote()) {
+        // std::cout << "note:" << std::endl;
         for (auto iChannel = 0u; iChannel < outChannel; ++iChannel) {
             for (auto i = 0u; i < outSize; ++i) {
                 output.data<float>(static_cast<Channel>(iChannel))[i] += _outputGain * _buffers[0].data<float>(static_cast<Channel>(iChannel))[_readIndex[key]];
@@ -78,7 +93,7 @@ inline void Audio::Sampler::receiveAudio(BufferView output) noexcept
         }
     }
     for (auto key : _noteManager.getActiveNoteBlock()) {
-    std::cout << "note:" << std::endl;
+        std::cout << "note block:" << std::endl;
         for (auto iChannel = 0u; iChannel < outChannel; ++iChannel) {
             for (auto i = 0u; i < outSize; ++i) {
                 output.data<float>(static_cast<Channel>(iChannel))[i] += _outputGain * _buffers[0].data<float>(static_cast<Channel>(iChannel))[_readIndex[key]];

@@ -87,13 +87,13 @@ void AScheduler::buildProjectGraph(void)
         } else
             return true;
     });
-
-
     auto noteTask = MakeSchedulerTask<true, false>(_graph, parent->flags(), this, parent, nullptr);
     noteTask.first.setName(parent->name().toStdString() + "_note");
     auto audioTask = MakeSchedulerTask<false, true>(_graph, parent->flags(), this, parent, nullptr);
     audioTask.first.setName(parent->name().toStdString() + "_audio");
 
+    auto overflowTask = _graph.emplace([]{ /* @todo: test  sleep(50ns) */ });
+    conditional.precede(overflowTask);
     conditional.precede(noteTask.first);
     for (auto &child : parent->children()) {
         buildNodeTask(child.get(), noteTask, audioTask);

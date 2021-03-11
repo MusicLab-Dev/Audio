@@ -21,6 +21,8 @@ inline void Interpreter::getNextCommand(void)
     _is.str(_command);
     if (_is.fail())
         throw std::logic_error("Interpreter::getNextCommand: Invalid command input '" + _command + '\'');
+    if (_is.eof())
+        throw std::logic_error("Terminated");
 }
 
 inline void Interpreter::getNextWord(void)

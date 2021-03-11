@@ -3,6 +3,7 @@
  * @ Description: Interpreter
  */
 
+
 #include <thread>
 
 #include <Audio/PluginTable.hpp>
@@ -70,6 +71,13 @@ Interpreter::Interpreter(void)
     prepareCache();
 }
 
+Interpreter::~Interpreter(void)
+{
+    std::cout << "Waiting for scheduler...." << std::endl;
+    _scheduler.setState(Scheduler::State::Pause);
+    _scheduler.wait();
+    std::cout << "Success !" << std::endl;
+}
 
 void Interpreter::prepareCache(void)
 {
@@ -114,7 +122,7 @@ void Interpreter::AudioCallback(void *, std::uint8_t *stream, const int length)
 
     if (total != length) {
         ++_AudioCallbackMissCount;
-        std::cout << "AudioCallback MISS " <<  total << " / " << length << std::endl;
+        // std::cout << "AudioCallback MISS " <<  total << " / " << length << std::endl;
     }
 
     auto count = 0;
@@ -143,9 +151,7 @@ void Interpreter::run(void)
             }
 
             getNextCommand();
-            _scheduler.addEvent([this] {
-                parseCommand();
-
+            parseCommand();
             // Sleep for the requested duration if specified by a command
             if (_sleepFor) {
                 std::cout << "sleeping time" << std::endl;
@@ -153,7 +159,6 @@ void Interpreter::run(void)
                 _sleepFor = 0u;
                 std::cout << "wake up!" << std::endl;
             }
-            });
         } catch (const std::logic_error &e) {
             std::cout << "Logic error thrown:\n\t" << e.what() << std::endl;
         }

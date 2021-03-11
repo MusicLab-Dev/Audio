@@ -13,6 +13,7 @@ void Scheduler::onAudioBlockGenerated(void)
     const Audio::BufferView buffer(project()->master()->cache());
     const auto size = buffer.size<std::uint8_t>();
     int count = 0;
+    std::cout << "X: " << count << " " << size << " " << reinterpret_cast<const int *>(buffer.byteData()) << std::endl;
     for (auto i = 0; i < size; ++i) {
         if (buffer.byteData()[i] != 0)
             ++count;
@@ -29,12 +30,15 @@ void Scheduler::onAudioBlockGenerated(void)
     // if (currentBeatRange().from > 20000)
     //     setState(State::Pause);
 
+    // Todo: execute this on main thread
     dispatchApplyEvents();
     dispatchNotifyEvents();
 }
 
 void Scheduler::onAudioQueueBusy(void)
 {
+    // std::cout << "AudioQUeueBusy" << std::endl;
+    // Todo: execute this on main thread
     dispatchApplyEvents();
     dispatchNotifyEvents();
 }

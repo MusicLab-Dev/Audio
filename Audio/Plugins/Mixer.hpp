@@ -45,8 +45,8 @@ class Audio::Mixer final : public Audio::IPlugin
 public:
     virtual Flags getFlags(void) const noexcept;
 
-    virtual void sendAudio(const BufferViews &inputs) noexcept {}
-    virtual void receiveAudio(BufferView output) noexcept {}
+    virtual void sendAudio(const BufferViews &inputs) noexcept;
+    virtual void receiveAudio(BufferView output) noexcept;
 
     virtual void sendNotes(const NoteEvents &notes) noexcept {}
     virtual void receiveNotes(NoteEvents &notes) noexcept {}
@@ -56,6 +56,8 @@ public:
 
     virtual void onAudioGenerationStarted(const BeatRange &range) noexcept {}
 
+private:
+    BufferViews _cache;
 };
 
 #include "Mixer.ipp"

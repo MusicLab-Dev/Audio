@@ -3,12 +3,20 @@
  * @ Description: AScheduler
  */
 
+#include <iostream>
+
 inline Audio::AScheduler::AScheduler(void)
 {
     _graph.setRepeatCallback([this](void) -> bool {
         _currentBeatRange += _processBeatSize;
-        produceAudioData(_project->master()->cache());
-        onAudioBlockGenerated();
+        if (_overflowCache) {
+            onAudioQueueBusy();
+        } else {
+            produceAudioData(_project->master()->cache());
+            onAudioBlockGenerated();
+        }
+        if (state() == State::Pause)
+            std::cout << "State:" << static_cast<int>(state()) << std::endl;
         return state() == State::Play;
     });
 }
@@ -101,6 +109,7 @@ inline bool Audio::AScheduler::produceAudioData(const BufferView output)
     if (!ok) {
         _overflowCache.copy(output);
         return false;
-    } else
+    } else {
         return true;
+    }
 }

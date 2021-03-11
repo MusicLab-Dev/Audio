@@ -40,6 +40,7 @@ public:
     };
 
     Interpreter(void);
+    ~Interpreter(void);
 
 private:
     Scheduler _scheduler;
