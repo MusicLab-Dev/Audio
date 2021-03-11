@@ -74,11 +74,27 @@ void AScheduler::buildProjectGraph(void)
 {
     auto *parent = _project->master().get();
 
+    auto conditional = _graph.emplace([this] {
+        if (_overflowCache) {
+            // The delayed data has been consumed
+            if (produceAudioData(_overflowCache)) {
+                _overflowCache.release();
+                return true;
+            // The delayed data must be re-delayed
+            } else
+                return false;
+        // There is no data delayed
+        } else
+            return true;
+    });
+
+
     auto noteTask = MakeSchedulerTask<true, false>(_graph, parent->flags(), this, parent, nullptr);
     noteTask.first.setName(parent->name().toStdString() + "_note");
     auto audioTask = MakeSchedulerTask<false, true>(_graph, parent->flags(), this, parent, nullptr);
     audioTask.first.setName(parent->name().toStdString() + "_audio");
 
+    conditional.precede(noteTask.first);
     for (auto &child : parent->children()) {
         buildNodeTask(child.get(), noteTask, audioTask);
     }

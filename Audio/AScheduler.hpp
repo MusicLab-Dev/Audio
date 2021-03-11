@@ -10,6 +10,7 @@
 #include <future>
 
 #include <Core/Functor.hpp>
+#include <Core/SPSCQueue.hpp>
 #include <Flow/Scheduler.hpp>
 
 #include "Project.hpp"
@@ -85,12 +86,20 @@ public:
     /** @brief Virtual callback called when a frame is generated */
     virtual void onAudioBlockGenerated(void) = 0;
 
+    /** @brief Virtual callback called  */
+    virtual void onAudioQueueBusy(void) = 0;
+
     /** @brief Will wait until the processing graph is completed
      *  Never call this without setting state to 'Pause' during the whole wait call */
     void wait(void) noexcept_ndebug;
 
     /** @brief Init internal cache */
     void prepareCache(const AudioSpecs &specs);
+
+
+    /** @brief Will consome audio data from the global queue */
+    static inline std::size_t ConsumeAudioData(std::uint8_t *data, const std::size_t size)
+        { return _AudioQueue.popRange(data, data + size); }
 
 protected:
     /** @brief Dispatch apply events without clearing event list */
@@ -107,6 +116,9 @@ private:
     ProjectPtr _project {};
     std::atomic<State> _state { State::Pause };
     std::uint32_t _processBeatSize { 0u };
+    Buffer _overflowCache {};
+
+    static inline Core::SPSCQueue<std::uint8_t> _AudioQueue { 65536 };
 
     /** @brief Cache stucture used to store recursive parameters */
     struct SpecsParams
@@ -121,6 +133,10 @@ private:
     void buildProjectGraph(void);
 
     void buildNodeTask(const Node *node, std::pair<Flow::Task, const NoteEvents *> &parentNoteTask, std::pair<Flow::Task, const NoteEvents *> &parentAudioTask);
+
+
+    /** @brief Will feed audio data into the global queue */
+    bool produceAudioData(const BufferView output);
 
 public:
     /** @brief Schedule the project graph */

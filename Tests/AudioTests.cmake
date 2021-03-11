@@ -7,18 +7,18 @@ get_filename_component(AudioTestsDir ${CMAKE_CURRENT_LIST_FILE} PATH)
 set(AudioTestsSources
     ${AudioTestsDir}/tests_BeatRange.cpp
     # ${AudioTestsDir}/tests_Device.cpp
-    # ${AudioTestsDir}/tests_Project.cpp
+    ${AudioTestsDir}/tests_Project.cpp
     # ${AudioTestsDir}/tests_Buffer.cpp
-    # ${AudioTestsDir}/tests_Point.cpp
-    # ${AudioTestsDir}/tests_Automation.cpp
-    # ${AudioTestsDir}/tests_Control.cpp
+    ${AudioTestsDir}/tests_Point.cpp
+    ${AudioTestsDir}/tests_Automation.cpp
+    ${AudioTestsDir}/tests_Control.cpp
     ${AudioTestsDir}/tests_ParameterTable.cpp
-    ${AudioTestsDir}/tests_SchedulerTask.cpp
+    # ${AudioTestsDir}/tests_SchedulerTask.cpp
     ${AudioTestsDir}/tests_PluginTable.cpp
     ${AudioTestsDir}/tests_Sampler.cpp
-    # ${AudioTestsDir}/tests_Note.cpp
-    # ${AudioTestsDir}/tests_Partition.cpp
-    # ${AudioTestsDir}/tests_NoteManager.cpp
+    ${AudioTestsDir}/tests_Note.cpp
+    ${AudioTestsDir}/tests_Partition.cpp
+    ${AudioTestsDir}/tests_NoteManager.cpp
     # ${AudioTestsDir}/tests_UtilsMidi.cpp
 
     # ${AudioTestsDir}/tests_Resampler.cpp

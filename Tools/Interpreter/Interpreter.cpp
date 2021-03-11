@@ -73,13 +73,24 @@ Interpreter::Interpreter(void)
 
 void Interpreter::prepareCache(void)
 {
-    const auto specs = getAudioSpecs();
+    const auto beats = static_cast<float>(_device.blockSize()) / _device.sampleRate() / _scheduler.project()->tempo() * Audio::BeatPrecision;
+    const auto beatsNorm = std::ceil(beats);
 
-    _scheduler.setProcessBeatSize(static_cast<float>(specs.processBlockSize) / specs.sampleRate * _scheduler.project()->tempo() * Audio::BarPrecision);
-    _scheduler.setLoopBeatRange(Audio::BeatRange({ 0u, _scheduler.processBeatSize() * 100u }));
+    const auto processBlockSize = beatsNorm / Audio::BeatPrecision * _scheduler.project()->tempo() * _device.sampleRate();
+    _scheduler.setProcessBlockSize(std::ceil(processBlockSize));
+
+    const auto specs = getAudioSpecs();
+    std::cout << "beats: " << beats << std::endl;
+    std::cout << "beatsNorm: " << beatsNorm << std::endl;
+    std::cout << "diff: " << beats - (int)beats << std::endl;
+    std::cout << "size: " << _device.blockSize() << std::endl;
+    std::cout << "sr: " << specs.sampleRate << std::endl;
+    std::cout << "tempo: " << _scheduler.project()->tempo() << std::endl;
+    _scheduler.setProcessBeatSize(beatsNorm);
+    _scheduler.setIsLooping(false);
+    _scheduler.setLoopBeatRange(MakeBeatRange(0u, 16, NoteType::QuarterNote));
     _scheduler.setBeatRange(Audio::BeatRange({ 0u, _scheduler.processBeatSize() }));
     _scheduler.prepareCache(specs);
-
     std::cout << "processBeatSize: " << _scheduler.processBeatSize() << std::endl;
     std::cout << "beatRange: " << _scheduler.currentBeatRange() << std::endl;
 }
@@ -99,11 +110,20 @@ void Interpreter::registerInternalFactories(void) noexcept
 
 void Interpreter::AudioCallback(void *, std::uint8_t *stream, const int length)
 {
-    auto total = Interpreter::_AudioCallbackBuffer.popRange(stream, stream + length);
+    auto total = Scheduler::ConsumeAudioData(stream, length);
 
-    if (total != length)
+    if (total != length) {
         ++_AudioCallbackMissCount;
-    std::cout << "<AudioCallback> " << "(" << length << ")" << total << std::endl;
+        std::cout << "AudioCallback MISS " <<  total << " / " << length << std::endl;
+    }
+
+    auto count = 0;
+    for (auto i = 0; i < length; ++i) {
+        if (stream[i])
+            ++count;
+    }
+    if (count)
+        std::cout << "< Audio Callback non-null > " << count << std::endl;
 }
 
 void Interpreter::run(void)
@@ -450,14 +470,16 @@ void Interpreter::parseNoteCommand(void)
     case "create"_hash:
     {
         const auto beatPrecision = getNextWordAs<unsigned int>("Interpreter::parseNoteCommand::create: Invalid beatPrecision parameter");
-        Audio::BeatRange instanceRange;
-        instanceRange.from = getNextWordAs<unsigned int>("Interpreter::parseNoteCommand::create: Invalid beat from parameter");
-        instanceRange.to = getNextWordAs<unsigned int>("Interpreter::parseNoteCommand::create: Invalid beat to parameter");
+        // Check if beatPrecision is a power of two
+        if (!beatPrecision || (beatPrecision & (beatPrecision - 1)))
+            throw std::logic_error("Interpreter::parseNoteCommand::create: first argument must be a power of 2.");
+        const auto from = getNextWordAs<unsigned int>("Interpreter::parseNoteCommand::create: Invalid beat from parameter");
+        const auto to = getNextWordAs<unsigned int>("Interpreter::parseNoteCommand::create: Invalid beat to parameter");
         bool isPlugin = getNextWordNoThrow();
         const std::string &nodeName = (isPlugin ? _word : "master");
         auto &node = getNode(nodeName);
         Audio::Partition partition;
-        partition.instances().push(instanceRange);
+        partition.instances().push(MakeBeatRange(from, to, static_cast<NoteType>(beatPrecision)));
         node.ptr->partitions().push(std::move(partition));
         break;
     }
@@ -466,11 +488,18 @@ void Interpreter::parseNoteCommand(void)
         getNextWord();
         auto &node = getNode(_word);
         const auto partitionIndex = getNextWordAs<unsigned int>("Interpreter::parseNoteCommand::add: Invalid partitionIndex parameter");
+        const auto key = getNextWordAs<unsigned int>("Interpreter::parseNoteCommand::add: Invalid partitionIndex parameter");
         const auto beatPrecision = getNextWordAs<unsigned int>("Interpreter::parseNoteCommand::add: Invalid beatPrecision parameter");
+        // Check if beatPrecision is a power of two
+        if (!beatPrecision || (beatPrecision & (beatPrecision - 1)))
+            throw std::logic_error("Interpreter::parseNoteCommand::add: first argument must be a power of 2.");
+        const auto from = getNextWordAs<unsigned int>("Interpreter::parseNoteCommand::add: Invalid beat from parameter");
+        const auto to = getNextWordAs<unsigned int>("Interpreter::parseNoteCommand::add: Invalid beat to parameter");
+
         Audio::Note note;
-        note.key = getNextWordAs<unsigned int>("Interpreter::parseNoteCommand::add: Invalid key parameter");
-        note.range.from = getNextWordAs<unsigned int>("Interpreter::parseNoteCommand::add: Invalid beat from parameter");
-        note.range.to = getNextWordAs<unsigned int>("Interpreter::parseNoteCommand::add: Invalid beat to parameter");
+        note.key = key;
+        // note.range = MakeBeatRange(from, to, static_cast<NoteType>(beatPrecision));
+        note.range = Audio::BeatRange { 0, 20'000 };
         node.ptr->partitions()[partitionIndex].notes().push(note);
         break;
     }

@@ -139,8 +139,8 @@ public:
 
 
     /** @brief Get the byte data pointer */
-    [[nodiscard]] std::byte *byteData(void) noexcept { return reinterpret_cast<std::byte *>(_header + 1); }
-    [[nodiscard]] const std::byte *byteData(void) const noexcept { return reinterpret_cast<std::byte *>(_header + 1); }
+    [[nodiscard]] std::uint8_t *byteData(void) noexcept { return reinterpret_cast<std::uint8_t *>(_header + 1); }
+    [[nodiscard]] const std::uint8_t *byteData(void) const noexcept { return reinterpret_cast<std::uint8_t *>(_header + 1); }
 
 
     /** @brief Get the byte size per channel */
@@ -216,6 +216,9 @@ public:
 
     /** @brief Copy the target buffer */
     void copy(const Internal::BufferBase &target);
+
+    /** @brief Copy a range of the target (in bytes) */
+    void copyRange(const Internal::BufferBase &target, const std::size_t from, const std::size_t to);
 
 
     /** @brief Resample the actual buffer, resize if needed */

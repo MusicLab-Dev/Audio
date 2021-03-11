@@ -7,6 +7,7 @@ inline Audio::AScheduler::AScheduler(void)
 {
     _graph.setRepeatCallback([this](void) -> bool {
         _currentBeatRange += _processBeatSize;
+        produceAudioData(_project->master()->cache());
         onAudioBlockGenerated();
         return state() == State::Play;
     });
@@ -87,4 +88,19 @@ inline void Audio::AScheduler::prepareCache(const AudioSpecs &specs)
 inline void Audio::AScheduler::onAudioProcessStarted(const BeatRange &beatRange)
 {
     _project->onAudioGenerationStarted(beatRange);
+}
+
+inline bool Audio::AScheduler::produceAudioData(const BufferView output)
+{
+    const auto cacheSize = output.size<std::uint8_t>();
+    const bool ok = _AudioQueue.tryPushRange(
+        output.byteData(),
+        output.byteData() + cacheSize
+    );
+
+    if (!ok) {
+        _overflowCache.copy(output);
+        return false;
+    } else
+        return true;
 }

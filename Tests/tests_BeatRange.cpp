@@ -10,7 +10,7 @@
 using namespace Audio;
 
 
-TEST(Note, EqualOperator)
+TEST(BeatRange, Comparisons)
 {
     // reference
     BeatRange range { 10, 20 };
@@ -34,4 +34,10 @@ TEST(Note, EqualOperator)
     // EXPECT_TRUE(boundSup >= range);
     // EXPECT_TRUE(boundInf > range);
     // EXPECT_TRUE(boundSup < range);
+}
+
+TEST(Beat, BeatInit)
+{
+    // EXPECT_EQ(MakeBeat(1, NoteType::HundredTwentyEighthNote), 1);
+    // EXPECT_EQ(MakeBeat(1, NoteType::SixtyFourthNote), 2);
 }

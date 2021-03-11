@@ -34,11 +34,13 @@ inline bool Audio::Node::setName(Core::FlatString &&name) noexcept
     return true;
 }
 
+#include <iostream>
 inline void Audio::Node::prepareCache(const AudioSpecs &specs)
 {
     {
         const auto newSize = GetFormatByteLength(specs.format) * specs.processBlockSize;
         _cache.resize(newSize, specs.sampleRate, specs.channelArrangement, specs.format);
+        std::cout << "new size: " << newSize << std::endl;
     }
 
     for (auto &child : _children) {

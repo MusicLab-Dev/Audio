@@ -54,26 +54,40 @@ inline void Audio::Sampler::onAudioParametersChanged(void)
 
 inline void Audio::Sampler::sendNotes(const NoteEvents &notes) noexcept
 {
+    // std::cout << "_NOTES\n" ;
+    // std::cout << static_cast<int>(notes[0].type) << std::endl;
     _noteManager.feedNotes(notes);
 }
 
 inline void Audio::Sampler::receiveAudio(BufferView output) noexcept
 {
+    // std::cout << "AUDIO\n";
     // std::cout << "receiveAudio:::: " << _noteManager.getActiveNoteNumber() << std::endl;
 
-    // const auto outSize = output.size<float>();
-    // const auto outChannel = static_cast<std::uint32_t>(output.channelArrangement());
+    const auto outSize = output.size<float>();
+    const auto outChannel = static_cast<std::uint32_t>(output.channelArrangement());
     // const auto noteNumber = _noteManager.getActiveNoteNumber();
     // const auto noteBlockNumber = _noteManager.getActiveNoteNumberBlock();
 
-    // for (auto key : _noteManager.getActiveNote()) {
-    //     for (auto iChannel = 0u; iChannel < outChannel; ++iChannel) {
-    //         for (auto i = 0u; i < outSize; ++i) {
-    //             output.data<float>(static_cast<Channel>(iChannel))[i] = _outputGain * _buffers[0].data<float>(static_cast<Channel>(iChannel))[_readIndex[key]];
-    //             incrementReadIndex(key);
-    //         }
-    //     }
-    // }
+    for (auto key : _noteManager.getActiveNote()) {
+        for (auto iChannel = 0u; iChannel < outChannel; ++iChannel) {
+            for (auto i = 0u; i < outSize; ++i) {
+                output.data<float>(static_cast<Channel>(iChannel))[i] += _outputGain * _buffers[0].data<float>(static_cast<Channel>(iChannel))[_readIndex[key]];
+                incrementReadIndex(key);
+            }
+        }
+    }
+    for (auto key : _noteManager.getActiveNoteBlock()) {
+    std::cout << "note:" << std::endl;
+        for (auto iChannel = 0u; iChannel < outChannel; ++iChannel) {
+            for (auto i = 0u; i < outSize; ++i) {
+                output.data<float>(static_cast<Channel>(iChannel))[i] += _outputGain * _buffers[0].data<float>(static_cast<Channel>(iChannel))[_readIndex[key]];
+                incrementReadIndex(key);
+            }
+        }
+    }
+
+    // std::cout << "sampler index: " << _readIndex[69] << std::endl;
 
     _noteManager.resetBlockCache();
 }

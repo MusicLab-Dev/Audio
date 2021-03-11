@@ -5,12 +5,14 @@
 
 #include "BaseIndex.hpp"
 
-std::ostream &operator<<(std::ostream &out, const Audio::BeatRange &range)
+using namespace Audio;
+
+std::ostream &operator<<(std::ostream &out, const BeatRange &range)
 {
     return out << "(" << range.from << ":" << range.to << ")";
 }
 
-std::ostream &operator<<(std::ostream &out, const Audio::TimeRange &range)
+std::ostream &operator<<(std::ostream &out, const TimeRange &range)
 {
     return out << "(" << range.from << ":" << range.to << ")";
 }

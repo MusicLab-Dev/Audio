@@ -37,11 +37,12 @@ inline void Audio::Device::reloadDriver(AudioCallback &&callback)
         }
     };
     SDL_AudioSpec desiredSpec {};
-    desiredSpec.freq = static_cast<int>(_descriptor.sampleRate);
+    desiredSpec.freq = static_cast<std::size_t>(_descriptor.sampleRate);
     desiredSpec.format = GetFormat(_descriptor.format);
     desiredSpec.samples = _descriptor.blockSize;
     desiredSpec.callback = callback;
     desiredSpec.userdata = nullptr;
+    desiredSpec.channels = static_cast<std::size_t>(_descriptor.channelArrangement);
     SDL_AudioSpec acquiredSpec;
 
     if (!(_deviceID = SDL_OpenAudioDevice(NULL, _descriptor.isInput, &desiredSpec, &acquiredSpec, 1)))

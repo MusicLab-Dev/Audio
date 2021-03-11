@@ -41,16 +41,32 @@ inline void Audio::Buffer::resize(const std::uint32_t channelByteSize, const Sam
 
 inline void Audio::Buffer::copy(const Internal::BufferBase &target)
 {
-    if (*this && target.size<std::byte>() <= capacity()) {
+    if (*this && target.size<std::uint8_t>() <= capacity()) {
         header()->size = target.header()->size;
         header()->channelByteSize = target.header()->channelByteSize;
         header()->sampleRate = target.header()->sampleRate;
         header()->channelArrangement = target.header()->channelArrangement;
         header()->format = target.header()->format;
-        std::memcpy(byteData(), target.byteData(), target.size<std::byte>());
+        std::memcpy(byteData(), target.byteData(), target.size<std::uint8_t>());
     } else {
         *this = Buffer(target.channelByteSize(), target.sampleRate(), target.channelArrangement(), target.format());
-        std::memcpy(byteData(), target.byteData(), target.size<std::byte>());
+        std::memcpy(byteData(), target.byteData(), target.size<std::uint8_t>());
+    }
+}
+
+inline void Audio::Buffer::copyRange(const Internal::BufferBase &target, const std::size_t from, const std::size_t to)
+{
+    const auto newSize = to - from;
+    if (*this && newSize <= capacity()) {
+        header()->size = GetFormatByteLength(target.format()) * newSize;
+        header()->channelByteSize = newSize;
+        header()->sampleRate = target.header()->sampleRate;
+        header()->channelArrangement = target.header()->channelArrangement;
+        header()->format = target.header()->format;
+        std::memcpy(byteData(), target.byteData() + from, newSize);
+    } else {
+        *this = Buffer(newSize, target.sampleRate(), target.channelArrangement(), target.format());
+        std::memcpy(byteData(), target.byteData() + from, newSize);
     }
 }
 

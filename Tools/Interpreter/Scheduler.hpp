@@ -17,18 +17,19 @@ public:
     ~Scheduler(void) override = default;
 
     void onAudioBlockGenerated(void) override;
+    void onAudioQueueBusy(void) override;
 
     /** @brief Get / Set the process block size */
     [[nodiscard]] std::size_t processBlockSize(void) const noexcept { return _processBlockSize; }
-    [[nodiscard]] bool setProcessBlockSize(const std::size_t processBlockSize) noexcept;
+    bool setProcessBlockSize(const std::size_t processBlockSize) noexcept;
 
     /** @brief Get / Set the loop beat range */
     [[nodiscard]] Audio::BeatRange loopBeatRange(void) const noexcept { return _loopBeatRange; }
-    [[nodiscard]] bool setLoopBeatRange(const Audio::BeatRange loopBeatRange) noexcept;
+    bool setLoopBeatRange(const Audio::BeatRange loopBeatRange) noexcept;
 
     /** @brief Get / Set the loop status */
     [[nodiscard]] bool isLooping(void) const noexcept { return _isLooping; }
-    [[nodiscard]] bool setIsLooping(const bool loopBeatRange) noexcept;
+    bool setIsLooping(const bool loopBeatRange) noexcept;
 
 
 
@@ -36,6 +37,7 @@ private:
     std::size_t _processBlockSize { DefaultProcessBlockSize };
     Audio::BeatRange _loopBeatRange {};
     bool _isLooping { true };
+    Audio::Buffer _cache {};
 };
 
 

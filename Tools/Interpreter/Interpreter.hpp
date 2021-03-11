@@ -12,17 +12,17 @@
 #include <Audio/Device.hpp>
 
 #include "Scheduler.hpp"
+#include "Base.hpp"
 
 static const Audio::Device::Descriptor DefaultDeviceDescriptor {
     /*.name = */ "device-test",
-    /*.blockSize = */ 2048u,
+    /*.blockSize = */ 1024u,
     /*.sampleRate = */ 44100,
     /*.isInput = */ false,
     /*.format = */ Audio::Format::Floating32,
     /*.midiChannels = */ 2u,
     /*.channelArrangement = */ Audio::ChannelArrangement::Mono
 };
-
 
 class Interpreter
 {
@@ -41,15 +41,12 @@ public:
 
     Interpreter(void);
 
-    static Core::SPSCQueue<std::uint8_t> &AudioCallbackBuffer(void) noexcept { return _AudioCallbackBuffer; }
-
 private:
     Scheduler _scheduler;
     Audio::Device _device { DefaultDeviceDescriptor, &Interpreter::AudioCallback };
     Audio::Device::Descriptor _deviceDescriptor { DefaultDeviceDescriptor };
     std::unordered_map<std::string_view, NodeHolder> _map {};
 
-    static Core::SPSCQueue<std::uint8_t> _AudioCallbackBuffer;// { 16384 };
     static inline std::atomic<std::size_t> _AudioCallbackMissCount { 0u };
 
     static void AudioCallback(void *, std::uint8_t *stream, const int length);

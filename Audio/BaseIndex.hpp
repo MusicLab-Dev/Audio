@@ -19,22 +19,11 @@ namespace Audio
     /** @brief Time index */
     using TimeIndex = std::uint32_t;
 
-    enum class NoteType : Beat {
-        WholeNote = 1,                  // Ronde
-        HalfNote = 2,                   // Blanche
-        QuarterNote = 4,                // Noire
-        EighthNote = 8,                 // Croche
-        SixteenthNote = 16,             // Double croche
-        ThirtySecondNote = 32,          // Triple croche
-        SixtyFourthNote = 64,           // Quadruple croche
-        HundredTwentyEighthNote = 128   // Quintuple croche
-    };
-
     /** @brief Bar (mesure solfege) precision */
-    static constexpr auto BarPrecision = 128u;
+    static constexpr auto BeatPrecision = 128u;
 
     /** @brief Max beat index */
-    static constexpr auto BeatIndexMax = std::numeric_limits<Beat>::max() / BarPrecision;
+    static constexpr auto BeatIndexMax = std::numeric_limits<Beat>::max() / BeatPrecision;
 
     struct BeatRange;
     struct TimeRange;
