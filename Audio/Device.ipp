@@ -40,8 +40,8 @@ inline void Audio::Device::reloadDriver(AudioCallback &&callback)
     desiredSpec.freq = static_cast<std::size_t>(_descriptor.sampleRate);
     desiredSpec.format = GetFormat(_descriptor.format);
     desiredSpec.samples = _descriptor.blockSize;
-    desiredSpec.callback = callback;
-    desiredSpec.userdata = nullptr;
+    desiredSpec.callback = &Device::InternalAudioCallback;
+    desiredSpec.userdata = this;
     desiredSpec.channels = static_cast<std::size_t>(_descriptor.channelArrangement);
     SDL_AudioSpec acquiredSpec;
 

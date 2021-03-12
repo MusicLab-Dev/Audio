@@ -75,6 +75,7 @@ public:
 
 
     /** @brief Get a reference to the node plugin */
+    /** @todo replace by Plugin ref */
     [[nodiscard]] PluginPtr &plugin(void) noexcept { return _plugin; }
     [[nodiscard]] const PluginPtr &plugin(void) const noexcept { return _plugin; }
 

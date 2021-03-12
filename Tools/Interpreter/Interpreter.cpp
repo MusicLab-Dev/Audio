@@ -544,7 +544,7 @@ void Interpreter::parseControlCommand(void)
     }
 }
 
-Audio::NodePtr &Interpreter::insertNode(Audio::Node *parent, Audio::PluginPtr &&plugin, const std::string_view &name) noexcept
+Audio::NodePtr &Interpreter::insertNode(Audio::Node *parent, Audio::PluginPtr &&plugin, const std::string_view &name)  noexcept
 {
     const auto specs = getAudioSpecs();
 

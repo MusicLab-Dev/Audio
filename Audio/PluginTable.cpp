@@ -43,3 +43,11 @@ void Audio::PluginTable::decrementRefCount(IPlugin *plugin) noexcept_ndebug
         }
     }
 }
+
+#include <Audio/Plugins/Mixer.hpp>
+
+Audio::PluginTable::PluginTable(void)
+{
+    static const char MixerName[] = "Mixer";
+    registerFactory<Audio::Mixer, MixerName, Audio::IPluginFactory::Tags::Mastering>();
+}

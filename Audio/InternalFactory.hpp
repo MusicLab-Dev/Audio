@@ -17,14 +17,13 @@ template<typename Plugin, const char *Name, Audio::IPluginFactory::Tags FactoryT
 class Audio::InternalFactory final : public Audio::IPluginFactory
 {
 public:
+    static inline const std::string Path = std::string("__internal__:/") + Name;
 
-    InternalFactory(void) = default;
+    InternalFactory(void) {}
 
-    virtual std::string_view getName(void) noexcept final { return std::string_view(Name); }
+    virtual std::string_view getName(void) noexcept final { return Name; }
 
-    std::string_view getVendor(void) noexcept { return "_vendor"; }
-
-    virtual std::string_view getPath(void) noexcept final { return "_path"; }
+    virtual std::string_view getPath(void) noexcept final { return std::string_view(Path); }
 
     virtual Tags getTags(void) noexcept final { return FactoryTags; }
 

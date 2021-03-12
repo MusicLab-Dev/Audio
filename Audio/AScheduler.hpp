@@ -57,7 +57,7 @@ public:
 
     /** @brief Get / set internal state */
     [[nodiscard]] State state(void) const noexcept { return _state.load(); }
-    void setState(const State state) noexcept;
+    bool setState(const State state) noexcept;
 
     /** @brief Get / set internal current beat range */
     [[nodiscard]] BeatRange currentBeatRange(void) const noexcept { return _currentBeatRange; }
