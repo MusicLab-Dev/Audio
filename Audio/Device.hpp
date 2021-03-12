@@ -11,14 +11,16 @@
 
 #include <SDL2/SDL.h>
 
+#include <Core/Functor.hpp>
+
 #include "Base.hpp"
 
 namespace Audio
 {
     class Device;
 
-    // Forward declaration to the SDL audio callback function signature
-    using AudioCallback = SDL_AudioCallback;
+    /** @brief Functor used as an audio callback */
+    using AudioCallback = Core::Functor<void(std::uint8_t *, std::size_t)>;
 };
 
 
@@ -117,10 +119,12 @@ public:
     void reloadDriver(AudioCallback &&callback);
 
 private:
-    SDL_AudioDeviceID   _deviceID {};
-    AudioCallback       _callback { nullptr };
-    Descriptor          _descriptor {};
+    SDL_AudioDeviceID _deviceID {};
+    AudioCallback _callback {};
+    Descriptor _descriptor {};
 
+    /** @brief Internal audio callback, called by backend */
+    static void InternalAudioCallback(void *userdata, std::uint8_t *data, int size) noexcept;
 };
 
 #include "Device.ipp"
