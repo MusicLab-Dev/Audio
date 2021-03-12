@@ -116,7 +116,7 @@ public:
     /** @brief Get all device descriptors */
     static Descriptors GetDeviceDescriptors(void);
 
-    void reloadDriver(AudioCallback &&callback);
+    void reloadDriver(void);
 
 private:
     SDL_AudioDeviceID _deviceID {};

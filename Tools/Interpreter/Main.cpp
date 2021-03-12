@@ -9,12 +9,6 @@
 
 using namespace Audio;
 
-static void CB(void *, std::uint8_t *stream, const int length)
-{
-
-}
-
-
 int main(void)
 {
     try {

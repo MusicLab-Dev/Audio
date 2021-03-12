@@ -17,7 +17,7 @@ inline void Audio::Device::ReleaseDriver(void)
     SDL_Quit();
 }
 
-inline void Audio::Device::reloadDriver(AudioCallback &&callback)
+inline void Audio::Device::reloadDriver(void)
 {
     std::cout << "Reload driver" << std::endl;
     constexpr auto GetFormat = [](const Format format) -> SDL_AudioFormat {

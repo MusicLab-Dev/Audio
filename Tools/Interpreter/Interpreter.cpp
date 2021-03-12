@@ -106,12 +106,7 @@ void Interpreter::prepareCache(void)
 
 void Interpreter::registerInternalFactories(void) noexcept
 {
-    static constexpr char SamplerFactoryName[] = "Sampler";
-    Audio::PluginTable::Get().registerFactory<Audio::Sampler, SamplerFactoryName, Audio::IPluginFactory::Tags::Sampler>();
-
-    static constexpr char MixerFactoryName[] = "Mixer";
-    Audio::PluginTable::Get().registerFactory<Audio::Mixer, MixerFactoryName, Audio::IPluginFactory::Tags::Mastering>();
-
+    static constexpr char MixerFactoryName[] = "__internal__:/Mixer";
     static constexpr char MixerNodeName[] = "master"; // Wtf quoi
 
     insertNode(nullptr, Audio::PluginTable::Get().instantiate(MixerFactoryName), MixerNodeName);
@@ -342,11 +337,11 @@ void Interpreter::parseSettingsCommand(void)
     if (!changed)
         return;
     else if (!_running) {
-        _device.reloadDriver(&Interpreter::AudioCallback);
+        _device.reloadDriver();
         prepareCache();
     } else {
         _device.stop();
-        _device.reloadDriver(&Interpreter::AudioCallback);
+        _device.reloadDriver();
         prepareCache();
         _device.start();
     }
@@ -387,7 +382,7 @@ void Interpreter::parsePluginCommand(void)
 // plugin add Sampler MySampler
 
         getNextWord();
-        const std::string factory = _word;
+        const std::string factory = "__internal__:/" + _word;
         getNextWord();
         const std::string name = _word;
         bool hasParent = getNextWordNoThrow();

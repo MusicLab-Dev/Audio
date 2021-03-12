@@ -10,9 +10,9 @@
 using namespace Audio;
 
 Device::Device(const Descriptor &descriptor, AudioCallback &&callback)
-    : _descriptor(descriptor)
+    : _descriptor(descriptor), _callback(std::move(callback))
 {
-    reloadDriver(std::move(callback));
+    reloadDriver();
 }
 
 Device::~Device(void)

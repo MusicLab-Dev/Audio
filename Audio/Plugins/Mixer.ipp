@@ -27,7 +27,7 @@ inline void Audio::Mixer::receiveAudio(BufferView output) noexcept
         to[i] = from[i];
 }
 
-void Audio::Mixer::sendAudio(const BufferViews &inputs) noexcept
+inline void Audio::Mixer::sendAudio(const BufferViews &inputs) noexcept
 {
     _cache = inputs;
 }
