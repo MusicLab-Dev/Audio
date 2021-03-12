@@ -58,6 +58,8 @@ Internal::AllocationHeader *Internal::BufferAllocator::allocate(
     expected->channelByteSize = channelByteSize;
     expected->sampleRate = sampleRate;
     expected->channelArrangement = channelArrangement;
+    expected->capacity = capacity;
+    expected->bucketIndex = bucketIndex;
     expected->next = nullptr;
     return expected;
 }

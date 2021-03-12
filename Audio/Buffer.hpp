@@ -113,6 +113,8 @@ public:
     /** @brief Swap two instances */
     void swap(BufferBase &other) noexcept { std::swap(_header, other._header); }
 
+    /** @brief Clear the internal content */
+    void clear(void);
 
     /** @brief Fast allocation check */
     [[nodiscard]] operator bool(void) const noexcept { return _header; }
@@ -180,6 +182,9 @@ protected:
     /** @brief Private constructor */
     BufferBase(AllocationHeader * const header) noexcept
         : _header(header) {}
+
+    /** @brief Header setter, internal uses ! */
+    void setHeader(AllocationHeader *newHeader) noexcept { _header = newHeader; }
 };
 
 static_assert_fit_quarter_cacheline(Audio::Internal::BufferBase);
@@ -208,7 +213,7 @@ public:
     Buffer &operator=(Buffer &&other) noexcept = default;
 
     /** @brief Release buffer memory */
-    void release(void) noexcept { if (header()) Internal::BufferAllocator::Deallocate(header()); }
+    void release(void) noexcept { if (header()) Internal::BufferAllocator::Deallocate(header()); setHeader(nullptr); }
 
 
     /** @brief Resize the buffer if needed to fit requirements */

@@ -84,7 +84,7 @@ public:
     template<typename T>
     void loadSample(const std::string &path);
 
-    [[nodiscard]] const OctaveBuffer &getBuffers(void) const noexcept { return _buffers; }
+    // [[nodiscard]] const OctaveBuffer &getBuffers(void) const noexcept { return _buffers; }
 
 private:
     // Cacheline 1

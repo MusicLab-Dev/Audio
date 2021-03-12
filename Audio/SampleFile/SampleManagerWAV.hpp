@@ -63,6 +63,10 @@ struct Audio::SampleManagerWAV
     [[nodiscard]] static Buffer LoadFile(const std::string &path, SampleSpecs &specs, bool displaySpecs);
 
     static void WriteFile(const std::string &path, const BufferView &inputBuffer) {}
+
+private:
+    template<typename Type>
+    static void WriteBufferImpl(const Type *input, Type *output, const ChannelArrangement channelArrangement, const std::size_t size) noexcept;
 };
 
 #include "SampleManagerWAV.ipp"

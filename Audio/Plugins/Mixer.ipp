@@ -15,11 +15,14 @@ inline Audio::IPlugin::Flags Audio::Mixer::getFlags(void) const noexcept
     );
 }
 
+#include <iostream>
+
 inline void Audio::Mixer::receiveAudio(BufferView output) noexcept
 {
     const auto size = output.size<std::uint8_t>();
     const auto from =_cache[0].byteData();
     const auto to = output.byteData();
+
     for (auto i = 0; i < size; ++i)
         to[i] = from[i];
 }

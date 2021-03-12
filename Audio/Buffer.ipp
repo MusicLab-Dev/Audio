@@ -47,8 +47,10 @@ inline void Audio::Buffer::copy(const Internal::BufferBase &target)
         header()->sampleRate = target.header()->sampleRate;
         header()->channelArrangement = target.header()->channelArrangement;
         header()->format = target.header()->format;
+        std::cout << "SHIIIIIIIT\n";
         std::memcpy(byteData(), target.byteData(), target.size<std::uint8_t>());
     } else {
+        release();
         *this = Buffer(target.channelByteSize(), target.sampleRate(), target.channelArrangement(), target.format());
         std::memcpy(byteData(), target.byteData(), target.size<std::uint8_t>());
     }

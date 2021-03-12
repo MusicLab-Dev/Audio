@@ -42,7 +42,7 @@ void AScheduler::setBeatRange(const BeatRange range) noexcept
 void AScheduler::buildNodeTask(const Node *node,
         std::pair<Flow::Task, const NoteEvents *> &parentNoteTask, std::pair<Flow::Task, const NoteEvents *> &parentAudioTask)
 {
-    // std::cout << node->name().toStdString() << ":\n";
+    std::cout << node->name().toStdString() << ":\n";
     if (node->children().empty()) {
         // std::cout << "make note&audio\n";
         auto task = MakeSchedulerTask<true, true>(_graph, node->flags(), this, const_cast<Node *>(node), parentNoteTask.second);
@@ -76,44 +76,45 @@ void AScheduler::buildProjectGraph(void)
 
     auto conditional = _graph.emplace([this] {
         if (_overflowCache) {
+            // std::cout << "overflow check\n";
             // The delayed data has been consumed
-            if (produceAudioData(_overflowCache)) {
+            if (flushOverflowCache()) {
+                // std::cout << " - flush successsss\n";
+                // std::cout << _AudioQueue.size() << std::endl;
                 _overflowCache.release();
+                // std::cout << _overflowCache.operator bool() << std::endl;
                 return true;
             // The delayed data must be re-delayed
-            } else
+            } else {
+                // std::cout << " - flush failed\n";
                 return false;
+            }
         // There is no data delayed
-        } else
+        } else {
+            // std::cout << "do nothing\n";
             return true;
+        }
     });
     auto noteTask = MakeSchedulerTask<true, false>(_graph, parent->flags(), this, parent, nullptr);
     noteTask.first.setName(parent->name().toStdString() + "_note");
     auto audioTask = MakeSchedulerTask<false, true>(_graph, parent->flags(), this, parent, nullptr);
     audioTask.first.setName(parent->name().toStdString() + "_audio");
 
-    auto overflowTask = _graph.emplace([]{ /* @todo: test  sleep(50ns) */ });
+    auto overflowTask = _graph.emplace([]{ /* @todo: test  sleep(50ns) */
+        std::this_thread::sleep_for(std::chrono::nanoseconds(100));
+        // std::cout << "<overflow>\n";
+    });
     conditional.precede(overflowTask);
     conditional.precede(noteTask.first);
+    // If master is the only node, connect his tasks
+    if (parent->children().empty()) {
+        noteTask.first.succeed(audioTask.first);
+        return;
+    }
     for (auto &child : parent->children()) {
         buildNodeTask(child.get(), noteTask, audioTask);
     }
 
-    // Master -> controls / partitions
-    // Mixer 1 -> controls / partitions
-    // Arpeggiator 1 -> controls / partitions
-    // Sampler 1 -> controls / partitions
-    // Sampler 1 -> audio
-    // Sampler 2 -> controls / partitions
-    // Sampler 2 -> audio
-    // Arpegiator 1 -> audio:
-    /*  -> Check if node has audio ? -> No
-          -> Check if node has at least one children with audio ? -> Yes
-            -> Merge children
-    */
-    // Effect 1 -> controls / partitions
-    // Sampler 3 -> controls / partitions
-    // Sampler 3 -> audio
 }
 
 /*

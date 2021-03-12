@@ -138,6 +138,8 @@ private:
     /** @brief Will feed audio data into the global queue */
     bool produceAudioData(const BufferView output);
 
+    bool flushOverflowCache(void);
+
 public:
     /** @brief Schedule the project graph */
     void scheduleProjectGraph(void);

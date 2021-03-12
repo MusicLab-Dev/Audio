@@ -13,13 +13,13 @@ void Scheduler::onAudioBlockGenerated(void)
     const Audio::BufferView buffer(project()->master()->cache());
     const auto size = buffer.size<std::uint8_t>();
     int count = 0;
-    std::cout << "X: " << count << " " << size << " " << reinterpret_cast<const int *>(buffer.byteData()) << std::endl;
+    // std::cout << "X: " << count << " " << size << " " << reinterpret_cast<const int *>(buffer.byteData()) << std::endl;
     for (auto i = 0; i < size; ++i) {
         if (buffer.byteData()[i] != 0)
             ++count;
     }
-    if (count)
-        std::cout << "Audio block non-null: " << count << std::endl;
+    // if (count)
+    //     std::cout << "Audio block non-null: " << count << std::endl;
 
     if (isLooping() && (nextBeatRange.to > loopBeatRange().to)) {
         setBeatRange(Audio::BeatRange({

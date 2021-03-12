@@ -122,7 +122,7 @@ void Interpreter::AudioCallback(void *, std::uint8_t *stream, const int length)
 
     if (total != length) {
         ++_AudioCallbackMissCount;
-        // std::cout << "AudioCallback MISS " <<  total << " / " << length << std::endl;
+        // std::cout << "AudioCallback MISS " << total << " / " << length << std::endl;
     }
 
     auto count = 0;
@@ -130,8 +130,8 @@ void Interpreter::AudioCallback(void *, std::uint8_t *stream, const int length)
         if (stream[i])
             ++count;
     }
-    if (count)
-        std::cout << "< Audio Callback non-null > " << count << std::endl;
+    // if (count)
+    //     std::cout << "< Audio Callback non-null > " << count << std::endl;
 }
 
 void Interpreter::run(void)
@@ -142,6 +142,8 @@ void Interpreter::run(void)
     _is.clear();
     _is.str("load commands.txt");
     parseCommand();
+    _scheduler.invalidateProjectGraph();
+    std::cout << "graph: " << _scheduler.graph().size() << std::endl;
 
     while (_running) {
         try {
@@ -182,8 +184,12 @@ void Interpreter::parseCommand(void)
     case "control"_hash:
         return parseControlCommand();
     case "exit"_hash:
+    {
+        _scheduler.setState(Audio::AScheduler::State::Pause);
+        _scheduler.wait();
         _running = false;
         break;
+    }
     case "play"_hash:
         return parseRunningCommand(AudioState::Play);
         break;

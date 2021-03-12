@@ -108,8 +108,22 @@ inline bool Audio::AScheduler::produceAudioData(const BufferView output)
 
     if (!ok) {
         _overflowCache.copy(output);
+        std::cout << " - produce audio failed\n";
         return false;
     } else {
+        std::cout << " - produce audio success\n";
         return true;
     }
+}
+
+inline bool Audio::AScheduler::flushOverflowCache(void)
+{
+    const auto cacheSize = _overflowCache.size<std::uint8_t>();
+    // std::cout << "flush: Queue size: " << _AudioQueue.size() << std::endl;
+    const bool ok = _AudioQueue.tryPushRange(
+        _overflowCache.byteData(),
+        _overflowCache.byteData() + cacheSize
+    );
+
+    return ok;
 }

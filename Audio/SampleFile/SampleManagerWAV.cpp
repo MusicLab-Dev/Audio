@@ -106,15 +106,25 @@ Buffer SampleManagerWAV::LoadFile(const std::string &path, SampleSpecs &specs, b
     if (sampleFormat == Format::Unknown)
         throw std::logic_error("SampleManagerWAV::LoadFile: Unsupported audio format.");
     Buffer outBuffer(channelByteSize, fmt.sampleRate, static_cast<ChannelArrangement>(fmt.channelArrangement), sampleFormat);
-    std::vector<char> buf(data.dataSize);
-    file.read(buf.data(), data.dataSize);
+    std::vector<char> audioDataBuffer(data.dataSize);
+    file.read(audioDataBuffer.data(), data.dataSize);
 
-    for (auto iChannel = 0u; iChannel < fmt.channelArrangement; ++iChannel) {
-        // CHANGE THIS !
-        for (auto i = 0u; i < channelByteSize / (fmt.bitsPerSample / 8); ++i) {
-            // std::cout << iChannel << " - " << i << " = " << i * fmt.channelArrangement << std::endl;
-            outBuffer.data<float>(static_cast<Channel>(iChannel))[i] = buf[i * fmt.channelArrangement];
-        }
+    const std::size_t sampleSize = channelByteSize * fmt.channelArrangement / (fmt.bitsPerSample / 8);
+    switch (sampleFormat) {
+    case Format::Floating32:
+        WriteBufferImpl(reinterpret_cast<const float *>(audioDataBuffer.data()), reinterpret_cast<float *>(outBuffer.byteData()), static_cast<ChannelArrangement>(fmt.channelArrangement), sampleSize);
+        break;
+    case Format::Fixed8:
+        WriteBufferImpl(reinterpret_cast<const std::int8_t *>(audioDataBuffer.data()), reinterpret_cast<std::int8_t *>(outBuffer.byteData()), static_cast<ChannelArrangement>(fmt.channelArrangement), sampleSize);
+        break;
+    case Format::Fixed16:
+        WriteBufferImpl(reinterpret_cast<const std::int16_t *>(audioDataBuffer.data()), reinterpret_cast<std::int16_t *>(outBuffer.byteData()), static_cast<ChannelArrangement>(fmt.channelArrangement), sampleSize);
+        break;
+    case Format::Fixed32:
+        WriteBufferImpl(reinterpret_cast<const std::int32_t *>(audioDataBuffer.data()), reinterpret_cast<std::int32_t *>(outBuffer.byteData()), static_cast<ChannelArrangement>(fmt.channelArrangement), sampleSize);
+        break;
+    default:
+        break;
     }
 
     specs.format = fmt.audioFormat;
