@@ -33,7 +33,7 @@ inline Audio::PluginPtr Audio::PluginTable::instantiate(IPluginFactory &factory)
     return PluginPtr(ptr);
 }
 
-const Audio::IPluginFactory *Audio::PluginTable::find(const std::string_view &path) const noexcept
+inline const Audio::IPluginFactory *Audio::PluginTable::find(const std::string_view &path) const noexcept
 {
     for (auto &factory : _factories) {
         if (factory->getPath() != path)
