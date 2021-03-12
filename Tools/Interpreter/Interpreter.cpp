@@ -66,6 +66,7 @@ constexpr auto ControlHelpText =
 
 
 Interpreter::Interpreter(void)
+    : _device(DefaultDeviceDescriptor, &Interpreter::AudioCallback)
 {
     registerInternalFactories();
     prepareCache();
@@ -116,7 +117,7 @@ void Interpreter::registerInternalFactories(void) noexcept
     insertNode(nullptr, Audio::PluginTable::Get().instantiate(MixerFactoryName), MixerNodeName);
 }
 
-void Interpreter::AudioCallback(void *, std::uint8_t *stream, const int length)
+void Interpreter::AudioCallback(std::uint8_t *stream, const std::size_t length)
 {
     auto total = Scheduler::ConsumeAudioData(stream, length);
 

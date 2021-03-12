@@ -44,13 +44,13 @@ public:
 
 private:
     Scheduler _scheduler;
-    Audio::Device _device { DefaultDeviceDescriptor, &Interpreter::AudioCallback };
+    Audio::Device _device;
     Audio::Device::Descriptor _deviceDescriptor { DefaultDeviceDescriptor };
     std::unordered_map<std::string_view, NodeHolder> _map {};
 
     static inline std::atomic<std::size_t> _AudioCallbackMissCount { 0u };
 
-    static void AudioCallback(void *, std::uint8_t *stream, const int length);
+    static void AudioCallback(std::uint8_t *stream, const std::size_t length);
 
     std::istringstream _is {};
     std::string _command {};
