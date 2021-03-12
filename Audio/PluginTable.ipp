@@ -18,14 +18,12 @@ Audio::IPluginFactory &Audio::PluginTable::registerFactory(void)
     return *_factories.at(_factories.size() - 1);
 }
 
-inline Audio::PluginPtr Audio::PluginTable::instantiate(const std::string_view &view)
+inline Audio::PluginPtr Audio::PluginTable::instantiate(const std::string_view &path)
 {
-    for (auto &factory : _factories) {
-        if (factory->getName() != view)
-            continue;
+    if (auto factory = find(path); !factory)
+        throw std::logic_error("Audio::PluginTable::instantiate: Plugin '" + std::string(path) + "' not found");
+    else
         return instantiate(*factory);
-    }
-    throw std::logic_error("Audio::PluginTable::instantiate: Plugin '" + std::string(view) + "' not found");
 }
 
 inline Audio::PluginPtr Audio::PluginTable::instantiate(IPluginFactory &factory)
@@ -33,4 +31,14 @@ inline Audio::PluginPtr Audio::PluginTable::instantiate(IPluginFactory &factory)
     auto * const ptr = factory.instantiate();
 
     return PluginPtr(ptr);
+}
+
+const Audio::IPluginFactory *Audio::PluginTable::find(const std::string_view &path) const noexcept
+{
+    for (auto &factory : _factories) {
+        if (factory->getPath() != path)
+            continue;
+        return factory.get();
+    }
+    return nullptr;
 }

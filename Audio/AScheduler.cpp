@@ -7,20 +7,24 @@
 
 using namespace Audio;
 
-void AScheduler::setState(const State state) noexcept
+bool AScheduler::setState(const State state) noexcept
 {
     switch (state) {
     case State::Pause:
-        _state = state;
+        for (State expected = State::Play; !_state.compare_exchange_strong(expected, State::Pause);) {
+            if (expected == State::Pause)
+                return false;
+        }
         break;
     case State::Play:
         for (State expected = State::Pause; !_state.compare_exchange_strong(expected, State::Play);) {
             if (expected == State::Play)
-                return;
+                return false;
         }
         scheduleProjectGraph();
         break;
     }
+    return true;
 }
 
 #include <iostream>

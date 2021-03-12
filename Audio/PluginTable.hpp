@@ -55,8 +55,8 @@ public:
     template<typename Type, const char *Name, IPluginFactory::Tags FactoryTags>
     IPluginFactory &registerFactory(void);
 
-    /** @brief Instantiates a new plugin using its factory name */
-    [[nodiscard]] PluginPtr instantiate(const std::string_view &view);
+    /** @brief Instantiates a new plugin using its factory path */
+    [[nodiscard]] PluginPtr instantiate(const std::string_view &path);
 
     /** @brief Instantiates a new plugin using its factory */
     [[nodiscard]] PluginPtr instantiate(IPluginFactory &factory);
@@ -67,6 +67,11 @@ public:
 
     /** @brief Get a constant reference to the plugin factories associated to the table */
     [[nodiscard]] const PluginFactories &factories(void) const noexcept { return _factories; }
+
+    /** @brief Find a factory by path */
+    [[nodiscard]] IPluginFactory *find(const std::string_view &path) noexcept
+        { return const_cast<IPluginFactory *>(const_cast<const PluginTable *>(this)->find(path)); }
+    [[nodiscard]] const IPluginFactory *find(const std::string_view &path) const noexcept;
 
 
 public: // Functions reserved to internal usage
@@ -87,7 +92,7 @@ private:
     RefCounts           _counters {};
 
     /** @brief Private constructor */
-    PluginTable(void) noexcept = default;
+    PluginTable(void);
 
     /** @brief Deleted semantics */
     PluginTable(const PluginTable &other) noexcept = delete;
