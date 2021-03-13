@@ -505,8 +505,8 @@ void Interpreter::parseNoteCommand(void)
 
         Audio::Note note;
         note.key = key;
-        // note.range = MakeBeatRange(from, to, static_cast<NoteType>(beatPrecision));
-        note.range = Audio::BeatRange { 0, 20'000 };
+        note.range = MakeBeatRange(from, to, static_cast<NoteType>(beatPrecision));
+        // note.range = Audio::BeatRange { 0, 20'000 };
         node.ptr->partitions()[partitionIndex].notes().push(note);
         break;
     }

@@ -108,10 +108,10 @@ inline bool Audio::AScheduler::produceAudioData(const BufferView output)
 
     if (!ok) {
         _overflowCache.copy(output);
-        std::cout << " - produce audio failed\n";
+        // std::cout << " - produce audio failed\n";
         return false;
     } else {
-        std::cout << " - produce audio success\n";
+        // std::cout << " - produce audio success\n";
         return true;
     }
 }

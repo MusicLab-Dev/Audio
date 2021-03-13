@@ -17,6 +17,7 @@ set(AudioSources
     ${AudioDir}/BaseIndex.hpp
     ${AudioDir}/BaseIndex.cpp
     ${AudioDir}/Buffer.hpp
+    ${AudioDir}/BufferOctave.hpp
     ${AudioDir}/Buffer.ipp
     ${AudioDir}/Buffer.cpp
     ${AudioDir}/Connection.hpp

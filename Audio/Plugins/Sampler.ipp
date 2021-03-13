@@ -17,17 +17,6 @@ inline Audio::IPlugin::Flags Audio::Sampler::getFlags(void) const noexcept
 
 #include <iostream>
 
-inline void Audio::Sampler::incrementReadIndex(Key key, std::size_t amount) noexcept
-{
-    // std::cout << "::" << _readIndex[key] << std::endl;
-    // std::cout << _buffers[0].size<float>() << std::endl;
-    if (_readIndex[key] + amount >= _buffers[0].size<float>()) {
-        _readIndex[key] = 0u;
-    } else {
-        _readIndex[key] += amount;
-    }
-}
-
 template<typename T>
 inline void Audio::Sampler::loadSample(const std::string &path)
 {
@@ -56,8 +45,8 @@ inline void Audio::Sampler::onAudioParametersChanged(void)
 
 inline void Audio::Sampler::sendNotes(const NoteEvents &notes) noexcept
 {
-    // std::cout << "_NOTES\n" ;
-    // std::cout << static_cast<int>(notes[0].type) << std::endl;
+    std::cout << "_NOTES " << notes.size() << std::endl;
+    std::cout << static_cast<int>(notes[0].type) << std::endl;
     _noteManager.feedNotes(notes);
 }
 
@@ -69,14 +58,10 @@ inline void Audio::Sampler::receiveAudio(BufferView output) noexcept
     const auto outSize = output.size<float>();
     // const auto outSize = output.size<std::uint8_t>();
     const auto outChannel = 0u; //static_cast<std::uint32_t>(output.channelArrangement());
-    // const auto noteNumber = _noteManager.getActiveNoteNumber();
-    // const auto noteBlockNumber = _noteManager.getActiveNoteNumberBlock();
-
 
     // std::cout << "Sampler::output.byteData(): " << outSize << " " << reinterpret_cast<const int *>(output.byteData()) << std::endl;
     float *out = reinterpret_cast<float *>(output.byteData());
     // std::uint8_t *out = output.byteData();
-
 
     auto sampleSize = _buffers[0].size<float>();
     float *sampleBuffer = reinterpret_cast<float *>(_buffers[0].byteData());
@@ -86,24 +71,24 @@ inline void Audio::Sampler::receiveAudio(BufferView output) noexcept
         const auto key = activeNote[iKey];
         if (!iKey) {
             for (auto i = 0u; i < outSize; ++i) {
-                out[i] = _outputGain * sampleBuffer[_readIndex[key]];
-                incrementReadIndex(key);
+                out[i] = _outputGain * sampleBuffer[_noteManager.readIndex(key)];
+                _noteManager.incrementReadIndex(key, sampleSize);
             }
         } else {
             for (auto i = 0u; i < outSize; ++i) {
-                out[i] += _outputGain * sampleBuffer[_readIndex[key]];
-                incrementReadIndex(key);
+                out[i] += _outputGain * sampleBuffer[_noteManager.readIndex(key)];
+                _noteManager.incrementReadIndex(key, sampleSize);
             }
         }
         break;
     }
-    // for (auto key : _noteManager.getActiveNoteBlock()) {
-    //     // std::cout << "note block:" << std::endl;
-    //     for (auto i = 0u; i < outSize; ++i) {
-    //         output.data<float>(static_cast<Channel>(iChannel))[i] += _outputGain * _buffers[0].data<float>(static_cast<Channel>(iChannel))[_readIndex[key]];
-    //         incrementReadIndex(key);
-    //     }
-    // }
+    for (auto key : _noteManager.getActiveNoteBlock()) {
+        std::cout << "note block:" << std::endl;
+        // for (auto i = 0u; i < outSize; ++i) {
+        //     output.data<float>(static_cast<Channel>(iChannel))[i] += _outputGain * _buffers[0].data<float>(static_cast<Channel>(iChannel))[_readIndex[key]];
+        //     incrementReadIndex(key);
+        // }
+    }
 
     // std::cout << "sampler index: " << _readIndex[69] << std::endl;
 

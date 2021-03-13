@@ -21,12 +21,12 @@ void Scheduler::onAudioBlockGenerated(void)
     // if (count)
     //     std::cout << "Audio block non-null: " << count << std::endl;
 
-    if (isLooping() && (nextBeatRange.to > loopBeatRange().to)) {
-        setBeatRange(Audio::BeatRange({
-            0u,
-            processBeatSize()
-        }));
-    }
+    // if (isLooping() && (nextBeatRange.to > loopBeatRange().to)) {
+    //     setBeatRange(Audio::BeatRange({
+    //         0u,
+    //         processBeatSize()
+    //     }));
+    // }
     // if (currentBeatRange().from > 20000)
     //     setState(State::Pause);
 

@@ -13,13 +13,13 @@
 
 namespace Audio
 {
-    template<typename T>
+    template<typename Type>
     struct SampleManager;
 };
 
 #include <iostream>
 
-template<typename T>
+template<typename Type>
 struct Audio::SampleManager
 {
     static const constexpr std::tuple<

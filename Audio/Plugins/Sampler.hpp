@@ -8,6 +8,7 @@
 #include <Core/FlatVector.hpp>
 
 #include <Audio/PluginUtils.hpp>
+#include <Audio/BufferOctave.hpp>
 #include "Managers/NoteManager.hpp"
 
 namespace Audio
@@ -60,10 +61,6 @@ class Audio::Sampler final : public Audio::IPlugin
     )
 
 public:
-    static constexpr std::size_t KeysPerOctave = 12u;
-
-    using IndexList = std::array<std::size_t, KeyCount>;
-    using OctaveBuffer = std::array<Buffer, KeysPerOctave>;
 
     virtual Flags getFlags(void) const noexcept;
 
@@ -89,15 +86,11 @@ public:
 private:
     // Cacheline 1
     Gain _outputGain { 0.5f };
-    IndexList _readIndex { 0u };
     // Cacheline 1 & 2
-    OctaveBuffer _buffers {};
+    BufferOctave _buffers {};
     // Cacheline 3 & 4
     NoteManager _noteManager {};
 
-
-    /** @brief Increment the read index of given key */
-    void incrementReadIndex(Key key, std::size_t amount = 1u) noexcept;
 };
 
 #include "Sampler.ipp"

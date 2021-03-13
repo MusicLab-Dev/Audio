@@ -38,7 +38,6 @@
     }
 
 
-
 #define REGISTER_PLUGIN(Name, Description, ...) \
 private: \
     static inline const Audio::PluginMetaData _MetaData = [] { \
