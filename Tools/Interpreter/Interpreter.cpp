@@ -136,7 +136,7 @@ void Interpreter::run(void)
 
     _running = true;
     _is.clear();
-    _is.str("load commands.txt");
+    _is.str("load Tools/commands.txt");
     parseCommand();
     _scheduler.invalidateProjectGraph();
     std::cout << "graph: " << _scheduler.graph().size() << std::endl;
