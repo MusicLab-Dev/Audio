@@ -9,18 +9,7 @@
 
 using namespace Audio;
 
-TEST(Control, AutomationMutedState)
+TEST(Control, Basics)
 {
     Control control(23, 0);
-
-    control.setAutomationMutedState(1, true);
-    control.setAutomationMutedState(3, true);
-
-
-    EXPECT_EQ(control.isAutomationMuted(0), false);
-    EXPECT_EQ(control.isAutomationMuted(1), true);
-    EXPECT_EQ(control.isAutomationMuted(3), true);
-
-    EXPECT_EQ(control.setAutomationMutedState(1, true), false);
-    EXPECT_EQ(control.setAutomationMutedState(1, false), true);
 }

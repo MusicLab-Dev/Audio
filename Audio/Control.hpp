@@ -37,36 +37,37 @@ struct alignas_quarter_cacheline Audio::ControlEvent
 
 static_assert_fit_quarter_cacheline(Audio::ControlEvent);
 
-/** @brief A control describe how to change a plugin parameter over time (both Production & Live).
- * It contains a set of 16 automations. */
+/** @brief A control describe how to change a plugin parameter over time */
 class alignas_half_cacheline Audio::Control
 {
 public:
+    /** @brief Default constructor */
+    Control(void) noexcept = default;
+
     /** @brief Construct a control out of its parameter ID and value */
     Control(const ParamID paramID, const ParamValue value) noexcept
         : _manualPoint(value), _paramID(paramID) {}
 
-    /** @brief Check if the control is muted (not active) or not */
-    [[nodiscard]] bool muted(void) const noexcept { return _muted; }
+    /** @brief Copy assignment */
+    Control(const Control &other) noexcept = default;
 
-    /** @brief Set the muted state of the control */
-    bool setMuted(const bool muted) noexcept;
+    /** @brief Move assignment */
+    Control(Control &&other) noexcept = default;
+
+    /** @brief Destructor */
+    ~Control(void) noexcept = default;
+
+
+    /** @brief Copy assignment */
+    Control &operator=(const Control &other) noexcept = default;
+
+    /** @brief Move assignment */
+    Control &operator=(Control &&other) noexcept = default;
+
 
     /** @brief Get the automation list */
     [[nodiscard]] Automations &automations(void) noexcept { return _automations; }
     [[nodiscard]] const Automations &automations(void) const noexcept { return _automations; }
-
-    /** @brief Get the the whole automation muted states */
-    [[nodiscard]] std::uint16_t automationMutedState(void) const noexcept { return _automationMutedStates; }
-
-    /** @brief Check if an automation is muted */
-    [[nodiscard]] bool isAutomationMuted(const std::size_t index) const noexcept { return (_automationMutedStates & (1u << index)) > 0; }
-
-    /** @brief Check if an automation is muted */
-    bool setAutomationMutedState(const std::size_t index, const bool state) noexcept;
-
-    /** @brief Check if the automation set if full */
-    [[nodiscard]] bool isAutomationsFull(void) const noexcept;
 
 
     /** @brief Get the paramID associated to this control */
@@ -76,19 +77,32 @@ public:
     bool setParamID(const ParamID paramID) noexcept;
 
 
-    /** @brief Get the list of Point associated to this control */
-    [[nodiscard]] Points &points(void) noexcept;
+    /** @brief Check if the control is muted (not active) or not */
+    [[nodiscard]] bool muted(void) const noexcept { return _muted; }
 
-    /** @brief Get the list of Point associated to this control */
-    [[nodiscard]] const Points &points(void) const noexcept;
+    /** @brief Set the muted state of the control */
+    bool setMuted(const bool muted) noexcept;
+
+
+    /** @brief Check if the control is in manual mode */
+    [[nodiscard]] bool manualMode(void) const noexcept { return _manualMode; }
+
+    /** @brief Set the manual mode state of the control */
+    bool setManualMode(const bool manualMode) noexcept;
+
+
+    /** @brief Get the control manual point */
+    [[nodiscard]] const Point &manualPoint(void) const noexcept { return _manualPoint; }
+
+    /** @brief Set the manual point of the control */
+    bool setManualPoint(const Point &manualPoint) noexcept;
 
 private:
     Point           _manualPoint {};
     Automations     _automations {};
     ParamID         _paramID {};
-    std::uint16_t   _automationMutedStates {};
-    bool            _manualMode { false };
     bool            _muted { false };
+    bool            _manualMode { false };
 };
 
 #include "Control.ipp"

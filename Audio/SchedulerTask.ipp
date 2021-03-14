@@ -95,9 +95,8 @@ inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio>::
     for (const auto &control : node().controls()) {
         if (control.muted())
             continue;
-        auto i = 0ul;
         for (const auto &automation : control.automations()) {
-            if (control.isAutomationMuted(i++))
+            if (automation.muted())
                 continue;
             for (const auto &instance : automation.instances()) {
                 if (instance.to < beatRange.from)

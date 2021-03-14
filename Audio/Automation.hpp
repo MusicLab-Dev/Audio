@@ -1,6 +1,6 @@
 /*
  * @ Author: Pierre Veysseyre
- * @ Description: Automation.hpp
+ * @ Description: Automation
  */
 
 #pragma once
@@ -33,6 +33,11 @@ struct alignas_quarter_cacheline Audio::Point
     Point &operator=(const Point &other) noexcept = default;
     Point &operator=(Point &&other) noexcept = default;
 
+    /** @brief Equality operators */
+    [[nodiscard]] bool operator==(const Point &other) const noexcept
+        { return beat == other.beat && type == other.type && curveRate == other.curveRate && value == other.value; }
+    [[nodiscard]] bool operator!=(const Point &other) const noexcept { return !(*this == other); }
+
     Beat                    beat {};
     alignas(2) CurveType    type { CurveType::Linear };
     std::int16_t            curveRate {}; // We may change this to unsigned 24bits for better precision
@@ -42,7 +47,7 @@ struct alignas_quarter_cacheline Audio::Point
 static_assert_fit_quarter_cacheline(Audio::Point);
 
 /** @brief An automation hold a curve used to change parameters over time, it may contains multiple instances which describe where the automation appears over time */
-class alignas_quarter_cacheline Audio::Automation
+class alignas_half_cacheline Audio::Automation
 {
 public:
     /** @brief Get a reference to automation points */
@@ -53,9 +58,17 @@ public:
     [[nodiscard]] BeatRanges &instances(void) noexcept { return _instances; }
     [[nodiscard]] const BeatRanges &instances(void) const noexcept { return _instances; }
 
+    /** @brief Get the muted state associated to this automation */
+    [[nodiscard]] bool muted(void) const noexcept { return _muted; }
+
+    /** @brief Set a new muted state to this automation, returns true if the state changed */
+    bool setMuted(const bool value) noexcept;
+
 private:
-    Points          _points {};
-    BeatRanges      _instances {};
+    Points _points {};
+    BeatRanges _instances {};
+    Core::FlatString _name {};
+    bool _muted { false };
 };
 
-static_assert_fit_quarter_cacheline(Audio::Automation);
+static_assert_fit_half_cacheline(Audio::Automation);
