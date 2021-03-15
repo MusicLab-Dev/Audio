@@ -23,6 +23,7 @@ inline void KissFFT::Engine::processForward(const TypeScalar *timeInput, TypeCpx
     if (processInBlock)
         return forwardBlock(timeInput, freqOutput, inputSize);
     setProcessTimeSize(inputSize);
+    kiss_fftr(_forward, timeInput, freqOutput);
 }
 
 inline void KissFFT::Engine::processInverse(const TypeCpx *freqInput, TypeScalar *timeOutput, const std::size_t inputSize, const bool processInBlock) noexcept
@@ -30,6 +31,7 @@ inline void KissFFT::Engine::processInverse(const TypeCpx *freqInput, TypeScalar
     if (processInBlock)
         return inverseBlock(freqInput, timeOutput, inputSize);
     setProcessTimeSize(inputSize);
+    kiss_fftri(_inverse, freqInput, timeOutput);
 }
 
 inline void KissFFT::Engine::Filter(const FirFilterSpecs filterSpecs, const TypeScalar *timeInput, TypeScalar *timeOutput, const std::size_t inputSize) noexcept
@@ -51,10 +53,16 @@ inline void KissFFT::Engine::Filter(const FirFilterSpecs filterSpecs, const Type
     DesignFilter(filterSpecs, window.data(), windowSize);
 
     // Get the impulse response of the filter
+    if (windowSize != fftSize)
+        window[windowSize - 1] = 0.f;
     engine.processForward(window.data(), windowFreq.data(), fftSize);
     // FFT the input signal
     engine.processForward(timeInput, inputFreq.data(), fftSize);
     // Filter the freq signal
+
+    // for (auto i = 0u; i < fftSize; ++i)
+    //     std::cout << inputFreq[i].r << std::endl;
+
     for (auto i = 0u; i < inputSize; ++i) {
         TypeCpx filterSample {
             // a                c                   b               d
@@ -65,6 +73,11 @@ inline void KissFFT::Engine::Filter(const FirFilterSpecs filterSpecs, const Type
     }
     // IFFT the filtered freq signal
     engine.processInverse(inputFreq.data(), timeOutput, fftSize);
+    for (auto i = 0u; i < inputSize; ++i) {
+        // std::cout << timeInput[i] << std::endl;
+        timeOutput[i] /= fftSize;
+        // std::cout << timeInput[i] << std::endl;
+    }
 }
 
 inline void KissFFT::Engine::DesignFilter(const FirFilterSpecs filterSpecs, float *windowCoefficients, const std::size_t windowSize) noexcept

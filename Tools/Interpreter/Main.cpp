@@ -9,31 +9,111 @@
 
 #include <Audio/KissFFT.hpp>
 
+static const Audio::Device::Descriptor Descriptor
+{
+    /*.name = */ "device-test",
+    /*.blockSize = */ 1024u,
+    /*.sampleRate = */ 44100,
+    /*.isInput = */ false,
+    /*.format = */ Audio::Format::Floating32,
+    /*.midiChannels = */ 2u,
+    /*.channelArrangement = */ Audio::ChannelArrangement::Mono
+};
+
+static void Callback(void *userdata, std::uint8_t *data, int size) noexcept
+{
+    static const auto fSize = size / 4;
+    auto *out = reinterpret_cast<float *>(data);
+    static std::size_t idx = 0u;
+    auto *sample = reinterpret_cast<Audio::Buffer *>(userdata);
+    static const auto sampleSize = sample->size<float>();
+
+    for (auto i = 0u; i < fSize; ++i) {
+        out[i] = sample->data<float>()[++idx];
+
+        if (idx >= sampleSize)
+            idx = 0u;
+    }
+
+}
+
+static std::size_t Init(Audio::Buffer *sample)
+{
+    constexpr auto GetFormat = [](const Audio::Format format) -> SDL_AudioFormat {
+        switch (format) {
+        case Audio::Format::Unknown:
+            return 0;
+        case Audio::Format::Floating32:
+            return AUDIO_F32;
+        case Audio::Format::Fixed32:
+            return AUDIO_S32;
+        case Audio::Format::Fixed16:
+            return AUDIO_S16;
+        case Audio::Format::Fixed8:
+            return AUDIO_S8;
+        default:
+            return AUDIO_F32;
+        }
+    };
+
+    SDL_AudioSpec desiredSpec {};
+    desiredSpec.freq = static_cast<std::size_t>(Descriptor.sampleRate);
+    desiredSpec.format = GetFormat(Descriptor.format);
+    desiredSpec.samples = Descriptor.blockSize;
+    desiredSpec.callback = &Callback;
+    desiredSpec.userdata = sample;
+    desiredSpec.channels = static_cast<std::size_t>(Descriptor.channelArrangement);
+    SDL_AudioSpec acquiredSpec;
+
+    std::size_t device = 0;
+    if (!(device = SDL_OpenAudioDevice(NULL, Descriptor.isInput, &desiredSpec, &acquiredSpec, 1)))
+        throw std::runtime_error(std::string("Couldn't open audio: ") + SDL_GetError());
+    return device;
+}
+
+#include <Audio/SampleFile/SampleManager.hpp>
+
 using namespace Audio;
 
 int main(void)
 {
     try {
-        KissFFT::Engine engine(8);
-        KissFFT::TypeScalar time[1024];
-        KissFFT::TypeScalar timeFilter[1024];
-        KissFFT::TypeCpx freq[1024];
-        engine.processForward(time, freq, 21, true);
+        // KissFFT::Engine engine(8);
+        // KissFFT::TypeScalar time[1024];
+        // KissFFT::TypeScalar timeFilter[1024];
+        // KissFFT::TypeCpx freq[1024];
+        // engine.processForward(time, freq, 21, true);
 
-        // 1200 48000
+        SampleSpecs specs;
+        auto sample = SampleManager<float>::LoadSampleFile("Samples/chord.wav", specs);
+        const auto sampleSize = sample.size<float>();
+        Buffer sampleFilter;
+        sampleFilter.resize(sample.channelByteSize(), sample.sampleRate(), sample.channelArrangement(), sample.format());
+
         KissFFT::Engine::Filter(KissFFT::FirFilterSpecs {
             KissFFT::FirFilterType::LowPass,
             DSP::WindowType::Hanning,
-            48000,
-            { 1200, 0 }
-        }, time, timeFilter, 1023u);
+            44100,
+            { 4200, 0 }
+        }, sample.data<float>(), sampleFilter.data<float>(), sampleSize);
 
-        return 0;
-        Device::DriverInstance driverInstance;
-        PluginTable::Instance pluginTableInstance;
-        Interpreter interpreter;
 
-        interpreter.run();
+        if (SDL_InitSubSystem(SDL_INIT_AUDIO))
+            throw std::runtime_error(std::string("Couldn't initialize SDL_Audio: ") + SDL_GetError());
+        auto device = Init(&sampleFilter);
+        SDL_PauseAudioDevice(device, false);
+
+        while (true);
+        SDL_QuitSubSystem(SDL_INIT_AUDIO);
+        SDL_Quit();
+
+
+
+        // Device::DriverInstance driverInstance;
+        // PluginTable::Instance pluginTableInstance;
+        // Interpreter interpreter;
+
+        // interpreter.run();
         return 0;
     } catch (const std::exception &e) {
         std::cout << e.what() << std::endl;
