@@ -10,18 +10,10 @@
 #include <Core/Vector.hpp>
 #include <Core/FlatVector.hpp>
 #include <Core/FlatString.hpp>
+#include <Core/SortedFlatVector.hpp>
 
 #include "BaseDevice.hpp"
 #include "BaseIndex.hpp"
-
-namespace Core
-{
-    template<typename Type>
-    using SortedVector = Vector<Type>;
-
-    template<typename Type>
-    using SortedFlatVector = FlatVector<Type>;
-}
 
 namespace Audio
 {
