@@ -12,6 +12,7 @@ set(AudioSources
     ${AudioDir}/SchedulerTask.hpp
     ${AudioDir}/SchedulerTask.ipp
     ${AudioDir}/Automation.hpp
+    ${AudioDir}/Automation.ipp
     ${AudioDir}/Base.hpp
     ${AudioDir}/Math.hpp
     ${AudioDir}/BaseDevice.hpp

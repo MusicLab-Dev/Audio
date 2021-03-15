@@ -37,6 +37,9 @@ public:
     /** @brief Swap two instances */
     void swap(PluginPtr &other) noexcept { std::swap(_plugin, other._plugin); }
 
+    /** @brief Fast check operator */
+    operator bool(void) const noexcept { return _plugin; }
+
     /** @brief Dereference plugin pointer */
     [[nodiscard]] IPlugin &operator*(void) noexcept { return *_plugin; }
     [[nodiscard]] const IPlugin &operator*(void) const noexcept { return *_plugin; }
