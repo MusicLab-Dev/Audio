@@ -3,8 +3,6 @@
  * @ Description: Resampler
  */
 
-#include <numeric>
-#include <bitset>
 
 #include <Core/Assert.hpp>
 
@@ -16,50 +14,6 @@ inline std::size_t Audio::DSP::Resampler<Type>::GetOptimalResamplingSize(const s
 }
 
 template<typename Type>
-inline std::size_t Audio::DSP::Resampler<Type>::GetInterpolationSize(const std::size_t inputSize, const std::size_t interpolationRatio) noexcept
-{
-    std::bitset<64> rate(interpolationRatio);
-    constexpr auto GetMaxPower = [](const std::bitset<64> &bitset) -> std::int8_t {
-        for (auto i = 0u; i < 64; ++i) {
-            if (bitset[64 - i - 1])
-                return 64 - i - 1;
-        }
-        return 0;
-    };
-    if (rate.count() == 1)
-        return GetInterpolationOctaveSize(inputSize, GetMaxPower(rate));
-    return inputSize + (inputSize - 1) * (interpolationRatio - 1);
-}
-
-template<typename Type>
-inline std::size_t Audio::DSP::Resampler<Type>::GetDecimationSize(const std::size_t inputSize, const std::size_t decimationRatio) noexcept
-{
-    std::bitset<64> rate(decimationRatio);
-    constexpr auto GetMaxPower = [](const std::bitset<64> &bitset) -> std::int8_t {
-        for (auto i = 0u; i < 64; ++i) {
-            if (bitset[64 - i - 1])
-                return 64 - i - 1;
-        }
-        return 0;
-    };
-    if (rate.count() == 1)
-        return GetDecimationOctaveSize(inputSize, GetMaxPower(rate));
-    return std::ceil(static_cast<float>(inputSize) / decimationRatio);
-}
-
-template<typename Type>
-inline std::size_t Audio::DSP::Resampler<Type>::GetInterpolationOctaveSize(const std::size_t inputSize, const std::uint8_t nOctave) noexcept
-{
-    return inputSize * (std::pow(2u, nOctave));
-}
-
-template<typename Type>
-inline std::size_t Audio::DSP::Resampler<Type>::GetDecimationOctaveSize(const std::size_t inputSize, const std::uint8_t nOctave) noexcept
-{
-    return inputSize / (std::pow(2u, nOctave));
-}
-
-template<typename Type>
 inline std::size_t Audio::DSP::Resampler<Type>::GetResamplingSizeSemitone(const std::size_t inputSize, const Semitone semitone) noexcept
 {
     if (!semitone)
@@ -68,8 +22,10 @@ inline std::size_t Audio::DSP::Resampler<Type>::GetResamplingSizeSemitone(const 
     const auto nSemitone = std::abs(semitone) % 12;
     const auto iFactor = (semitone > 0) ? L_Factor : M_Factor;
     const auto dFactor = (semitone > 0) ? M_Factor : L_Factor;
+    std::size_t newSize = 0u;
 
-    std::size_t newSize = GetResamplingSizeOctave(inputSize, nOctave);
+    newSize = GetResamplingSizeOctave(inputSize, nOctave);
+
     // std::cout << "iFactor: " << iFactor << std::endl;
     // std::cout << "dFactor: " << dFactor << std::endl;
     // std::cout << "nSemi: " << nSemitone << std::endl;
@@ -112,51 +68,6 @@ inline std::size_t Audio::DSP::Resampler<Type>::GetResamplingSizeOctave(const st
     return inputSize * std::pow(2u, -nOctave);
 }
 
-template<typename Type>
-inline void Audio::DSP::Resampler<Type>::Internal::InterpolateOctave(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const std::uint8_t nOctave) noexcept_ndebug
-{
-    const std::size_t octaveRate = std::pow(2u, nOctave);
-    std::cout << "Interpolate octave: " << inputSize << " - " << static_cast<std::size_t>(nOctave) << ", " << octaveRate << std::endl;
-    return Interpolate(inputBuffer, outputBuffer, inputSize, octaveRate);
-}
-
-template<typename Type>
-inline void Audio::DSP::Resampler<Type>::Internal::DecimateOctave(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const std::uint8_t nOctave) noexcept_ndebug
-{
-    // std::cout << "Decimate octave: " << inputSize << " - " << nOctave << std::endl;
-    const auto octaveRate = std::pow(2u, nOctave);
-    return Decimate(inputBuffer, outputBuffer, inputSize, octaveRate);
-}
-
-template<typename Type>
-inline void Audio::DSP::Resampler<Type>::Interpolate(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const std::size_t interpolationRatio) noexcept_ndebug
-{
-    // std::cout << "Interpolate: " << inputSize << " - " << interpolationRatio << std::endl;
-    coreAssert(interpolationRatio > 1,
-        throw std::logic_error("DSP::Resampler::Interpolate: interpolationRatio must be greater than 1"));
-    // const auto interpolationSamples = interpolationRatio - 1;
-    for (auto i = 0; i < inputSize; ++i) {
-        outputBuffer[i * interpolationRatio] = inputBuffer[i];
-        for (auto k = 1; k < interpolationRatio; ++k) {
-            // This values depend of the Type -> this is the center value for a given type
-            outputBuffer[i * interpolationRatio + k] = 0;
-        }
-    }
-    // Filter output
-}
-
-template<typename Type>
-inline void Audio::DSP::Resampler<Type>::Decimate(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const std::size_t decimationRatio) noexcept_ndebug
-{
-    // std::cout << "Decimate: " << inputSize << " - " << decimationRatio << std::endl;
-    coreAssert(decimationRatio > 1,
-        throw std::logic_error("DSP::Resampler::Interpolate: decimationRatio must be greater than 1"));
-
-    for (auto i = 0u; i < inputSize / decimationRatio; ++i) {
-        outputBuffer[i] = inputBuffer[i * decimationRatio];
-    }
-    // Filter output
-}
 
 template<typename Type>
 inline void Audio::DSP::Resampler<Type>::ResampleClosestSemitoneImpl(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, bool upScale) noexcept
@@ -164,8 +75,11 @@ inline void Audio::DSP::Resampler<Type>::ResampleClosestSemitoneImpl(const Type 
     const auto iFactor = upScale ? L_Factor : M_Factor;
     const auto dFactor = upScale ? M_Factor : L_Factor;
 
-    Interpolate(inputBuffer, outputBuffer, inputSize, iFactor);
-    Decimate(inputBuffer, outputBuffer, inputSize, dFactor);
+    std::vector<Type> tmp(GetInterpolationSize(inputSize, iFactor));
+    std::cout << "ResampleClosestSemitoneImpl: interpolation size: " << tmp.size() << ", upscale; " << upScale << std::endl;
+    Interpolate<true>(inputBuffer, tmp.data(), inputSize, iFactor);
+    Decimate<true>(tmp.data(), outputBuffer, tmp.size(), dFactor);
+    // std::memcpy(outputBuffer, tmp.data(), 36213 * sizeof(Type));
 }
 
 template<typename Type>
@@ -174,9 +88,14 @@ inline void Audio::DSP::Resampler<Type>::ResampleSemitoneOctaveImpl(const Type *
     const auto upScale = semitone > 0;
     const auto nSemitone = std::abs(semitone);
 
+    std::cout << "ResampleSemitoneOctaveImpl: input size: " << inputSize << ", semitone: " << semitone << std::endl;
+    auto *in = inputBuffer;
+    auto *out = outputBuffer;
     for (auto i = 0; i < nSemitone; ++i) {
-        ResampleClosestSemitoneImpl(inputBuffer, outputBuffer, inputSize, upScale);
+        ResampleClosestSemitoneImpl(in, out, inputSize, upScale);
+        in = out;
     }
+    outputBuffer = out;
 }
 
 template<typename Type>
@@ -199,9 +118,27 @@ inline void Audio::DSP::Resampler<Type>::ResampleSemitone(const Type *inputBuffe
     const auto iFactor = upScale ? L_Factor : M_Factor;
     const auto dFactor = upScale ? M_Factor : L_Factor;
 
-    // std::cout << semitone << " -> " << nOctave << ", " << nSemitone << std::endl;
-    ResampleOctave(inputBuffer, outputBuffer, inputSize, nOctave);
-    ResampleSemitoneOctaveImpl(inputBuffer, outputBuffer, inputSize, nSemitone);
+    auto finalSize = GetResamplingSizeSemitone(inputSize, semitone);
+    auto maxSize = GetInterpolationOctaveSize(inputSize, nOctave);
+    for (auto i = 0u; i < nSemitone; ++i) {
+        maxSize = GetInterpolationSize(maxSize, iFactor);
+        if (i != nSemitone - 1)
+            maxSize = GetDecimationSize(maxSize, dFactor);
+    }
+
+    std::cout << "ResampleSemitone: input size: " << inputSize << std::endl;
+    std::cout << "ResampleSemitone: final size: " << finalSize << std::endl;
+    std::cout << "ResampleSemitone: max size: " << maxSize << std::endl;
+    std::cout << static_cast<int>(semitone) << " -> " << nOctave << ", " << nSemitone << std::endl;
+
+    Semitone processSemitone = upScale ? nSemitone : -nSemitone;
+    // std::vector<Type> tmp(maxSize);
+    if (nOctave) {
+        // ResampleOctave(inputBuffer, tmp, inputSize, nOctave);
+        // ResampleSemitoneOctaveImpl(tmp, outputBuffer, inputSize, processSemitone);
+        // return;
+    }
+    ResampleSemitoneOctaveImpl(inputBuffer, outputBuffer, inputSize, processSemitone);
 }
 
 

@@ -17,12 +17,39 @@ inline Audio::IPlugin::Flags Audio::Sampler::getFlags(void) const noexcept
 
 #include <iostream>
 
-template<typename T>
+
+template<typename Type>
 inline void Audio::Sampler::loadSample(const std::string &path)
 {
     SampleSpecs specs;
-    _buffers[0] = SampleManager<T>::LoadSampleFile(path, specs);
+    _buffers[OctaveRootKey] = SampleManager<Type>::LoadSampleFile(path, specs);
 
+    auto rootSize = _buffers[OctaveRootKey].size<Type>();
+    BufferView view(_buffers[OctaveRootKey]);
+    for (auto i = 0u; i < OctaveRootKey; ++i) {
+        auto bufferSize = DSP::Resampler<Type>::GetResamplingSizeSemitone(rootSize, -1) * sizeof(Type);
+        std::cout << "loadSample::bufferSize: " << bufferSize / sizeof(Type) << std::endl;
+        _buffers[i].resize(bufferSize, audioSpecs().sampleRate, audioSpecs().channelArrangement, audioSpecs().format);
+
+        DSP::Resampler<Type>::ResampleSemitone(
+            view.data<Type>(),
+            _buffers[i].data<Type>(),
+            rootSize,
+            -1
+        );
+
+        // _buffers[i].resize(rootSize * 4.0 * sizeof(Type), audioSpecs().sampleRate, audioSpecs().channelArrangement, audioSpecs().format);
+        // DSP::Resampler<float>::Internal::InterpolateOctave(
+        //     view.data<Type>(),
+        //     _buffers[i].data<Type>(),
+        //     rootSize,
+        //     2
+        // );
+
+        // rootSize = bufferSize;
+        // view = _buffers[i];
+        break;
+    }
     // std::cout << "SIZE: " << buf.size<T>() << std::endl;
     // auto a = DSP::Resampler<T>::ResampleBySemitone(BufferView(buf), -11);
 
@@ -50,6 +77,8 @@ inline void Audio::Sampler::sendNotes(const NoteEvents &notes) noexcept
     _noteManager.feedNotes(notes);
 }
 
+#include <Audio/DSP/Biquad.hpp>
+
 inline void Audio::Sampler::receiveAudio(BufferView output) noexcept
 {
     // std::cout << "AUDIO\n";
@@ -63,12 +92,20 @@ inline void Audio::Sampler::receiveAudio(BufferView output) noexcept
     float *out = reinterpret_cast<float *>(output.byteData());
     // std::uint8_t *out = output.byteData();
 
-    auto sampleSize = _buffers[0].size<float>();
-    float *sampleBuffer = reinterpret_cast<float *>(_buffers[0].byteData());
+    auto idx = 0;
+
+    auto sampleSize = _buffers[idx].size<float>();
+    std::cout << "Sampler::receiveAudio::sampleSize: " << sampleSize << std::endl;
+    float *sampleBuffer = _buffers[idx].data<float>();
+
+    bool hasProcess = false;
+
     const auto activeNote = _noteManager.getActiveNote();
     for (auto iKey = 0u; iKey < activeNote.size(); ++iKey) {
-        std::cout << "note: " << iKey << std::endl;
         const auto key = activeNote[iKey];
+        // if (!_noteManager.trigger(key))
+        //     continue;
+        hasProcess = true;
         if (!iKey) {
             for (auto i = 0u; i < outSize; ++i) {
                 out[i] = _outputGain * sampleBuffer[_noteManager.readIndex(key)];
@@ -83,6 +120,7 @@ inline void Audio::Sampler::receiveAudio(BufferView output) noexcept
         break;
     }
     for (auto key : _noteManager.getActiveNoteBlock()) {
+
         std::cout << "note block:" << std::endl;
         // for (auto i = 0u; i < outSize; ++i) {
         //     output.data<float>(static_cast<Channel>(iChannel))[i] += _outputGain * _buffers[0].data<float>(static_cast<Channel>(iChannel))[_readIndex[key]];
@@ -90,7 +128,21 @@ inline void Audio::Sampler::receiveAudio(BufferView output) noexcept
         // }
     }
 
-    // std::cout << "sampler index: " << _readIndex[69] << std::endl;
+    // std::cout << "sampler index: " << _noteManager.readIndex(69) << std::endl;
 
-    _noteManager.resetBlockCache();
+    static int a = 0;
+    static auto filter = DSP::BiquadMaker<DSP::BiquadParam::Optimization::Optimized>::MakeBiquad<float>();
+    filter.setupCoefficients(DSP::BiquadParam::GenerateCoefficients<
+        DSP::BiquadParam::FilterType::LowPass
+        >(44100, (a), 0, 1.707, false));
+
+    // if (hasProcess)
+    // filter.processBlock(out, outSize);
+    // else
+    //     filter.resetRegisters();
+    // _noteManager.resetBlockCache();
+
+    a += 10;
+    if (a >= 44100 / 2)
+        a = 0;
 }

@@ -82,5 +82,5 @@ process(False)
 
 print(sizes)
 
-# resampSize(44100, 48000)
-# process(False)
+resampSize(44100, 48000)
+process(False)

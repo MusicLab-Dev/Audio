@@ -12,51 +12,66 @@
 #include <kissfft/tools/kiss_fftr.h>
 
 
+#include "DSP/Window.hpp"
+
 namespace KissFFT
 {
     using TypeScalar = kiss_fft_scalar;
     using TypeCpx = kiss_fft_cpx;
-    using TimeArray = Core::FlatVector<TypeScalar>;
-    using FreqArray = Core::FlatVector<TypeCpx>;
 
-    struct TimeBuffer {
-        Core::FlatVector<TimeArray> data;
-        std::size_t size;
+    enum class FirFilterType : std::uint8_t
+    {
+        LowPass = 0,
+        BandPass,
+        BandStop,
+        HighPass
     };
-    using TimeBuffers = Core::FlatVector<TimeBuffer>;
 
-    struct FreqBuffer {
-        Core::FlatVector<FreqArray> data;
-        std::size_t size;
+    struct FirFilterSpecs
+    {
+        FirFilterType filterType;
+        Audio::DSP::WindowType windowType;
+        Audio::SampleRate sampleRate;
+        Audio::SampleRate cutoffs[2];
     };
-    using FreqBuffers = Core::FlatVector<FreqBuffer>;
 
-    template<typename T>
-    static TimeBuffer ConvertBuffer(const Audio::BufferView &inputBuffer);
-
-    struct Engine;
+    class Engine;
 };
 
 
-struct KissFFT::Engine
+class KissFFT::Engine
 {
 public:
-    Engine(const std::size_t size) :
-        _forward(kiss_fftr_alloc(size, 0, nullptr, nullptr)),
-        _inverse(kiss_fftr_alloc(size, 1, nullptr, nullptr))
+
+    Engine(const std::size_t processTimeSize) :
+        _processTimeSize(processTimeSize),
+        _forward(kiss_fftr_alloc(processTimeSize, 0, nullptr, nullptr)),
+        _inverse(kiss_fftr_alloc(processTimeSize, 1, nullptr, nullptr))
     {}
 
     ~Engine(void) {
-        free(_forward);
-        free(_inverse);
+        std::free(_forward);
+        std::free(_inverse);
     }
 
-    void processForward(const TimeBuffer &timeArray, FreqBuffer &freqArray);
-    void processInverse(const FreqBuffer &freqArray, TimeBuffer &timeArray);
+    const std::size_t processTimeSize(void) const noexcept { return _processTimeSize; }
+    bool setProcessTimeSize(const std::size_t processTimeSize) noexcept;
+
+    void processForward(const TypeScalar *timeInput, TypeCpx *freqOutput, const std::size_t inputSize, const bool processInBlock = false) noexcept;
+    void processInverse(const TypeCpx *freqInput, TypeScalar *timeOutput, const std::size_t inputSize, const bool processInBlock = false) noexcept;
+
+    static void Filter(const FirFilterSpecs filterSpecs, const TypeScalar *timeInput, TypeScalar *timeOutput, const std::size_t inputSize) noexcept;
 
 private:
+    std::size_t _processTimeSize { 0u };
     kiss_fftr_cfg _forward { nullptr };
     kiss_fftr_cfg _inverse { nullptr };
+
+    void forwardBlock(const TypeScalar *timeInput, TypeCpx *freqOutput, const std::size_t inputSize) noexcept;
+    void inverseBlock(const TypeCpx *freqInput, TypeScalar *timeOutput, const std::size_t inputSize) noexcept;
+
+    static void DesignFilter(const FirFilterSpecs filterSpecs, float *windowCoefficients, const std::size_t windowSize) noexcept;
+    static void DesignFilterLowPass(float *windowCoefficients, const std::size_t size, const double cutoffRate) noexcept;
 };
 
 #include "KissFFT.ipp"

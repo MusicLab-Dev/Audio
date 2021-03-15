@@ -78,7 +78,8 @@ public:
     virtual void onAudioGenerationStarted(const BeatRange &range) noexcept {}
 
 public:
-    template<typename T>
+    /** Load a sample file with a specific type */
+    template<typename Type>
     void loadSample(const std::string &path);
 
     // [[nodiscard]] const OctaveBuffer &getBuffers(void) const noexcept { return _buffers; }

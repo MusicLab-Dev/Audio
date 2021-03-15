@@ -13,8 +13,10 @@ inline void Audio::NoteManager::feedNotes(const NoteEvents &notes) noexcept
         case NoteEvent::EventType::On:
         {
             const auto it = std::find(_cache.actives.begin(), _cache.actives.end(), note.key);
-            if (it == _cache.actives.end())
+            if (it == _cache.actives.end()) {
                 _cache.actives.push(note.key);
+                _cache.triggers[note.key] = true;
+            }
             std::cout << "test: " << _cache.actives.size() << std::endl;
             target.noteModifiers.velocity = note.velocity;
             target.noteModifiers.tuning = note.tuning;
@@ -23,8 +25,10 @@ inline void Audio::NoteManager::feedNotes(const NoteEvents &notes) noexcept
         case NoteEvent::EventType::Off:
         {
             const auto it = std::find(_cache.actives.begin(), _cache.actives.end(), note.key);
-            if (it != _cache.actives.end())
+            if (it != _cache.actives.end()) {
                 _cache.actives.erase(it);
+                _cache.triggers[note.key] = false;
+            }
         } break;
         case NoteEvent::EventType::OnOff:
             _cache.activesBlock.push(note.key);
@@ -85,11 +89,14 @@ inline void Audio::NoteManager::resetAllModifiers(void) noexcept
 
 inline void Audio::NoteManager::incrementReadIndex(const Key key, const std::size_t maxIndex, std::size_t amount) noexcept
 {
+    auto &trigger = _cache.triggers[key];
     // std::cout << "::" << _cache.readIndexes[key] << std::endl;
     if (_cache.readIndexes[key] + amount >= maxIndex) {
         _cache.readIndexes[key] = 0u;
+        // trigger = false;
     } else {
-        _cache.readIndexes[key] += amount;
+        // if (trigger)
+            _cache.readIndexes[key] += amount;
     }
 }
 

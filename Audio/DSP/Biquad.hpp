@@ -15,7 +15,7 @@
 
 #include "Audio/Base.hpp"
 
-namespace DSP
+namespace Audio::DSP
 {
     /** @brief Describe the parameters used for a second-order IIR filter section */
     struct BiquadParam {
@@ -37,12 +37,13 @@ namespace DSP
 
         /** @brief Select the internal implementation: classic form or optimized (for memory) form */
         enum class Optimization : uint8_t {
-            Classic, Optimized
+            Classic = 0u,
+            Optimized
         };
 
         /** @brief Different possible implementation */
         enum class InternalForm : uint8_t {
-            Direct1,        // 4 registers, 3 addOp -> better for fixed-points
+            Direct1 = 0u,        // 4 registers, 3 addOp -> better for fixed-points
             Direct2,        // 2 registers, 4 addOp -> better for fixed-points
             Transposed1,    // 4 registers, 4 addOp -> better for floating-points
             Transposed2     // 2 registers, 3 addOp -> better for floating-points
@@ -50,7 +51,7 @@ namespace DSP
 
         /** @brief Describe type used for a second-order IIR filter section */
         enum class FilterType : uint8_t {
-            LowPass,
+            LowPass = 0u,
             HighPass,
             BandPass,
             BandPass2,
@@ -76,35 +77,23 @@ namespace DSP
 
 };
 
-template<DSP::BiquadParam::InternalForm Form>
-class DSP::Biquad
+template<Audio::DSP::BiquadParam::InternalForm Form>
+class Audio::DSP::Biquad
 {
 public:
-    static constexpr auto InternalType = Form;
-    static constexpr auto Filter = BiquadParam::FilterType::LowPass;
+    static constexpr auto FormX = Form;
 
     /** @brief Default constructor */
     Biquad(void) = default;
 
-    // Biquad(const double sampleRate, const double freq, const double gain, const double q, bool qAsBandWidth) {
-    //     setup<Filter>(sampleRate, freq, gain, q, qAsBandWidth);
-    // }
-
-    /** @brief Setup the biquad according to the filter type and characteristics */
-    template<BiquadParam::FilterType Filter>
-    void setup(const Audio::SampleRate sampleRate, const double freq, const double gain, const double q, bool qAsBandWidth) noexcept {
-        _coefs = BiquadParam::GenerateCoefficients<Filter>(sampleRate, freq, gain, q, qAsBandWidth);
-    }
+    /** Get the internal biquad coefficients */
+    [[nodiscard]] const BiquadParam::Coefficients &coefficients(void) const noexcept { return _coefs; }
+    void setupCoefficients(const BiquadParam::Coefficients &coefficients) noexcept { _coefs = coefficients; }
 
     /** Process a block of samples */
     template<typename Type>
     void processBlock(Type *block, std::size_t len) noexcept;
     // void processBlock1(Type *block, std::size_t len) noexcept;
-
-    /** Get the internal biquad coefficients */
-    [[nodiscard]] const BiquadParam::Coefficients &coefficients(void) const noexcept { return _coefs; }
-    // [[nodiscard]] BiquadParam::Coefficients &coefficients(void) noexcept { return _coefs; }
-
 
     float foo1(const float a, const float b, const float c) noexcept {
         return a * b + c;
@@ -112,6 +101,8 @@ public:
     float foo2(const float a, const float b, const float c) noexcept {
         return std::fma(a, b, c);
     }
+
+    void resetRegisters(void) noexcept;
 
 protected:
     BiquadParam::Coefficients   _coefs;
@@ -124,8 +115,8 @@ protected:
 };
 
 
-template<DSP::BiquadParam::Optimization Opti>
-struct DSP::BiquadMaker
+template<Audio::DSP::BiquadParam::Optimization Opti>
+struct Audio::DSP::BiquadMaker
 {
     template<typename Type>
     [[nodiscard]] static auto MakeBiquad(void)

@@ -13,6 +13,7 @@ set(AudioSources
     ${AudioDir}/SchedulerTask.ipp
     ${AudioDir}/Automation.hpp
     ${AudioDir}/Base.hpp
+    ${AudioDir}/Math.hpp
     ${AudioDir}/BaseDevice.hpp
     ${AudioDir}/BaseIndex.hpp
     ${AudioDir}/BaseIndex.cpp
@@ -50,8 +51,8 @@ set(AudioSources
     ${AudioDir}/Project.hpp
     ${AudioDir}/Project.ipp
     ${AudioDir}/UtilsMidi.hpp
-    # ${AudioDir}/KissFFT.hpp
-    # ${AudioDir}/KissFFT.ipp
+    ${AudioDir}/KissFFT.hpp
+    ${AudioDir}/KissFFT.ipp
 )
 
 
@@ -89,25 +90,29 @@ set(AudioDSPDir ${AudioDir}/DSP)
 set(AudioDSPSources
     ${AudioDSPDir}/Merge.hpp
     ${AudioDSPDir}/Merge.ipp
-    ${AudioDSPDir}/PitchShift.cpp
     ${AudioDSPDir}/PitchShift.hpp
+    ${AudioDSPDir}/PitchShift.cpp
     ${AudioDSPDir}/PitchShift.ipp
     ${AudioDSPDir}/Resampler.hpp
+    ${AudioDSPDir}/Interpolation.ipp
+    ${AudioDSPDir}/Decimation.ipp
     ${AudioDSPDir}/Resampler.ipp
-    ${AudioDSPDir}/Biquad.cpp
     ${AudioDSPDir}/Biquad.hpp
     ${AudioDSPDir}/Biquad.ipp
+    ${AudioDSPDir}/Biquad.cpp
     ${AudioDSPDir}/EnveloppeGenerator.hpp
     ${AudioDSPDir}/EnveloppeGenerator.ipp
+    ${AudioDSPDir}/Window.hpp
+    ${AudioDSPDir}/Window.ipp
 )
 
 set(AudioKissFFTDir ${PROJECT_SOURCE_DIR}/kissfft)
 
 set(AudioKissFFTSources
-    # ${AudioKissFFTDir}/kiss_fft.h
-    # ${AudioKissFFTDir}/kiss_fft.c
-    # ${AudioKissFFTDir}/tools/kiss_fftr.h
-    # ${AudioKissFFTDir}/tools/kiss_fftr.c
+    ${AudioKissFFTDir}/kiss_fft.h
+    ${AudioKissFFTDir}/kiss_fft.c
+    ${AudioKissFFTDir}/tools/kiss_fftr.h
+    ${AudioKissFFTDir}/tools/kiss_fftr.c
 )
 
 add_library(${PROJECT_NAME}
