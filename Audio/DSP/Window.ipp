@@ -5,7 +5,7 @@
 
 #include <cmath>
 
-inline void Audio::DSP::WindowMaker::GenerateCoefficients(const WindowType type, const std::size_t size, float *windowCoefficients, const bool isSymetric) noexcept
+inline void Audio::DSP::WindowMaker::GenerateFilterCoefficients(const WindowType type, const std::size_t size, float *windowCoefficients, const bool isSymetric) noexcept
 {
     switch (type) {
     case WindowType::Hanning:

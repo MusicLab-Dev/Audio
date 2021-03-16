@@ -3,8 +3,9 @@
  * @ Description: Resampler
  */
 
-
 #include <Core/Assert.hpp>
+
+#include <Audio/DSP/FIR.hpp>
 
 template<typename Type>
 inline std::size_t Audio::DSP::Resampler<Type>::GetOptimalResamplingSize(const std::size_t inputSize, const Semitone semitone) noexcept
@@ -74,11 +75,25 @@ inline void Audio::DSP::Resampler<Type>::ResampleClosestSemitoneImpl(const Type 
 {
     const auto iFactor = upScale ? L_Factor : M_Factor;
     const auto dFactor = upScale ? M_Factor : L_Factor;
+    static auto LowPassFilter = FilterSpecs {
+        FilterType::LowPass,
+        WindowType::Hanning,
+        1025,
+        44100,
+        { 44100.f / static_cast<float>(iFactor), 0 }
+    };
 
     std::vector<Type> tmp(GetInterpolationSize(inputSize, iFactor));
     std::cout << "ResampleClosestSemitoneImpl: interpolation size: " << tmp.size() << ", upscale; " << upScale << std::endl;
-    Interpolate<true>(inputBuffer, tmp.data(), inputSize, iFactor);
-    Decimate<true>(tmp.data(), outputBuffer, tmp.size(), dFactor);
+    Interpolate<false>(inputBuffer, tmp.data(), inputSize, iFactor);
+    FIR::Filter(LowPassFilter, tmp.data(), tmp.size(), tmp.data());
+    Decimate<false>(tmp.data(), outputBuffer, tmp.size(), dFactor);
+    for (auto i = 0u; i < inputSize; ++i)
+        outputBuffer[i] *= iFactor;
+    auto min = std::min_element(outputBuffer, (outputBuffer + inputSize));
+    auto max = std::max_element(outputBuffer, (outputBuffer + inputSize));
+    std::cout << *min << ", " << *max << std::endl;
+    // FIR::Filter<float>(LowPassFilter, outputBuffer, inputSize, outputBuffer);
     // std::memcpy(outputBuffer, tmp.data(), 36213 * sizeof(Type));
 }
 

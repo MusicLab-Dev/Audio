@@ -19,11 +19,10 @@ namespace Audio::DSP
 struct Audio::DSP::WindowMaker
 {
 public:
-    static void GenerateCoefficients(const WindowType type, const std::size_t size, float *windowCoefficients, const bool isSymetric = true) noexcept;
+    static void GenerateFilterCoefficients(const WindowType type, const std::size_t size, float *windowCoefficients, const bool isSymetric = true) noexcept;
 
-private:
-    static void Hanning(const std::size_t size, float *windowCoefficients, const bool isSymetric) noexcept;
-    static void Hamming(const std::size_t size, float *windowCoefficients, const bool isSymetric) noexcept;
+    static void Hanning(const std::size_t size, float *windowCoefficients, const bool isSymetric = true) noexcept;
+    static void Hamming(const std::size_t size, float *windowCoefficients, const bool isSymetric = true) noexcept;
 };
 
 #include "Window.ipp"

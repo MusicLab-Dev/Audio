@@ -7,8 +7,6 @@
 
 #include "Interpreter.hpp"
 
-#include <Audio/KissFFT.hpp>
-
 static const Audio::Device::Descriptor Descriptor
 {
     /*.name = */ "device-test",
@@ -22,17 +20,19 @@ static const Audio::Device::Descriptor Descriptor
 
 static void Callback(void *userdata, std::uint8_t *data, int size) noexcept
 {
+    static std::size_t idx = 0u;
     static const auto fSize = size / 4;
     auto *out = reinterpret_cast<float *>(data);
-    static std::size_t idx = 0u;
     auto *sample = reinterpret_cast<Audio::Buffer *>(userdata);
-    static const auto sampleSize = sample->size<float>();
+    const auto sampleSize = sample->size<float>();
 
     for (auto i = 0u; i < fSize; ++i) {
         out[i] = sample->data<float>()[++idx];
 
-        if (idx >= sampleSize)
+        if (idx >= sampleSize - 1413) {
             idx = 0u;
+            // std::cout << "loop !" << std::endl;
+        }
     }
 
 }
@@ -72,48 +72,62 @@ static std::size_t Init(Audio::Buffer *sample)
 }
 
 #include <Audio/SampleFile/SampleManager.hpp>
+// #include <Audio/KissFFT.hpp>
+#include <Audio/DSP/FIR.hpp>
+
 
 using namespace Audio;
 
 int main(void)
 {
     try {
-        // KissFFT::Engine engine(8);
-        // KissFFT::TypeScalar time[1024];
-        // KissFFT::TypeScalar timeFilter[1024];
-        // KissFFT::TypeCpx freq[1024];
-        // engine.processForward(time, freq, 21, true);
+        if (false) {
+            SampleSpecs specs;
+            auto sample = SampleManager<float>::LoadSampleFile("Samples/chord.wav", specs);
+            const auto sampleSize = sample.size<float>();
+            Buffer sampleFilter;
+            sampleFilter.resize(sample.channelByteSize(), sample.sampleRate(), sample.channelArrangement(), sample.format());
 
-        SampleSpecs specs;
-        auto sample = SampleManager<float>::LoadSampleFile("Samples/chord.wav", specs);
-        const auto sampleSize = sample.size<float>();
-        Buffer sampleFilter;
-        sampleFilter.resize(sample.channelByteSize(), sample.sampleRate(), sample.channelArrangement(), sample.format());
+            // KissFFT::Engine::Filter(KissFFT::FirFilterSpecs {
+            //     KissFFT::FirFilterType::LowPass,
+            //     DSP::WindowType::Hanning,
+            //     44100,
+            //     { 3500, 0 }
+            // }, sample.data<float>(), sampleFilter.data<float>(), sampleSize);
 
-        KissFFT::Engine::Filter(KissFFT::FirFilterSpecs {
-            KissFFT::FirFilterType::LowPass,
-            DSP::WindowType::Hanning,
-            44100,
-            { 4200, 0 }
-        }, sample.data<float>(), sampleFilter.data<float>(), sampleSize);
+            DSP::FIR::Filter(DSP::FilterSpecs {
+                DSP::FilterType::LowPass,
+                DSP::WindowType::Hanning,
+                131,
+                44100,
+                { 3333, 0 }
+            }, sample.data<float>(), sampleSize, sample.data<float>() );
 
+            // return 0;
 
-        if (SDL_InitSubSystem(SDL_INIT_AUDIO))
-            throw std::runtime_error(std::string("Couldn't initialize SDL_Audio: ") + SDL_GetError());
-        auto device = Init(&sampleFilter);
-        SDL_PauseAudioDevice(device, false);
+            std::cout << "sampleSize:" << sampleFilter.size<float>() << std::endl;
+            if (SDL_InitSubSystem(SDL_INIT_AUDIO))
+                throw std::runtime_error(std::string("Couldn't initialize SDL_Audio: ") + SDL_GetError());
 
-        while (true);
-        SDL_QuitSubSystem(SDL_INIT_AUDIO);
-        SDL_Quit();
+            auto min = std::min_element(sampleFilter.data<float>(), (sampleFilter.data<float>() + sampleSize));
+            auto max = std::max_element(sampleFilter.data<float>(), (sampleFilter.data<float>() + sampleSize));
+            std::cout << *min << ", " << *max << std::endl;
 
+            auto device = Init(&sample);
+            // auto device = Init(&sampleFilter);
+            SDL_PauseAudioDevice(device, false);
 
+            while (true);
+            SDL_QuitSubSystem(SDL_INIT_AUDIO);
+            SDL_Quit();
+        } else {
+            Device::DriverInstance driverInstance;
+            PluginTable::Instance pluginTableInstance;
+            Interpreter interpreter;
 
-        // Device::DriverInstance driverInstance;
-        // PluginTable::Instance pluginTableInstance;
-        // Interpreter interpreter;
+            interpreter.run();
+        }
 
-        // interpreter.run();
         return 0;
     } catch (const std::exception &e) {
         std::cout << e.what() << std::endl;

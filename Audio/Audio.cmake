@@ -103,6 +103,8 @@ set(AudioDSPSources
     ${AudioDSPDir}/Biquad.cpp
     ${AudioDSPDir}/EnveloppeGenerator.hpp
     ${AudioDSPDir}/EnveloppeGenerator.ipp
+    ${AudioDSPDir}/FIR.hpp
+    ${AudioDSPDir}/FIR.ipp
     ${AudioDSPDir}/Window.hpp
     ${AudioDSPDir}/Window.ipp
 )

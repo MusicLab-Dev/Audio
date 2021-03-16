@@ -1,5 +1,5 @@
 plugin add Sampler sampler0
-plugin load_sample sampler0 Samples/kick.wav
+plugin load_sample sampler0 Samples/chord.wav
 note create 4 0 16
 note add master 0 69 4 0 10
 note add master 0 68 4 0 10

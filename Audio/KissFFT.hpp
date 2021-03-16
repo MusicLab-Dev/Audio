@@ -62,6 +62,7 @@ public:
 
     static void Filter(const FirFilterSpecs filterSpecs, const TypeScalar *timeInput, TypeScalar *timeOutput, const std::size_t inputSize) noexcept;
 
+
 private:
     std::size_t _processTimeSize { 0u };
     kiss_fftr_cfg _forward { nullptr };
@@ -70,8 +71,8 @@ private:
     void forwardBlock(const TypeScalar *timeInput, TypeCpx *freqOutput, const std::size_t inputSize) noexcept;
     void inverseBlock(const TypeCpx *freqInput, TypeScalar *timeOutput, const std::size_t inputSize) noexcept;
 
-    static void DesignFilter(const FirFilterSpecs filterSpecs, float *windowCoefficients, const std::size_t windowSize) noexcept;
-    static void DesignFilterLowPass(float *windowCoefficients, const std::size_t size, const double cutoffRate) noexcept;
+    static void FilterSection(TypeCpx *frequencies, const TypeCpx *filter, const std::size_t size) noexcept;
+    static void Mult(TypeScalar *out, const TypeScalar *in, const std::size_t size) noexcept;
 };
 
 #include "KissFFT.ipp"
