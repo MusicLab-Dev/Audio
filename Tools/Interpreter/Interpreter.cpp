@@ -121,11 +121,13 @@ void Interpreter::AudioCallback(std::uint8_t *stream, const std::size_t length)
         // std::cout << "AudioCallback MISS " << total << " / " << length << std::endl;
     }
 
-    auto count = 0;
-    for (auto i = 0; i < length; ++i) {
-        if (stream[i])
-            ++count;
-    }
+    // auto count = 0;
+    // for (auto i = 0; i < length; ++i) {
+
+
+    //     if (stream[i])
+    //         ++count;
+    // }
     // if (count)
     //     std::cout << "< Audio Callback non-null > " << count << std::endl;
 }

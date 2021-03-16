@@ -31,12 +31,12 @@ inline void Audio::Sampler::loadSample(const std::string &path)
         std::cout << "loadSample::bufferSize: " << bufferSize / sizeof(Type) << std::endl;
         _buffers[i].resize(bufferSize, audioSpecs().sampleRate, audioSpecs().channelArrangement, audioSpecs().format);
 
-        DSP::Resampler<Type>::ResampleSemitone(
-            view.data<Type>(),
-            _buffers[i].data<Type>(),
-            rootSize,
-            -1
-        );
+        // DSP::Resampler<Type>::ResampleSemitone(
+        //     view.data<Type>(),
+        //     _buffers[i].data<Type>(),
+        //     rootSize,
+        //     -1
+        // );
 
         // _buffers[i].resize(rootSize * 4.0 * sizeof(Type), audioSpecs().sampleRate, audioSpecs().channelArrangement, audioSpecs().format);
         // DSP::Resampler<float>::Internal::InterpolateOctave(
@@ -92,7 +92,7 @@ inline void Audio::Sampler::receiveAudio(BufferView output) noexcept
     float *out = reinterpret_cast<float *>(output.byteData());
     // std::uint8_t *out = output.byteData();
 
-    auto idx = 0;
+    auto idx = OctaveRootKey;
 
     auto sampleSize = _buffers[idx].size<float>();
     std::cout << "Sampler::receiveAudio::sampleSize: " << sampleSize << std::endl;

@@ -17,6 +17,7 @@ namespace Audio
 
     /** @brief A list of controls */
     using Controls = Core::FlatVector<Control>;
+    // using Controls = Core::FlatVector<Control, std::size_t, LiveControlChangeList>;
 };
 
 /** @brief Represent a control change event in an audio block space */

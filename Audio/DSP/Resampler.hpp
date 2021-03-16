@@ -38,25 +38,25 @@ struct Audio::DSP::Resampler
     struct Internal
     {
         /** @brief Interpolate the inputBuffer into the outputBuffer, outputBuffer size must be inputSize * nOctave */
-        static void InterpolateOctave(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const std::uint8_t nOctave) ;
+        static void InterpolateOctave(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const std::uint8_t nOctave);
         /** @brief Decimate the inputBuffer into the outputBuffer, outputBuffer size must be inputSize / nOctave */
-        static void DecimateOctave(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const std::uint8_t nOctave) ;
+        static void DecimateOctave(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const std::uint8_t nOctave);
     };
 
 
     /** @brief Interpolate the inputBuffer into the outputBuffer, outputBuffer size must fit with interpolationRatio */
     template<bool ProcessFiltering>
-    static void Interpolate(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const std::size_t interpolationRatio) ;
+    static void Interpolate(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const std::size_t interpolationRatio);
     /** @brief Decimate the inputBuffer into the outputBuffer, outputBuffer size must fit with decimationRatio */
     template<bool ProcessFiltering>
-    static void Decimate(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const std::size_t decimationRatio) ;
+    static void Decimate(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const std::size_t decimationRatio);
 
     /** @brief Resample the inputBuffer into outputBuffer, outputBuffer size must fit the semitone, call GetResamplingSizeSemitone to get the outputBuffer size */
-    static void ResampleSemitone(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const Semitone semitone) ;
+    static void ResampleSemitone(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const Semitone semitone);
     /** @brief Resample the inputBuffer into outputBuffer, outputBuffer size must fit the outSampleRate, call GetResamplingSize to get the outputBuffer size */
-    static void ResampleSampleRate(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const SampleRate outSampleRate) ;
+    static void ResampleSampleRate(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const SampleRate outSampleRate);
 
-    static void ResampleOctave(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const std::int8_t nOctave) ;
+    static void ResampleOctave(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const std::int8_t nOctave);
 
 
 

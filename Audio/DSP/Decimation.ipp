@@ -26,7 +26,7 @@ inline std::size_t Audio::DSP::Resampler<Type>::GetDecimationOctaveSize(const st
 }
 
 template<typename Type>
-inline void Audio::DSP::Resampler<Type>::Internal::DecimateOctave(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const std::uint8_t nOctave) noexcept_ndebug
+inline void Audio::DSP::Resampler<Type>::Internal::DecimateOctave(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const std::uint8_t nOctave)
 {
     // std::cout << "Decimate octave: " << inputSize << " - " << nOctave << std::endl;
     const auto octaveRate = std::pow(2u, nOctave);
@@ -35,7 +35,7 @@ inline void Audio::DSP::Resampler<Type>::Internal::DecimateOctave(const Type *in
 
 template<typename Type>
 template<bool ProcessFiltering>
-inline void Audio::DSP::Resampler<Type>::Decimate(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const std::size_t decimationRatio) noexcept_ndebug
+inline void Audio::DSP::Resampler<Type>::Decimate(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const std::size_t decimationRatio)
 {
     std::cout << "Decimate(" << decimationRatio << ")::inputSize: " << inputSize << std::endl;
 

@@ -27,7 +27,7 @@ inline std::size_t Audio::DSP::Resampler<Type>::GetInterpolationOctaveSize(const
 }
 
 template<typename Type>
-inline void Audio::DSP::Resampler<Type>::Internal::InterpolateOctave(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const std::uint8_t nOctave) noexcept_ndebug
+inline void Audio::DSP::Resampler<Type>::Internal::InterpolateOctave(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const std::uint8_t nOctave)
 {
     const std::size_t octaveRate = std::pow(2u, nOctave);
     std::cout << "Interpolate octave: " << inputSize << " - " << static_cast<std::size_t>(nOctave) << ", " << octaveRate << std::endl;
@@ -39,7 +39,7 @@ inline void Audio::DSP::Resampler<Type>::Internal::InterpolateOctave(const Type 
 
 template<typename Type>
 template<bool ProcessFiltering>
-inline void Audio::DSP::Resampler<Type>::Interpolate(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const std::size_t interpolationRatio) noexcept_ndebug
+inline void Audio::DSP::Resampler<Type>::Interpolate(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const std::size_t interpolationRatio)
 {
     std::cout << "Interpolate(" << interpolationRatio << ")::inputSize: " << inputSize << std::endl;
 

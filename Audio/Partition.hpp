@@ -21,9 +21,6 @@ public:
     /** @brief Get the internal notes */
     [[nodiscard]] inline Notes &notes(void) noexcept { return _notes; }
 
-    /** @brief Get the internal notes count */
-    [[nodiscard]] inline std::size_t count(void) const noexcept { return _notes.size(); }
-
 
     /** @brief Get the internal intances */
     [[nodiscard]] BeatRanges &instances(void) noexcept { return _instances; }

@@ -83,14 +83,14 @@ void AScheduler::buildProjectGraph(void)
             // std::cout << "overflow check\n";
             // The delayed data has been consumed
             if (flushOverflowCache()) {
-                // std::cout << " - flush successsss\n";
+                std::cout << " - flush successsss\n";
                 // std::cout << _AudioQueue.size() << std::endl;
                 _overflowCache.release();
                 // std::cout << _overflowCache.operator bool() << std::endl;
                 return true;
             // The delayed data must be re-delayed
             } else {
-                // std::cout << " - flush failed\n";
+                std::cout << " - flush failed\n";
                 return false;
             }
         // There is no data delayed

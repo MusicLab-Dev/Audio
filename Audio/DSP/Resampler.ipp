@@ -78,7 +78,7 @@ inline void Audio::DSP::Resampler<Type>::ResampleClosestSemitoneImpl(const Type 
     static auto LowPassFilter = FilterSpecs {
         FilterType::LowPass,
         WindowType::Hanning,
-        1025,
+        113,
         44100,
         { 44100.f / static_cast<float>(iFactor), 0 }
     };
@@ -114,7 +114,7 @@ inline void Audio::DSP::Resampler<Type>::ResampleSemitoneOctaveImpl(const Type *
 }
 
 template<typename Type>
-inline void Audio::DSP::Resampler<Type>::ResampleOctave(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const std::int8_t nOctave) noexcept_ndebug
+inline void Audio::DSP::Resampler<Type>::ResampleOctave(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const std::int8_t nOctave)
 {
     coreAssert(nOctave,
         throw std::logic_error("DSP::Resampler::ResampleOctave: nOctave must be different than zero."));
@@ -125,7 +125,7 @@ inline void Audio::DSP::Resampler<Type>::ResampleOctave(const Type *inputBuffer,
 }
 
 template<typename Type>
-inline void Audio::DSP::Resampler<Type>::ResampleSemitone(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const Semitone semitone) noexcept_ndebug
+inline void Audio::DSP::Resampler<Type>::ResampleSemitone(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const Semitone semitone)
 {
     const bool upScale = semitone > 0;
     const auto nOctave = semitone / 12;
@@ -158,7 +158,7 @@ inline void Audio::DSP::Resampler<Type>::ResampleSemitone(const Type *inputBuffe
 
 
 // template<typename Type>
-// inline Buffer Audio::DSP::Resampler<Type>::ResampleBySemitone(const BufferView &inputBuffer, const Semitone semitone) noexcept_ndebug
+// inline Buffer Audio::DSP::Resampler<Type>::ResampleBySemitone(const BufferView &inputBuffer, const Semitone semitone)
 // {
 //     coreAssert((semitone != 0) && (semitone < 12 && semitone > -12),
 //         throw std::logic_error("Audio::DSP::Resampler<Type>::ResampleBySemitone: semitone arguments must fit an octave [-11, 11]"));
@@ -186,13 +186,13 @@ inline void Audio::DSP::Resampler<Type>::ResampleSemitone(const Type *inputBuffe
 
 
 // template<typename Type>
-// inline Buffer Audio::DSP::Resampler<Type>::ResampleBySamplerate(const BufferView &inputBuffer, SampleRate newSampleRate) noexcept_ndebug
+// inline Buffer Audio::DSP::Resampler<Type>::ResampleBySamplerate(const BufferView &inputBuffer, SampleRate newSampleRate)
 // {
 //     return ResampleSpecificSampleRate(inputBuffer, inputBuffer.sampleRate(), newSampleRate);
 // }
 
 // template<typename Type>
-// inline Buffer Audio::DSP::Resampler<Type>::ResampleSpecificSampleRate(const BufferView &inputBuffer, SampleRate inSampleRate, SampleRate outSampleRate) noexcept_ndebug
+// inline Buffer Audio::DSP::Resampler<Type>::ResampleSpecificSampleRate(const BufferView &inputBuffer, SampleRate inSampleRate, SampleRate outSampleRate)
 // {
 //     coreAssert(inSampleRate && outSampleRate && (inSampleRate != outSampleRate),
 //         throw std::logic_error("DSP::Resampler::ResampleSpecificSampleRate: invalid sampleRate range."));
