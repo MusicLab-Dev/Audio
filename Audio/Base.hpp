@@ -42,7 +42,7 @@ namespace Audio
     using Velocity = std::uint16_t;
 
     /** @brief Note pitch tuning */
-    using Tuning = uint16_t;
+    using Tuning = std::uint16_t;
 
     /** @brief Midi note channels */
     using MidiChannels = std::uint8_t;

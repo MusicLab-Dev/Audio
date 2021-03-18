@@ -31,7 +31,6 @@
 
 #define REGISTER_SEND_CONTROL(...) \
     virtual void sendControls(const Audio::ControlEvents &controls) noexcept { \
-        auto i = 0u; \
         for (auto &control : controls) { \
             _controls[control.paramID] = control.value; \
         } \

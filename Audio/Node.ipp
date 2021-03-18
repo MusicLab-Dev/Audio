@@ -44,7 +44,7 @@ inline void Audio::Node::prepareCache(const AudioSpecs &specs)
     }
 
     for (auto &child : _children) {
-        prepareCache(specs);
+        child->prepareCache(specs);
     }
     _plugin->updateAudioSpecs(specs);
 }

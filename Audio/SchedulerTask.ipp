@@ -74,12 +74,12 @@ inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio>::
         }
         if constexpr (HasAudioOutput) {
             plugin.receiveAudio(node().cache());
-            int count = 0;
-            auto size = node().cache().template size<std::uint8_t>();
-            for (auto i = 0; i < size; ++i) {
-                if (node().cache().byteData()[i])
-                    ++count;
-            }
+            // int count = 0;
+            // auto size = node().cache().template size<std::uint8_t>();
+            // for (auto i = 0; i < size; ++i) {
+            //     if (node().cache().byteData()[i])
+            //         ++count;
+            // }
             // std::cout << "SchedulerTask::processAudio: size: " << size << ", count: " << count << std::endl;
         } else {
             // DSP::Merge(node().cache().data<float>())

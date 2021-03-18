@@ -46,8 +46,7 @@ public:
     Control(void) noexcept = default;
 
     /** @brief Construct a control out of its parameter ID and value */
-    Control(const ParamID paramID, const ParamValue value) noexcept
-        : _manualPoint(value), _paramID(paramID) {}
+    Control(const ParamID paramID) noexcept : _paramID(paramID) {}
 
     /** @brief Copy assignment */
     Control(const Control &other) noexcept = default;
