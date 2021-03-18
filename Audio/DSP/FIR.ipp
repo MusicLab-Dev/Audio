@@ -41,11 +41,10 @@ void interpolate(
 //     return producedData.popRange(output);
 // }
 
-template<typename Type>
+template<unsigned ProcessRate, typename Type>
 inline Audio::DSP::FIR::VoidType<Type>
     Audio::DSP::FIR::Resample(const Type *input, Type *output, const std::size_t inputSize, const std::size_t inputSampleRate, const std::size_t interpFactor, const std::size_t decimFactor) noexcept
 {
-    static constexpr std::size_t ProcessRate { 8u };
     const std::size_t filterSize = interpFactor * ProcessRate;
     const FilterSpecs filterSpecs {
         FilterType::LowPass,

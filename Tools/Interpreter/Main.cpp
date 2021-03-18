@@ -42,7 +42,7 @@ static void Callback(void *userdata, std::uint8_t *data, int size) noexcept
         if (Idx >= sampleSize) {
             Idx = 0u;
             ++SampleIdx;
-            if (SampleIdx >= (*sampleData->samples).size() - 6)
+            if (SampleIdx >= (*sampleData->samples).size() - 7)
                 SampleIdx = 0u;
             std::cout << "loop !" << std::endl;
         }
@@ -108,7 +108,7 @@ int main(void)
             // std::cout << "  :::: " << *min << ", " << *max << std::endl;
             for (auto i = 0u; i < RootKey; ++i) {
                 resampled[lastIdx - 1].resize(lastSize * sizeof(float), resampled[lastIdx].sampleRate(), resampled[lastIdx].channelArrangement(), resampled[lastIdx].format());
-                DSP::FIR::Resample(resampled[lastIdx].data<float>(), resampled[lastIdx - 1].data<float>(), lastSize, 44100, 196, 185);
+                DSP::FIR::Resample<8u>(resampled[lastIdx].data<float>(), resampled[lastIdx - 1].data<float>(), lastSize, 44100, 196, 185);
                 // auto minF = std::min_element(resampled[lastIdx - 1].data<float>(), (resampled[lastIdx - 1].data<float>() + sampleSize));
                 // auto maxF = std::max_element(resampled[lastIdx - 1].data<float>(), (resampled[lastIdx - 1].data<float>() + sampleSize));
                 // std::cout << "  :::: " << *minF << ", " << *maxF << std::endl;
