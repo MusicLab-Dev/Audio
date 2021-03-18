@@ -17,7 +17,6 @@ inline Audio::IPlugin::Flags Audio::Sampler::getFlags(void) const noexcept
 
 #include <iostream>
 
-
 template<typename Type>
 inline void Audio::Sampler::loadSample(const std::string &path)
 {
@@ -27,16 +26,16 @@ inline void Audio::Sampler::loadSample(const std::string &path)
     auto rootSize = _buffers[OctaveRootKey].size<Type>();
     BufferView view(_buffers[OctaveRootKey]);
     for (auto i = 0u; i < OctaveRootKey; ++i) {
-        auto bufferSize = DSP::Resampler<Type>::GetResamplingSizeSemitone(rootSize, -1) * sizeof(Type);
+        auto bufferSize = DSP::Resampler<Type>::GetResamplingSizeOneSemitone(rootSize, false) * sizeof(Type);
         std::cout << "loadSample::bufferSize: " << bufferSize / sizeof(Type) << std::endl;
         _buffers[i].resize(bufferSize, audioSpecs().sampleRate, audioSpecs().channelArrangement, audioSpecs().format);
 
-        // DSP::Resampler<Type>::ResampleSemitone(
-        //     view.data<Type>(),
-        //     _buffers[i].data<Type>(),
-        //     rootSize,
-        //     -1
-        // );
+        DSP::Resampler<Type>::ResampleSemitone(
+            view.data<Type>(),
+            _buffers[i].data<Type>(),
+            rootSize,
+            false
+        );
 
         // _buffers[i].resize(rootSize * 4.0 * sizeof(Type), audioSpecs().sampleRate, audioSpecs().channelArrangement, audioSpecs().format);
         // DSP::Resampler<float>::Internal::InterpolateOctave(
@@ -92,7 +91,7 @@ inline void Audio::Sampler::receiveAudio(BufferView output) noexcept
     float *out = reinterpret_cast<float *>(output.byteData());
     // std::uint8_t *out = output.byteData();
 
-    auto idx = OctaveRootKey;
+    auto idx = 0u;
 
     auto sampleSize = _buffers[idx].size<float>();
     std::cout << "Sampler::receiveAudio::sampleSize: " << sampleSize << std::endl;

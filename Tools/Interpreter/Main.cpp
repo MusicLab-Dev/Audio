@@ -18,26 +18,38 @@ static const Audio::Device::Descriptor Descriptor
     /*.channelArrangement = */ Audio::ChannelArrangement::Mono
 };
 
+
+struct CallbackData
+{
+    std::array<Audio::Buffer, 12> *samples;
+};
+
+
 static void Callback(void *userdata, std::uint8_t *data, int size) noexcept
 {
-    static std::size_t idx = 0u;
-    static const auto fSize = size / 4;
+    static std::size_t SampleIdx { 0u };
+    static std::size_t Idx = 0u;
+    static const auto FloatSize = size / 4;
     auto *out = reinterpret_cast<float *>(data);
-    auto *sample = reinterpret_cast<Audio::Buffer *>(userdata);
-    const auto sampleSize = sample->size<float>();
 
-    for (auto i = 0u; i < fSize; ++i) {
-        out[i] = sample->data<float>()[++idx];
+    auto *sampleData = reinterpret_cast<CallbackData *>(userdata);
+    Audio::BufferView sample = (*sampleData->samples)[SampleIdx];
+    const auto sampleSize = sample.size<float>();
 
-        if (idx >= sampleSize - 1413) {
-            idx = 0u;
-            // std::cout << "loop !" << std::endl;
+    for (auto i = 0u; i < FloatSize; ++i) {
+        out[i] = sample.data<float>()[++Idx] /* / (5 - SampleIdx) / 2 */;
+
+        if (Idx >= sampleSize) {
+            Idx = 0u;
+            ++SampleIdx;
+            if (SampleIdx >= (*sampleData->samples).size() - 6)
+                SampleIdx = 0u;
+            std::cout << "loop !" << std::endl;
         }
     }
-
 }
 
-static std::size_t Init(Audio::Buffer *sample)
+static std::size_t Init(CallbackData *data)
 {
     constexpr auto GetFormat = [](const Audio::Format format) -> SDL_AudioFormat {
         switch (format) {
@@ -61,7 +73,7 @@ static std::size_t Init(Audio::Buffer *sample)
     desiredSpec.format = GetFormat(Descriptor.format);
     desiredSpec.samples = Descriptor.blockSize;
     desiredSpec.callback = &Callback;
-    desiredSpec.userdata = sample;
+    desiredSpec.userdata = data;
     desiredSpec.channels = static_cast<std::size_t>(Descriptor.channelArrangement);
     SDL_AudioSpec acquiredSpec;
 
@@ -81,40 +93,52 @@ using namespace Audio;
 int main(void)
 {
     try {
-        if (false) {
+        if (true) {
             SampleSpecs specs;
-            auto sample = SampleManager<float>::LoadSampleFile("Samples/chord.wav", specs);
-            const auto sampleSize = sample.size<float>();
-            Buffer sampleFilter;
-            sampleFilter.resize(sample.channelByteSize(), sample.sampleRate(), sample.channelArrangement(), sample.format());
+            const auto RootKey = 5u;
+            std::array<Audio::Buffer, 12> resampled;
+            resampled[RootKey] = SampleManager<float>::LoadSampleFile("Samples/chord.wav", specs);
+            const auto sampleSize = resampled[RootKey].size<float>();
 
-            // KissFFT::Engine::Filter(KissFFT::FirFilterSpecs {
-            //     KissFFT::FirFilterType::LowPass,
-            //     DSP::WindowType::Hanning,
-            //     44100,
-            //     { 3500, 0 }
-            // }, sample.data<float>(), sampleFilter.data<float>(), sampleSize);
+            // Lower notes
+            auto lastSize = sampleSize;
+            auto lastIdx = RootKey;
+            // auto min = std::min_element(resampled[lastIdx].data<float>(), (resampled[lastIdx].data<float>() + sampleSize));
+            // auto max = std::max_element(resampled[lastIdx].data<float>(), (resampled[lastIdx].data<float>() + sampleSize));
+            // std::cout << "  :::: " << *min << ", " << *max << std::endl;
+            for (auto i = 0u; i < RootKey; ++i) {
+                resampled[lastIdx - 1].resize(lastSize * sizeof(float), resampled[lastIdx].sampleRate(), resampled[lastIdx].channelArrangement(), resampled[lastIdx].format());
+                DSP::FIR::Resample(resampled[lastIdx].data<float>(), resampled[lastIdx - 1].data<float>(), lastSize, 44100, 196, 185);
+                // auto minF = std::min_element(resampled[lastIdx - 1].data<float>(), (resampled[lastIdx - 1].data<float>() + sampleSize));
+                // auto maxF = std::max_element(resampled[lastIdx - 1].data<float>(), (resampled[lastIdx - 1].data<float>() + sampleSize));
+                // std::cout << "  :::: " << *minF << ", " << *maxF << std::endl;
 
-            DSP::FIR::Filter(DSP::FilterSpecs {
-                DSP::FilterType::LowPass,
-                DSP::WindowType::Hanning,
-                131,
-                44100,
-                { 3333, 0 }
-            }, sample.data<float>(), sampleSize, sample.data<float>() );
+                lastIdx -= 1;
+                lastSize = DSP::Resampler<float>::GetResamplingSizeOneSemitone(lastSize, false);
+                // break;
+            }
+
+
+            // Buffer resampled(bufferSize, 44100, ChannelArrangement::Mono, Format::Floating32);
+            // DSP::Resampler<float>::ResampleSemitone(sample.data<float>(), sampleFilter.data<float>(), sampleSize, false);
+            // DSP::FIR::Resample(sample.data<float>(), sampleFilter.data<float>(), sampleSize, 44100, 4, 3);
+            // DSP::FIR::Resample(originalSample.data<float>(), sampleFilter.data<float>(), sampleSize, 44100, 185, 195);
 
             // return 0;
 
-            std::cout << "sampleSize:" << sampleFilter.size<float>() << std::endl;
             if (SDL_InitSubSystem(SDL_INIT_AUDIO))
                 throw std::runtime_error(std::string("Couldn't initialize SDL_Audio: ") + SDL_GetError());
 
-            auto min = std::min_element(sampleFilter.data<float>(), (sampleFilter.data<float>() + sampleSize));
-            auto max = std::max_element(sampleFilter.data<float>(), (sampleFilter.data<float>() + sampleSize));
-            std::cout << *min << ", " << *max << std::endl;
+            // auto min = std::min_element(originalSample.data<float>(), (originalSample.data<float>() + sampleSize));
+            // auto max = std::max_element(originalSample.data<float>(), (originalSample.data<float>() + sampleSize));
+            // std::cout << *min << ", " << *max << std::endl;
+            // auto minF = std::min_element(sampleFilter.data<float>(), (sampleFilter.data<float>() + sampleSize));
+            // auto maxF = std::max_element(sampleFilter.data<float>(), (sampleFilter.data<float>() + sampleSize));
+            // std::cout << *minF << ", " << *maxF << std::endl;
 
-            auto device = Init(&sample);
-            // auto device = Init(&sampleFilter);
+            CallbackData data { &resampled };
+            auto device = Init(&data);
+
             SDL_PauseAudioDevice(device, false);
 
             while (true);
