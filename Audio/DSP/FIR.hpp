@@ -51,6 +51,8 @@ public:
     template<unsigned ProcessRate, typename Type>
     static VoidType<Type> Resample(const Type *input, Type *output, const std::size_t inputSize, const std::size_t inputSampleRate, const std::size_t interpFactor, const std::size_t decimFactor) noexcept;
 
+    static std::size_t GetResampleSize(const std::size_t size, const std::size_t interpFactor, const std::size_t decimFactor) noexcept;
+
     static void DesignFilter(const FilterSpecs filterSpecs, float *windowCoefficients, const std::size_t windowSize, const bool centered = true) noexcept;
     static void DesignFilterLowPass(float *windowCoefficients, const std::size_t size, const double cutoffRate, const bool centered) noexcept;
 

@@ -7,6 +7,11 @@
 
 #include <Core/SPSCQueue.hpp>
 
+inline std::size_t Audio::DSP::FIR::GetResampleSize(const std::size_t size, const std::size_t interpFactor, const std::size_t decimFactor) noexcept
+{
+    return (size * interpFactor) / decimFactor;
+}
+
 template<unsigned ProcessRate, typename Type>
 void shiftCoefficients(Type *filterCoefficients, const std::size_t filterSize, const std::size_t interpRate)
 {

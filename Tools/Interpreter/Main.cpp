@@ -42,7 +42,7 @@ static void Callback(void *userdata, std::uint8_t *data, int size) noexcept
         if (Idx >= sampleSize) {
             Idx = 0u;
             ++SampleIdx;
-            if (SampleIdx >= (*sampleData->samples).size() - 7)
+            if (SampleIdx >= (*sampleData->samples).size())
                 SampleIdx = 0u;
             std::cout << "loop !" << std::endl;
         }
@@ -84,6 +84,7 @@ static std::size_t Init(CallbackData *data)
 }
 
 #include <Audio/SampleFile/SampleManager.hpp>
+#include <Audio/BufferOctave.hpp>
 // #include <Audio/KissFFT.hpp>
 #include <Audio/DSP/FIR.hpp>
 
@@ -95,34 +96,15 @@ int main(void)
     try {
         if (true) {
             SampleSpecs specs;
-            const auto RootKey = 5u;
             std::array<Audio::Buffer, 12> resampled;
-            resampled[RootKey] = SampleManager<float>::LoadSampleFile("Samples/chord.wav", specs);
-            const auto sampleSize = resampled[RootKey].size<float>();
+            resampled[OctaveRootKey] = SampleManager<float>::LoadSampleFile("Samples/chord.wav", specs);
+            const auto sampleSize = resampled[OctaveRootKey].size<float>();
 
-            // Lower notes
-            auto lastSize = sampleSize;
-            auto lastIdx = RootKey;
+            GenerateOctave<float>(resampled[OctaveRootKey], resampled);
+
             // auto min = std::min_element(resampled[lastIdx].data<float>(), (resampled[lastIdx].data<float>() + sampleSize));
             // auto max = std::max_element(resampled[lastIdx].data<float>(), (resampled[lastIdx].data<float>() + sampleSize));
             // std::cout << "  :::: " << *min << ", " << *max << std::endl;
-            for (auto i = 0u; i < RootKey; ++i) {
-                resampled[lastIdx - 1].resize(lastSize * sizeof(float), resampled[lastIdx].sampleRate(), resampled[lastIdx].channelArrangement(), resampled[lastIdx].format());
-                DSP::FIR::Resample<8u>(resampled[lastIdx].data<float>(), resampled[lastIdx - 1].data<float>(), lastSize, 44100, 196, 185);
-                // auto minF = std::min_element(resampled[lastIdx - 1].data<float>(), (resampled[lastIdx - 1].data<float>() + sampleSize));
-                // auto maxF = std::max_element(resampled[lastIdx - 1].data<float>(), (resampled[lastIdx - 1].data<float>() + sampleSize));
-                // std::cout << "  :::: " << *minF << ", " << *maxF << std::endl;
-
-                lastIdx -= 1;
-                lastSize = DSP::Resampler<float>::GetResamplingSizeOneSemitone(lastSize, false);
-                // break;
-            }
-
-
-            // Buffer resampled(bufferSize, 44100, ChannelArrangement::Mono, Format::Floating32);
-            // DSP::Resampler<float>::ResampleSemitone(sample.data<float>(), sampleFilter.data<float>(), sampleSize, false);
-            // DSP::FIR::Resample(sample.data<float>(), sampleFilter.data<float>(), sampleSize, 44100, 4, 3);
-            // DSP::FIR::Resample(originalSample.data<float>(), sampleFilter.data<float>(), sampleSize, 44100, 185, 195);
 
             // return 0;
 

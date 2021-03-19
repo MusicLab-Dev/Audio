@@ -3,7 +3,7 @@
  * @ Description: Sampler implementation
  */
 
-#include <Audio/DSP/Resampler.hpp>
+#include <Audio/BufferOctave.hpp>
 #include <Audio/SampleFile/SampleManager.hpp>
 
 inline Audio::IPlugin::Flags Audio::Sampler::getFlags(void) const noexcept
@@ -22,40 +22,7 @@ inline void Audio::Sampler::loadSample(const std::string &path)
 {
     SampleSpecs specs;
     _buffers[OctaveRootKey] = SampleManager<Type>::LoadSampleFile(path, specs);
-
-    auto rootSize = _buffers[OctaveRootKey].size<Type>();
-    BufferView view(_buffers[OctaveRootKey]);
-    for (auto i = 0u; i < OctaveRootKey; ++i) {
-        auto bufferSize = DSP::Resampler<Type>::GetResamplingSizeOneSemitone(rootSize, false) * sizeof(Type);
-        std::cout << "loadSample::bufferSize: " << bufferSize / sizeof(Type) << std::endl;
-        _buffers[i].resize(bufferSize, audioSpecs().sampleRate, audioSpecs().channelArrangement, audioSpecs().format);
-
-        DSP::Resampler<Type>::ResampleSemitone(
-            view.data<Type>(),
-            _buffers[i].data<Type>(),
-            rootSize,
-            false
-        );
-
-        // _buffers[i].resize(rootSize * 4.0 * sizeof(Type), audioSpecs().sampleRate, audioSpecs().channelArrangement, audioSpecs().format);
-        // DSP::Resampler<float>::Internal::InterpolateOctave(
-        //     view.data<Type>(),
-        //     _buffers[i].data<Type>(),
-        //     rootSize,
-        //     2
-        // );
-
-        // rootSize = bufferSize;
-        // view = _buffers[i];
-        break;
-    }
-    // std::cout << "SIZE: " << buf.size<T>() << std::endl;
-    // auto a = DSP::Resampler<T>::ResampleBySemitone(BufferView(buf), -11);
-
-    // for (auto i = 0u; i < 11; ++i) {
-        // _buffers.push(DSP::Resampler::Decimate<float>(v, static_cast<Semitone>(i)));
-    // }
-
+    GenerateOctave<Type>(_buffers[OctaveRootKey], _buffers);
 }
 
 inline void Audio::Sampler::onAudioParametersChanged(void)

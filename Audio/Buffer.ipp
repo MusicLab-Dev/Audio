@@ -79,7 +79,7 @@ inline void Audio::Buffer::resample(const SampleRate newSampleRate) noexcept
 {
     if (!newSampleRate || newSampleRate == sampleRate())
         return;
-    const auto newSize = DSP::Resampler<Type>::GetResamplingSizeSampleRate(size<Type>(), sampleRate(), newSampleRate) * static_cast<std::size_t>(channelArrangement());
+    const auto newSize = DSP::GetResamplingSizeSampleRate(size<Type>(), sampleRate(), newSampleRate) * static_cast<std::size_t>(channelArrangement());
     std::cout << "size: " << channelByteSize() << std::endl;
     std::cout << "new size: " << newSize << std::endl;
     std::cout << "capacity: " << capacity<Type>() << std::endl;
