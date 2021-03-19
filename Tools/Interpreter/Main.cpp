@@ -99,33 +99,16 @@ int main(void)
             std::array<Audio::Buffer, 12> resampled;
             resampled[OctaveRootKey] = SampleManager<float>::LoadSampleFile("Samples/chord.wav", specs);
             const auto sampleSize = resampled[OctaveRootKey].size<float>();
-
             GenerateOctave<float>(resampled[OctaveRootKey], resampled);
-
-            // auto min = std::min_element(resampled[lastIdx].data<float>(), (resampled[lastIdx].data<float>() + sampleSize));
-            // auto max = std::max_element(resampled[lastIdx].data<float>(), (resampled[lastIdx].data<float>() + sampleSize));
-            // std::cout << "  :::: " << *min << ", " << *max << std::endl;
-
-            // return 0;
-
             if (SDL_InitSubSystem(SDL_INIT_AUDIO))
                 throw std::runtime_error(std::string("Couldn't initialize SDL_Audio: ") + SDL_GetError());
-
-            // auto min = std::min_element(originalSample.data<float>(), (originalSample.data<float>() + sampleSize));
-            // auto max = std::max_element(originalSample.data<float>(), (originalSample.data<float>() + sampleSize));
-            // std::cout << *min << ", " << *max << std::endl;
-            // auto minF = std::min_element(sampleFilter.data<float>(), (sampleFilter.data<float>() + sampleSize));
-            // auto maxF = std::max_element(sampleFilter.data<float>(), (sampleFilter.data<float>() + sampleSize));
-            // std::cout << *minF << ", " << *maxF << std::endl;
-
             CallbackData data { &resampled };
             auto device = Init(&data);
-
             SDL_PauseAudioDevice(device, false);
-
             while (true);
             SDL_QuitSubSystem(SDL_INIT_AUDIO);
             SDL_Quit();
+
         } else {
             Device::DriverInstance driverInstance;
             PluginTable::Instance pluginTableInstance;

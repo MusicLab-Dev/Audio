@@ -39,11 +39,3 @@ private:
     bool _isLooping { true };
     Audio::Buffer _cache {};
 };
-
-
-
-/**
- *
- * Ligne 69 Interpreter.cpp <-- (device block size + BPM + device samplerate == la <beatrange>)
-
- */
