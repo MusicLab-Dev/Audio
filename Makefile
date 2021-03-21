@@ -57,6 +57,12 @@ benchmarks:
 benchmarks_debug:
 	$(MAKE) debug CMAKE_ARGS+=-DBENCHMARKS=ON
 
+run_benchmarks: benchmarks
+	./$(RELEASE_DIR)/AudioBenchmarks
+
+run_benchmarks_debug: benchmarks_debug
+	./$(DEBUG_DIR)/AudioBenchmarks
+
 # Tools rules
 tool_interpreter:
 	$(MAKE) release CMAKE_ARGS+=-DTOOL_INTERPRETER=ON

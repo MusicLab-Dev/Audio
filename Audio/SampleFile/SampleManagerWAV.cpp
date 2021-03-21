@@ -26,12 +26,12 @@ Buffer SampleManagerWAV::LoadFile(const std::string &path, SampleSpecs &specs, b
             << "extension() = " << realPath.extension() << "\n";
     }
     if (!std::filesystem::exists(realPath))
-        throw std::runtime_error("Wav file path doesn't exist !");
+        throw std::runtime_error("SampleManagerWAV::LoadFile: File doesn't exist: " + path);
 
     std::ifstream file;
     file.open(path, std::ios::binary);
     if (!file.is_open())
-        throw std::runtime_error("Wav file doesn't open !");
+        throw std::runtime_error("SampleManagerWAV::LoadFile: Failed opening the file: " + path);
 
     HeaderChunk chunk;
     file.read(reinterpret_cast<char *>(&chunk), sizeof(chunk));
@@ -78,11 +78,6 @@ Buffer SampleManagerWAV::LoadFile(const std::string &path, SampleSpecs &specs, b
     }
     const auto channelByteSize = data.dataSize / fmt.channelArrangement;
 
-    constexpr std::uint16_t WavIntFlag = 1u;
-    constexpr std::uint16_t WavFloatFlag = 3u;
-    constexpr std::uint16_t WavALawFlag = 6u; // Specific cases
-    constexpr std::uint16_t WavMuLawFlag = 7u; // Specific cases
-
     /** @brief Get the sample format from a sample bit size */
     constexpr auto GetSampleFormat = [](const HeaderFmt &fmtHeader) -> Format {
         constexpr std::size_t BitsPerByte = 8;
@@ -112,16 +107,16 @@ Buffer SampleManagerWAV::LoadFile(const std::string &path, SampleSpecs &specs, b
     const std::size_t sampleSize = channelByteSize * fmt.channelArrangement / (fmt.bitsPerSample / 8);
     switch (sampleFormat) {
     case Format::Floating32:
-        WriteBufferImpl(reinterpret_cast<const float *>(audioDataBuffer.data()), reinterpret_cast<float *>(outBuffer.byteData()), static_cast<ChannelArrangement>(fmt.channelArrangement), sampleSize);
+        WriteToBufferImpl(reinterpret_cast<const float *>(audioDataBuffer.data()), reinterpret_cast<float *>(outBuffer.byteData()), static_cast<ChannelArrangement>(fmt.channelArrangement), sampleSize);
         break;
     case Format::Fixed8:
-        WriteBufferImpl(reinterpret_cast<const std::int8_t *>(audioDataBuffer.data()), reinterpret_cast<std::int8_t *>(outBuffer.byteData()), static_cast<ChannelArrangement>(fmt.channelArrangement), sampleSize);
+        WriteToBufferImpl(reinterpret_cast<const std::int8_t *>(audioDataBuffer.data()), reinterpret_cast<std::int8_t *>(outBuffer.byteData()), static_cast<ChannelArrangement>(fmt.channelArrangement), sampleSize);
         break;
     case Format::Fixed16:
-        WriteBufferImpl(reinterpret_cast<const std::int16_t *>(audioDataBuffer.data()), reinterpret_cast<std::int16_t *>(outBuffer.byteData()), static_cast<ChannelArrangement>(fmt.channelArrangement), sampleSize);
+        WriteToBufferImpl(reinterpret_cast<const std::int16_t *>(audioDataBuffer.data()), reinterpret_cast<std::int16_t *>(outBuffer.byteData()), static_cast<ChannelArrangement>(fmt.channelArrangement), sampleSize);
         break;
     case Format::Fixed32:
-        WriteBufferImpl(reinterpret_cast<const std::int32_t *>(audioDataBuffer.data()), reinterpret_cast<std::int32_t *>(outBuffer.byteData()), static_cast<ChannelArrangement>(fmt.channelArrangement), sampleSize);
+        WriteToBufferImpl(reinterpret_cast<const std::int32_t *>(audioDataBuffer.data()), reinterpret_cast<std::int32_t *>(outBuffer.byteData()), static_cast<ChannelArrangement>(fmt.channelArrangement), sampleSize);
         break;
     default:
         break;
@@ -132,4 +127,104 @@ Buffer SampleManagerWAV::LoadFile(const std::string &path, SampleSpecs &specs, b
     specs.sampleRate = fmt.sampleRate;
     specs.bytePerSample = fmt.bitsPerSample / 8;
     return outBuffer;
+}
+
+bool SampleManagerWAV::WriteFile(const std::string &path, const BufferView &inputBuffer)
+{
+    std::cout << path << std::endl;
+
+    std::ofstream file;
+    file.open(path, std::ios::binary);
+    if (!file.is_open())
+        throw std::runtime_error("SampleManagerWAV::WriteFile: Failed opening the file !");
+
+
+    const auto fileSize { inputBuffer.size<std::uint8_t>() - 44u };
+    HeaderChunk chunk {
+        { 'R', 'I', 'F', 'F' },
+        static_cast<std::uint32_t>(fileSize),
+        { 'W', 'A', 'V', 'E' }
+    };
+
+    /** @brief Get the sample format from a sample bit size */
+    constexpr auto GetSampleFormatWAV = [](const Audio::Format format) -> std::uint16_t {
+        if (format == Format::Unknown)
+            throw std::logic_error("SampleManagerWAV::WriteFile: Unsupported audio format.");
+        if (format == Format::Fixed8 ||
+            format == Format::Fixed8 ||
+            format == Format::Fixed16)
+            return WavIntFlag;
+        return WavFloatFlag;
+    };
+
+    auto channels = static_cast<std::uint16_t>(inputBuffer.channelArrangement());
+    auto fmtFormat = GetSampleFormatWAV(inputBuffer.format());
+    auto sampleByteSize = GetFormatByteLength(inputBuffer.format());
+    file.write(reinterpret_cast<char *>(&chunk), sizeof(chunk));
+    HeaderFmt fmt {
+        { 'f', 'm', 't', ' ' },
+        16u, // PCM data == 16
+        fmtFormat,
+        channels,
+        static_cast<std::uint32_t>(inputBuffer.sampleRate()),
+        static_cast<std::uint32_t>(inputBuffer.sampleRate() * sampleByteSize),
+        static_cast<std::uint16_t>(sampleByteSize * channels),
+        static_cast<std::uint16_t>(sampleByteSize * 8u)
+    };
+    file.write(reinterpret_cast<char *>(&fmt), sizeof(fmt));
+    auto zero = 0u;
+    auto four = 4u;
+    if (inputBuffer.format() == Audio::Format::Floating32) {
+        // Extension size
+        // file.write(reinterpret_cast<char *>(&zero), 2);
+    }
+    if (fmt.audioFormat != 1) {
+        // file.write("fact", 4);
+        // file.write(reinterpret_cast<char *>(&four), 2);
+        // HeaderNonPCM nonPCM;
+        // file.write(reinterpret_cast<char *>(&nonPCM), sizeof(nonPCM));
+        // if (displaySpecs) {
+        //     std::cout << "extensionSize: " << nonPCM.extensionSize << std::endl;
+        //     std::cout << "validBitsPerSample: " << nonPCM.validBitsPerSample << std::endl;
+        //     std::cout << "channelMask: " << nonPCM.channelMask << std::endl;
+        //     std::cout << "subFormat_0: " << nonPCM.subFormat_0 << std::endl;
+        //     std::cout << "subFormat_1: " << nonPCM.subFormat_1 << std::endl;
+        // }
+    }
+
+    const auto dataSize = fileSize + 44u;
+    HeaderData data {
+        { 'd', 'a', 't', 'a' },
+        static_cast<std::uint32_t>(dataSize)
+    };
+    file.write(reinterpret_cast<char *>(&data), sizeof(data));
+    const auto channelByteSize = data.dataSize / fmt.channelArrangement;
+
+
+    std::vector<char> audioDataBuffer(dataSize);
+    const std::size_t sampleSize = channelByteSize * fmt.channelArrangement / (fmt.bitsPerSample / 8);
+    // std::cout << "input: " << inputBuffer.size<std::uint8_t>() << std::endl;
+    // std::cout << "out: " << audioDataBuffer.size() << std::endl;
+    // std::cout << "sampleSize: " << sampleSize << std::endl;
+
+    switch (inputBuffer.format()) {
+    case Format::Floating32:
+        WriteFromBufferImpl(reinterpret_cast<const float *>(inputBuffer.byteData()), reinterpret_cast<float *>(audioDataBuffer.data()), static_cast<ChannelArrangement>(fmt.channelArrangement), sampleSize);
+        break;
+    case Format::Fixed8:
+        WriteFromBufferImpl(reinterpret_cast<const std::int8_t *>(inputBuffer.byteData()), reinterpret_cast<std::int8_t *>(audioDataBuffer.data()), static_cast<ChannelArrangement>(fmt.channelArrangement), sampleSize);
+        break;
+    case Format::Fixed16:
+        WriteFromBufferImpl(reinterpret_cast<const std::int16_t *>(inputBuffer.byteData()), reinterpret_cast<std::int16_t *>(audioDataBuffer.data()), static_cast<ChannelArrangement>(fmt.channelArrangement), sampleSize);
+        break;
+    case Format::Fixed32:
+        WriteFromBufferImpl(reinterpret_cast<const std::int32_t *>(inputBuffer.byteData()), reinterpret_cast<std::int32_t *>(audioDataBuffer.data()), static_cast<ChannelArrangement>(fmt.channelArrangement), sampleSize);
+        break;
+    default:
+        break;
+    }
+
+    file.write(reinterpret_cast<char *>(audioDataBuffer.data()), dataSize);
+
+    return true;
 }

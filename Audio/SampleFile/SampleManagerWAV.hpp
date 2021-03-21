@@ -22,6 +22,11 @@ struct Audio::SampleManagerWAV
     // http://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/WAVE.html
     // https://wavefilegem.com/how_wave_files_work.html
 
+    static constexpr std::uint16_t WavIntFlag = 1u;
+    static constexpr std::uint16_t WavFloatFlag = 3u;
+    static constexpr std::uint16_t WavALawFlag = 6u; // Specific cases
+    static constexpr std::uint16_t WavMuLawFlag = 7u; // Specific cases
+
     struct HeaderChunk {
         char riff[4]; // "RIFF"
         std::uint32_t fileSize { 0u }; // (in bytes) fileSize - 8
@@ -62,11 +67,14 @@ struct Audio::SampleManagerWAV
     /** @brief Load a audio WAV file into a buffer */
     [[nodiscard]] static Buffer LoadFile(const std::string &path, SampleSpecs &specs, bool displaySpecs);
 
-    static void WriteFile(const std::string &path, const BufferView &inputBuffer) {}
+    [[nodiscard]] static bool WriteFile(const std::string &path, const BufferView &inputBuffer);
 
 private:
     template<typename Type>
-    static void WriteBufferImpl(const Type *input, Type *output, const ChannelArrangement channelArrangement, const std::size_t size) noexcept;
+    static void WriteToBufferImpl(const Type *input, Type *output, const ChannelArrangement channelArrangement, const std::size_t size) noexcept;
+
+    template<typename Type>
+    static void WriteFromBufferImpl(const Type *input, Type *output, const ChannelArrangement channelArrangement, const std::size_t size) noexcept;
 };
 
 #include "SampleManagerWAV.ipp"

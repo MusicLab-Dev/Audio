@@ -58,7 +58,7 @@ inline void Audio::Sampler::receiveAudio(BufferView output) noexcept
     float *out = reinterpret_cast<float *>(output.byteData());
     // std::uint8_t *out = output.byteData();
 
-    auto idx = 0u;
+    auto idx = OctaveRootKey;
 
     auto sampleSize = _buffers[idx].size<float>();
     std::cout << "Sampler::receiveAudio::sampleSize: " << sampleSize << std::endl;
@@ -95,20 +95,4 @@ inline void Audio::Sampler::receiveAudio(BufferView output) noexcept
     }
 
     // std::cout << "sampler index: " << _noteManager.readIndex(69) << std::endl;
-
-    static int a = 0;
-    static auto filter = DSP::BiquadMaker<DSP::BiquadParam::Optimization::Optimized>::MakeBiquad<float>();
-    filter.setupCoefficients(DSP::BiquadParam::GenerateCoefficients<
-        DSP::BiquadParam::FilterType::LowPass
-        >(44100, (a), 0, 1.707, false));
-
-    // if (hasProcess)
-    // filter.processBlock(out, outSize);
-    // else
-    //     filter.resetRegisters();
-    // _noteManager.resetBlockCache();
-
-    a += 10;
-    if (a >= 44100 / 2)
-        a = 0;
 }

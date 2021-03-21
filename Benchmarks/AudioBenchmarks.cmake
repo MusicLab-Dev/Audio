@@ -6,7 +6,8 @@ get_filename_component(AudioBenchmarksDir ${CMAKE_CURRENT_LIST_FILE} PATH)
 
 set(AudioBenchmarksSources
     ${AudioBenchmarksDir}/Main.cpp
-    ${AudioBenchmarksDir}/bench_Biquad.cpp
+    # ${AudioBenchmarksDir}/bench_Biquad.cpp
+    ${AudioBenchmarksDir}/bench_FIR.cpp
 )
 
 add_executable(${PROJECT_NAME} ${AudioBenchmarksSources})

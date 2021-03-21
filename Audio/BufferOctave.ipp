@@ -16,7 +16,6 @@ inline void Audio::GenerateOctave(const BufferView input, BufferOctave &octave) 
     // Lowest notes
     for (auto i = 0u; i < OctaveRootKey; ++i) {
         const std::size_t nextIdx = lastIdx - 1;
-        std::cout << "Next idx: " << nextIdx << std::endl;
         octave[nextIdx].resize(nextSize * sizeof(Type), octave[lastIdx].sampleRate(), octave[lastIdx].channelArrangement(), octave[lastIdx].format());
         DSP::Resampler::ResampleSemitone(octave[lastIdx].data<Type>(), octave[nextIdx].data<Type>(), lastSize, octave[OctaveRootKey].sampleRate(), false);
         lastSize = nextSize;
@@ -28,7 +27,6 @@ inline void Audio::GenerateOctave(const BufferView input, BufferOctave &octave) 
     // Highest notes
     for (auto i = 0u; i < KeysPerOctave - OctaveRootKey - 1; ++i) {
         const std::size_t nextIdx = lastIdx + 1;
-        std::cout << "Next idx: " << nextIdx << std::endl;
         octave[nextIdx].resize(nextSize * sizeof(Type), octave[lastIdx].sampleRate(), octave[lastIdx].channelArrangement(), octave[lastIdx].format());
         DSP::Resampler::ResampleSemitone(octave[lastIdx].data<Type>(), octave[nextIdx].data<Type>(), nextSize, octave[OctaveRootKey].sampleRate(), true);
         lastSize = nextSize;
