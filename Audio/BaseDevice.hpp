@@ -34,6 +34,24 @@ namespace Audio
         }
     }
 
+    /** @brief Get the median value of a specific format */
+    [[nodiscard]] constexpr std::size_t GetFormatMedianValue(const Format format) noexcept
+    {
+        switch (format) {
+        case Format::Unknown:
+            return 0;
+        case Format::Fixed8:
+        case Format::Fixed16:
+        case Format::Fixed32:
+        case Format::Floating32:
+            return 0;
+        // case Format::Unsigned8:
+        //     return 0x80;
+        default:
+            return 0;
+        }
+    }
+
     /** @brief Sample per second */
     using SampleRate = std::uint32_t;
 

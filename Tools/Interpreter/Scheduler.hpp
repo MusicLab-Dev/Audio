@@ -10,7 +10,7 @@
 class Scheduler : public Audio::AScheduler
 {
 public:
-    static constexpr std::size_t DefaultProcessBlockSize = 1024;
+    static constexpr std::size_t DefaultProcessBlockSize = 1024u;
 
     Scheduler(void) : Audio::AScheduler(std::make_unique<Audio::Project>(Core::FlatString("Interpreter Project"))) {}
 
@@ -31,9 +31,15 @@ public:
     [[nodiscard]] bool isLooping(void) const noexcept { return _isLooping; }
     bool setIsLooping(const bool loopBeatRange) noexcept;
 
+    void processLooping(void);
 
+    void processBeatMiss(void);
+
+    double _beatMissCount { 0.0 };
+    double _beatMissOffset { 0.0 };
 
 private:
+
     std::size_t _processBlockSize { DefaultProcessBlockSize };
     Audio::BeatRange _loopBeatRange {};
     bool _isLooping { true };

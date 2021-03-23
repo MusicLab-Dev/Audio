@@ -27,7 +27,7 @@ struct CallbackData
 
 static void Callback(void *userdata, std::uint8_t *data, int size) noexcept
 {
-    static std::size_t SampleIdx { 0u };
+    static std::size_t SampleIdx { 3u };
     static std::size_t Idx = 0u;
     static const auto FloatSize = size / 4;
     auto *out = reinterpret_cast<float *>(data);
@@ -37,8 +37,16 @@ static void Callback(void *userdata, std::uint8_t *data, int size) noexcept
     const auto sampleSize = sample.size<float>();
 
     for (auto i = 0u; i < FloatSize; ++i) {
-        out[i] = sample.data<float>()[++Idx] /* / (5 - SampleIdx) / 2 */;
+        // if (float k = Idx / 500.0; k < 1)
+        //     out[i] = sample.data<float>()[Idx] * k;
+        // else
+            out[i] = sample.data<float>()[Idx];
+        // if (float k = (Idx - (*sampleData->samples).size() + 1000) / 1000.0; k < 1)
+        //     out[i] = sample.data<float>()[Idx] * (k);
+        // else
+        //     out[i] = sample.data<float>()[Idx];
 
+        ++Idx;
         if (Idx >= sampleSize) {
             Idx = 0u;
             ++SampleIdx;
@@ -91,15 +99,22 @@ static std::size_t Init(CallbackData *data)
 
 using namespace Audio;
 
-int main(void)
+int main(int ac, char **av)
 {
     try {
-        if (true) {
+        if (ac > 1 && (std::string(av[1]) == "-d")) {
             SampleSpecs specs;
             std::array<Audio::Buffer, 12> resampled;
-            resampled[OctaveRootKey] = SampleManager<float>::LoadSampleFile("Samples/chord.wav", specs);
+            const std::string sampleName = "Snare";
+            resampled[OctaveRootKey] = SampleManager<float>::LoadSampleFile("Samples/" + sampleName + ".wav", specs);
             const auto sampleSize = resampled[OctaveRootKey].size<float>();
             GenerateOctave<float>(resampled[OctaveRootKey], resampled);
+            for (auto i = 0; i < OctaveRootKey; ++i) {
+                const auto idx = OctaveRootKey - i - 1;
+                std::cout << "id: " << idx << std::endl;
+                if (auto done = SampleManager<float>::WriteSampleFile("Samples/FIR/" + sampleName + "_down_" + std::to_string(i + 1) + ".wav", resampled[idx]); !done)
+                    std::cout << "failed write: " << idx << std::endl;
+            }
             if (SDL_InitSubSystem(SDL_INIT_AUDIO))
                 throw std::runtime_error(std::string("Couldn't initialize SDL_Audio: ") + SDL_GetError());
             CallbackData data { &resampled };

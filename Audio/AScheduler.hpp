@@ -118,8 +118,9 @@ private:
     std::uint32_t _processBeatSize { 0u };
     Buffer _overflowCache {};
 
+protected:
     static inline Core::SPSCQueue<std::uint8_t> _AudioQueue { 65536 };
-
+private:
     /** @brief Cache stucture used to store recursive parameters */
     struct SpecsParams
     {

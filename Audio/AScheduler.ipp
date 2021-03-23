@@ -8,12 +8,19 @@
 inline Audio::AScheduler::AScheduler(void)
 {
     _graph.setRepeatCallback([this](void) -> bool {
-        _currentBeatRange += _processBeatSize;
+        // std::cout << "_currentBeatRange " << _currentBeatRange << std::endl;
+        // std::cout << "_processBeatSize " << _processBeatSize << std::endl;
+        // std::cout << "___currentBeatRange " << _currentBeatRange << std::endl;
+        // std::cout << "___processBeatSize " << _processBeatSize << std::endl;
         if (_overflowCache) {
             onAudioQueueBusy();
         } else {
-            produceAudioData(_project->master()->cache());
-            onAudioBlockGenerated();
+            _currentBeatRange += _processBeatSize;
+            if (produceAudioData(_project->master()->cache())) {
+                onAudioBlockGenerated();
+            } else {
+                onAudioQueueBusy();
+            }
         }
         if (state() == State::Pause)
             std::cout << "State:" << static_cast<int>(state()) << std::endl;
@@ -108,10 +115,10 @@ inline bool Audio::AScheduler::produceAudioData(const BufferView output)
 
     if (!ok) {
         _overflowCache.copy(output);
-        // std::cout << " - produce audio failed\n";
+        std::cout << " - produce audio failed\n";
         return false;
     } else {
-        // std::cout << " - produce audio success\n";
+        std::cout << " - produce audio success\n";
         return true;
     }
 }
@@ -119,7 +126,7 @@ inline bool Audio::AScheduler::produceAudioData(const BufferView output)
 inline bool Audio::AScheduler::flushOverflowCache(void)
 {
     const auto cacheSize = _overflowCache.size<std::uint8_t>();
-    // std::cout << "flush: Queue size: " << _AudioQueue.size() << std::endl;
+    std::cout << "flush: Queue size: " << _AudioQueue.size() << std::endl;
     const bool ok = _AudioQueue.tryPushRange(
         _overflowCache.byteData(),
         _overflowCache.byteData() + cacheSize

@@ -5,40 +5,63 @@
 
 #include "Interpreter.hpp"
 
-void Scheduler::onAudioBlockGenerated(void)
+// #include <Audio/BaseIndex.hpp>
+
+void Scheduler::processBeatMiss(void)
 {
     auto nextBeatRange = currentBeatRange();
-
-
-    const Audio::BufferView buffer(project()->master()->cache());
-    const auto size = buffer.size<std::uint8_t>();
-    int count = 0;
-    // std::cout << "X: " << count << " " << size << " " << reinterpret_cast<const int *>(buffer.byteData()) << std::endl;
-    for (auto i = 0; i < size; ++i) {
-        if (buffer.byteData()[i] != 0)
-            ++count;
+    _beatMissCount += _beatMissOffset;
+    if (_beatMissCount >= 1) {
+        // std::cout << "<blop>" << std::endl;
+        _beatMissCount -= 1;
+        setBeatRange({ nextBeatRange.from, nextBeatRange.to + 1 });
     }
+}
+void Scheduler::processLooping(void)
+{
+    if (isLooping() && (currentBeatRange().to > loopBeatRange().to)) {
+        setBeatRange(Audio::BeatRange({
+            0u,
+            processBeatSize()
+        }));
+        // this->_AudioQueue.clear();
+    }
+}
+
+void Scheduler::onAudioBlockGenerated(void)
+{
+    // const Audio::BufferView buffer(project()->master()->cache());
+    // const auto size = buffer.size<std::uint8_t>();
+    // int count = 0;
+
+    // for (auto i = 0; i < size; ++i) {
+    //     if (buffer.byteData()[i] != 0)
+    //         ++count;
+    // }
     // if (count)
     //     std::cout << "Audio block non-null: " << count << std::endl;
 
-    // if (isLooping() && (nextBeatRange.to > loopBeatRange().to)) {
-    //     setBeatRange(Audio::BeatRange({
-    //         0u,
-    //         processBeatSize()
-    //     }));
-    // }
-    // if (currentBeatRange().from > 20000)
-    //     setState(State::Pause);
+    // std::cout << "beatrangeProcess: " << this->processBeatSize() << std::endl;
+    // std::cout << "next beatrange: " << currentBeatRange() << std::endl;
 
-    // Todo: execute this on main thread
+
+    processLooping();
+    // processBeatMiss();
+
+    /** @todo Execute this on main thread */
     dispatchApplyEvents();
     dispatchNotifyEvents();
 }
 
 void Scheduler::onAudioQueueBusy(void)
 {
-    // std::cout << "AudioQUeueBusy" << std::endl;
-    // Todo: execute this on main thread
+    // std::cout << "AudioQueueBusy" << std::endl;
+    // std::cout << "next beatrange (busy): " << currentBeatRange() << std::endl;
+
+    // processBeatMiss();
+    processLooping();
+
+    /** @todo Execute this on main thread */
     dispatchApplyEvents();
     dispatchNotifyEvents();
 }

@@ -105,7 +105,7 @@ void AScheduler::buildProjectGraph(void)
     audioTask.first.setName(parent->name().toStdString() + "_audio");
 
     auto overflowTask = _graph.emplace([]{ /* @todo: test  sleep(50ns) */
-        std::this_thread::sleep_for(std::chrono::nanoseconds(100));
+        // std::this_thread::sleep_for(std::chrono::nanoseconds(10000));
         // std::cout << "<overflow>\n";
     });
     conditional.precede(overflowTask);

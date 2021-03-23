@@ -30,7 +30,7 @@ struct Audio::SampleManager
         { SampleManagerWAV::Extension, &SampleManagerWAV::LoadFile, &SampleManagerWAV::WriteFile }
     };
 
-    [[nodiscard]] static Buffer LoadSampleFile(const std::string &path, SampleSpecs &specs, bool displaySpecs = true);
+    [[nodiscard]] static Buffer LoadSampleFile(const std::string &path, SampleSpecs &specs, bool displaySpecs = false);
 
     [[nodiscard]] static Buffer LoadSampleFileExtension(const std::string &path, const std::string &ext, SampleSpecs &specs, bool displaySpecs);
 

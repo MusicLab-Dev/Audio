@@ -42,7 +42,9 @@ inline std::pair<Flow::Task, const Audio::NoteEvents *> Audio::MakeSchedulerTask
 template<Audio::IPlugin::Flags Flags, bool ProcessNotesAndControls, bool ProcessAudio>
 inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio>::operator()(void) noexcept
 {
-    // std::cout << "run task: " << node().name().toStdString() << std::endl;
+    // std::cout << "RUN task: " << node().name().toStdString() << std::endl;
+    // if (node().name().toStdString() == "sampler0")
+    //     return;
     // std::cout << "_noteStack: " << _noteStack->size() << std::endl;
     // std::cout << "_parentNoteStack: " << _parentNoteStack << std::endl;
     _noteStack->clear();
@@ -72,7 +74,9 @@ inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio>::
         if constexpr (HasAudioInput) {
             plugin.sendAudio(_bufferStack);
         }
+        _bufferStack.clear();
         if constexpr (HasAudioOutput) {
+            node().cache().clear();
             plugin.receiveAudio(node().cache());
             // int count = 0;
             // auto size = node().cache().template size<std::uint8_t>();
@@ -82,7 +86,6 @@ inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio>::
             // }
             // std::cout << "SchedulerTask::processAudio: size: " << size << ", count: " << count << std::endl;
         } else {
-            // DSP::Merge(node().cache().data<float>())
         }
     }
 }
@@ -149,11 +152,12 @@ inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio>::
 template<Audio::IPlugin::Flags Flags, bool ProcessNotesAndControls, bool ProcessAudio>
 inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio>::collectNotes(const BeatRange &beatRange) noexcept
 {
-    // std::cout << "\t-collect notes: " << node().name().toStdView() << std::endl;
+    // std::cout << "\t-collect notes: " << node().name().toStdView() << " : " << beatRange << std::endl;
     for (const auto &partition : node().partitions()) {
         if (partition.muted())
             continue;
         for (const auto &instance : partition.instances()) {
+            // std::cout << "\t\tinstance: " << instance << std::endl;
             // Skip instance ending before the beatrange
             if (instance.to <= beatRange.from)
                 continue;
@@ -161,6 +165,7 @@ inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio>::
             if (instance.from >= beatRange.to)
                 continue;
             for (const auto &note : partition.notes()) {
+                // std::cout << "\t\t\tnote: " << note << std::endl;
                 const auto noteFrom = instance.from + note.range.from;
                 const auto noteTo = instance.from + note.range.to;
                 // Skip note ending after the beatrange
@@ -207,6 +212,10 @@ inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio>::
 template<Audio::IPlugin::Flags Flags, bool ProcessNotesAndControls, bool ProcessAudio>
 inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio>::collectBuffers(void) noexcept
 {
+    // if (!node().children().empty()) {
+    //     _bufferStack.push(node().children()[1]->cache());
+    //     return;
+    // }
     for (auto &child : node().children()) {
         if (!child->muted())
             _bufferStack.push(child->cache());

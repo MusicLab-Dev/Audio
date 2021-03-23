@@ -32,6 +32,8 @@ namespace Audio
     /** @brief Key of a note */
     using Key = std::uint8_t;
 
+    static constexpr Key RootKey = 69u;
+
     /** @brief Semitone */
     using Semitone = std::int8_t;
 

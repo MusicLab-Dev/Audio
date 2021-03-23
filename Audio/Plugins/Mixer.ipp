@@ -19,12 +19,21 @@ inline Audio::IPlugin::Flags Audio::Mixer::getFlags(void) const noexcept
 
 inline void Audio::Mixer::receiveAudio(BufferView output) noexcept
 {
-    const auto size = output.size<std::uint8_t>();
-    const auto from =_cache[0].byteData();
-    const auto to = output.byteData();
+    const auto size = output.size<float>();
 
-    for (auto i = 0; i < size; ++i)
-        to[i] = from[i];
+    // std::cout << "MIXER SIZE: " << _cache.size() << std::endl;
+
+    for (auto k = 0u; k < _cache.size(); ++k) {
+        const float *from = _cache[k].data<float>();
+        float *to = output.data<float>();
+        for (auto i = 0; i < size; ++i) {
+            if (!k)
+                to[i] = from[i] / _cache.size();
+            else
+                to[i] += from[i] / _cache.size();
+        }
+        // return;
+    }
 }
 
 inline void Audio::Mixer::sendAudio(const BufferViews &inputs) noexcept

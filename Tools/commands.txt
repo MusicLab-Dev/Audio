@@ -1,10 +1,17 @@
 plugin add Sampler sampler0
-plugin load_sample sampler0 Samples/chord.wav
+plugin load_sample sampler0 Samples/Snare.wav
+plugin add Sampler sampler1
+plugin load_sample sampler1 Samples/chord.wav
 note create 4 0 16
-note add master 0 69 4 0 10
-note add master 0 68 4 0 10
-# note add master 0 69 4 4 5
+note add master 0 69 16 0 4
+note add master 0 69 16 4 8
+note add master 0 69 16 8 12
+note add master 0 69 16 12 16
+# note add master 0 69 4 0 1
+# note add master 0 69 4 1 2
+# note add master 0 69 4 2 3
+# note add master 0 69 4 3 4
 note list_partitions master
-play
+# play
 # playFor 500
 # exit

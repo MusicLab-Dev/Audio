@@ -82,26 +82,39 @@ Interpreter::~Interpreter(void)
 
 void Interpreter::prepareCache(void)
 {
-    const auto beats = static_cast<float>(_device.blockSize()) / _device.sampleRate() / _scheduler.project()->tempo() * Audio::BeatPrecision;
-    const auto beatsNorm = std::ceil(beats);
+    const double beats = static_cast<float>(_device.blockSize()) / _device.sampleRate() / _scheduler.project()->tempo() * Audio::BeatPrecision;
+    const double beatsNorm = std::ceil(beats);
 
-    const auto processBlockSize = beatsNorm / Audio::BeatPrecision * _scheduler.project()->tempo() * _device.sampleRate();
-    _scheduler.setProcessBlockSize(std::ceil(processBlockSize));
+    const double processBlockSize = beatsNorm / Audio::BeatPrecision * _scheduler.project()->tempo() * _device.sampleRate();
+    const std::size_t processBlockSizeNorm = std::floor(processBlockSize);
+    double rest = 0.0;
+    const double sampleMissPerBlock = std::modf(processBlockSize, &rest);
+    const double beatMissPerBlock = rest == 0.0 ? 0.0 : sampleMissPerBlock / _device.sampleRate() / _scheduler.project()->tempo() * Audio::BeatPrecision;
+    _scheduler._beatMissOffset = beatMissPerBlock;
+    _scheduler.setProcessBlockSize(processBlockSizeNorm);
 
     const auto specs = getAudioSpecs();
+    std::cout << "_device.blockSize(): " << _device.blockSize() << std::endl;
+    std::cout << "sampleMissPerBlock: " << sampleMissPerBlock << std::endl;
+    std::cout << "beatMissPerBlock: " << beatMissPerBlock << std::endl;
     std::cout << "beats: " << beats << std::endl;
     std::cout << "beatsNorm: " << beatsNorm << std::endl;
+    std::cout << "processBlockSize: " << processBlockSize << std::endl;
+    std::cout << "processBlockSizeNorm: " << processBlockSizeNorm << std::endl;
+    std::cout << "rest: " << rest << std::endl;
     std::cout << "diff: " << beats - (int)beats << std::endl;
     std::cout << "size: " << _device.blockSize() << std::endl;
     std::cout << "sr: " << specs.sampleRate << std::endl;
     std::cout << "tempo: " << _scheduler.project()->tempo() << std::endl;
     _scheduler.setProcessBeatSize(beatsNorm);
-    _scheduler.setIsLooping(false);
-    _scheduler.setLoopBeatRange(MakeBeatRange(0u, 16, NoteType::QuarterNote));
+    _scheduler.setIsLooping(true);
+    _scheduler.setLoopBeatRange(MakeBeatRange(0u, 4u, NoteType::QuarterNote));
     _scheduler.setBeatRange(Audio::BeatRange({ 0u, _scheduler.processBeatSize() }));
     _scheduler.prepareCache(specs);
-    std::cout << "processBeatSize: " << _scheduler.processBeatSize() << std::endl;
+    std::cout << "scheduler::processBeatSize: " << _scheduler.processBeatSize() << std::endl;
+    std::cout << "scheduler::LoopingRange: " << _scheduler.loopBeatRange() << std::endl;
     std::cout << "beatRange: " << _scheduler.currentBeatRange() << std::endl;
+    // exit(0);
 }
 
 void Interpreter::registerInternalFactories(void) noexcept
@@ -143,6 +156,7 @@ void Interpreter::run(void)
     _scheduler.invalidateProjectGraph();
     std::cout << "graph: " << _scheduler.graph().size() << std::endl;
 
+    // exit(0);
     while (_running) {
         try {
             if (audioCallbackMissCount < _AudioCallbackMissCount.load()) {
@@ -488,7 +502,8 @@ void Interpreter::parseNoteCommand(void)
         const std::string &nodeName = (isPlugin ? _word : "master");
         auto &node = getNode(nodeName);
         Audio::Partition partition;
-        partition.instances().push(MakeBeatRange(from, to, static_cast<NoteType>(beatPrecision)));
+        auto inst = partition.instances().push(MakeBeatRange(from, to, static_cast<NoteType>(beatPrecision)));
+        std::cout << "range: " << inst << std::endl;
         node.ptr->partitions().push(std::move(partition));
         break;
     }
@@ -508,6 +523,7 @@ void Interpreter::parseNoteCommand(void)
         Audio::Note note;
         note.key = key;
         note.range = MakeBeatRange(from, to, static_cast<NoteType>(beatPrecision));
+        std::cout << "note range: " << note.range << std::endl;
         // note.range = Audio::BeatRange { 0, 20'000 };
         node.ptr->partitions()[partitionIndex].notes().push(note);
         break;
@@ -549,7 +565,7 @@ Audio::NodePtr &Interpreter::insertNode(Audio::Node *parent, Audio::PluginPtr &&
     Audio::NodePtr *node;
 
     if (parent)
-        node = &parent->children().push(std::make_unique<Audio::Node>(std::move(plugin)));
+        node = &(parent->children().push(std::make_unique<Audio::Node>(std::move(plugin))));
     else
         node = &(_scheduler.project()->master() = std::make_unique<Audio::Node>(std::move(plugin)));
     (*node)->setName(Core::FlatString(name));
@@ -557,4 +573,3 @@ Audio::NodePtr &Interpreter::insertNode(Audio::Node *parent, Audio::PluginPtr &&
     _map.insert(std::make_pair(std::string_view(name), NodeHolder { node->get(), parent }));
     return *node;
 }
-// AHH Build task node

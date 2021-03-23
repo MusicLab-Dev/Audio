@@ -66,7 +66,6 @@ public:
     static void Clear(void) noexcept
         { _Instance.clear(); }
 
-
 private:
     std::array<std::atomic<AllocationHeader *>, AllocationPowerRange> _buckets {};
 
@@ -91,6 +90,7 @@ private:
             const std::size_t usedSize, const std::size_t capacity, const std::size_t bucketIndex) noexcept;
 };
 
+
 /** @brief A BufferBase is a helper base class for any Buffer or BufferView */
 class alignas_quarter_cacheline Audio::Internal::BufferBase
 {
@@ -114,7 +114,7 @@ public:
     void swap(BufferBase &other) noexcept { std::swap(_header, other._header); }
 
     /** @brief Clear the internal content */
-    void clear(void);
+    void clear(void) { std::memset(_header + 1, 0, _header->channelByteSize * static_cast<std::size_t>(_header->channelArrangement)); }
 
     /** @brief Fast allocation check */
     [[nodiscard]] operator bool(void) const noexcept { return _header; }
@@ -169,7 +169,6 @@ public:
     /** @brief Get the buffer capacity relative to a given type */
     template<typename Type = std::byte>
     [[nodiscard]] std::size_t capacity(void) const noexcept { return _header->capacity / sizeof(Type); }
-
 
 public: // Internal public functions for buffers compatibility
     /** @brief Get the allocation header */
