@@ -37,9 +37,9 @@ public:
     };
 
     /** @brief Descibes how to use a logical device and is used to retreive one */
-    struct alignas_cacheline Descriptor
+    struct alignas_cacheline SDLDescriptor
     {
-        std::string         name { "untitled" };
+        std::string         name;
         BlockSize           blockSize { 2048u };
         SampleRate          sampleRate { 48000u };
         bool                isInput { true };
@@ -49,20 +49,20 @@ public:
     };
 
     /** @brief Descibes SDL device beahaviours */
-    struct alignas_cacheline SDLDeviceDescriptor
+    struct alignas_cacheline DeviceDescriptor
     {
-        std::string         name { "untitled" };
+        std::string         name;
         bool                hasInput { false };
         bool                hasOutput { false };
     };
 
 
     /** @brief A list of logical device descriptors used to introspect the hardware device */
-    using SDLDeviceDescriptors = std::vector<SDLDeviceDescriptor>;
+    using DeviceDescriptors = std::vector<DeviceDescriptor>;
     using DriverDescriptors = std::vector<std::string>;
 
     /** @brief Construct a device using a descriptor */
-    Device(const Descriptor &descriptor, AudioCallback &&callback);
+    Device(const SDLDescriptor &descriptor, AudioCallback &&callback);
 
     /** @brief Destroy and release the audio device */
     ~Device(void);
@@ -127,7 +127,7 @@ public:
     static void DebugDriverDescriptors(void);
 
     /** @brief Get all device descriptors */
-    static SDLDeviceDescriptors GetDeviceDescriptors(void);
+    static DeviceDescriptors GetDeviceDescriptors(void);
     static void DebugDeviceDescriptors(void);
 
     void reloadDriver(void);
@@ -135,7 +135,7 @@ public:
 private:
     SDL_AudioDeviceID _deviceID {};
     AudioCallback _callback {};
-    Descriptor _descriptor {};
+    SDLDescriptor _descriptor {};
 
     /** @brief Internal audio callback, called by backend */
     static void InternalAudioCallback(void *userdata, std::uint8_t *data, int size) noexcept;

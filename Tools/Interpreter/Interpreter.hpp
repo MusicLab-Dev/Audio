@@ -14,8 +14,8 @@
 #include "Scheduler.hpp"
 #include "Base.hpp"
 
-static const Audio::Device::Descriptor DefaultDeviceDescriptor {
-    /*.name = */ "device-test",
+static const Audio::Device::SDLDescriptor DefaultDeviceDescriptor {
+    /*.name = */ "",
     /*.blockSize = */ 1024u,
     /*.sampleRate = */ 44100,
     /*.isInput = */ false,
@@ -45,7 +45,7 @@ public:
 private:
     Scheduler _scheduler;
     Audio::Device _device;
-    Audio::Device::Descriptor _deviceDescriptor { DefaultDeviceDescriptor };
+    Audio::Device::SDLDescriptor _deviceDescriptor { DefaultDeviceDescriptor };
     std::unordered_map<std::string_view, NodeHolder> _map {};
 
     static inline std::atomic<std::size_t> _AudioCallbackMissCount { 0u };

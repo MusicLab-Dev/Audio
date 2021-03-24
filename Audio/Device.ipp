@@ -48,7 +48,7 @@ inline void Audio::Device::reloadDriver(void)
     desiredSpec.channels = static_cast<std::size_t>(_descriptor.channelArrangement);
     SDL_AudioSpec acquiredSpec;
 
-    if (!(_deviceID = SDL_OpenAudioDevice(NULL, _descriptor.isInput, &desiredSpec, &acquiredSpec, 1)))
+    if (!(_deviceID = SDL_OpenAudioDevice(_descriptor.name.empty() ? NULL : _descriptor.name.c_str(), _descriptor.isInput, &desiredSpec, &acquiredSpec, 1)))
         throw std::runtime_error(std::string("Couldn't open audio: ") + SDL_GetError());
 }
 

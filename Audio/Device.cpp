@@ -9,7 +9,7 @@
 
 using namespace Audio;
 
-Device::Device(const Descriptor &descriptor, AudioCallback &&callback)
+Device::Device(const SDLDescriptor &descriptor, AudioCallback &&callback)
     : _descriptor(descriptor), _callback(std::move(callback))
 {
     reloadDriver();
@@ -61,9 +61,9 @@ Device::DriverDescriptors Device::GetDriverDescriptors(void)
     return drivers;
 }
 
-Device::SDLDeviceDescriptors Device::GetDeviceDescriptors(void)
+Device::DeviceDescriptors Device::GetDeviceDescriptors(void)
 {
-    SDLDeviceDescriptors devices;
+    DeviceDescriptors devices;
     const auto nDeviceInput { SDL_GetNumAudioDevices(true) };
     std::cout << nDeviceInput << std::endl;
     for (auto i = 0u; i < nDeviceInput; ++i) {
@@ -75,7 +75,7 @@ Device::SDLDeviceDescriptors Device::GetDeviceDescriptors(void)
     }
     const auto nDeviceOutput { SDL_GetNumAudioDevices(false) };
     for (auto i = 0u; i < nDeviceOutput; ++i) {
-        if (auto it = std::find_if(devices.begin(), devices.end(), [i](const SDLDeviceDescriptor &desc) -> bool {
+        if (auto it = std::find_if(devices.begin(), devices.end(), [i](const DeviceDescriptor &desc) -> bool {
             std::string deviceName(SDL_GetAudioDeviceName(i, false));
             return (desc.name == deviceName);
         }); it != devices.end()) {

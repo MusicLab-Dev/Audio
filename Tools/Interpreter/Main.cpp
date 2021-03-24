@@ -7,7 +7,7 @@
 
 #include "Interpreter.hpp"
 
-static const Audio::Device::Descriptor Descriptor
+static const Audio::Device::SDLDescriptor Descriptor
 {
     /*.name = */ "device-test",
     /*.blockSize = */ 1024u,
