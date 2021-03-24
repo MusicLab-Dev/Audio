@@ -29,3 +29,44 @@ void Device::InternalAudioCallback(void *userdata, std::uint8_t *data, int size)
         std::cout << "Device::InternalAudioCallback: Exception thrown into the audio callback:\n\t" << e.what() << std::endl;
     }
 }
+
+Device::DriverDescriptors Device::GetDriverDescriptors(void)
+{
+    DriverDescriptors drivers;
+    const auto nDeviceInput { SDL_GetNumAudioDrivers() };
+
+    for (auto i = 0u; i < nDeviceInput; ++i) {
+        drivers.push_back(SDL_GetAudioDriver(i));
+    }
+    return drivers;
+}
+
+Device::SDLDeviceDescriptors Device::GetDeviceDescriptors(void)
+{
+    SDLDeviceDescriptors devices;
+    const auto nDeviceInput { SDL_GetNumAudioDevices(true) };
+    std::cout << nDeviceInput << std::endl;
+    for (auto i = 0u; i < nDeviceInput; ++i) {
+        devices.push_back({
+            SDL_GetAudioDeviceName(i, true),
+            true,
+            false
+        });
+    }
+    const auto nDeviceOutput { SDL_GetNumAudioDevices(false) };
+    for (auto i = 0u; i < nDeviceOutput; ++i) {
+        if (auto it = std::find_if(devices.begin(), devices.end(), [i](const SDLDeviceDescriptor &desc) -> bool {
+            std::string deviceName(SDL_GetAudioDeviceName(i, false));
+            return (desc.name == deviceName);
+        }); it != devices.end()) {
+            it->hasOutput = true;
+            continue;
+        }
+        devices.push_back({
+            SDL_GetAudioDeviceName(i, false),
+            false,
+            true
+        });
+    }
+    return devices;
+}

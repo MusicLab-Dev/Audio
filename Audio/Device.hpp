@@ -48,9 +48,18 @@ public:
         ChannelArrangement  channelArrangement { ChannelArrangement::Mono };
     };
 
+    /** @brief Descibes SDL device beahaviours */
+    struct alignas_cacheline SDLDeviceDescriptor
+    {
+        std::string         name { "untitled" };
+        bool                hasInput { false };
+        bool                hasOutput { false };
+    };
+
 
     /** @brief A list of logical device descriptors used to introspect the hardware device */
-    using Descriptors = std::vector<Descriptor>;
+    using SDLDeviceDescriptors = std::vector<SDLDeviceDescriptor>;
+    using DriverDescriptors = std::vector<std::string>;
 
     /** @brief Construct a device using a descriptor */
     Device(const Descriptor &descriptor, AudioCallback &&callback);
@@ -113,8 +122,11 @@ public:
     /** @brief Release the backend audio driver */
     static void ReleaseDriver(void);
 
+    /** @brief Get all driver descriptors */
+    static DriverDescriptors GetDriverDescriptors(void);
+
     /** @brief Get all device descriptors */
-    static Descriptors GetDeviceDescriptors(void);
+    static SDLDeviceDescriptors GetDeviceDescriptors(void);
 
     void reloadDriver(void);
 
