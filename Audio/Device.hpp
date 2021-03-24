@@ -130,7 +130,12 @@ public:
     static DeviceDescriptors GetDeviceDescriptors(void);
     static void DebugDeviceDescriptors(void);
 
-    void reloadDriver(void);
+    /** @brief Reload the device interface according to the internal descriptor */
+    void reloadDevice(void);
+
+    /** @brief Reload the audio driver back-end with a specific driver name. Return true on success */
+    [[nodiscard]] bool reloadDriver(const std::string &driverName) noexcept;
+
 
 private:
     SDL_AudioDeviceID _deviceID {};

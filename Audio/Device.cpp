@@ -12,7 +12,7 @@ using namespace Audio;
 Device::Device(const SDLDescriptor &descriptor, AudioCallback &&callback)
     : _descriptor(descriptor), _callback(std::move(callback))
 {
-    reloadDriver();
+    reloadDevice();
 }
 
 Device::~Device(void)

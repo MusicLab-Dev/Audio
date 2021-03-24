@@ -334,11 +334,11 @@ void Interpreter::parseSettingsCommand(void)
     if (!changed)
         return;
     else if (!_running) {
-        _device.reloadDriver();
+        _device.reloadDevice();
         prepareCache();
     } else {
         _device.stop();
-        _device.reloadDriver();
+        _device.reloadDevice();
         prepareCache();
         _device.start();
     }

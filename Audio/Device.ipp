@@ -7,7 +7,7 @@
 
 inline void Audio::Device::InitDriver(void)
 {
-    if (SDL_InitSubSystem(SDL_INIT_AUDIO))
+    if (SDL_Init(SDL_INIT_AUDIO))
         throw std::runtime_error(std::string("Couldn't initialize SDL_Audio: ") + SDL_GetError());
 
     DebugDeviceDescriptors();
@@ -16,11 +16,16 @@ inline void Audio::Device::InitDriver(void)
 
 inline void Audio::Device::ReleaseDriver(void)
 {
-    SDL_QuitSubSystem(SDL_INIT_AUDIO);
+    // SDL_QuitSubSystem(SDL_INIT_AUDIO);
     SDL_Quit();
 }
 
-inline void Audio::Device::reloadDriver(void)
+inline bool Audio::Device::reloadDriver(const std::string &driverName) noexcept
+{
+    return !SDL_AudioInit(driverName.c_str());
+}
+
+inline void Audio::Device::reloadDevice(void)
 {
     std::cout << "Reload driver" << std::endl;
     constexpr auto GetFormat = [](const Format format) -> SDL_AudioFormat {
