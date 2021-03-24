@@ -57,6 +57,14 @@ inline void Audio::Device::reloadDevice(void)
         throw std::runtime_error(std::string("Couldn't open audio: ") + SDL_GetError());
 }
 
+inline bool Audio::Device::setName(const std::string &name)
+{
+    if (name == _descriptor.name)
+        return false;
+    _descriptor.name = name;
+    return true;
+}
+
 inline bool Audio::Device::setSampleRate(const SampleRate sampleRate) noexcept
 {
     if (sampleRate == _descriptor.sampleRate)

@@ -78,41 +78,32 @@ public:
     [[nodiscard]] bool running(void) const noexcept { return (SDL_GetAudioDeviceStatus(_deviceID) == SDL_AUDIO_PLAYING); }
 
 
-    /** @brief Get the actual format */
+    /** @brief Get/Set the actual device name */
     [[nodiscard]] std::string_view name(void) const noexcept { return _descriptor.name; }
+    bool setName(const std::string &name) noexcept;
 
 
-    /** @brief Get the actual sample rate */
+    /** @brief Get/Set the actual sample rate */
     [[nodiscard]] SampleRate sampleRate(void) const noexcept { return _descriptor.sampleRate; }
-
-    /** @brief Set the sample rate, return true if the value changed */
     bool setSampleRate(const SampleRate sampleRate) noexcept;
 
 
-    /** @brief Get the actual format */
+    /** @brief Get/Set the actual format */
     [[nodiscard]] Format format(void) const noexcept { return _descriptor.format; }
-
-    /** @brief Set the format, return true if the value changed */
     bool setFormat(const Format format) noexcept;
 
 
-    /** @brief Get the actual midiChannels */
+    /** @brief Get/Set the actual midiChannels */
     [[nodiscard]] ChannelArrangement channelArrangement(void) const noexcept { return _descriptor.channelArrangement; }
-
-    /** @brief Set the channelArrangement, return true if the value changed */
     bool setChannelArrangement(const ChannelArrangement channelArrangement) noexcept;
 
 
-    /** @brief Get the actual audio block size */
+    /** @brief Get/Set the actual audio block size */
     [[nodiscard]] std::uint16_t blockSize(void) const noexcept { return _descriptor.blockSize; }
-
-    /** @brief Set the audio block size, return true if the value changed */
     bool setBlockSize(const std::uint16_t blockSize) noexcept;
 
-    /** @brief Get the actual audio block size */
+    /** @brief Get/Set the actual midi channels */
     [[nodiscard]] std::uint16_t midiChannels(void) const noexcept { return _descriptor.midiChannels; }
-
-    /** @brief Set the audio block size, return true if the value changed */
     bool setMidiChannels(const MidiChannels midiChannels) noexcept;
 
 
