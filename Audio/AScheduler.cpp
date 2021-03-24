@@ -29,18 +29,91 @@ bool AScheduler::setState(const State state) noexcept
 
 #include <iostream>
 
-void AScheduler::setProcessBeatSize(const std::uint32_t size) noexcept
-{
-    if (size == _processBeatSize)
-        return;
-    _processBeatSize = size;
-}
+// void AScheduler::setProcessBeatSize(const std::uint32_t size) noexcept
+// {
+//     if (size == _processBeatSize)
+//         return;
+//     _processBeatSize = size;
+// }
+
+// bool AScheduler::setProcessBlockSize(const std::size_t processBlockSize) noexcept
+// {
+//     if (_processBlockSize == processBlockSize)
+//         return false;
+//     _processBlockSize = processBlockSize;
+//     return true;
+// }
 
 void AScheduler::setBeatRange(const BeatRange range) noexcept
 {
     if (range == _currentBeatRange)
         return;
     _currentBeatRange = range;
+}
+
+bool AScheduler::setLoopBeatRange(const BeatRange loopBeatRange) noexcept
+{
+    if (_loopBeatRange == loopBeatRange)
+        return false;
+    _loopBeatRange = loopBeatRange;
+    return true;
+}
+
+void AScheduler::setIsLooping(const bool isLooping) noexcept
+{
+    if (isLooping == _isLooping)
+        return;
+    _isLooping = isLooping;
+}
+
+void AScheduler::processBeatMiss(void)
+{
+    _beatMissCount += _beatMissOffset;
+    if (_beatMissCount >= 1) {
+        // std::cout << "<blop>" << std::endl;
+        _beatMissCount -= 1;
+        _currentBeatRange = {
+            _currentBeatRange.from,
+            _currentBeatRange.to + 1
+        };
+    }
+}
+void AScheduler::processLooping(void)
+{
+    if (_isLooping && (_currentBeatRange.to > _loopBeatRange.to)) {
+        _currentBeatRange = {
+            0u,
+            _processBeatSize
+        };
+    }
+}
+
+void AScheduler::setProcessParamByBeatSize(const Beat processBeatSize, const SampleRate sampleRate)
+{
+
+}
+
+bool AScheduler::setProcessParamByBlockSize(const std::size_t processBlockSize, const SampleRate sampleRate)
+{
+    // 1.4
+    const double beats = static_cast<double>(processBlockSize) / sampleRate / project()->tempo() * Audio::BeatPrecision;
+    // 1
+    const double beatsFloor = std::floor(beats);
+    // 2
+    const double beatsCeil = std::ceil(beats);
+
+    // 2 - 1.4 = 0.6
+    if (auto ceilDt = beatsCeil - beats, floorDt = beats - beatsFloor; ceilDt < floorDt) {
+        _beatMissOffset = ceilDt;
+        _processBeatSize = -beatsCeil;
+    } else {
+        _beatMissOffset = floorDt;
+        _processBeatSize = beatsFloor;
+    }
+    _beatMissCount = 0.0;
+    _currentBeatRange = { 0u, _processBeatSize };
+
+    return true;
 }
 
 void AScheduler::buildNodeTask(const Node *node,

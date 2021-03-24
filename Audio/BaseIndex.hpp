@@ -47,6 +47,8 @@ struct alignas_eighth_cacheline Audio::BeatRange
     inline BeatRange &operator+=(const Beat size) noexcept { from += size; to += size; return *this; }
     inline BeatRange operator-(const Beat size) noexcept { return BeatRange({ from - size, to - size }); }
     inline BeatRange &operator-=(const Beat size) noexcept { from -= size; to -= size; return *this; }
+
+    inline void increment(const Beat inc) noexcept { from = to; to += inc; }
 };
 
 static_assert_fit_eighth_cacheline(Audio::BeatRange);

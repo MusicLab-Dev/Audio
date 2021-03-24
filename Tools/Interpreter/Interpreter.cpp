@@ -82,35 +82,16 @@ Interpreter::~Interpreter(void)
 
 void Interpreter::prepareCache(void)
 {
-    const double beats = static_cast<float>(_device.blockSize()) / _device.sampleRate() / _scheduler.project()->tempo() * Audio::BeatPrecision;
-    const double beatsNorm = std::ceil(beats);
-
-    const double processBlockSize = beatsNorm / Audio::BeatPrecision * _scheduler.project()->tempo() * _device.sampleRate();
-    const std::size_t processBlockSizeNorm = std::floor(processBlockSize);
-    double rest = 0.0;
-    const double sampleMissPerBlock = std::modf(processBlockSize, &rest);
-    const double beatMissPerBlock = rest == 0.0 ? 0.0 : sampleMissPerBlock / _device.sampleRate() / _scheduler.project()->tempo() * Audio::BeatPrecision;
-    _scheduler._beatMissOffset = beatMissPerBlock;
-    _scheduler.setProcessBlockSize(processBlockSizeNorm);
-
     const auto specs = getAudioSpecs();
-    std::cout << "_device.blockSize(): " << _device.blockSize() << std::endl;
-    std::cout << "sampleMissPerBlock: " << sampleMissPerBlock << std::endl;
-    std::cout << "beatMissPerBlock: " << beatMissPerBlock << std::endl;
-    std::cout << "beats: " << beats << std::endl;
-    std::cout << "beatsNorm: " << beatsNorm << std::endl;
-    std::cout << "processBlockSize: " << processBlockSize << std::endl;
-    std::cout << "processBlockSizeNorm: " << processBlockSizeNorm << std::endl;
-    std::cout << "rest: " << rest << std::endl;
-    std::cout << "diff: " << beats - (int)beats << std::endl;
-    std::cout << "size: " << _device.blockSize() << std::endl;
-    std::cout << "sr: " << specs.sampleRate << std::endl;
-    std::cout << "tempo: " << _scheduler.project()->tempo() << std::endl;
-    _scheduler.setProcessBeatSize(beatsNorm);
+
+    // _scheduler.setProcessBeatSize(beatsNorm);
+    _scheduler.setProcessParamByBlockSize(1024u, specs.sampleRate);
+
     _scheduler.setIsLooping(true);
     _scheduler.setLoopBeatRange(MakeBeatRange(0u, 4u, NoteType::QuarterNote));
-    _scheduler.setBeatRange(Audio::BeatRange({ 0u, _scheduler.processBeatSize() }));
+
     _scheduler.prepareCache(specs);
+
     std::cout << "scheduler::processBeatSize: " << _scheduler.processBeatSize() << std::endl;
     std::cout << "scheduler::LoopingRange: " << _scheduler.loopBeatRange() << std::endl;
     std::cout << "beatRange: " << _scheduler.currentBeatRange() << std::endl;
@@ -340,7 +321,7 @@ void Interpreter::parseSettingsCommand(void)
         changed = _device.setBlockSize(getNextWordAs<unsigned int>("Interpreter::parseSettingsCommand: Invalid blockSize input value"));
         break;
     case "processBlockSize"_hash:
-        changed = _scheduler.setProcessBlockSize(getNextWordAs<unsigned int>("Interpreter::parseSettingsCommand: Invalid blockSize input value"));
+        changed = _scheduler.setProcessParamByBlockSize(getNextWordAs<unsigned int>("Interpreter::parseSettingsCommand: Invalid blockSize input value"), getAudioSpecs().sampleRate);
         break;
     case "help"_hash:
     case "?"_hash:

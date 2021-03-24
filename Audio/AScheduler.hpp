@@ -65,7 +65,26 @@ public:
 
     /** @brief Get / set internal process beat size */
     [[nodiscard]] std::uint32_t processBeatSize(void) const noexcept { return _processBeatSize; }
-    void setProcessBeatSize(const std::uint32_t size) noexcept;
+    // void setProcessBeatSize(const std::uint32_t size) noexcept;
+
+    /** @brief Get / Set the process block size */
+    [[nodiscard]] std::size_t processBlockSize(void) const noexcept { return _processBlockSize; }
+    // bool setProcessBlockSize(const std::size_t processBlockSize) noexcept;
+
+    /** @brief Get / Set the loop beat range */
+    [[nodiscard]] BeatRange loopBeatRange(void) const noexcept { return _loopBeatRange; }
+    bool setLoopBeatRange(const BeatRange loopBeatRange) noexcept;
+
+    /** @brief Get / Set the loop status */
+    [[nodiscard]] bool isLooping(void) const noexcept { return _isLooping; }
+    void setIsLooping(const bool loopBeatRange) noexcept;
+
+
+    /** @brief Setup processBeatSize & processBlockSize parameters with a desired processBeatSize */
+    void setProcessParamByBeatSize(const Beat processBeatSize, const SampleRate sampleRate);
+
+    /** @brief Setup processBeatSize & processBlockSize parameters with a desired processBlockSize. Return true if processBlockSize is used */
+    bool setProcessParamByBlockSize(const std::size_t processBlockSize, const SampleRate sampleRate);
 
     /** @brief Add apply event to be dispatched */
     template<typename Apply>
@@ -112,11 +131,21 @@ private:
     std::unique_ptr<Flow::Scheduler> _scheduler { std::make_unique<Flow::Scheduler>() };
     Flow::Graph _graph {};
     Core::TinyVector<Event> _events {};
-    BeatRange _currentBeatRange {};
     ProjectPtr _project {};
     std::atomic<State> _state { State::Pause };
-    std::uint32_t _processBeatSize { 0u };
     Buffer _overflowCache {};
+
+    BeatRange _currentBeatRange {};
+    Beat _processBeatSize { 0u };
+    std::size_t _processBlockSize { 0u };
+
+    /** @brief Used to loop over a specific BeatRange */
+    Audio::BeatRange _loopBeatRange {};
+    bool _isLooping { true };
+
+    /** @brief Used to balance time between BeatRanges & sample */
+    double _beatMissCount { 0.0 };
+    double _beatMissOffset { 0.0 };
 
 protected:
     static inline Core::SPSCQueue<std::uint8_t> _AudioQueue { 65536 };
@@ -140,6 +169,13 @@ private:
     bool produceAudioData(const BufferView output);
 
     bool flushOverflowCache(void);
+
+    /** @brief Process looping, it modify the currentBeatRange */
+    void processLooping(void);
+
+    /** @brief Process the beat misses, it modify the incrementation of the currentBeatRange */
+    void processBeatMiss(void);
+
 
 public:
     /** @brief Schedule the project graph */
