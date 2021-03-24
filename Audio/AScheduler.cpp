@@ -69,8 +69,19 @@ void AScheduler::setIsLooping(const bool isLooping) noexcept
 void AScheduler::processBeatMiss(void)
 {
     _beatMissCount += _beatMissOffset;
-    if (_beatMissCount >= 1) {
-        // std::cout << "<blop>" << std::endl;
+    if (_beatMissCount <= -1) {
+        // std::cout << "<MISS> negative: " << _beatMissOffset << std::endl;
+        // std::cout << "  - " << _beatMissCount << std::endl;
+        _beatMissCount += 1;
+        // std::cout << "  -> " << _beatMissCount << std::endl;
+        // std::cout << "  - " << _currentBeatRange << std::endl;
+        _currentBeatRange = {
+            _currentBeatRange.from,
+            _currentBeatRange.to - 1
+        };
+        // std::cout << "  -> " << _currentBeatRange << std::endl;
+    } else if (_beatMissCount >= 1) {
+        // std::cout << "<MISS> positive: " << _beatMissOffset << std::endl;
         _beatMissCount -= 1;
         _currentBeatRange = {
             _currentBeatRange.from,
@@ -85,6 +96,7 @@ void AScheduler::processLooping(void)
             0u,
             _processBeatSize
         };
+        _beatMissCount = 0.0;
     }
 }
 
@@ -104,14 +116,17 @@ bool AScheduler::setProcessParamByBlockSize(const std::size_t processBlockSize, 
 
     // 2 - 1.4 = 0.6
     if (auto ceilDt = beatsCeil - beats, floorDt = beats - beatsFloor; ceilDt < floorDt) {
-        _beatMissOffset = ceilDt;
-        _processBeatSize = -beatsCeil;
+        _beatMissOffset = -ceilDt;
+        _processBeatSize = beatsCeil;
     } else {
         _beatMissOffset = floorDt;
         _processBeatSize = beatsFloor;
     }
     _beatMissCount = 0.0;
     _currentBeatRange = { 0u, _processBeatSize };
+
+    // _processBlockSize = static_cast<float>(_processBeatSize) / BeatPrecision * project()->tempo() * sampleRate;
+    _processBlockSize = processBlockSize;
 
     return true;
 }

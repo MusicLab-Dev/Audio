@@ -21,7 +21,7 @@ void Scheduler::onAudioBlockGenerated(void)
     //     std::cout << "Audio block non-null: " << count << std::endl;
 
     // std::cout << "beatrangeProcess: " << this->processBeatSize() << std::endl;
-    std::cout << "next beatrange: " << currentBeatRange() << std::endl;
+    // std::cout << "next beatrange: " << currentBeatRange() << std::endl;
 
 
 

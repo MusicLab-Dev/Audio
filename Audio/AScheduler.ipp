@@ -8,21 +8,30 @@
 inline Audio::AScheduler::AScheduler(void)
 {
     _graph.setRepeatCallback([this](void) -> bool {
+        // std::cout << "setRepeatCallback !!!!!" << std::endl;
         // std::cout << "_currentBeatRange " << _currentBeatRange << std::endl;
         // std::cout << "_processBeatSize " << _processBeatSize << std::endl;
         // std::cout << "___currentBeatRange " << _currentBeatRange << std::endl;
         // std::cout << "___processBeatSize " << _processBeatSize << std::endl;
+
+        static auto SampleCpt = 0u;
+
+
+
         if (_overflowCache) {
             onAudioQueueBusy();
         } else {
+            // std::cout << "Range " << _currentBeatRange << std::endl;
+            // std::cout << "SampleCpt " << SampleCpt << std::endl;
             if (produceAudioData(_project->master()->cache())) {
-                _currentBeatRange.increment(_processBeatSize);
-                processLooping();
-                processBeatMiss();
                 onAudioBlockGenerated();
             } else {
                 onAudioQueueBusy();
             }
+            _currentBeatRange.increment(_processBeatSize);
+            processBeatMiss();
+            processLooping();
+            SampleCpt += _processBlockSize;
         }
         if (state() == State::Pause)
             std::cout << "State:" << static_cast<int>(state()) << std::endl;

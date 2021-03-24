@@ -38,7 +38,7 @@ inline void Audio::Sampler::onAudioParametersChanged(void)
 
 inline void Audio::Sampler::sendNotes(const NoteEvents &notes) noexcept
 {
-    std::cout << "\t - " << "_NOTES " << notes.size() << std::endl;
+    // std::cout << "\t - " << "_NOTES " << notes.size() << std::endl;
     _noteManager.feedNotes(notes);
 }
 
@@ -92,6 +92,6 @@ inline void Audio::Sampler::receiveAudio(BufferView output) noexcept
         // }
     }
     //     output.clear();
-    if (hasProcess)
-        std::cout << " - HAS PROCESS: " << hasProcess << std::endl;
+    // if (hasProcess)
+    //     std::cout << " - HAS PROCESS: " << hasProcess << std::endl;
 }

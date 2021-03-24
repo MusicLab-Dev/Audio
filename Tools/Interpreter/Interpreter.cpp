@@ -82,14 +82,14 @@ Interpreter::~Interpreter(void)
 
 void Interpreter::prepareCache(void)
 {
-    const auto specs = getAudioSpecs();
 
     // _scheduler.setProcessBeatSize(beatsNorm);
-    _scheduler.setProcessParamByBlockSize(1024u, specs.sampleRate);
+    _scheduler.setProcessParamByBlockSize(1024u, getAudioSpecs().sampleRate);
 
-    _scheduler.setIsLooping(true);
+    _scheduler.setIsLooping(false);
     _scheduler.setLoopBeatRange(MakeBeatRange(0u, 4u, NoteType::QuarterNote));
 
+    const auto specs = getAudioSpecs();
     _scheduler.prepareCache(specs);
 
     std::cout << "scheduler::processBeatSize: " << _scheduler.processBeatSize() << std::endl;
