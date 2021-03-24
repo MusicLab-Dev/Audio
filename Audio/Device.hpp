@@ -124,9 +124,11 @@ public:
 
     /** @brief Get all driver descriptors */
     static DriverDescriptors GetDriverDescriptors(void);
+    static void DebugDriverDescriptors(void);
 
     /** @brief Get all device descriptors */
     static SDLDeviceDescriptors GetDeviceDescriptors(void);
+    static void DebugDeviceDescriptors(void);
 
     void reloadDriver(void);
 

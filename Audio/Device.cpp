@@ -30,6 +30,26 @@ void Device::InternalAudioCallback(void *userdata, std::uint8_t *data, int size)
     }
 }
 
+void Device::DebugDeviceDescriptors(void)
+{
+    const auto Devices = Device::GetDeviceDescriptors();
+
+    std::cout << "Devices:" << std::endl;
+    for (const auto &d : Devices) {
+        std::cout << "  - " << d.name << " (in: " << d.hasInput << ", out: " << d.hasOutput << ")" << std::endl;
+    }
+}
+
+void Device::DebugDriverDescriptors(void)
+{
+    const auto Drivers = Device::GetDriverDescriptors();
+
+    std::cout << "Drivers:" << std::endl;
+    for (const auto &d : Drivers) {
+        std::cout << "  - " << d << std::endl;
+    }
+}
+
 Device::DriverDescriptors Device::GetDriverDescriptors(void)
 {
     DriverDescriptors drivers;

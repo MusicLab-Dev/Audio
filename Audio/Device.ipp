@@ -9,6 +9,9 @@ inline void Audio::Device::InitDriver(void)
 {
     if (SDL_InitSubSystem(SDL_INIT_AUDIO))
         throw std::runtime_error(std::string("Couldn't initialize SDL_Audio: ") + SDL_GetError());
+
+    DebugDeviceDescriptors();
+    DebugDriverDescriptors();
 }
 
 inline void Audio::Device::ReleaseDriver(void)

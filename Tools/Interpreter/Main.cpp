@@ -126,16 +126,6 @@ int main(int ac, char **av)
 
         } else {
             Device::DriverInstance driverInstance;
-            const auto Devices = Device::GetDeviceDescriptors();
-            std::cout << "Devices:" << std::endl;
-            for (const auto &d : Devices) {
-                std::cout << "  - " << d.name << " (in: " << d.hasInput << ", out: " << d.hasOutput << ")" << std::endl;
-            }
-            const auto Drivers = Device::GetDriverDescriptors();
-            std::cout << "Drivers:" << std::endl;
-            for (const auto &d : Drivers) {
-                std::cout << "  - " << d << std::endl;
-            }
 
             PluginTable::Instance pluginTableInstance;
             Interpreter interpreter;
