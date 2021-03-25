@@ -74,7 +74,7 @@ Device::DeviceDescriptors Device::GetDeviceDescriptors(void)
         });
     }
     const auto nDeviceOutput { SDL_GetNumAudioDevices(false) };
-    for (auto i = 0u; i < nDeviceOutput; ++i) {
+    for (auto i = 0; i < nDeviceOutput; ++i) {
         if (auto it = std::find_if(devices.begin(), devices.end(), [i](const DeviceDescriptor &desc) -> bool {
             std::string deviceName(SDL_GetAudioDeviceName(i, false));
             return (desc.name == deviceName);
