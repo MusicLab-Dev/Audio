@@ -37,12 +37,13 @@
     }
 
 
-#define REGISTER_PLUGIN(Name, Description, Tags, ...) \
+#define REGISTER_PLUGIN(Name, Description, Flags, Tags, ...) \
 private: \
     static inline const Audio::PluginMetaData _MetaData = [] { \
         return Audio::PluginMetaData { \
             Audio::TranslationMetaData { Name, Description }, \
             Audio::ControlMetaDataList { ADD_PREFIX_COMMA_EACH(_REGISTER_METADATA_, __VA_ARGS__) }, \
+            Flags, \
             Tags \
         }; \
     }(); \
@@ -76,6 +77,8 @@ private:
 #define TR(Lang, Text) (Audio::TranslationPair { Lang, Text })
 #define _FORWARD_TAG(tag) Audio::IPluginFactory::Tags::tag
 #define TAGS(...) (Audio::IPluginFactory::Tags { Audio::MakeFlags<Audio::IPluginFactory::Tags, std::uint32_t>(FOR_COMMA_EACH(_FORWARD_TAG, __VA_ARGS__)) })
+#define _FORWARD_FLAG(flag) Audio::IPluginFactory::Flags::flag
+#define FLAGS(...) (Audio::IPluginFactory::Flags { Audio::MakeFlags<Audio::IPluginFactory::Flags, std::uint32_t>(FOR_COMMA_EACH(_FORWARD_FLAG, __VA_ARGS__)) })
 
 #define _TR_DUMMY_TABLE TR_TABLE(TR({},{}))
 #define _REGISTER_DUMMY_CONTROL REGISTER_CONTROL(dummy, _TR_DUMMY_TABLE, _TR_DUMMY_TABLE)

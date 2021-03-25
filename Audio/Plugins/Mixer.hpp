@@ -25,6 +25,8 @@ class Audio::Mixer final : public Audio::IPlugin
             TR(English, "Mixer allow to mix multiple audio source"),
             TR(French, "Le mixeur permet de mixer plusieurs sources sonore")
         ),
+        /* Plugin flags */
+        FLAGS(AudioInput, AudioOutput, ControlInput),
         /* Plugin tags */
         TAGS(Mastering),
         /* Control list */
@@ -45,15 +47,10 @@ class Audio::Mixer final : public Audio::IPlugin
     )
 
 public:
-    virtual Flags getFlags(void) const noexcept;
+    virtual void sendAudio(const BufferViews &inputs);
+    virtual void receiveAudio(BufferView output);
 
-    virtual void sendAudio(const BufferViews &inputs) noexcept;
-    virtual void receiveAudio(BufferView output) noexcept;
-
-    virtual void sendNotes(const NoteEvents &notes) noexcept {}
-    virtual void receiveNotes(NoteEvents &notes) noexcept {}
-
-    virtual void onAudioGenerationStarted(const BeatRange &range) noexcept {}
+    virtual void onAudioGenerationStarted(const BeatRange &range) {}
 
 private:
     BufferViews _cache;

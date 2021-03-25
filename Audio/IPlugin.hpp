@@ -21,6 +21,8 @@ namespace Audio
     constexpr auto English = "EN";
     constexpr auto French = "FR";
 
+    /** @brief A list of paths */
+    using ExternalPaths = Core::TinyVector<std::string_view>;
 
     /** @brief A list of points events */
     using ControlEvents = Core::TinyVector<ControlEvent>;
@@ -66,6 +68,7 @@ namespace Audio
     {
         TranslationMetaData translations;
         ControlMetaDataList controls;
+        Audio::IPluginFactory::Flags flags;
         Audio::IPluginFactory::Tags tags;
     };
 
@@ -82,8 +85,8 @@ public:
 
 
     /** @brief Get the audio specs of this plugin */
-    AudioSpecs &audioSpecs(void) noexcept { return _specs; }
-    const AudioSpecs &audioSpecs(void) const noexcept { return _specs; }
+    [[nodiscard]] AudioSpecs &audioSpecs(void) noexcept { return _specs; }
+    [[nodiscard]] const AudioSpecs &audioSpecs(void) const noexcept { return _specs; }
 
     /** @brief Update internal audio specs */
     void updateAudioSpecs(const AudioSpecs &specs)
@@ -109,26 +112,31 @@ public:
 
 
     /** @brief  */
-    virtual Flags getFlags(void) const noexcept = 0;
+    [[nodiscard]] Flags getFlags(void) const noexcept { return getMetaData().flags; };
+
 
     /** @brief  */
-    virtual void sendAudio(const BufferViews &inputs) noexcept = 0;
+    virtual void sendAudio(const BufferViews &inputs) { throw std::runtime_error("IPlugin::sendAudio: Not implemented"); }
 
     /** @brief  */
-    virtual void receiveAudio(BufferView output) noexcept = 0;
+    virtual void receiveAudio(BufferView output) { throw std::runtime_error("IPlugin::receiveAudio: Not implemented"); }
 
     /** @brief  */
-    virtual void sendNotes(const NoteEvents &notes) noexcept = 0;
+    virtual void sendNotes(const NoteEvents &notes) { throw std::runtime_error("IPlugin::sendNotes: Not implemented"); }
 
     /** @brief  */
-    virtual void receiveNotes(NoteEvents &notes) noexcept = 0;
+    virtual void receiveNotes(NoteEvents &notes) { throw std::runtime_error("IPlugin::receiveNotes: Not implemented"); }
 
     /** @brief  */
-    virtual void sendControls(const ControlEvents &controls) noexcept = 0;
+    virtual void sendControls(const ControlEvents &controls) { throw std::runtime_error("IPlugin::sendControls: Not implemented"); }
+
+
+    /** @brief Set a plugin's external paths (if flag SingleExternalInput or MultipleExternalInputs is set) */
+    virtual void setExternalPaths(const ExternalPaths &paths) { throw std::runtime_error("IPlugin::setExternalPaths: Not implemented"); }
 
 
     /** @brief Signal called when the generation of the audio block start */
-    virtual void onAudioGenerationStarted(const BeatRange &range) noexcept = 0;
+    virtual void onAudioGenerationStarted(const BeatRange &range) = 0;
 
 
     /** @brief Various flags helpers */

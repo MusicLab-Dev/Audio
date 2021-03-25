@@ -23,12 +23,14 @@ class Audio::IPluginFactory
 {
 public:
     enum class Flags : std::uint16_t {
-        None            = 0,
-        AudioInput      = 1,
-        AudioOutput     = 1 << 1,
-        NoteInput       = 1 << 2,
-        NoteOutput      = 1 << 3,
-        ControlInput    = 1 << 4
+        None                    = 0,
+        AudioInput              = 1,
+        AudioOutput             = 1 << 1,
+        NoteInput               = 1 << 2,
+        NoteOutput              = 1 << 3,
+        ControlInput            = 1 << 4,
+        SingleExternalInput     = 1 << 5,
+        MultipleExternalInputs  = 1 << 6
     };
 
     enum class SDK : std::uint32_t {

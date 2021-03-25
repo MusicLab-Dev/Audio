@@ -3,21 +3,9 @@
  * @ Description: Sampler implementation
  */
 
-
 #include <Audio/DSP/Merge.hpp>
 
-inline Audio::IPlugin::Flags Audio::Mixer::getFlags(void) const noexcept
-{
-    return static_cast<Flags>(
-        static_cast<std::size_t>(Flags::AudioInput) |
-        static_cast<std::size_t>(Flags::AudioOutput) |
-        static_cast<std::size_t>(Flags::ControlInput)
-    );
-}
-
-#include <iostream>
-
-inline void Audio::Mixer::receiveAudio(BufferView output) noexcept
+inline void Audio::Mixer::receiveAudio(BufferView output)
 {
     const auto size = output.size<float>();
 
@@ -36,7 +24,7 @@ inline void Audio::Mixer::receiveAudio(BufferView output) noexcept
     }
 }
 
-inline void Audio::Mixer::sendAudio(const BufferViews &inputs) noexcept
+inline void Audio::Mixer::sendAudio(const BufferViews &inputs)
 {
     _cache = inputs;
 }

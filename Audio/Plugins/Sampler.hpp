@@ -29,6 +29,8 @@ class Audio::Sampler final : public Audio::IPlugin
             TR(English, "Sampler allow to load an audio file and play it as a note"),
             TR(French, "Le sampleur permet de charger un fichier audio et de le jouer comme une note")
         ),
+        /* Plugin flags */
+        FLAGS(AudioOutput, ControlInput, NoteInput, SingleExternalInput),
         /* Plugin tags */
         TAGS(Sampler),
         /* Control list */
@@ -63,21 +65,19 @@ class Audio::Sampler final : public Audio::IPlugin
     )
 
 public:
+    virtual void receiveAudio(BufferView output);
 
-    virtual Flags getFlags(void) const noexcept;
+    virtual void sendNotes(const NoteEvents &notes);
 
-    virtual void sendAudio(const BufferViews &inputs) noexcept {}
-    virtual void receiveAudio(BufferView output) noexcept;
-
-    virtual void sendNotes(const NoteEvents &notes) noexcept;
-    virtual void receiveNotes(NoteEvents &notes) noexcept {}
+    virtual void setExternalPaths(const ExternalPaths &paths) {}
 
     virtual void onAudioParametersChanged(void);
 
     // virtual void sendControls(const ControlEvents &controls) noexcept {
     // }
 
-    virtual void onAudioGenerationStarted(const BeatRange &range) noexcept {}
+    virtual void onAudioGenerationStarted(const BeatRange &range) {}
+
 
 public:
     /** Load a sample file with a specific type */

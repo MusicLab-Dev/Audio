@@ -6,17 +6,6 @@
 #include <Audio/BufferOctave.hpp>
 #include <Audio/SampleFile/SampleManager.hpp>
 
-inline Audio::IPlugin::Flags Audio::Sampler::getFlags(void) const noexcept
-{
-    return static_cast<Flags>(
-        static_cast<std::size_t>(Flags::AudioOutput) |
-        static_cast<std::size_t>(Flags::ControlInput) |
-        static_cast<std::size_t>(Flags::NoteInput)
-    );
-}
-
-#include <iostream>
-
 template<typename Type>
 inline void Audio::Sampler::loadSample(const std::string &path)
 {
@@ -36,7 +25,7 @@ inline void Audio::Sampler::onAudioParametersChanged(void)
 
 }
 
-inline void Audio::Sampler::sendNotes(const NoteEvents &notes) noexcept
+inline void Audio::Sampler::sendNotes(const NoteEvents &notes)
 {
     // std::cout << "\t - " << "_NOTES " << notes.size() << std::endl;
     _noteManager.feedNotes(notes);
@@ -44,7 +33,7 @@ inline void Audio::Sampler::sendNotes(const NoteEvents &notes) noexcept
 
 #include <Audio/DSP/Biquad.hpp>
 
-inline void Audio::Sampler::receiveAudio(BufferView output) noexcept
+inline void Audio::Sampler::receiveAudio(BufferView output)
 {
     // output.clear();
     // static bool Bool = false;
