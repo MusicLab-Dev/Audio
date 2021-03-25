@@ -9,8 +9,8 @@
 
 using namespace Audio;
 
-TEST(Point, Initialization)
-{
-    Point point(23);
+// TEST(Point, Initialization)
+// {
+    // Point point(23);
 
-}
+// }

@@ -11,5 +11,5 @@ using namespace Audio;
 
 TEST(Control, Basics)
 {
-    Control control(23, 0);
+    Control control(23);
 }
