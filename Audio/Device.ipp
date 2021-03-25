@@ -57,7 +57,7 @@ inline void Audio::Device::reloadDevice(void)
         throw std::runtime_error(std::string("Couldn't open audio: ") + SDL_GetError());
 }
 
-inline bool Audio::Device::setName(const std::string &name)
+inline bool Audio::Device::setName(const std::string &name) noexcept
 {
     if (name == _descriptor.name)
         return false;
