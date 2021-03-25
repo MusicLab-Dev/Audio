@@ -29,6 +29,8 @@ class Audio::Sampler final : public Audio::IPlugin
             TR(English, "Sampler allow to load an audio file and play it as a note"),
             TR(French, "Le sampleur permet de charger un fichier audio et de le jouer comme une note")
         ),
+        /* Plugin tags */
+        TAGS(Sampler),
         /* Control list */
         REGISTER_CONTROL(
             /* Control variable / getter / setter name */

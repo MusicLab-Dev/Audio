@@ -61,19 +61,22 @@ public:
         External        = 1 << 23
     };
 
-    ~IPluginFactory(void) {}
+    static constexpr std::string_view DefaultLang = "EN";
 
-    virtual std::string_view getName(void) = 0;
+    virtual ~IPluginFactory(void) = default;
 
-    virtual std::string_view getPath(void) = 0;
+    virtual std::string_view getName(const std::string_view &lang = DefaultLang) const = 0;
+    virtual std::string_view getDescription(const std::string_view &lang = DefaultLang) const = 0;
+
+    virtual std::string_view getPath(void) const = 0;
 
     // virtual Flags getFlags(void) = 0;
 
-    virtual Tags getTags(void) = 0;
+    virtual Tags getTags(void) const = 0;
 
     // virtual Capabilities getCapabilities(void) = 0;
 
-    virtual SDK getSDK(void) = 0;
+    virtual SDK getSDK(void) const = 0;
 
     /** @brief Instantiate a new plugin */
     virtual IPlugin *instantiate(void) = 0;

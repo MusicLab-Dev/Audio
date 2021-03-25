@@ -11,10 +11,10 @@ inline void Audio::PluginTable::updateAudioSpecs(const AudioSpecs &audioSpecs)
         instance->updateAudioSpecs(audioSpecs);
 }
 
-template<typename Type, const char *Name, Audio::IPluginFactory::Tags FactoryTags>
-Audio::IPluginFactory &Audio::PluginTable::registerFactory(void)
+template<typename Type>
+inline Audio::IPluginFactory &Audio::PluginTable::registerFactory(void)
 {
-    _factories.push(std::make_unique<Audio::InternalFactory<Type, Name, FactoryTags>>());
+    _factories.push(std::make_unique<Audio::InternalFactory<Type>>());
     return *_factories.at(_factories.size() - 1);
 }
 

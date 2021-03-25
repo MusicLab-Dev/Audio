@@ -9,29 +9,34 @@
 
 namespace Audio
 {
-    template<typename Plugin, const char *Name, Audio::IPluginFactory::Tags FactoryTags>
+    template<typename Plugin>
     class InternalFactory;
 };
 
-template<typename Plugin, const char *Name, Audio::IPluginFactory::Tags FactoryTags>
+template<typename Plugin>
 class Audio::InternalFactory final : public Audio::IPluginFactory
 {
 public:
-    static inline const std::string Path = std::string("__internal__:/") + Name;
+    static inline const std::string Path = [] {
+        return std::string("__internal__:/") += Plugin::MetaData().translations.getName("EN");
+    }();
 
-    InternalFactory(void) {}
+    InternalFactory(void) = default;
+    ~InternalFactory(void) final = default;
 
-    virtual std::string_view getName(void) noexcept final { return Name; }
+    virtual std::string_view getName(const std::string_view &lang) const final { return Plugin::MetaData().translations.getName(lang); }
 
-    virtual std::string_view getPath(void) noexcept final { return std::string_view(Path); }
+    virtual std::string_view getDescription(const std::string_view &lang) const final { return Plugin::MetaData().translations.getDescription(lang); }
 
-    virtual Tags getTags(void) noexcept final { return FactoryTags; }
+    virtual std::string_view getPath(void) const final { return std::string_view(Path); }
 
-    // virtual Capabilities getCapabilities(void) noexcept final;
+    virtual Tags getTags(void) const final { return Plugin::MetaData().tags; }
 
-    virtual SDK getSDK(void) noexcept final { return SDK::Internal; }
+    // virtual Capabilities getCapabilities(void) final;
 
-    [[nodiscard]] virtual IPlugin *instantiate(void) noexcept final { return new Plugin(); }
+    virtual SDK getSDK(void) const final { return SDK::Internal; }
+
+    [[nodiscard]] virtual IPlugin *instantiate(void) final { return new Plugin(); }
 
 private:
 };

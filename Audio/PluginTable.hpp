@@ -52,7 +52,7 @@ public:
 
     /** @todo Change Name template parameter by std::string_view ? */
     /** @brief Register a factory using a compiled plugin */
-    template<typename Type, const char *Name, IPluginFactory::Tags FactoryTags>
+    template<typename Type>
     IPluginFactory &registerFactory(void);
 
     /** @brief Instantiates a new plugin using its factory path */

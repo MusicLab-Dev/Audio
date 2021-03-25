@@ -37,16 +37,18 @@
     }
 
 
-#define REGISTER_PLUGIN(Name, Description, ...) \
+#define REGISTER_PLUGIN(Name, Description, Tags, ...) \
 private: \
     static inline const Audio::PluginMetaData _MetaData = [] { \
         return Audio::PluginMetaData { \
             Audio::TranslationMetaData { Name, Description }, \
-            Audio::ControlMetaDataList { ADD_PREFIX_COMMA_EACH(_REGISTER_METADATA_, __VA_ARGS__) } \
+            Audio::ControlMetaDataList { ADD_PREFIX_COMMA_EACH(_REGISTER_METADATA_, __VA_ARGS__) }, \
+            Tags \
         }; \
     }(); \
     std::array<Audio::ParamValue, VA_ARGC(__VA_ARGS__)> _controls; \
 public: \
+    static const Audio::PluginMetaData &MetaData(void) noexcept { return _MetaData; } \
     static constexpr std::size_t ControlCount = VA_ARGC(__VA_ARGS__); \
     [[nodiscard]] static inline const Audio::PluginMetaData &GetMetaData(void) noexcept { return _MetaData; } \
     [[nodiscard]] const Audio::PluginMetaData &getMetaData(void) const noexcept final { return GetMetaData(); } \
@@ -72,6 +74,8 @@ private:
 
 #define TR_TABLE(...) (Audio::TranslationTable { __VA_ARGS__ })
 #define TR(Lang, Text) (Audio::TranslationPair { Lang, Text })
+#define _FORWARD_TAG(tag) Audio::IPluginFactory::Tags::tag
+#define TAGS(...) (Audio::IPluginFactory::Tags { Audio::MakeFlags<Audio::IPluginFactory::Tags, std::uint32_t>(FOR_COMMA_EACH(_FORWARD_TAG, __VA_ARGS__)) })
 
 #define _TR_DUMMY_TABLE TR_TABLE(TR({},{}))
 #define _REGISTER_DUMMY_CONTROL REGISTER_CONTROL(dummy, _TR_DUMMY_TABLE, _TR_DUMMY_TABLE)

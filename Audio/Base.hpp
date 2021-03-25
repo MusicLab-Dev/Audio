@@ -92,4 +92,9 @@ namespace Audio
                 format == other.format && processBlockSize == other.processBlockSize; }
         [[nodiscard]] bool operator!=(const AudioSpecs &other) const noexcept { return !(*this == other); }
     };
+
+    /** @brief Make a combination of flags out of an enum class */
+    template<typename Output, typename Intermediate, typename ...Inputs>
+    [[nodiscard]] Output MakeFlags(const Inputs ...inputs) noexcept
+        { return static_cast<Output>((... | static_cast<Intermediate>(inputs))); }
 };

@@ -37,6 +37,22 @@ namespace Audio
     {
         TranslationTable names {};
         TranslationTable descriptions {};
+
+        /** @brief Try to find a name */
+        [[nodiscard]] std::string_view getName(const std::string_view &lang) const noexcept
+        {
+            if (const auto it = names.find([&lang](const auto &elem) { return elem.lang == lang; }); it != names.end())
+                return it->text;
+            return names.empty() ? std::string_view("Name-Error") : names[0].text;
+        }
+
+        /** @brief Try to find a description */
+        [[nodiscard]] std::string_view getDescription(const std::string_view &lang) const noexcept
+        {
+            if (const auto it = descriptions.find([&lang](const auto &elem) { return elem.lang == lang; }); it != descriptions.end())
+                return it->text;
+            return descriptions.empty() ? std::string_view("Description-Error") : descriptions[0].text;
+        }
     };
 
     struct ControlMetaData
@@ -46,11 +62,14 @@ namespace Audio
 
     using ControlMetaDataList = Core::TinyVector<ControlMetaData>;
 
-    struct PluginMetaData
+    struct alignas_cacheline PluginMetaData
     {
         TranslationMetaData translations;
         ControlMetaDataList controls;
+        Audio::IPluginFactory::Tags tags;
     };
+
+    static_assert_fit_cacheline(PluginMetaData);
 };
 
 class Audio::IPlugin

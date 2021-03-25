@@ -49,8 +49,6 @@ void Audio::PluginTable::decrementRefCount(IPlugin *plugin) noexcept_ndebug
 
 Audio::PluginTable::PluginTable(void)
 {
-    static const char MixerName[] = "Mixer";
-    registerFactory<Audio::Mixer, MixerName, Audio::IPluginFactory::Tags::Mastering>();
-    static const char SamplerName[] = "Sampler";
-    registerFactory<Audio::Sampler, SamplerName, Audio::IPluginFactory::Tags::Sampler>();
+    registerFactory<Audio::Mixer>();
+    registerFactory<Audio::Sampler>();
 }
