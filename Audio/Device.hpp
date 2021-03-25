@@ -129,9 +129,9 @@ public:
 
 
 private:
-    SDL_AudioDeviceID _deviceID {};
-    AudioCallback _callback {};
     SDLDescriptor _descriptor {};
+    AudioCallback _callback {};
+    SDL_AudioDeviceID _deviceID {};
 
     /** @brief Internal audio callback, called by backend */
     static void InternalAudioCallback(void *userdata, std::uint8_t *data, int size) noexcept;

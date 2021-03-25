@@ -114,7 +114,7 @@ public:
     void swap(BufferBase &other) noexcept { std::swap(_header, other._header); }
 
     /** @brief Clear the internal content */
-    void clear(void) { std::memset(_header + 1, 0, _header->channelByteSize * static_cast<std::size_t>(_header->channelArrangement)); }
+    void clear(void) { std::memset(reinterpret_cast<void *>(_header + 1), 0, _header->channelByteSize * static_cast<std::size_t>(_header->channelArrangement)); }
 
     /** @brief Fast allocation check */
     [[nodiscard]] operator bool(void) const noexcept { return _header; }

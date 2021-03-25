@@ -26,7 +26,7 @@ inline void Audio::Mixer::receiveAudio(BufferView output) noexcept
     for (auto k = 0u; k < _cache.size(); ++k) {
         const float *from = _cache[k].data<float>();
         float *to = output.data<float>();
-        for (auto i = 0; i < size; ++i) {
+        for (auto i = 0u; i < size; ++i) {
             if (!k)
                 to[i] = from[i] / _cache.size();
             else

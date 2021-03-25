@@ -47,7 +47,7 @@ inline void Audio::Sampler::sendNotes(const NoteEvents &notes) noexcept
 inline void Audio::Sampler::receiveAudio(BufferView output) noexcept
 {
     // output.clear();
-    static bool Bool = false;
+    // static bool Bool = false;
     // Bool = !Bool;
     // if (!Bool)
     //     return;
@@ -65,7 +65,7 @@ inline void Audio::Sampler::receiveAudio(BufferView output) noexcept
     std::size_t sampleSize = 0u;
     // std::cout << "Sampler::receiveAudio::sampleSize: " << sampleSize << std::endl;
 
-    bool hasProcess = false;
+    // bool hasProcess = false;
 
     const auto activeNote = _noteManager.getActiveNote();
     for (auto iKey = 0u; iKey < activeNote.size(); ++iKey) {
@@ -77,20 +77,20 @@ inline void Audio::Sampler::receiveAudio(BufferView output) noexcept
         //     continue;
         sampleBuffer = _buffers[bufferIdx].data<float>();
         sampleSize = _buffers[bufferIdx].size<float>();
-        hasProcess = true;
+        // hasProcess = true;
         for (auto i = 0u; i < outSize; ++i) {
             out[i] += _outputGain * sampleBuffer[_noteManager.readIndex(key)] / static_cast<float>(activeNote);
             _noteManager.incrementReadIndex(key, sampleSize);
         }
     }
-    for (auto key : _noteManager.getActiveNoteBlock()) {
+    // for (auto &key : _noteManager.getActiveNoteBlock()) {
 
         // std::cout << "note block:" << std::endl;
         // for (auto i = 0u; i < outSize; ++i) {
         //     output.data<float>(static_cast<Channel>(iChannel))[i] += _outputGain * _buffers[0].data<float>(static_cast<Channel>(iChannel))[_readIndex[key]];
         //     incrementReadIndex(key);
         // }
-    }
+    // }
     //     output.clear();
     // if (hasProcess)
     //     std::cout << " - HAS PROCESS: " << hasProcess << std::endl;

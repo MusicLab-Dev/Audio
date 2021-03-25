@@ -43,7 +43,7 @@ inline std::size_t Audio::DSP::GetResamplingSizeSemitone(const std::size_t input
     std::size_t newSize = 0u;
 
     newSize = GetResamplingSizeOctave(inputSize, nOctave);
-    for (auto i = 0u; i < nSemitone; ++i) {
+    for (auto i = 0; i < nSemitone; ++i) {
         newSize = GetResamplingSizeOneSemitone(newSize, upScale);
     }
     return newSize;

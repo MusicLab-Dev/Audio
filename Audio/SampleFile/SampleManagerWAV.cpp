@@ -172,8 +172,8 @@ bool SampleManagerWAV::WriteFile(const std::string &path, const BufferView &inpu
         static_cast<std::uint16_t>(sampleByteSize * 8u)
     };
     file.write(reinterpret_cast<char *>(&fmt), sizeof(fmt));
-    auto zero = 0u;
-    auto four = 4u;
+    // auto zero = 0u;
+    // auto four = 4u;
     if (inputBuffer.format() == Audio::Format::Floating32) {
         // Extension size
         // file.write(reinterpret_cast<char *>(&zero), 2);

@@ -55,7 +55,7 @@ Device::DriverDescriptors Device::GetDriverDescriptors(void)
     DriverDescriptors drivers;
     const auto nDeviceInput { SDL_GetNumAudioDrivers() };
 
-    for (auto i = 0u; i < nDeviceInput; ++i) {
+    for (auto i = 0; i < nDeviceInput; ++i) {
         drivers.push_back(SDL_GetAudioDriver(i));
     }
     return drivers;
@@ -66,7 +66,7 @@ Device::DeviceDescriptors Device::GetDeviceDescriptors(void)
     DeviceDescriptors devices;
     const auto nDeviceInput { SDL_GetNumAudioDevices(true) };
     std::cout << nDeviceInput << std::endl;
-    for (auto i = 0u; i < nDeviceInput; ++i) {
+    for (auto i = 0; i < nDeviceInput; ++i) {
         devices.push_back({
             SDL_GetAudioDeviceName(i, true),
             true,
