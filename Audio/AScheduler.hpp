@@ -73,18 +73,18 @@ public:
 
     /** @brief Get / Set the loop beat range */
     [[nodiscard]] BeatRange loopBeatRange(void) const noexcept { return _loopBeatRange; }
-    bool setLoopBeatRange(const BeatRange loopBeatRange) noexcept;
+    void setLoopBeatRange(const BeatRange loopBeatRange) noexcept { _loopBeatRange = loopBeatRange; }
 
     /** @brief Get / Set the loop status */
     [[nodiscard]] bool isLooping(void) const noexcept { return _isLooping; }
-    void setIsLooping(const bool loopBeatRange) noexcept;
+    void setIsLooping(const bool isLooping) noexcept { _isLooping = isLooping; }
 
 
     /** @brief Setup processBeatSize & processBlockSize parameters with a desired processBeatSize */
     void setProcessParamByBeatSize(const Beat processBeatSize, const SampleRate sampleRate);
 
     /** @brief Setup processBeatSize & processBlockSize parameters with a desired processBlockSize. Return true if processBlockSize is used */
-    bool setProcessParamByBlockSize(const std::size_t processBlockSize, const SampleRate sampleRate);
+    void setProcessParamByBlockSize(const std::size_t processBlockSize, const SampleRate sampleRate);
 
     /** @brief Add apply event to be dispatched */
     template<typename Apply>

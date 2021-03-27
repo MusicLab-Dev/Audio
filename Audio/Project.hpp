@@ -16,7 +16,7 @@ namespace Audio
     using ProjectPtr = std::shared_ptr<Project>;
 };
 
-class alignas_half_cacheline Audio::Project
+class alignas_cacheline Audio::Project
 {
 public:
     static constexpr BPM MaxBpmSupported = 400;
@@ -27,7 +27,7 @@ public:
      * Live is used when the user want to share its art :)
      */
     enum class PlaybackMode : std::uint32_t {
-        Production, Live
+        Production, Live, Partition
     };
 
     /** @brief Construct a new project with a given name */
@@ -57,16 +57,26 @@ public:
     [[nodiscard]] BPM bpm(void) const noexcept { return _bpm; }
     bool setBPM(const BPM bpm) noexcept;
 
+    /** @brief Get / Set the partition node */
+    [[nodiscard]] Node *partitionNode(void) const noexcept { return _partitionNode; }
+    bool setPartitionNode(Node *node) noexcept;
+
+    /** @brief Get / Set the partition index */
+    [[nodiscard]] std::uint32_t partitionIndex(void) const noexcept { return _partitionIndex; }
+    bool setPartitionIndex(void) noexcept { return _partitionIndex; }
+
     /** @brief Signal called when the generation of the audio block start */
     void onAudioGenerationStarted(const BeatRange &range);
 
 private:
     NodePtr             _master {};
     PlaybackMode        _playbackMode { PlaybackMode::Production };
-    Core::FlatString    _name {};
     BPM                 _bpm { 240.0f / 4 };
+    Core::FlatString    _name {};
+    Node                *_partitionNode { nullptr };
+    std::uint32_t       _partitionIndex { 0 };
 };
 
-static_assert_fit_half_cacheline(Audio::Project);
+static_assert_fit_cacheline(Audio::Project);
 
 #include "Project.ipp"

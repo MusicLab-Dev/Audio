@@ -44,28 +44,6 @@ bool AScheduler::setState(const State state) noexcept
 //     return true;
 // }
 
-void AScheduler::setBeatRange(const BeatRange range) noexcept
-{
-    if (range == _currentBeatRange)
-        return;
-    _currentBeatRange = range;
-}
-
-bool AScheduler::setLoopBeatRange(const BeatRange loopBeatRange) noexcept
-{
-    if (_loopBeatRange == loopBeatRange)
-        return false;
-    _loopBeatRange = loopBeatRange;
-    return true;
-}
-
-void AScheduler::setIsLooping(const bool isLooping) noexcept
-{
-    if (isLooping == _isLooping)
-        return;
-    _isLooping = isLooping;
-}
-
 void AScheduler::processBeatMiss(void)
 {
     _beatMissCount += _beatMissOffset;
@@ -105,7 +83,7 @@ void AScheduler::setProcessParamByBeatSize(const Beat processBeatSize, const Sam
 
 }
 
-bool AScheduler::setProcessParamByBlockSize(const std::size_t processBlockSize, const SampleRate sampleRate)
+void AScheduler::setProcessParamByBlockSize(const std::size_t processBlockSize, const SampleRate sampleRate)
 {
     // 1.4
     const double beats = static_cast<double>(processBlockSize) / sampleRate / project()->tempo() * Audio::BeatPrecision;
@@ -128,7 +106,6 @@ bool AScheduler::setProcessParamByBlockSize(const std::size_t processBlockSize, 
     // _processBlockSize = static_cast<float>(_processBeatSize) / BeatPrecision * project()->tempo() * sampleRate;
     _processBlockSize = processBlockSize;
 
-    return true;
 }
 
 void AScheduler::buildNodeTask(const Node *node,
