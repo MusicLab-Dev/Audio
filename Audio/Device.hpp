@@ -6,12 +6,10 @@
 #pragma once
 
 #include <memory>
-#include <string>
 #include <vector>
 
-#include <SDL2/SDL.h>
-
 #include <Core/Functor.hpp>
+#include <Core/String.hpp>
 
 #include "Base.hpp"
 
@@ -19,13 +17,16 @@ namespace Audio
 {
     class Device;
 
+    /** @brief Device ID */
+    using DeviceID = std::uint32_t;
+
     /** @brief Functor used as an audio callback */
     using AudioCallback = Core::Functor<void(std::uint8_t *, std::size_t)>;
 };
 
 
 /** @brief Device represent an SDL audio device, it can be used either for input OR output */
-class alignas_half_cacheline Audio::Device
+class alignas_double_cacheline Audio::Device
 {
 public:
     /** @brief Helper used to init and release the driver instance */
@@ -37,9 +38,9 @@ public:
     };
 
     /** @brief Descibes how to use a logical device and is used to retreive one */
-    struct alignas_cacheline SDLDescriptor
+    struct alignas_cacheline LogicalDescriptor
     {
-        std::string         name;
+        Core::TinyString    name {};
         BlockSize           blockSize { 2048u };
         SampleRate          sampleRate { 48000u };
         bool                isInput { true };
@@ -49,62 +50,62 @@ public:
     };
 
     /** @brief Descibes SDL device beahaviours */
-    struct alignas_cacheline DeviceDescriptor
+    struct alignas_cacheline PhysicalDescriptor
     {
-        std::string         name;
+        Core::TinyString    name {};
         bool                hasInput { false };
         bool                hasOutput { false };
     };
 
 
     /** @brief A list of logical device descriptors used to introspect the hardware device */
-    using DeviceDescriptors = std::vector<DeviceDescriptor>;
-    using DriverDescriptors = std::vector<std::string>;
+    using PhysicalDescriptors = std::vector<PhysicalDescriptor>;
+    using DriverDescriptors = std::vector<Core::TinyString>;
 
     /** @brief Construct a device using a descriptor */
-    Device(const SDLDescriptor &descriptor, AudioCallback &&callback);
+    Device(const LogicalDescriptor &descriptor, AudioCallback &&callback);
 
     /** @brief Destroy and release the audio device */
     ~Device(void);
 
 
     /** @brief Register the audio callback */
-    void start(void) { SDL_PauseAudioDevice(_deviceID, false); }
+    void start(void);
 
     /** @brief Unregister the audio callback */
-    void stop(void) { SDL_PauseAudioDevice(_deviceID, true); }
+    void stop(void);
 
     /** @brief Check if the device is running (and audio callback is registered) */
-    [[nodiscard]] bool running(void) const noexcept { return (SDL_GetAudioDeviceStatus(_deviceID) == SDL_AUDIO_PLAYING); }
+    [[nodiscard]] bool running(void) const noexcept;
 
 
     /** @brief Get/Set the actual device name */
-    [[nodiscard]] std::string_view name(void) const noexcept { return _descriptor.name; }
-    bool setName(const std::string &name) noexcept;
+    [[nodiscard]] const Core::TinyString &name(void) const noexcept { return _descriptor.name; }
+    void setName(const Core::TinyString &name) noexcept { _descriptor.name = name; }
 
 
     /** @brief Get/Set the actual sample rate */
     [[nodiscard]] SampleRate sampleRate(void) const noexcept { return _descriptor.sampleRate; }
-    bool setSampleRate(const SampleRate sampleRate) noexcept;
+    void setSampleRate(const SampleRate sampleRate) noexcept { _descriptor.sampleRate = sampleRate; }
 
 
     /** @brief Get/Set the actual format */
     [[nodiscard]] Format format(void) const noexcept { return _descriptor.format; }
-    bool setFormat(const Format format) noexcept;
+    void setFormat(const Format format) noexcept { _descriptor.format = format; }
 
 
     /** @brief Get/Set the actual midiChannels */
     [[nodiscard]] ChannelArrangement channelArrangement(void) const noexcept { return _descriptor.channelArrangement; }
-    bool setChannelArrangement(const ChannelArrangement channelArrangement) noexcept;
+    void setChannelArrangement(const ChannelArrangement channelArrangement) noexcept { _descriptor.channelArrangement = channelArrangement; }
 
 
     /** @brief Get/Set the actual audio block size */
     [[nodiscard]] std::uint16_t blockSize(void) const noexcept { return _descriptor.blockSize; }
-    bool setBlockSize(const std::uint16_t blockSize) noexcept;
+    void setBlockSize(const std::uint16_t blockSize) noexcept { _descriptor.blockSize = blockSize; }
 
     /** @brief Get/Set the actual midi channels */
     [[nodiscard]] std::uint16_t midiChannels(void) const noexcept { return _descriptor.midiChannels; }
-    bool setMidiChannels(const MidiChannels midiChannels) noexcept;
+    void setMidiChannels(const MidiChannels midiChannels) noexcept { _descriptor.midiChannels = midiChannels; }
 
 
     /** @brief Initialize the backend audio driver */
@@ -118,25 +119,23 @@ public:
     static void DebugDriverDescriptors(void);
 
     /** @brief Get all device descriptors */
-    static DeviceDescriptors GetDeviceDescriptors(void);
-    static void DebugDeviceDescriptors(void);
+    static PhysicalDescriptors GetPhysicalDescriptors(void);
+    static void DebugPhysicalDescriptors(void);
 
     /** @brief Reload the device interface according to the internal descriptor */
     void reloadDevice(void);
 
     /** @brief Reload the audio driver back-end with a specific driver name. Return true on success */
-    [[nodiscard]] bool reloadDriver(const std::string &driverName) noexcept;
+    [[nodiscard]] bool reloadDriver(const Core::TinyString &driverName) noexcept;
 
 
 private:
-    SDLDescriptor _descriptor {};
+    LogicalDescriptor _descriptor {};
     AudioCallback _callback {};
-    SDL_AudioDeviceID _deviceID {};
+    DeviceID _deviceID {};
 
     /** @brief Internal audio callback, called by backend */
     static void InternalAudioCallback(void *userdata, std::uint8_t *data, int size) noexcept;
 };
 
-#include "Device.ipp"
-
-// static_assert_fit_half_cacheline(Audio::Device);
+static_assert_fit_double_cacheline(Audio::Device);

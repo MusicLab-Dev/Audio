@@ -47,23 +47,23 @@ public:
 
     /** @brief Get / Set the playback mode */
     [[nodiscard]] PlaybackMode playbackMode(void) const noexcept { return _playbackMode; }
-    bool setPlaybackMode(const PlaybackMode mode) noexcept;
+    void setPlaybackMode(const PlaybackMode mode) noexcept { _playbackMode = mode; }
 
     /** @brief Get / Set the tempo */
     [[nodiscard]] Tempo tempo(void) const noexcept { return _bpm / 60.f; }
-    bool setTempo(const Tempo tempo) noexcept;
+    void setTempo(const Tempo tempo) noexcept { _bpm = _bpm * 60.0f; }
 
-    /** @brief Get / Set the BPM mode */
+    /** @brief Get / Set the BPM */
     [[nodiscard]] BPM bpm(void) const noexcept { return _bpm; }
-    bool setBPM(const BPM bpm) noexcept;
+    void setBPM(const BPM bpm) noexcept { _bpm = bpm; }
 
     /** @brief Get / Set the partition node */
     [[nodiscard]] Node *partitionNode(void) const noexcept { return _partitionNode; }
-    bool setPartitionNode(Node *node) noexcept;
+    void setPartitionNode(Node * const partitionNode) noexcept { _partitionNode = partitionNode; }
 
     /** @brief Get / Set the partition index */
     [[nodiscard]] std::uint32_t partitionIndex(void) const noexcept { return _partitionIndex; }
-    bool setPartitionIndex(void) noexcept { return _partitionIndex; }
+    void setPartitionIndex(const std::uint32_t partitionIndex) noexcept { _partitionIndex = partitionIndex; }
 
     /** @brief Signal called when the generation of the audio block start */
     void onAudioGenerationStarted(const BeatRange &range);

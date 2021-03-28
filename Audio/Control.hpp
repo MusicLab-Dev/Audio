@@ -74,28 +74,28 @@ public:
     [[nodiscard]] ParamID paramID(void) const noexcept { return _paramID; }
 
     /** @brief Set a new ParamID to this control, returns true if the id changed */
-    bool setParamID(const ParamID paramID) noexcept;
+    void setParamID(const ParamID paramID) noexcept { _paramID = paramID; }
 
 
     /** @brief Check if the control is muted (not active) or not */
     [[nodiscard]] bool muted(void) const noexcept { return _muted; }
 
     /** @brief Set the muted state of the control */
-    bool setMuted(const bool muted) noexcept;
+    void setMuted(const bool muted) noexcept { _muted = muted; }
 
 
     /** @brief Check if the control is in manual mode */
     [[nodiscard]] bool manualMode(void) const noexcept { return _manualMode; }
 
     /** @brief Set the manual mode state of the control */
-    bool setManualMode(const bool manualMode) noexcept;
+    void setManualMode(const bool manualMode) noexcept { _manualMode = manualMode; }
 
 
     /** @brief Get the control manual point */
     [[nodiscard]] const Point &manualPoint(void) const noexcept { return _manualPoint; }
 
     /** @brief Set the manual point of the control */
-    bool setManualPoint(const Point &manualPoint) noexcept;
+    void setManualPoint(const Point &manualPoint) noexcept { _manualPoint = manualPoint; }
 
 private:
     Point           _manualPoint {};
@@ -104,7 +104,5 @@ private:
     bool            _muted { false };
     bool            _manualMode { false };
 };
-
-#include "Control.ipp"
 
 static_assert_fit_half_cacheline(Audio::Control);

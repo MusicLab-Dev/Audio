@@ -61,15 +61,13 @@ public:
 
     /** @brief Get / set internal current beat range */
     [[nodiscard]] BeatRange currentBeatRange(void) const noexcept { return _currentBeatRange; }
-    void setBeatRange(const BeatRange beatRange) noexcept;
+    void setBeatRange(const BeatRange beatRange) noexcept { _currentBeatRange = beatRange; }
 
-    /** @brief Get / set internal process beat size */
+    /** @brief Get internal process beat size */
     [[nodiscard]] std::uint32_t processBeatSize(void) const noexcept { return _processBeatSize; }
-    // void setProcessBeatSize(const std::uint32_t size) noexcept;
 
-    /** @brief Get / Set the process block size */
+    /** @brief Get the process block size */
     [[nodiscard]] std::size_t processBlockSize(void) const noexcept { return _processBlockSize; }
-    // bool setProcessBlockSize(const std::size_t processBlockSize) noexcept;
 
     /** @brief Get / Set the loop beat range */
     [[nodiscard]] BeatRange loopBeatRange(void) const noexcept { return _loopBeatRange; }

@@ -33,21 +33,21 @@ public:
     [[nodiscard]] bool muted(void) const noexcept { return _muted; }
 
     /** @brief Set the muted state of the partition */
-    bool setMuted(const bool muted) noexcept;
+    void setMuted(const bool muted) noexcept { _muted = muted; }
 
 
     /** @brief Get the internal midiChannels */
     [[nodiscard]] MidiChannels midiChannels(void) const noexcept { return _midiChannels; }
 
     /** @brief Set the internal midiChannels */
-    bool setMidiChannels(const MidiChannels midiChannels) noexcept;
+    void setMidiChannels(const MidiChannels midiChannels) noexcept { _midiChannels = midiChannels; }
 
 
     /** @brief Get the name of the partition */
     [[nodiscard]] const Core::FlatString &name(void) const noexcept { return _name; }
 
     /** @brief Set the partition name, return true if the name changed */
-    bool setName(Core::FlatString &&name) noexcept;
+    void setName(Core::FlatString &&name) noexcept { _name = name; }
 
 
     template<typename Functor>
@@ -63,5 +63,3 @@ private:
 };
 
 static_assert_fit_half_cacheline(Audio::Partition);
-
-#include "Partition.ipp"

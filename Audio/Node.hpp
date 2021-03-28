@@ -57,7 +57,7 @@ public:
     [[nodiscard]] bool muted(void) const noexcept { return _muted; }
 
     /** @brief Set the muted state of the node */
-    bool setMuted(const bool muted) noexcept;
+    void setMuted(const bool muted) noexcept { _muted = muted; }
 
 
     /** @brief Get the plugin's flags associated to this node */
@@ -66,12 +66,12 @@ public:
 
     /** @brief Get / Set the color associated to this node */
     [[nodiscard]] Color color(void) const noexcept { return _color; }
-    bool setColor(const Color color) noexcept;
+    void setColor(const Color color) noexcept { _color = color; }
 
 
     /** @brief Get / Set the name of the node */
     [[nodiscard]] const Core::FlatString &name(void) const noexcept { return _name; }
-    bool setName(Core::FlatString &&name) noexcept;
+    void setName(Core::FlatString &&name) noexcept { _name = name; }
 
 
     /** @brief Get a reference to the node plugin */

@@ -12,7 +12,6 @@ set(AudioSources
     ${AudioDir}/SchedulerTask.hpp
     ${AudioDir}/SchedulerTask.ipp
     ${AudioDir}/Automation.hpp
-    ${AudioDir}/Automation.ipp
     ${AudioDir}/Base.hpp
     ${AudioDir}/Math.hpp
     ${AudioDir}/BaseDevice.hpp
@@ -24,12 +23,10 @@ set(AudioSources
     ${AudioDir}/Buffer.cpp
     ${AudioDir}/Connection.hpp
     ${AudioDir}/Control.hpp
-    ${AudioDir}/Control.ipp
     ${AudioDir}/ParameterTable.hpp
     ${AudioDir}/ParameterTable.cpp
     ${AudioDir}/Device.cpp
     ${AudioDir}/Device.hpp
-    ${AudioDir}/Device.ipp
     ${AudioDir}/ExternalFactory.hpp
     ${AudioDir}/FlatNode.hpp
     ${AudioDir}/FlatNote.hpp
@@ -42,7 +39,6 @@ set(AudioSources
     ${AudioDir}/Note.cpp
     ${AudioDir}/Note.ipp
     ${AudioDir}/Partition.hpp
-    ${AudioDir}/Partition.ipp
     ${AudioDir}/PluginPtr.hpp
     ${AudioDir}/PluginPtr.ipp
     ${AudioDir}/PluginTable.cpp

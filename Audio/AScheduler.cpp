@@ -3,6 +3,10 @@
  * @ Description: AScheduler
  */
 
+#include <iostream>
+
+#include <Core/StringUtils.hpp>
+
 #include "SchedulerTask.hpp"
 
 using namespace Audio;
@@ -26,23 +30,6 @@ bool AScheduler::setState(const State state) noexcept
     }
     return true;
 }
-
-#include <iostream>
-
-// void AScheduler::setProcessBeatSize(const std::uint32_t size) noexcept
-// {
-//     if (size == _processBeatSize)
-//         return;
-//     _processBeatSize = size;
-// }
-
-// bool AScheduler::setProcessBlockSize(const std::size_t processBlockSize) noexcept
-// {
-//     if (_processBlockSize == processBlockSize)
-//         return false;
-//     _processBlockSize = processBlockSize;
-//     return true;
-// }
 
 void AScheduler::processBeatMiss(void)
 {
@@ -111,7 +98,7 @@ void AScheduler::setProcessParamByBlockSize(const std::size_t processBlockSize, 
 void AScheduler::buildNodeTask(const Node *node,
         std::pair<Flow::Task, const NoteEvents *> &parentNoteTask, std::pair<Flow::Task, const NoteEvents *> &parentAudioTask)
 {
-    std::cout << node->name().toStdString() << ":\n";
+    std::cout << node->name() << ":\n";
     if (node->children().empty()) {
         // std::cout << "make note&audio\n";
         auto task = MakeSchedulerTask<true, true>(_graph, node->flags(), this, const_cast<Node *>(node), parentNoteTask.second);

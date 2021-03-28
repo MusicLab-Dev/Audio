@@ -4,10 +4,11 @@
  */
 
 #include <iostream>
+#include <SDL2/SDL.h>
 
 #include "Interpreter.hpp"
 
-static const Audio::Device::SDLDescriptor Descriptor
+static const Audio::Device::LogicalDescriptor Descriptor
 {
     /*.name = */ "device-test",
     /*.blockSize = */ 1024u,

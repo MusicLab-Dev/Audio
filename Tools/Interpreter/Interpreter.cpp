@@ -66,7 +66,7 @@ constexpr auto ControlHelpText =
 
 
 Interpreter::Interpreter(void)
-    : _device(DefaultDeviceDescriptor, &Interpreter::AudioCallback)
+    : _device(DefaultPhysicalDescriptor, &Interpreter::AudioCallback)
 {
     registerInternalFactories();
     prepareCache();
@@ -281,16 +281,19 @@ void Interpreter::parseSettingsCommand(void)
         std::cout << "- Channel arrangement: " << (_device.channelArrangement() == Audio::ChannelArrangement::Mono ? "Mono" : "Stereo") << std::endl;
         break;
     case "sampleRate"_hash:
-        changed = _device.setSampleRate(getNextWordAs<int>("Interpreter::parseSettingsCommand: Invalid sample rate input value"));
+        _device.setSampleRate(getNextWordAs<int>("Interpreter::parseSettingsCommand: Invalid sample rate input value"));
+        changed = true;
         break;
     case "channelArrangement"_hash:
         getNextWord();
         switch (_word[0]) {
         case 'M':
-            changed = _device.setChannelArrangement(Audio::ChannelArrangement::Mono);
+            _device.setChannelArrangement(Audio::ChannelArrangement::Mono);
+            changed = true;
             break;
         case 'S':
-            changed = _device.setChannelArrangement(Audio::ChannelArrangement::Stereo);
+            _device.setChannelArrangement(Audio::ChannelArrangement::Stereo);
+            changed = true;
             break;
         default:
             throw std::logic_error("Interpreter::parseSettingsCommand: Invalid 'channelArrangement' settings value '" + _word + '\'');
@@ -301,16 +304,20 @@ void Interpreter::parseSettingsCommand(void)
         getNextWord();
         switch (getCurrentHashedWord()) {
         case "F32"_hash:
-            changed = _device.setFormat(Audio::Format::Floating32);
+            _device.setFormat(Audio::Format::Floating32);
+            changed = true;
             break;
         case "I32"_hash:
-            changed = _device.setFormat(Audio::Format::Fixed32);
+            _device.setFormat(Audio::Format::Fixed32);
+            changed = true;
             break;
         case "I16"_hash:
-            changed = _device.setFormat(Audio::Format::Fixed16);
+            _device.setFormat(Audio::Format::Fixed16);
+            changed = true;
             break;
         case "I8"_hash:
-            changed = _device.setFormat(Audio::Format::Fixed8);
+            _device.setFormat(Audio::Format::Fixed8);
+            changed = true;
             break;
         default:
             throw std::logic_error("Interpreter::parseSettingsCommand: Invalid 'format' settings value '" + _word + '\'');
@@ -318,10 +325,12 @@ void Interpreter::parseSettingsCommand(void)
         break;
     }
     case "blockSize"_hash:
-        changed = _device.setBlockSize(getNextWordAs<unsigned int>("Interpreter::parseSettingsCommand: Invalid blockSize input value"));
+        _device.setBlockSize(getNextWordAs<unsigned int>("Interpreter::parseSettingsCommand: Invalid blockSize input value"));
+        changed = true;
         break;
     case "processBlockSize"_hash:
-        changed = _scheduler.setProcessParamByBlockSize(getNextWordAs<unsigned int>("Interpreter::parseSettingsCommand: Invalid blockSize input value"), getAudioSpecs().sampleRate);
+        _scheduler.setProcessParamByBlockSize(getNextWordAs<unsigned int>("Interpreter::parseSettingsCommand: Invalid blockSize input value"), getAudioSpecs().sampleRate);
+        changed = true;
         break;
     case "help"_hash:
     case "?"_hash:
