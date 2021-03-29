@@ -7,14 +7,17 @@
 
 #include <Core/Utils.hpp>
 
-#include "../BaseDevice.hpp"
+#include <Audio/BaseDevice.hpp>
 
 #include <iostream>
 
 namespace Audio::DSP
 {
     enum class GeneratorType : std::uint8_t {
-        ADSR, /*DADSR, DAHDSR,*/ AR, AD
+        ADSR,
+        // DADSR,
+        // DAHDSR,
+        AR, AD
     };
 
     namespace Internal
@@ -29,6 +32,7 @@ namespace Audio::DSP
 class Audio::DSP::Internal::EnveloppeGeneratorBase
 {
 public:
+    // using
 
     /** @brief Default constructor */
     EnveloppeGeneratorBase(void) = default;

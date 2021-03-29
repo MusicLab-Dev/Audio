@@ -69,7 +69,7 @@ public:
 
     virtual void sendNotes(const NoteEvents &notes);
 
-    virtual void setExternalPaths(const ExternalPaths &paths) {}
+    virtual void setExternalPaths(const ExternalPaths &paths);
 
     virtual void onAudioParametersChanged(void);
 
@@ -82,7 +82,7 @@ public:
 public:
     /** Load a sample file with a specific type */
     template<typename Type>
-    void loadSample(const std::string &path);
+    void loadSample(const std::string_view &path);
 
     // [[nodiscard]] const OctaveBuffer &getBuffers(void) const noexcept { return _buffers; }
 

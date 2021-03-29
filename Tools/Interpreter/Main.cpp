@@ -127,7 +127,7 @@ int main(int ac, char **av)
         } else {
             Device::DriverInstance driverInstance;
 
-            return 0;
+            // return 0;
             PluginTable::Instance pluginTableInstance;
             Interpreter interpreter;
 

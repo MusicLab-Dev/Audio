@@ -7,10 +7,10 @@
 #include <Audio/SampleFile/SampleManager.hpp>
 
 template<typename Type>
-inline void Audio::Sampler::loadSample(const std::string &path)
+inline void Audio::Sampler::loadSample(const std::string_view &path)
 {
     SampleSpecs specs;
-    _buffers[OctaveRootKey] = SampleManager<Type>::LoadSampleFile(path, specs);
+    _buffers[OctaveRootKey] = SampleManager<Type>::LoadSampleFile(std::string(path), specs);
     GenerateOctave<Type>(_buffers[OctaveRootKey], _buffers);
 }
 
@@ -23,6 +23,13 @@ inline void Audio::Sampler::onAudioParametersChanged(void)
         buffer.resize(newSize, audioSpecs().sampleRate, audioSpecs().channelArrangement, audioSpecs().format);
     }
 
+}
+
+inline void Audio::Sampler::setExternalPaths(const ExternalPaths &paths)
+{
+    if (!paths.empty()) {
+        loadSample<float>(paths[0]);
+    }
 }
 
 inline void Audio::Sampler::sendNotes(const NoteEvents &notes)
@@ -40,7 +47,6 @@ inline void Audio::Sampler::receiveAudio(BufferView output)
     // Bool = !Bool;
     // if (!Bool)
     //     return;
-    // std::cout << "))=)======\n======\n======\n======\n=@@@@@@\n@@@@@@\n@@@@@@\n@@@@@@\n@@@@@@\n@@@\n";
     // std::cout << "AUDIO\n";
     // std::cout << "receiveAudio:::: " << _noteManager.getActiveNoteNumber() << std::endl;
 
