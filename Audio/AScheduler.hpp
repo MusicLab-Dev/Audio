@@ -99,11 +99,11 @@ public:
     template<PlaybackMode Playback>
     [[nodiscard]] const Flow::Graph &graph(void) const noexcept { return _graphs[static_cast<std::size_t>(Playback)].graph; }
 
-    /** @brief Get / set an internal current beat range */
+    /** @brief Get an internal current beat range */
     template<PlaybackMode Playback>
     [[nodiscard]] const BeatRange &currentBeatRange(void) const noexcept { return _graphs[static_cast<std::size_t>(Playback)].currentBeatRange; }
     template<PlaybackMode Playback>
-    void setBeatRange(const BeatRange beatRange) noexcept { _graphs[static_cast<std::size_t>(Playback)].currentBeatRange = beatRange; }
+    [[nodiscard]] BeatRange &currentBeatRange(void) noexcept { return _graphs[static_cast<std::size_t>(Playback)].currentBeatRange; }
 
 
     /** @brief Get / Set the partition node */
@@ -207,7 +207,7 @@ private:
     template<Audio::PlaybackMode Playback>
     void buildGraph(void);
 
-    /** @brief Build a node in project graph */
+    /** @brief Build a node in a graph */
     template<Audio::PlaybackMode Playback>
     void buildNodeTask(const Node *node, std::pair<Flow::Task, const NoteEvents *> &parentNoteTask, std::pair<Flow::Task, const NoteEvents *> &parentAudioTask);
 
@@ -224,7 +224,7 @@ private:
     void processBeatMiss(void);
 
 
-    /** @brief Schedule the project graph */
+    /** @brief Schedule the current graph */
     void scheduleCurrentGraph(void);
 };
 

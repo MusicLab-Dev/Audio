@@ -302,21 +302,20 @@ TEST(SchedulerTask, NotesCollection)
 
         Scheduler scheduler(std::move(project));
 
-        scheduler.invalidateProjectGraph();
+        scheduler.invalidateCurrentGraph();
 
-        auto graph = scheduler.graph();
+        auto &graph = scheduler.getCurrentGraph();
         EXPECT_EQ(graph.size(), 6);
 
 
         // scheduler.graph().setRunning(true);
         for (auto i = 0u; i < MaxFrames; ++i) {
             std::cout << "=====\n\n";
-            scheduler.setBeatRange(BeatRange({ i * FrameSize, (i + 1) * FrameSize }));
+            scheduler.getCurrentBeatRange() = BeatRange({ i * FrameSize, (i + 1) * FrameSize });
             scheduler.setState(AScheduler::State::Play);
             scheduler.setState(AScheduler::State::Pause);
             scheduler.wait();
             GlobalCounter++;
-            std::cout << scheduler.graph().running() << std::endl;
         }
 
         // return;

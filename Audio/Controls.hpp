@@ -19,5 +19,5 @@ namespace Audio
     using ControlsOnTheFly = Core::TinySmallVector<ControlEvent, (Core::CacheLineSize - sizeof(ControlEvents) / sizeof(ControlEvent))>;
 
     /** @brief A flat vector that contains Note of a partition and has a cache of notes on the fly in its header */
-    using Controls = Core::SortedTinyFlatVector<Control, std::less<Control>, ControlsOnTheFly>;
+    using Controls = Core::TinyFlatVector<Control, ControlsOnTheFly>;
 };
