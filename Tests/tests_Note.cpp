@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include <Audio/UtilsMidi.hpp>
-#include <Audio/Note.hpp>
+#include <Audio/Notes.hpp>
 
 using namespace Audio;
 

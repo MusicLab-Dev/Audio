@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "Note.hpp"
+#include "Notes.hpp"
 
 namespace Audio
 {
@@ -48,10 +48,6 @@ public:
 
     /** @brief Set the partition name, return true if the name changed */
     void setName(Core::FlatString &&name) noexcept { _name = name; }
-
-
-    template<typename Functor>
-    bool apply(const BeatRange &range, Functor &&functor) noexcept;
 
 private:
     Notes               _notes {};

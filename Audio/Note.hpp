@@ -7,15 +7,14 @@
 
 #include <cstdint>
 
+#include <Core/SmallVector.hpp>
+
 #include "Base.hpp"
 
 namespace Audio
 {
     struct NoteEvent;
     struct Note;
-
-    using NoteEvents = Core::TinyVector<NoteEvent>;
-    using Notes = Core::SortedFlatVector<Note>;
 };
 
 /** @brief Default Note event */

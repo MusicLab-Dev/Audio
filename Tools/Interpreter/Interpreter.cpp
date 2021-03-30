@@ -94,7 +94,7 @@ void Interpreter::prepareCache(void)
 
     std::cout << "scheduler::processBeatSize: " << _scheduler.processBeatSize() << std::endl;
     std::cout << "scheduler::LoopingRange: " << _scheduler.loopBeatRange() << std::endl;
-    std::cout << "beatRange: " << _scheduler.currentBeatRange() << std::endl;
+    std::cout << "beatRange: " << _scheduler.getCurrentBeatRange() << std::endl;
     // exit(0);
 }
 
@@ -134,8 +134,7 @@ void Interpreter::run(void)
     _is.clear();
     _is.str("load Tools/commands.txt");
     parseCommand();
-    _scheduler.invalidateProjectGraph();
-    std::cout << "graph: " << _scheduler.graph().size() << std::endl;
+    _scheduler.invalidateCurrentGraph();
 
     // exit(0);
     while (_running) {
@@ -260,7 +259,6 @@ void Interpreter::parseRunningCommand(const AudioState state)
         _scheduler.wait();
         return;
     }
-    _device.stop();
     // Reset project beatrange
 }
 
@@ -431,7 +429,7 @@ void Interpreter::parsePluginCommand(void)
         throw std::logic_error("Interpreter::parsePluginCommand: Unknown plugin command '" + _word + '\'');
     }
     if (changed)
-        _scheduler.invalidateProjectGraph();
+        _scheduler.invalidateCurrentGraph();
 }
 
 void Interpreter::removeNode(NodeHolder &node)
@@ -555,9 +553,9 @@ Audio::NodePtr &Interpreter::insertNode(Audio::Node *parent, Audio::PluginPtr &&
     Audio::NodePtr *node;
 
     if (parent)
-        node = &(parent->children().push(std::make_unique<Audio::Node>(std::move(plugin))));
+        node = &(parent->children().push(std::make_unique<Audio::Node>(parent, std::move(plugin))));
     else
-        node = &(_scheduler.project()->master() = std::make_unique<Audio::Node>(std::move(plugin)));
+        node = &(_scheduler.project()->master() = std::make_unique<Audio::Node>(nullptr, std::move(plugin)));
     (*node)->setName(Core::FlatString(name));
     (*node)->prepareCache(specs);
     _map.insert(std::make_pair(std::string_view(name), NodeHolder { node->get(), parent }));

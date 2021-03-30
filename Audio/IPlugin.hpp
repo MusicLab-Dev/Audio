@@ -9,8 +9,8 @@
 #include <Core/FlatVector.hpp>
 
 #include "Buffer.hpp"
-#include "Control.hpp"
-#include "Note.hpp"
+#include "Controls.hpp"
+#include "Notes.hpp"
 #include "IPluginFactory.hpp"
 
 namespace Audio
@@ -23,9 +23,6 @@ namespace Audio
 
     /** @brief A list of paths */
     using ExternalPaths = Core::TinyVector<std::string_view>;
-
-    /** @brief A list of points events */
-    using ControlEvents = Core::TinyVector<ControlEvent>;
 
     struct TranslationPair
     {
@@ -144,7 +141,6 @@ public:
     [[nodiscard]] inline bool hasAudioOutput(void) const noexcept   { return static_cast<std::size_t>(getFlags()) & static_cast<std::size_t>(Flags::AudioOutput); }
     [[nodiscard]] inline bool hasNoteInput(void) const noexcept     { return static_cast<std::size_t>(getFlags()) & static_cast<std::size_t>(Flags::NoteInput); }
     [[nodiscard]] inline bool hasNoteOutput(void) const noexcept    { return static_cast<std::size_t>(getFlags()) & static_cast<std::size_t>(Flags::NoteOutput); }
-    [[nodiscard]] inline bool hasControlInput(void) const noexcept  { return static_cast<std::size_t>(getFlags()) & static_cast<std::size_t>(Flags::ControlInput); }
 
 public: // See REGISTER_PLUGIN in PluginUtils
     /** @brief Get a control value by serial ID (DO NOT REIMPLEMENT MANUALLY, see REGISTER_PLUGIN !) */

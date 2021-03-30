@@ -15,6 +15,7 @@
 
 #include "Project.hpp"
 #include "Buffer.hpp"
+#include "SchedulerTask.hpp"
 
 namespace Audio
 {
@@ -24,18 +25,33 @@ namespace Audio
     using NotifyFunctor = Core::Functor<void(void)>;
 };
 
-class Audio::AScheduler
+class alignas_cacheline Audio::AScheduler
 {
 public:
+    /** @brief Internal play state */
     enum class State {
         Pause, Play
     };
+
+
     /** @brief Structure of an internal event */
     struct Event
     {
         ApplyFunctor apply {}; // The apply event is called when the scheduler is IDLE
         NotifyFunctor notify {}; // The notify event is called when the scheduler is RUNNING, after 'apply' dispatcher
     };
+
+
+    /** @brief Cache of a playback mode graph */
+    struct alignas_quarter_cacheline PlaybackGraph
+    {
+        Flow::Graph graph {};
+        BeatRange currentBeatRange {};
+    };
+
+    /** @brief Caches of every playback mode */
+    using PlaybackGraphs = std::array<PlaybackGraph, Audio::PlaybackModeCount>;
+
 
     /** @brief Default constructor (will crash if you play without project !) */
     AScheduler(void);
@@ -51,23 +67,17 @@ public:
     void setProject(ProjectPtr &&project) noexcept { _project = std::move(project); }
 
 
-    /** @brief Get the generation graph */
-    [[nodiscard]] Flow::Graph &graph(void) noexcept { return _graph; }
-
-
     /** @brief Get / set internal state */
     [[nodiscard]] State state(void) const noexcept { return _state.load(); }
     bool setState(const State state) noexcept;
 
-    /** @brief Get / set internal current beat range */
-    [[nodiscard]] BeatRange currentBeatRange(void) const noexcept { return _currentBeatRange; }
-    void setBeatRange(const BeatRange beatRange) noexcept { _currentBeatRange = beatRange; }
 
     /** @brief Get internal process beat size */
     [[nodiscard]] std::uint32_t processBeatSize(void) const noexcept { return _processBeatSize; }
 
     /** @brief Get the process block size */
     [[nodiscard]] std::size_t processBlockSize(void) const noexcept { return _processBlockSize; }
+
 
     /** @brief Get / Set the loop beat range */
     [[nodiscard]] BeatRange loopBeatRange(void) const noexcept { return _loopBeatRange; }
@@ -76,6 +86,33 @@ public:
     /** @brief Get / Set the loop status */
     [[nodiscard]] bool isLooping(void) const noexcept { return _isLooping; }
     void setIsLooping(const bool isLooping) noexcept { _isLooping = isLooping; }
+
+
+    /** @brief Get / Set the playback mode */
+    [[nodiscard]] PlaybackMode playbackMode(void) const noexcept { return _playbackMode; }
+    void setPlaybackMode(const PlaybackMode mode) noexcept { _playbackMode = mode; }
+
+
+    /** @brief Get a generation graph */
+    template<PlaybackMode Playback>
+    [[nodiscard]] Flow::Graph &graph(void) noexcept { return _graphs[static_cast<std::size_t>(Playback)].graph; }
+    template<PlaybackMode Playback>
+    [[nodiscard]] const Flow::Graph &graph(void) const noexcept { return _graphs[static_cast<std::size_t>(Playback)].graph; }
+
+    /** @brief Get / set an internal current beat range */
+    template<PlaybackMode Playback>
+    [[nodiscard]] const BeatRange &currentBeatRange(void) const noexcept { return _graphs[static_cast<std::size_t>(Playback)].currentBeatRange; }
+    template<PlaybackMode Playback>
+    void setBeatRange(const BeatRange beatRange) noexcept { _graphs[static_cast<std::size_t>(Playback)].currentBeatRange = beatRange; }
+
+
+    /** @brief Get / Set the partition node */
+    [[nodiscard]] Node *partitionNode(void) const noexcept { return _partitionNode; }
+    void setPartitionNode(Node * const partitionNode) noexcept { _partitionNode = partitionNode; }
+
+    /** @brief Get / Set the partition index */
+    [[nodiscard]] std::uint32_t partitionIndex(void) const noexcept { return _partitionIndex; }
+    void setPartitionIndex(const std::uint32_t partitionIndex) noexcept { _partitionIndex = partitionIndex; }
 
 
     /** @brief Setup processBeatSize & processBlockSize parameters with a desired processBeatSize */
@@ -93,8 +130,21 @@ public:
     void addEvent(Apply &&apply, Notify &&notify);
 
 
-    /** @brief Invalidates the project graph */
-    void invalidateProjectGraph(void);
+    /** @brief Get the currently used graph (depend of playback mode) */
+    [[nodiscard]] const Flow::Graph &getCurrentGraph(void) const noexcept;
+    [[nodiscard]] Flow::Graph &getCurrentGraph(void) noexcept
+        { return const_cast<Flow::Graph &>(const_cast<const AScheduler *>(this)->getCurrentGraph()); }
+
+    /** @brief Get the currently used beat range (depend of playback mode) */
+    [[nodiscard]] const Audio::BeatRange &getCurrentBeatRange(void) const noexcept;
+    [[nodiscard]] Audio::BeatRange &getCurrentBeatRange(void) noexcept
+        { return const_cast<Audio::BeatRange &>(const_cast<const AScheduler *>(this)->getCurrentBeatRange()); }
+
+
+    /** @brief Invalidates a graph */
+    template<PlaybackMode Playback>
+    void invalidateGraph(void);
+    void invalidateCurrentGraph(void);
 
 
     /** @brief Callback called when scheduler is set to play */
@@ -126,40 +176,39 @@ protected:
     void dispatchNotifyEvents(void);
 
 private:
+    // Cacheline 1
+    // Virtual table pointer
     std::unique_ptr<Flow::Scheduler> _scheduler { std::make_unique<Flow::Scheduler>() };
-    Flow::Graph _graph {};
     Core::TinyVector<Event> _events {};
     ProjectPtr _project {};
-    std::atomic<State> _state { State::Pause };
     Buffer _overflowCache {};
+    PlaybackMode _playbackMode { PlaybackMode::Production };
+    std::atomic<State> _state { State::Pause };
 
-    BeatRange _currentBeatRange {};
-    Beat _processBeatSize { 0u };
+    // Cacheline 2
     std::size_t _processBlockSize { 0u };
-
-    /** @brief Used to loop over a specific BeatRange */
     Audio::BeatRange _loopBeatRange {};
     bool _isLooping { true };
-
-    /** @brief Used to balance time between BeatRanges & sample */
+    Beat _processBeatSize { 0u };
     double _beatMissCount { 0.0 };
     double _beatMissOffset { 0.0 };
+    Node *_partitionNode { nullptr };
+    std::uint32_t _partitionIndex { 0 };
 
-protected:
+    // Cacheline 3
+    PlaybackGraphs _graphs {};
+
+
+    /** @brief Audio callback queue */
     static inline Core::SPSCQueue<std::uint8_t> _AudioQueue { 65536 };
-private:
-    /** @brief Cache stucture used to store recursive parameters */
-    struct SpecsParams
-    {
-        std::uint32_t channelByteSize;
-        SampleRate sampleRate;
-        ChannelArrangement channelArrangement;
-        Format format;
-    };
 
-    /** @brief Build the project graph */
-    void buildProjectGraph(void);
 
+    /** @brief Build a graph */
+    template<Audio::PlaybackMode Playback>
+    void buildGraph(void);
+
+    /** @brief Build a node in project graph */
+    template<Audio::PlaybackMode Playback>
     void buildNodeTask(const Node *node, std::pair<Flow::Task, const NoteEvents *> &parentNoteTask, std::pair<Flow::Task, const NoteEvents *> &parentAudioTask);
 
 
@@ -175,9 +224,11 @@ private:
     void processBeatMiss(void);
 
 
-public:
     /** @brief Schedule the project graph */
-    void scheduleProjectGraph(void);
+    void scheduleCurrentGraph(void);
 };
 
+static_assert_sizeof(Audio::AScheduler, Core::CacheLineSize * 3);
+
+#include "SchedulerTask.ipp"
 #include "AScheduler.ipp"

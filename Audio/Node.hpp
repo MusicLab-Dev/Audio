@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "PluginTable.hpp"
-#include "Control.hpp"
-#include "Partition.hpp"
+#include "Controls.hpp"
+#include "Partitions.hpp"
 #include "Connection.hpp"
 #include "Buffer.hpp"
 
@@ -22,12 +22,6 @@ namespace Audio
 
     /** @brief A list of nodes */
     using Nodes = Core::FlatVector<NodePtr>;
-
-    /** @brief A list of connections */
-    using Connections = Core::FlatVector<Connection>;
-
-    /** @brief A list of partitions */
-    using Partitions = Core::FlatVector<Partition>;
 };
 
 /** @brief A node contains a plugin, a partition table and an automation table */
@@ -35,10 +29,11 @@ class alignas_cacheline Audio::Node
 {
 public:
     /** @brief Default constructor */
-    Node(void) noexcept = default;
+    Node(Node * const parent) noexcept
+        : _parent(parent) {}
 
     /** @brief Construct a node using an explicit plugin */
-    Node(PluginPtr &&plugin) noexcept { setPlugin(std::move(plugin)); }
+    Node(Node * const parent, PluginPtr &&plugin) noexcept : Node(parent) { setPlugin(std::move(plugin)); }
 
     /** @brief Move constructor */
     Node(Node &&other) noexcept = default;
@@ -51,6 +46,13 @@ public:
 
     /** @brief Set the internal plugin */
     void setPlugin(PluginPtr &&plugin);
+
+
+    /** @brief Get parent node */
+    [[nodiscard]] Node *parent(void) const noexcept { return _parent; }
+
+    /** @brief Set parent node */
+    void setParent(Node * const parent) noexcept { _parent = parent; }
 
 
     /** @brief Check if the node is muted (not active) or not */
@@ -95,11 +97,6 @@ public:
     [[nodiscard]] const Nodes &children(void) const noexcept { return _children; }
 
 
-    /** @brief Get a reference to the node connections */
-    [[nodiscard]] Connections &connections(void) noexcept { return _connections; }
-    [[nodiscard]] const Connections &connections(void) const noexcept { return _connections; }
-
-
     /** @brief Get a reference to the node cache */
     [[nodiscard]] Buffer &cache(void) noexcept { return _cache; }
     [[nodiscard]] const Buffer &cache(void) const noexcept { return _cache; }
@@ -108,13 +105,14 @@ public:
      *  Note that this function will recusrively call itself for every sub-children */
     void prepareCache(const AudioSpecs &specs);
 
+
     /** @brief Signal called when the generation of the audio block start */
     void onAudioGenerationStarted(const BeatRange &range) noexcept;
 
 private:
+    Node               *_parent { nullptr }; // 8
     PluginPtr           _plugin { nullptr }; // 8
     Nodes               _children {}; // 8
-    Connections         _connections {}; // 8
     Partitions          _partitions {}; // 8
     Buffer              _cache; // 8
     Controls            _controls {}; // 8

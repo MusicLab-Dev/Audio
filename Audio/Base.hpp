@@ -32,6 +32,7 @@ namespace Audio
     /** @brief Key of a note */
     using Key = std::uint8_t;
 
+    /** @brief Middle key */
     static constexpr Key RootKey = 69u;
 
     /** @brief Semitone */
@@ -97,4 +98,16 @@ namespace Audio
     template<typename Output, typename Intermediate, typename ...Inputs>
     [[nodiscard]] Output MakeFlags(const Inputs ...inputs) noexcept
         { return static_cast<Output>((... | static_cast<Intermediate>(inputs))); }
+
+
+    /** @brief PlaybackMode describe how to project should be computed */
+    enum class PlaybackMode : std::uint32_t {
+        Production,
+        Live,
+        Partition,
+        OnTheFly
+    };
+
+    /** @brief Count of playback modes */
+    constexpr std::size_t PlaybackModeCount = static_cast<std::size_t>(PlaybackMode::OnTheFly) + 1;
 };

@@ -8,7 +8,7 @@
 #include <array>
 #include <memory>
 
-#include "Audio/Note.hpp"
+#include "Audio/Notes.hpp"
 
 namespace Audio
 {

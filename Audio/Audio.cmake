@@ -23,6 +23,7 @@ set(AudioSources
     ${AudioDir}/Buffer.cpp
     ${AudioDir}/Connection.hpp
     ${AudioDir}/Control.hpp
+    ${AudioDir}/Controls.hpp
     ${AudioDir}/ParameterTable.hpp
     ${AudioDir}/ParameterTable.cpp
     ${AudioDir}/Device.cpp
@@ -36,6 +37,7 @@ set(AudioSources
     ${AudioDir}/Node.hpp
     ${AudioDir}/Node.ipp
     ${AudioDir}/Note.hpp
+    ${AudioDir}/Partitions.hpp
     ${AudioDir}/Note.cpp
     ${AudioDir}/Note.ipp
     ${AudioDir}/Partition.hpp

@@ -5,21 +5,23 @@
 
 #pragma once
 
-#include "AScheduler.hpp"
+#include "IPlugin.hpp"
 
 namespace Audio
 {
-    template<IPlugin::Flags Flags, bool ProcessNotesAndControls, bool ProcessAudio>
+    class AScheduler;
+
+    template<IPlugin::Flags Flags, bool ProcessNotesAndControls, bool ProcessAudio, Audio::PlaybackMode Playback>
     class SchedulerTask;
 
     /** @brief Make a task from a runtime flags */
-    template<bool ProcessNotesAndControls, bool ProcessAudio, IPlugin::Flags Deduced = IPlugin::Flags::None,
-            IPlugin::Flags Begin = IPlugin::Flags::AudioInput, IPlugin::Flags End = IPlugin::Flags::ControlInput>
+    template<Audio::PlaybackMode Playback, bool ProcessNotesAndControls, bool ProcessAudio, IPlugin::Flags Deduced = IPlugin::Flags::None,
+            IPlugin::Flags Begin = IPlugin::Flags::AudioInput, IPlugin::Flags End = IPlugin::Flags::NoteOutput>
     [[nodiscard]] std::pair<Flow::Task, const NoteEvents *> MakeSchedulerTask(Flow::Graph &graph, const IPlugin::Flags flags,
             const AScheduler *scheduler, Node *node, const NoteEvents * const parentNoteStack);
 };
 
-template<Audio::IPlugin::Flags Flags, bool ProcessNotesAndControls, bool ProcessAudio>
+template<Audio::IPlugin::Flags Flags, bool ProcessNotesAndControls, bool ProcessAudio, Audio::PlaybackMode Playback>
 class alignas_cacheline Audio::SchedulerTask
 {
 public:
@@ -27,14 +29,15 @@ public:
     static constexpr bool HasNoteOutput = static_cast<std::size_t>(Flags) & static_cast<std::size_t>(IPlugin::Flags::NoteOutput);
     static constexpr bool HasAudioInput = static_cast<std::size_t>(Flags) & static_cast<std::size_t>(IPlugin::Flags::AudioInput);
     static constexpr bool HasAudioOutput = static_cast<std::size_t>(Flags) & static_cast<std::size_t>(IPlugin::Flags::AudioOutput);
-    static constexpr bool HasControlInput = static_cast<std::size_t>(Flags) & static_cast<std::size_t>(IPlugin::Flags::ControlInput);
 
     /** @brief Construct the task from a node, a scheduler and a parent note stack */
     SchedulerTask(const AScheduler *scheduler, Node *node, const NoteEvents * const parentNoteStack) noexcept
         : _scheduler(scheduler), _node(node), _parentNoteStack(parentNoteStack) {}
 
-    /** @brief POD semantics */
+    /** @brief Move constructor */
     SchedulerTask(SchedulerTask &&other) noexcept = default;
+
+    /** @brief Move assignment */
     SchedulerTask &operator=(SchedulerTask &&other) noexcept = default;
 
     /** @brief Execution operator */
@@ -43,6 +46,7 @@ public:
     /** @brief Get the internal note stack */
     [[nodiscard]] const NoteEvents *noteStack(void) const noexcept { return _noteStack.get(); }
 
+    /** @brief Clear the internal note stack */
     void clearNoteStack(void) noexcept { _noteStack->clear(); }
 
 private:
@@ -61,16 +65,17 @@ private:
     [[nodiscard]] Node &node(void) noexcept { return *_node; }
 
     /** @brief Collect every controls of the current frame */
-    void collectControls(const BeatRange &beatRange) noexcept;
+    [[nodiscard]] bool collectControls(const BeatRange &beatRange) noexcept;
 
     /** @brief Collect a single point from an interpolation */
     void collectInterpolatedPoint(const BeatRange &beatRange, const ParamID paramID, const Point * const left, const Point &right);
 
     /** @brief Collect every notes of the current frame */
-    void collectNotes(const BeatRange &beatRange) noexcept;
+    [[nodiscard]] bool collectPartitions(const BeatRange &beatRange) noexcept;
+
+    /** @brief Collect every notes within the current offset */
+    void collectPartition(const Partition &partition, const BeatRange &beatRange, const BeatRange &offset = BeatRange()) noexcept;
 
     /** @brief Collect every cached children buffer of the current frame */
-    void collectBuffers(void) noexcept;
+    bool collectBuffers(void) noexcept;
 };
-
-#include "SchedulerTask.ipp"

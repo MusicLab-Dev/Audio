@@ -26,7 +26,7 @@ class Audio::Mixer final : public Audio::IPlugin
             TR(French, "Le mixeur permet de mixer plusieurs sources sonore")
         ),
         /* Plugin flags */
-        FLAGS(AudioInput, AudioOutput, ControlInput),
+        FLAGS(AudioInput, AudioOutput),
         /* Plugin tags */
         TAGS(Mastering),
         /* Control list */

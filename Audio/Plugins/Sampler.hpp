@@ -30,7 +30,7 @@ class Audio::Sampler final : public Audio::IPlugin
             TR(French, "Le sampleur permet de charger un fichier audio et de le jouer comme une note")
         ),
         /* Plugin flags */
-        FLAGS(AudioOutput, ControlInput, NoteInput, SingleExternalInput),
+        FLAGS(AudioOutput, NoteInput, SingleExternalInput),
         /* Plugin tags */
         TAGS(Sampler),
         /* Control list */
