@@ -21,7 +21,7 @@ TEST(Sampler, MetaData)
     ASSERT_EQ(meta.translations.names[1].lang, French);
     ASSERT_EQ(meta.translations.names[1].text, "Sampleur");
     ASSERT_EQ(meta.controls.size(), Sampler::ControlCount);
-    ASSERT_EQ(meta.controls.size(), 2);
+    ASSERT_EQ(meta.controls.size(), 4);
 
     sampler.outputGain() = 42.0;
     ASSERT_DOUBLE_EQ(cSampler.outputGain(), 42.0);
@@ -55,6 +55,6 @@ TEST(Sampler, MetaData)
     ASSERT_EQ(pMeta.translations.names[1].lang, French);
     ASSERT_EQ(pMeta.translations.names[1].text, "Sampleur");
     ASSERT_EQ(pMeta.controls.size(), Sampler::ControlCount);
-    ASSERT_EQ(pMeta.controls.size(), 2);
+    ASSERT_EQ(pMeta.controls.size(), 4);
 
 }
