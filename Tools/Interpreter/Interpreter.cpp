@@ -86,8 +86,8 @@ void Interpreter::prepareCache(void)
     // _scheduler.setProcessBeatSize(beatsNorm);
     _scheduler.setProcessParamByBlockSize(1024u, getAudioSpecs().sampleRate);
 
-    _scheduler.setIsLooping(false);
-    _scheduler.setLoopBeatRange(MakeBeatRange(0u, 4u, NoteType::QuarterNote));
+    // _scheduler.setIsLooping(false);
+    // _scheduler.setLoopBeatRange(MakeBeatRange(0u, 4u, NoteType::QuarterNote));
 
     const auto specs = getAudioSpecs();
     _scheduler.prepareCache(specs);
@@ -101,7 +101,7 @@ void Interpreter::prepareCache(void)
 void Interpreter::registerInternalFactories(void) noexcept
 {
     static constexpr char MixerFactoryName[] = "__internal__:/Mixer";
-    static constexpr char MixerNodeName[] = "master"; // Wtf quoi
+    static constexpr char MixerNodeName[] = "master";
 
     insertNode(nullptr, Audio::PluginTable::Get().instantiate(MixerFactoryName), MixerNodeName);
 }
@@ -114,11 +114,8 @@ void Interpreter::AudioCallback(std::uint8_t *stream, const std::size_t length)
         ++_AudioCallbackMissCount;
         // std::cout << "AudioCallback MISS " << total << " / " << length << std::endl;
     }
-
     // auto count = 0;
     // for (auto i = 0; i < length; ++i) {
-
-
     //     if (stream[i])
     //         ++count;
     // }
@@ -137,7 +134,6 @@ void Interpreter::run(void)
     _scheduler.invalidateProjectGraph();
     std::cout << "graph: " << _scheduler.graph().size() << std::endl;
 
-    // exit(0);
     while (_running) {
         try {
             if (audioCallbackMissCount < _AudioCallbackMissCount.load()) {
@@ -320,8 +316,17 @@ void Interpreter::parseSettingsCommand(void)
     case "blockSize"_hash:
         changed = _device.setBlockSize(getNextWordAs<unsigned int>("Interpreter::parseSettingsCommand: Invalid blockSize input value"));
         break;
-    case "processBlockSize"_hash:
-        changed = _scheduler.setProcessParamByBlockSize(getNextWordAs<unsigned int>("Interpreter::parseSettingsCommand: Invalid blockSize input value"), getAudioSpecs().sampleRate);
+    case "loopRange"_hash:
+    {
+        const auto beatPrecision = getNextWordAs<unsigned int>("Interpreter::parseSettingsCommand::loopRange: Invalid beatPrecision");
+        const auto from = getNextWordAs<unsigned int>("Interpreter::parseSettingsCommand::loopRange: Invalid range from");
+        const auto to = getNextWordAs<unsigned int>("Interpreter::parseSettingsCommand::loopRange: Invalid range to");
+
+        _scheduler.setLoopBeatRange(MakeBeatRange(from, to, static_cast<NoteType>(beatPrecision)));
+        break;
+    }
+    case "loop"_hash:
+        _scheduler.setIsLooping(getNextWordAs<bool>("Interpreter::parseSettingsCommand::loop: Invalid boolean value"));
         break;
     case "help"_hash:
     case "?"_hash:
@@ -439,7 +444,7 @@ void Interpreter::removeNodeImpl(Audio::Node &node) noexcept
     for (auto &child : node.children()) {
         removeNodeImpl(*child);
     }
-    _map.erase(node.name().toStdView());
+    _map.erase(node.name().toStdString());
 }
 
 void Interpreter::parseNoteCommand(void)
@@ -473,13 +478,13 @@ void Interpreter::parseNoteCommand(void)
         break;
     case "create"_hash:
     {
+        bool isPlugin = getNextWordNoThrow();
         const auto beatPrecision = getNextWordAs<unsigned int>("Interpreter::parseNoteCommand::create: Invalid beatPrecision parameter");
         // Check if beatPrecision is a power of two
         if (!beatPrecision || (beatPrecision & (beatPrecision - 1)))
             throw std::logic_error("Interpreter::parseNoteCommand::create: first argument must be a power of 2.");
         const auto from = getNextWordAs<unsigned int>("Interpreter::parseNoteCommand::create: Invalid beat from parameter");
         const auto to = getNextWordAs<unsigned int>("Interpreter::parseNoteCommand::create: Invalid beat to parameter");
-        bool isPlugin = getNextWordNoThrow();
         const std::string &nodeName = (isPlugin ? _word : "master");
         auto &node = getNode(nodeName);
         Audio::Partition partition;

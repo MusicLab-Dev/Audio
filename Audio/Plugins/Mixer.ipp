@@ -14,11 +14,9 @@ inline void Audio::Mixer::receiveAudio(BufferView output)
     for (auto k = 0u; k < _cache.size(); ++k) {
         const float *from = _cache[k].data<float>();
         float *to = output.data<float>();
-        for (auto i = 0u; i < size; ++i) {
-            if (!k)
-                to[i] = from[i] / _cache.size();
-            else
-                to[i] += from[i] / _cache.size();
+        to[0] = from[0] / _cache.size();
+        for (auto i = 1u; i < size; ++i) {
+            to[i] += from[i] / _cache.size();
         }
         // return;
     }

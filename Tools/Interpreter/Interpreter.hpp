@@ -46,7 +46,7 @@ private:
     Scheduler _scheduler;
     Audio::Device _device;
     Audio::Device::SDLDescriptor _deviceDescriptor { DefaultDeviceDescriptor };
-    std::unordered_map<std::string_view, NodeHolder> _map {};
+    std::unordered_map<std::string, NodeHolder> _map {};
 
     static inline std::atomic<std::size_t> _AudioCallbackMissCount { 0u };
 
@@ -83,8 +83,8 @@ private:
     [[nodiscard]] Core::HashedName getCurrentHashedWord(void) const noexcept { return Core::Hash(_word); }
 
 
-    [[nodiscard]] const NodeHolder &getNode(const std::string_view &name) const;
-    [[nodiscard]] NodeHolder &getNode(const std::string_view &name)
+    [[nodiscard]] const NodeHolder &getNode(const std::string &name) const;
+    [[nodiscard]] NodeHolder &getNode(const std::string &name)
         { return const_cast<NodeHolder &>(const_cast<const Interpreter &>(*this).getNode(name)); }
 
     void removeNode(NodeHolder &node);

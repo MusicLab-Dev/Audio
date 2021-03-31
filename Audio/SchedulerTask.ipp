@@ -175,17 +175,27 @@ inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio>::
                 if (noteFrom >= beatRange.to)
                     continue;
                 // Note is overlapping the end of the beatrange
-                if (noteTo > beatRange.to) {
-                    // std::cout << "On\n";
+                if (noteFrom >= beatRange.from && noteTo <= beatRange.to) {
+                    // std::cout << "OnOff\n";
                     _noteStack->push(NoteEvent({
-                        type: NoteEvent::EventType::On,
+                        type: NoteEvent::EventType::OnOff,
                         key: note.key,
                         velocity: note.velocity,
                         tuning: note.tuning
                     }));
                 }
                 // Note is overlapping the begining of the beatrange
-                else if (noteFrom < beatRange.from) {
+                else if (noteFrom >= beatRange.from) {
+                    _noteStack->push(NoteEvent({
+                        type: NoteEvent::EventType::On,
+                        key: note.key,
+                        velocity: note.velocity,
+                        tuning: note.tuning
+                    }));
+                    // std::cout << "On\n";
+                }
+                // Note fits in the beatrange
+                else if (noteTo <= beatRange.to) {
                     _noteStack->push(NoteEvent({
                         type: NoteEvent::EventType::Off,
                         key: note.key,
@@ -193,16 +203,6 @@ inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio>::
                         tuning: note.tuning
                     }));
                     // std::cout << "Off\n";
-                }
-                // Note fits in the beatrange
-                else {
-                    _noteStack->push(NoteEvent({
-                        type: NoteEvent::EventType::OnOff,
-                        key: note.key,
-                        velocity: note.velocity,
-                        tuning: note.tuning
-                    }));
-                    // std::cout << "OnOff\n";
                 }
             }
         }

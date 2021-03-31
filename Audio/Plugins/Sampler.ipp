@@ -22,7 +22,7 @@ inline void Audio::Sampler::onAudioParametersChanged(void)
         const auto newSize = GetFormatByteLength(audioSpecs().format) * audioSpecs().processBlockSize;
         buffer.resize(newSize, audioSpecs().sampleRate, audioSpecs().channelArrangement, audioSpecs().format);
     }
-
+    // _enveloppe.setSampleRate(_specs.sampleRate());
 }
 
 inline void Audio::Sampler::setExternalPaths(const ExternalPaths &paths)
@@ -42,22 +42,16 @@ inline void Audio::Sampler::sendNotes(const NoteEvents &notes)
 
 inline void Audio::Sampler::receiveAudio(BufferView output)
 {
-    // output.clear();
-    // static bool Bool = false;
-    // Bool = !Bool;
-    // if (!Bool)
-    //     return;
-    // std::cout << "AUDIO\n";
+    // std::cout << "AUDIO: " << _controls.size() << std::endl;
     // std::cout << "receiveAudio:::: " << _noteManager.getActiveNoteNumber() << std::endl;
 
     const auto outSize = output.size<float>();
-    // std::cout << "Sampler::output.byteData(): " << outSize << " " << reinterpret_cast<const int *>(output.byteData()) << std::endl;
     float *out = reinterpret_cast<float *>(output.byteData());
-    // std::uint8_t *out = output.byteData();
 
 
     float *sampleBuffer = nullptr;
     std::size_t sampleSize = 0u;
+
     // std::cout << "Sampler::receiveAudio::sampleSize: " << sampleSize << std::endl;
 
     // bool hasProcess = false;
@@ -65,28 +59,28 @@ inline void Audio::Sampler::receiveAudio(BufferView output)
     const auto activeNote = _noteManager.getActiveNote();
     for (auto iKey = 0u; iKey < activeNote.size(); ++iKey) {
         const auto key = activeNote[iKey];
-        // const std::size_t bufferIdx = OctaveRootKey - RootKey + key;
-        const std::size_t bufferIdx = OctaveRootKey;
-        // std::cout << "idx: " << _noteManager.readIndex(key) << " triger: " << _noteManager.trigger(key) << std::endl;
         // if (!_noteManager.trigger(key))
         //     continue;
+        // const std::size_t bufferIdx = OctaveRootKey - RootKey + key;
+        const std::size_t bufferIdx = OctaveRootKey;
         sampleBuffer = _buffers[bufferIdx].data<float>();
         sampleSize = _buffers[bufferIdx].size<float>();
         // hasProcess = true;
-        for (auto i = 0u; i < outSize; ++i) {
-            out[i] += _outputGain * sampleBuffer[_noteManager.readIndex(key)] / static_cast<float>(activeNote);
-            _noteManager.incrementReadIndex(key, sampleSize);
+        const int nextReadIndex = sampleSize - (_noteManager.readIndex(key) + audioSpecs().processBlockSize);
+        const auto readSize = nextReadIndex < 0 ? outSize + nextReadIndex : outSize;
+        // std::cout << "in: " << _noteManager.readIndex(key) << std::endl;
+        // std::cout << "sampleSize: " << sampleSize << std::endl;
+        // std::cout << "nextReadIndex: " << nextReadIndex << std::endl;
+        // std::cout << "readSize: " << readSize << std::endl;
+        // std::cout << std::endl;
+        for (auto i = 0u; i < readSize; ++i) {
+            const auto idx = _noteManager.readIndex(key) + i;
+            out[i] += sampleBuffer[idx] * _noteManager.getEnveloppeGain(key, idx, _noteManager.trigger(key))
+                / static_cast<float>(activeNote);
+            // _noteManager.incrementReadIndex(key, sampleSize);
         }
+        _noteManager.incrementReadIndex(key, sampleSize, readSize);
     }
-    // for (auto &key : _noteManager.getActiveNoteBlock()) {
-
-        // std::cout << "note block:" << std::endl;
-        // for (auto i = 0u; i < outSize; ++i) {
-        //     output.data<float>(static_cast<Channel>(iChannel))[i] += _outputGain * _buffers[0].data<float>(static_cast<Channel>(iChannel))[_readIndex[key]];
-        //     incrementReadIndex(key);
-        // }
-    // }
-    //     output.clear();
     // if (hasProcess)
     //     std::cout << " - HAS PROCESS: " << hasProcess << std::endl;
 }

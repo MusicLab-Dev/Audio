@@ -7,17 +7,23 @@
 
 inline void Audio::NoteManager::feedNotes(const NoteEvents &notes) noexcept
 {
+    std::cout << "NEW NOTE\n";
     for (const auto &note : notes) {
         auto &target = _cache.modifiers[note.key];
         switch (note.type) {
         case NoteEvent::EventType::On:
         {
-            // std::cout << "ON: " << _cache.actives.size() << std::endl;
-            const auto it = std::find(_cache.actives.begin(), _cache.actives.end(), note.key);
+            std::cout << "ON: " << _cache.actives.size() << std::endl;
+            const auto it = _cache.actives.find(note.key);
             if (it == _cache.actives.end()) {
-                // std::cout << "___\n";
                 _cache.actives.push(note.key);
                 _cache.triggers[note.key] = true;
+            } else {
+                // Reset trigger
+                std::cout << "reset trigger on\n";
+                _cache.triggers[note.key] = true;
+                _cache.readIndexes[note.key] = 0u;
+                setEvenveloppeIndex(note.key, 0u);
             }
             target.noteModifiers.velocity = note.velocity;
             target.noteModifiers.tuning = note.tuning;
@@ -25,17 +31,24 @@ inline void Audio::NoteManager::feedNotes(const NoteEvents &notes) noexcept
         }
         case NoteEvent::EventType::Off:
         {
-            // std::cout << "OFF: " << _cache.actives.size() << std::endl;
-            const auto it = std::find(_cache.actives.begin(), _cache.actives.end(), note.key);
+            std::cout << "OFF: " << _cache.actives.size() << std::endl;
+            const auto it = _cache.actives.find(note.key);
             if (it != _cache.actives.end()) {
-                // std::cout << "___\n";
-                _cache.actives.erase(it);
                 _cache.triggers[note.key] = false;
                 // Reset
-                _cache.readIndexes[note.key] = 0u;
+                // std::cout << "reset trigger off\n";
+                // std::cout << "reset trigger off\n";
+                // std::cout << "reset trigger off\n";
+                // std::cout << "reset trigger off\n";
+                // std::cout << "reset trigger off\n";
+                // std::cout << "reset trigger off\n";
+                // _cache.readIndexes[note.key] = 0u;
+                setEvenveloppeIndex(note.key, _cache.readIndexes[note.key]);
             }
         } break;
         case NoteEvent::EventType::OnOff:
+            std::cout << "ON & OFF: " << _cache.actives.size() << std::endl;
+            // _cache.actives.push(note.key);
             _cache.activesBlock.push(note.key);
             target.noteModifiers.velocity = note.velocity;
             target.noteModifiers.tuning = note.tuning;
@@ -58,6 +71,10 @@ inline void Audio::NoteManager::resetCache(void) noexcept
 
 inline void Audio::NoteManager::resetBlockCache(void) noexcept
 {
+    for (const auto &note : _cache.activesBlock) {
+        if (const auto it = _cache.actives.find(note); it != _cache.actives.end())
+            _cache.activesBlock.erase(it);
+    }
     _cache.activesBlock.clear();
 }
 
@@ -97,15 +114,19 @@ inline void Audio::NoteManager::incrementReadIndex(const Key key, const std::siz
     auto &trigger = _cache.triggers[key];
     auto &readIndex = _cache.readIndexes[key];
 
-    if (!trigger)
-        return;
+    // if (!trigger)
+    //     return;
 
     readIndex += amount;
-    // std::cout << "::" << _cache.readIndexes[key] << std::endl;
+    // std::cout << "  ::" << _cache.readIndexes[key] << std::endl;
     if (readIndex >= maxIndex) {
+        std::cout << "  :: RESET" << std::endl;
+        if (const auto it = _cache.actives.find(key); it != _cache.actives.end())
+            _cache.actives.erase(it);
         readIndex = 0u;
         trigger = false;
-    }
+        std::cout << "  :: RESET" << std::endl;
+     }
 }
 
 inline void Audio::NoteManager::resetTriggers(void) noexcept

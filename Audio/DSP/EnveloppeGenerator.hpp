@@ -6,6 +6,7 @@
 #pragma once
 
 #include <Core/Utils.hpp>
+#include <Core/Vector.hpp>
 
 #include <Audio/BaseDevice.hpp>
 
@@ -23,17 +24,63 @@ namespace Audio::DSP
     namespace Internal
     {
         class EnveloppeGeneratorBase;
-    };
+    }
 
     template<GeneratorType Generator>
     class EnveloppeGenerator;
+
+    class AttackRelease;
+}
+
+class Audio::DSP::AttackRelease
+{
+public:
+    using IndexList = std::array<std::size_t, KeyCount>;
+
+    void triggerOn(void) noexcept;
+    void triggerOff(const std::size_t index) noexcept;
+
+
+    /** @brief Set the internal trigger status */
+    void setTriggerIndex(const Key key, const std::size_t triggerIndex) noexcept
+    {
+        _triggerIndex[key] = triggerIndex;
+    }
+
+    /** @brief Set the attack with a time in seconds */
+    void setAttack(const float attackTime, const SampleRate sampleRate) noexcept { _attack = attackTime * static_cast<float>(sampleRate); }
+
+    /** @brief Set the release with a time in seconds */
+    void setRelease(const float releaseTime, const SampleRate sampleRate) noexcept { _release = releaseTime * static_cast<float>(sampleRate); }
+
+    [[nodiscard]] float getGain(const Key key, const std::size_t index, const bool isTrigger) const noexcept
+    {
+        if (isTrigger) {
+            if (index < _attack) {
+                return index / static_cast<float>(_attack);
+            }
+            return 1.f;
+        } else {
+            if (const auto releaseIndex = index - _triggerIndex[key]; releaseIndex < _release) {
+                return 1 - releaseIndex / static_cast<float>(_release);
+            }
+            return 0.f;
+        }
+        return 1.f;
+    }
+
+private:
+    // bool _isTrigger { true };
+    IndexList _triggerIndex;
+
+    std::size_t _attack { 44100u / 100 };
+    std::size_t _release { 44100u / 1000 };
 };
+
 
 class Audio::DSP::Internal::EnveloppeGeneratorBase
 {
 public:
-    // using
-
     /** @brief Default constructor */
     EnveloppeGeneratorBase(void) = default;
 

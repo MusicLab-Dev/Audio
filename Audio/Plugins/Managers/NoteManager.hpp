@@ -8,7 +8,8 @@
 #include <array>
 #include <memory>
 
-#include "Audio/Note.hpp"
+#include <Audio/Note.hpp>
+#include <Audio/DSP/EnveloppeGenerator.hpp>
 
 namespace Audio
 {
@@ -105,8 +106,13 @@ public:
 
     [[nodiscard]] std::size_t readIndex(const Key key) const noexcept { return _cache.readIndexes[key]; }
 
+    void setEvenveloppeIndex(const Key key, const std::size_t triggerIndex) noexcept { _enveloppe.setTriggerIndex(key, triggerIndex); }
+
+    float getEnveloppeGain(const Key key, const std::size_t index, const bool isTrigger) const noexcept { return _enveloppe.getGain(key, index, isTrigger); }
+
 private:
     Cache   _cache;
+    DSP::AttackRelease _enveloppe;
 };
 
 static_assert_alignof_double_cacheline(Audio::NoteManager);

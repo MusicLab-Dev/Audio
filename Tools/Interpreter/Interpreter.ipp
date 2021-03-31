@@ -49,7 +49,7 @@ inline As Interpreter::getNextWordAs(const char * const what)
     return value;
 }
 
-inline const Interpreter::NodeHolder &Interpreter::getNode(const std::string_view &name) const
+inline const Interpreter::NodeHolder &Interpreter::getNode(const std::string &name) const
 {
     auto it = _map.find(name);
 

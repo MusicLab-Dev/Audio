@@ -23,8 +23,8 @@ TEST(Sampler, MetaData)
     ASSERT_EQ(meta.controls.size(), Sampler::ControlCount);
     ASSERT_EQ(meta.controls.size(), 2);
 
-    sampler.volume() = 42.0;
-    ASSERT_DOUBLE_EQ(cSampler.volume(), 42.0);
+    sampler.outputGain() = 42.0;
+    ASSERT_DOUBLE_EQ(cSampler.outputGain(), 42.0);
 
     ASSERT_DOUBLE_EQ(cSampler.getControl(0), 42.0);
     sampler.getControl(0) = 0.24;
