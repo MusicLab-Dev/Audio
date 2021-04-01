@@ -119,6 +119,8 @@ private:
     BufferOctave _buffers {};
     // Cacheline 3 & 4
     NoteManager _noteManager {};
+
+    Buffer _tmp;
 };
 
 #include "Sampler.ipp"

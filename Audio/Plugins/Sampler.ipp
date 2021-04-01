@@ -12,6 +12,17 @@ inline void Audio::Sampler::loadSample(const std::string_view &path)
     SampleSpecs specs;
     _buffers[OctaveRootKey] = SampleManager<Type>::LoadSampleFile(std::string(path), specs);
     GenerateOctave<Type>(_buffers[OctaveRootKey], _buffers);
+    const auto inSize = _buffers[0].size<float>();
+    _tmp.resize(inSize / 2 * sizeof(float), 44100, ChannelArrangement::Mono, Format::Floating32);
+
+    DSP::Resampler::ResampleOctave<false>(
+        _buffers[0].data<float>(),
+        _tmp.data<float>(),
+        inSize,
+        44100,
+        1
+    );
+
 }
 
 inline void Audio::Sampler::onAudioParametersChanged(void)
@@ -54,33 +65,72 @@ inline void Audio::Sampler::receiveAudio(BufferView output)
 
     // std::cout << "Sampler::receiveAudio::sampleSize: " << sampleSize << std::endl;
 
-    // bool hasProcess = false;
-
     const auto activeNote = _noteManager.getActiveNote();
     for (auto iKey = 0u; iKey < activeNote.size(); ++iKey) {
         const auto key = activeNote[iKey];
         // if (!_noteManager.trigger(key))
         //     continue;
-        // const std::size_t bufferIdx = OctaveRootKey - RootKey + key;
-        const std::size_t bufferIdx = OctaveRootKey;
+        const std::int32_t bufferIdxDt = static_cast<std::int32_t>(key) - static_cast<std::int32_t>(RootKey) + OctaveRootKey;
+        const std::size_t bufferIdx = (bufferIdxDt >= 0) ? bufferIdxDt % KeysPerOctave : (KeysPerOctave + bufferIdxDt) % KeysPerOctave;
+        const std::int32_t nOctave = (bufferIdxDt >= 0) ? bufferIdxDt / KeysPerOctave : -((KeysPerOctave - bufferIdxDt - 1) / KeysPerOctave);
+
+        // std::cout << "buffer idx dt: " << bufferIdxDt << std::endl;
+        // std::cout << "buffer idx: " << bufferIdx << std::endl;
+        // std::cout << "nOctave: " << nOctave << std::endl;
+
         sampleBuffer = _buffers[bufferIdx].data<float>();
         sampleSize = _buffers[bufferIdx].size<float>();
-        // hasProcess = true;
-        const int nextReadIndex = sampleSize - (_noteManager.readIndex(key) + audioSpecs().processBlockSize);
-        const auto readSize = nextReadIndex < 0 ? outSize + nextReadIndex : outSize;
+        // sampleBuffer = _tmp.data<float>();
+        // sampleSize = _tmp.size<float>();
+        // return;
+
         // std::cout << "in: " << _noteManager.readIndex(key) << std::endl;
         // std::cout << "sampleSize: " << sampleSize << std::endl;
         // std::cout << "nextReadIndex: " << nextReadIndex << std::endl;
         // std::cout << "readSize: " << readSize << std::endl;
         // std::cout << std::endl;
-        for (auto i = 0u; i < readSize; ++i) {
-            const auto idx = _noteManager.readIndex(key) + i;
-            out[i] += sampleBuffer[idx] * _noteManager.getEnveloppeGain(key, idx, _noteManager.trigger(key))
-                / static_cast<float>(activeNote);
-            // _noteManager.incrementReadIndex(key, sampleSize);
+        if (!nOctave) {
+            const int nextReadIndex = sampleSize - (_noteManager.readIndex(key) + audioSpecs().processBlockSize);
+            const auto readSize = nextReadIndex < 0 ? outSize + nextReadIndex : outSize;
+
+            for (auto i = 0u; i < readSize; ++i) {
+                const auto idx = _noteManager.readIndex(key) + i;
+                out[i] += sampleBuffer[idx] * _noteManager.getEnveloppeGain(key, idx, _noteManager.trigger(key))
+                    / static_cast<float>(activeNote);
+                // _noteManager.incrementReadIndex(key, sampleSize);
+            }
+            _noteManager.incrementReadIndex(key, sampleSize, readSize);
         }
-        _noteManager.incrementReadIndex(key, sampleSize, readSize);
+        else {
+            sampleBuffer = _buffers[bufferIdx].data<float>();
+            sampleSize = _buffers[bufferIdx].size<float>();
+            // const std::size_t resampleSize = (nOctave > 0) ? sampleSize / 2 : sampleSize * 2;
+            const std::size_t resampleSize = sampleSize * std::pow(2, -nOctave);
+            // const std::size_t resampleOffset = (nOctave < 0) ? _noteManager.readIndex(key) / 2 : _noteManager.readIndex(key) * 2;
+            const std::size_t resampleOffset = _noteManager.readIndex(key) * std::pow(2, nOctave);
+            const int nextReadIndex = resampleSize - (_noteManager.readIndex(key) + audioSpecs().processBlockSize);
+            const auto readSize = nextReadIndex < 0 ? outSize + nextReadIndex : outSize;
+            // const auto resampleReadSize = (nOctave > 0) ? readSize * 2 : readSize / 2;
+            const auto resampleReadSize = readSize * std::pow(2, nOctave);
+            // std::cout << "in: " << _noteManager.readIndex(key) << std::endl;
+            // std::cout << "sampleSize: " << sampleSize << std::endl;
+            // std::cout << "nextReadIndex: " << nextReadIndex << std::endl;
+            // std::cout << "readSize: " << readSize << std::endl;
+            // std::cout << "resampleReadSize: " << resampleReadSize << std::endl;
+            // std::cout << "resampleSize: " << resampleSize << std::endl;
+            // std::cout << "resampleOffset: " << resampleOffset << std::endl;
+            // std::cout << std::endl;
+            DSP::Resampler::ResampleOctave<true>(sampleBuffer, out, resampleOffset + resampleReadSize, audioSpecs().sampleRate, nOctave, resampleOffset);
+            // std::cout << "RESAMPLEED done" << std::endl;
+
+            // Apply enveloppe
+            // for (auto i = 0u; i < readSize; ++i) {
+            //     const auto idx = _noteManager.readIndex(key) + i;
+            //     out[i] *= _noteManager.getEnveloppeGain(key, idx, _noteManager.trigger(key)) * 2;
+            // }
+            _noteManager.incrementReadIndex(key, resampleSize, readSize);
+        }
     }
-    // if (hasProcess)
-    //     std::cout << " - HAS PROCESS: " << hasProcess << std::endl;
+    // std::cout << "<END>" << std::endl;
+
 }

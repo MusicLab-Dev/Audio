@@ -48,8 +48,12 @@ public:
 
 
     /** @brief Perform interpolation combine with filtering. It save cpu ! */
-    template<unsigned ProcessRate, typename Type>
-    static VoidType<Type> Resample(const Type *input, Type *output, const std::size_t inputSize, const std::size_t inputSampleRate, const std::size_t interpFactor, const std::size_t decimFactor) noexcept;
+    template<unsigned ProcessRate, bool Accumulate, typename Type>
+    static VoidType<Type> Resample(
+            const Type *input, Type *output,
+            const std::size_t inputSize, const std::size_t inputSampleRate,
+            const std::size_t interpFactor, const std::size_t decimFactor,
+            const std::size_t offset = 0u) noexcept;
 
     /** @brief Perform interpolation combine with filtering. It save cpu ! */
     template<unsigned ProcessRate, typename Type>

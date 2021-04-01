@@ -1,14 +1,14 @@
-# plugin add Sampler samplerChord
-# plugin load_sample samplerChord Samples/kick.wav
-# note create samplerChord 4 0 160
-# note add samplerChord 0 69 1 0 1
-# note add samplerChord 0 69 1 1 2
-# note add samplerChord 0 69 1 2 3
-# note add samplerChord 0 69 1 3 4
-# note add samplerChord 0 69 1 4 5
-# note add samplerChord 0 69 1 5 6
-# note add samplerChord 0 69 1 6 7
-# note add samplerChord 0 69 1 7 8
+plugin add Sampler chord
+plugin load_sample chord Samples/chord.wav
+note create chord 4 0 160
+note add chord 0 69 1 0 1
+# note add chord 0 69 1 1 2
+# note add chord 0 69 1 2 3
+note add chord 0 69 1 3 4
+# note add chord 0 69 1 4 5
+# note add chord 0 69 1 5 6
+note add chord 0 69 1 6 7
+note add chord 0 69 1 7 8
 #
 plugin add Sampler crash
 plugin load_sample crash Samples/crash.wav
