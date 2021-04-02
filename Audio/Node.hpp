@@ -25,7 +25,7 @@ namespace Audio
 };
 
 /** @brief A node contains a plugin, a partition table and an automation table */
-class alignas_cacheline Audio::Node
+class  Audio::Node
 {
 public:
     /** @brief Default constructor */
@@ -109,6 +109,9 @@ public:
     /** @brief Signal called when the generation of the audio block start */
     void onAudioGenerationStarted(const BeatRange &range) noexcept;
 
+    void f() {
+        sizeof(*this);
+    }
 private:
     Node               *_parent { nullptr }; // 8
     PluginPtr           _plugin { nullptr }; // 8
@@ -121,6 +124,7 @@ private:
     IPlugin::Flags      _flags {}; // 2
     Color               _color {}; // 4
     Core::FlatString    _name {}; // 8
+    // Gain _gain;
 };
 
 #include "Node.ipp"

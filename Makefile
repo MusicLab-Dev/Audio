@@ -76,6 +76,9 @@ run_tool_interpreter: tool_interpreter
 run_tool_interpreter_debug: tool_interpreter_debug
 	./$(DEBUG_DIR)/Interpreter
 
+run_tool_interpreter_debug_valgrind: tool_interpreter_debug
+	valgrind ./$(DEBUG_DIR)/Interpreter
+
 # Cleaning rules
 clean_release:
 	$(RM) ${RELEASE_DIR}

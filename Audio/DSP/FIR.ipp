@@ -207,9 +207,9 @@ void interpolateX()
 // }
 
 
-template<unsigned ProcessRate, typename Type>
+template<unsigned ProcessRate, bool Accumulate, typename Type>
 inline Audio::DSP::FIR::VoidType<Type>
-    Audio::DSP::FIR::Resample(const Type *input, Type *output, const std::size_t inputSize, const std::size_t inputSampleRate, const std::size_t interpFactor, const std::size_t decimFactor) noexcept
+    Audio::DSP::FIR::Resample(const Type *input, Type *output, const std::size_t inputSize, const std::size_t inputSampleRate, const std::size_t interpFactor, const std::size_t decimFactor, const std::size_t offset) noexcept
 {
     const std::size_t filterSize = interpFactor * ProcessRate;
     const FilterSpecs filterSpecs {
@@ -217,7 +217,7 @@ inline Audio::DSP::FIR::VoidType<Type>
         WindowType::Hanning,
         filterSize,
         static_cast<float>(inputSampleRate),
-        { inputSampleRate / static_cast<float>(std::max(interpFactor, decimFactor)), 0.0 }
+        { inputSampleRate / 2 / static_cast<float>(std::max(interpFactor, decimFactor)), 0.0 }
     };
     std::vector<Type> filterCoefs(filterSize);
     WindowMaker::GenerateFilterCoefficients(filterSpecs.windowType, filterSize, filterCoefs.data());
@@ -240,28 +240,35 @@ inline Audio::DSP::FIR::VoidType<Type>
     // return;
     const auto out = output;
     // std::cout << "::" << output << std::endl;
-    auto p = 0u;
-    auto c = 0u;
+    auto pBegin = 0u;
+    auto pBody = 0u;
+    auto cBegin = 0u;
+    auto cBody = 0u;
     auto failed = 0u;
-    for (auto i = 0u; i < ProcessRate - 1; ++i) {
+    for (auto i = offset; i < ProcessRate - 1; ++i) {
+        // std::cout << "  ii: " << i << std::endl;
         interpolate<ProcessRate>(interpolateData.data(), input + i, filterCoefs.data(), interpFactor, ProcessRate - 1 - i);
         auto produced = producedCache.pushRange(interpolateData.begin(), interpolateData.end());
-        p += produced;
+        pBegin += produced;
         while (producedCache.tryPopRange(decimData.begin(), decimData.end())) {
             // std::cout << "consumed: " << std::endl;
-            *output = decimData[0];
+            if constexpr (Accumulate)
+                *output += decimData[0];
+            else
+                *output = decimData[0];
             ++output;
-            c += decimFactor;
+            cBegin += 1;
         }
     }
     // return;
-    for (auto i = ProcessRate - 1; i < inputSize; ++i) {
+    const auto start = offset ? offset : offset + ProcessRate - 1;
+    for (auto i = start; i < inputSize; ++i) {
         const std::size_t idx = i * ProcessRate;
-        // std::cout << "ii::: " << idx << std::endl;
+        // std::cout << "  ii::: " << i << std::endl;
         // Produce interpFactor of samples
         interpolate<ProcessRate>(interpolateData.data(), input + i, filterCoefs.data(), interpFactor);
         auto produced = producedCache.pushRange(interpolateData.begin(), interpolateData.end());
-        p += produced;
+        pBody += produced;
         // if (produced != interpFactor)
             // std::cout << "failed production: " << produced << "/" << filterSize << std::endl;
         // else
@@ -269,12 +276,20 @@ inline Audio::DSP::FIR::VoidType<Type>
         // If possible, consume decimFactor samples
         while (producedCache.tryPopRange(decimData.begin(), decimData.end())) {
             // std::cout << "consumed: " << std::endl;
-            *output = decimData[0];
+            if constexpr (Accumulate)
+                *output += decimData[0];
+            else
+                *output = decimData[0];
             ++output;
-            c += decimFactor;
+            cBody += 1;
         }
         // break;
     }
+    // std::cout << "Begin: " << pBegin << ", " << cBegin << std::endl;
+    // std::cout << "Body: " << pBody << ", " << cBody << std::endl;
+    // std::cout << "all: " << pBegin + pBody << ", " << cBegin + cBody << std::endl;
+    // std::cout << ":: " << inputSize - offset << std::endl;
+    // std::cout << std::endl;
     // std::cout << "produced total: " << p << std::endl;
     // std::cout << "consumed total: " << c << std::endl;
     // std::cout << "::" << output << std::endl;

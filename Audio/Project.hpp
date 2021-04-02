@@ -50,7 +50,8 @@ public:
 
 private:
     NodePtr             _master {};
-    BPM                 _bpm { 240.0f / 4 };
+    PlaybackMode        _playbackMode { PlaybackMode::Production };
+    BPM                 _bpm { 150.f };
     Core::FlatString    _name {};
 };
 

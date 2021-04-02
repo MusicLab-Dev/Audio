@@ -62,23 +62,26 @@ inline std::size_t Audio::DSP::GetResamplingSizeSampleRate(const std::size_t inp
 // {
 // }
 
-template<typename Type>
-inline void Audio::DSP::Resampler::ResampleOctave(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const std::int8_t nOctave)
+template<bool Accumulate, typename Type>
+inline void Audio::DSP::Resampler::ResampleOctave(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const SampleRate sampleRate, const std::int8_t nOctave, const std::size_t offset)
 {
     coreAssert(nOctave,
         throw std::logic_error("DSP::Resampler::ResampleOctave: nOctave must be different than zero."));
+
     if (nOctave > 0)
-        Internal::DecimateOctave(inputBuffer, outputBuffer, inputSize, nOctave);
+        FIR::Resample<8u, Accumulate>(inputBuffer, outputBuffer, inputSize, sampleRate, 1, std::pow(2, std::abs(nOctave)), offset);
+        // Internal::DecimateOctave(inputBuffer, outputBuffer, inputSize, nOctave);
     else
-        Internal::InterpolateOctave(inputBuffer, outputBuffer, inputSize, -nOctave);
+        FIR::Resample<8u, Accumulate>(inputBuffer, outputBuffer, inputSize, sampleRate, std::pow(2, std::abs(nOctave)), 1, offset);
+        // Internal::InterpolateOctave(inputBuffer, outputBuffer, inputSize, -nOctave);
 }
 
-template<typename Type>
+template<bool Accumulate, typename Type>
 inline void Audio::DSP::Resampler::ResampleSemitone(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const SampleRate inSampleRate, const bool upScale)
 {
     const auto iFactor = upScale ? Resampler::L_Factor : Resampler::M_Factor;
     const auto dFactor = upScale ? Resampler::M_Factor : Resampler::L_Factor;
 
     std::cout << "ResampleSemitone: input size: " << inputSize << std::endl;
-    FIR::Resample<8u>(inputBuffer, outputBuffer, inputSize, inSampleRate, iFactor, dFactor);
+    FIR::Resample<8u, Accumulate>(inputBuffer, outputBuffer, inputSize, inSampleRate, iFactor, dFactor);
 }

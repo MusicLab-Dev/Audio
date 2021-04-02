@@ -67,14 +67,14 @@ struct Audio::DSP::Resampler
     static void Decimate(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const std::size_t decimationRatio);
 
     /** @brief Resample the inputBuffer into outputBuffer, outputBuffer size must fit the semitone, call GetResamplingSizeSemitone to get the outputBuffer size */
-    template<typename Type>
+    template<bool Accumulate, typename Type>
     static void ResampleSemitone(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const SampleRate inSampleRate, const bool upScale);
     /** @brief Resample the inputBuffer into outputBuffer, outputBuffer size must fit the outSampleRate, call GetResamplingSize to get the outputBuffer size */
     template<typename Type>
     static void ResampleSampleRate(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const SampleRate inSampleRate, const SampleRate outSampleRate);
 
-    template<typename Type>
-    static void ResampleOctave(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const std::int8_t nOctave);
+    template<bool Accumulate, typename Type>
+    static void ResampleOctave(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const SampleRate sampleRate, const std::int8_t nOctave, const std::size_t offset = 0u);
 
 
 

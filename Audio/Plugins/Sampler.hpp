@@ -36,15 +36,15 @@ class Audio::Sampler final : public Audio::IPlugin
         /* Control list */
         REGISTER_CONTROL(
             /* Control variable / getter / setter name */
-            volume,
+            outputGain,
             /* Control name */
             TR_TABLE(
-                TR(English, "Volume"),
-                TR(French, "Volume")
+                TR(English, "Output gain"),
+                TR(French, "Volume de sortie")
             ),
             /* Control's description */
             TR_TABLE(
-                TR(English, "Output volume of the sampler"),
+                TR(English, "Output gain of the sampler"),
                 TR(French, "Volume de sortie du sampleur")
             )
         ),
@@ -61,6 +61,34 @@ class Audio::Sampler final : public Audio::IPlugin
                 TR(English, "Base pitch of the loaded note"),
                 TR(French, "Hauteur de référence la note chargée")
             )
+        ),
+        REGISTER_CONTROL(
+            /* Control variable / getter / setter name */
+            enveloppeAttack,
+            /* Control name */
+            TR_TABLE(
+                TR(English, "Enveloppe attack"),
+                TR(French, "Attaque de l'enveloppe")
+            ),
+            /* Control's description */
+            TR_TABLE(
+                TR(English, "Attack duration used by the enveloppe to determine volume gain"),
+                TR(French, "Hauteur de référence la note chargée")
+            )
+        ),
+        REGISTER_CONTROL(
+            /* Control variable / getter / setter name */
+            enveloppeRelease,
+            /* Control name */
+            TR_TABLE(
+                TR(English, "Enveloppe release"),
+                TR(French, "Extinction de l'enveloppe")
+            ),
+            /* Control's description */
+            TR_TABLE(
+                TR(English, "Release duration used by the enveloppe to determine volume gain"),
+                TR(French, "Hauteur de référence la note chargée")
+            )
         )
     )
 
@@ -69,7 +97,7 @@ public:
 
     virtual void sendNotes(const NoteEvents &notes);
 
-    virtual void setExternalPaths(const ExternalPaths &paths) {}
+    virtual void setExternalPaths(const ExternalPaths &paths);
 
     virtual void onAudioParametersChanged(void);
 
@@ -82,18 +110,17 @@ public:
 public:
     /** Load a sample file with a specific type */
     template<typename Type>
-    void loadSample(const std::string &path);
+    void loadSample(const std::string_view &path);
 
     // [[nodiscard]] const OctaveBuffer &getBuffers(void) const noexcept { return _buffers; }
 
 private:
-    // Cacheline 1
-    Gain _outputGain { 0.5f };
     // Cacheline 1 & 2
     BufferOctave _buffers {};
     // Cacheline 3 & 4
     NoteManager _noteManager {};
 
+    Buffer _tmp;
 };
 
 #include "Sampler.ipp"

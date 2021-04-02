@@ -164,25 +164,23 @@ inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, P
         const auto noteTo = offset.from + note.range.to;
         if (noteTo <= beatRange.from || noteFrom >= beatRange.to)
             continue;
-        if (noteTo > beatRange.to) {
+        if (noteFrom >= beatRange.from && noteTo <= beatRange.to) {
+            _noteStack->push(NoteEvent({
+                type: NoteEvent::EventType::OnOff,
+                key: note.key,
+                velocity: note.velocity,
+                tuning: note.tuning
+            }));
+        } else if (noteFrom >= beatRange.from) {
             _noteStack->push(NoteEvent({
                 type: NoteEvent::EventType::On,
                 key: note.key,
                 velocity: note.velocity,
                 tuning: note.tuning
             }));
-        }
-        else if (noteFrom < beatRange.from) {
+        } else if (noteTo <= beatRange.to) {
             _noteStack->push(NoteEvent({
                 type: NoteEvent::EventType::Off,
-                key: note.key,
-                velocity: note.velocity,
-                tuning: note.tuning
-            }));
-        }
-        else {
-            _noteStack->push(NoteEvent({
-                type: NoteEvent::EventType::OnOff,
                 key: note.key,
                 velocity: note.velocity,
                 tuning: note.tuning
