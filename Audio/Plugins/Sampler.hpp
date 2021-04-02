@@ -104,7 +104,7 @@ public:
     // virtual void sendControls(const ControlEvents &controls) noexcept {
     // }
 
-    virtual void onAudioGenerationStarted(const BeatRange &range) {}
+    virtual void onAudioGenerationStarted(const BeatRange &range);
 
 
 public:

@@ -109,9 +109,6 @@ public:
     /** @brief Signal called when the generation of the audio block start */
     void onAudioGenerationStarted(const BeatRange &range) noexcept;
 
-    void f() {
-        sizeof(*this);
-    }
 private:
     Node               *_parent { nullptr }; // 8
     PluginPtr           _plugin { nullptr }; // 8

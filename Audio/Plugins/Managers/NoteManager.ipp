@@ -23,7 +23,7 @@ inline void Audio::NoteManager::feedNotes(const NoteEvents &notes) noexcept
                 std::cout << "reset trigger on\n";
                 _cache.triggers[note.key] = true;
                 _cache.readIndexes[note.key] = 0u;
-                setEvenveloppeIndex(note.key, 0u);
+                setEnveloppeIndex(note.key, 0u);
             }
             target.noteModifiers.velocity = note.velocity;
             target.noteModifiers.tuning = note.tuning;
@@ -37,13 +37,8 @@ inline void Audio::NoteManager::feedNotes(const NoteEvents &notes) noexcept
                 _cache.triggers[note.key] = false;
                 // Reset
                 // std::cout << "reset trigger off\n";
-                // std::cout << "reset trigger off\n";
-                // std::cout << "reset trigger off\n";
-                // std::cout << "reset trigger off\n";
-                // std::cout << "reset trigger off\n";
-                // std::cout << "reset trigger off\n";
                 // _cache.readIndexes[note.key] = 0u;
-                setEvenveloppeIndex(note.key, _cache.readIndexes[note.key]);
+                setEnveloppeIndex(note.key, _cache.readIndexes[note.key]);
             }
         } break;
         case NoteEvent::EventType::OnOff:

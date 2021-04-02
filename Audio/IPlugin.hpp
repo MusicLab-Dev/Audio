@@ -22,7 +22,7 @@ namespace Audio
     constexpr auto French = "FR";
 
     /** @brief A list of paths */
-    using ExternalPaths = Core::TinyVector<std::string_view>;
+    using ExternalPaths = Core::TinyVector<std::string>;
 
     struct TranslationPair
     {

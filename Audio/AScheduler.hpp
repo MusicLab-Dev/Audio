@@ -188,7 +188,7 @@ private:
     // Cacheline 2
     std::size_t _processBlockSize { 0u };
     Audio::BeatRange _loopBeatRange {};
-    bool _isLooping { true };
+    bool _isLooping { false };
     Beat _processBeatSize { 0u };
     double _beatMissCount { 0.0 };
     double _beatMissOffset { 0.0 };

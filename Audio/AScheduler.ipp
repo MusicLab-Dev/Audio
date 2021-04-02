@@ -9,21 +9,19 @@ inline Audio::AScheduler::AScheduler(void)
 {
     for (auto &cache : _graphs) {
         cache.graph.setRepeatCallback([this](void) -> bool {
-            static auto SampleCpt = 0u;
-
             if (_overflowCache) {
                 onAudioQueueBusy();
             } else {
                 if (produceAudioData(_project->master()->cache())) {
                     onAudioBlockGenerated();
                 } else {
+                    std::cout << "Busy" << std::endl;
                     onAudioQueueBusy();
                 }
                 getCurrentBeatRange().increment(_processBeatSize);
                 processBeatMiss();
                 if (isLooping())
                     processLooping();
-                SampleCpt += _processBlockSize;
             }
             if (state() == State::Pause)
                 std::cout << "State:" << static_cast<int>(state()) << std::endl;

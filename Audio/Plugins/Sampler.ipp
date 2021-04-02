@@ -134,3 +134,8 @@ inline void Audio::Sampler::receiveAudio(BufferView output)
     // std::cout << "<END>" << std::endl;
 
 }
+
+inline void Audio::Sampler::onAudioGenerationStarted(const BeatRange &range)
+{
+    _noteManager.reset();
+}
