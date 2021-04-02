@@ -129,7 +129,7 @@ void Interpreter::run(void)
 
     _running = true;
     _is.clear();
-    _is.str("load Tools/chords.txt");
+    _is.str("load Tools/dnb.txt");
     parseCommand();
     _scheduler.invalidateCurrentGraph();
 
