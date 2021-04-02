@@ -192,11 +192,9 @@ inline bool Audio::AScheduler::flushOverflowCache(void)
     return ok;
 }
 
-
 template<Audio::PlaybackMode Playback>
 inline void Audio::AScheduler::buildGraph(void)
 {
-
     Node *parent;
     if constexpr (Playback == PlaybackMode::Partition || Playback == PlaybackMode::OnTheFly)
         parent = _partitionNode;

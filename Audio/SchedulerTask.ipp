@@ -61,11 +61,9 @@ inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, P
         }
     }
     if constexpr (ProcessAudio) {
-        if constexpr (HasAudioInput) {
-            if (collectBuffers()) {
-                plugin.sendAudio(_bufferStack);
-                _bufferStack.clear();
-            }
+        if (collectBuffers() && HasAudioInput) {
+            plugin.sendAudio(_bufferStack);
+            _bufferStack.clear();
         }
         if constexpr (HasAudioOutput) {
             node().cache().clear();
@@ -153,7 +151,7 @@ inline bool Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, P
                 collectPartition(partition, beatRange, instance);
             }
         }
-    } else
+    } else if constexpr (Playback == PlaybackMode::Partition)
         collectPartition(partitions[_scheduler->partitionIndex()], beatRange);
     return *_noteStack;
 }
