@@ -255,7 +255,9 @@ void Interpreter::parseRunningCommand(const AudioState state)
         _scheduler.wait();
         return;
     }
-    // Reset project beatrange
+    _scheduler.currentBeatRange<Audio::PlaybackMode::Production>() = { 0u, _scheduler.processBeatSize() };
+    _scheduler.clearAudioQueue();
+    _scheduler.clearOverflowCache();
 }
 
 

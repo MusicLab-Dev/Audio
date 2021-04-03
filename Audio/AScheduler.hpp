@@ -163,6 +163,12 @@ public:
     /** @brief Init internal cache */
     void prepareCache(const AudioSpecs &specs);
 
+    /** @brief Clear the overflow cache */
+    void clearOverflowCache(void);
+
+    /** @brief Clear the audio queue */
+    void clearAudioQueue(void);
+
 
     /** @brief Will consome audio data from the global queue */
     static inline std::size_t ConsumeAudioData(std::uint8_t *data, const std::size_t size)

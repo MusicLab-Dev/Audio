@@ -190,6 +190,16 @@ inline bool Audio::AScheduler::flushOverflowCache(void)
     return ok;
 }
 
+inline void Audio::AScheduler::clearAudioQueue(void)
+{
+    _overflowCache.release();
+}
+
+inline void Audio::AScheduler::clearOverflowCache(void)
+{
+    _AudioQueue.clear();
+}
+
 template<Audio::PlaybackMode Playback>
 inline void Audio::AScheduler::buildGraph(void)
 {
