@@ -151,8 +151,10 @@ inline bool Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, P
                 collectPartition(partition, beatRange, instance);
             }
         }
-    } else if constexpr (Playback == PlaybackMode::Partition)
-        collectPartition(partitions[_scheduler->partitionIndex()], beatRange);
+    } else if constexpr (Playback == PlaybackMode::Partition) {
+        if (&node() == _scheduler->partitionNode())
+            collectPartition(partitions[_scheduler->partitionIndex()], beatRange);
+    }
     return *_noteStack;
 }
 

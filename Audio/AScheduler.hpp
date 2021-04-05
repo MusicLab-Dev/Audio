@@ -150,11 +150,13 @@ public:
     /** @brief Callback called when scheduler is set to play */
     void onAudioProcessStarted(const BeatRange &beatRange);
 
-    /** @brief Virtual callback called when a frame is generated */
-    virtual void onAudioBlockGenerated(void) = 0;
+    /** @brief Virtual callback called when a frame is generated
+     *  @return true if the current graph has to stop */
+    [[nodiscard]] virtual bool onAudioBlockGenerated(void) = 0;
 
-    /** @brief Virtual callback called  */
-    virtual void onAudioQueueBusy(void) = 0;
+    /** @brief Virtual callback called
+     *  @return true if the current graph has to stop */
+    [[nodiscard]] virtual bool onAudioQueueBusy(void) = 0;
 
     /** @brief Will wait until the processing graph is completed
      *  Never call this without setting state to 'Pause' during the whole wait call */

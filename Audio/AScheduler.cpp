@@ -27,8 +27,6 @@ bool AScheduler::setState(const State state) noexcept
         }
         if (!getCurrentGraph().running())
             scheduleCurrentGraph();
-        else
-            return false;
         break;
     }
     return true;

@@ -9,20 +9,21 @@ inline Audio::AScheduler::AScheduler(void)
 {
     for (auto &cache : _graphs) {
         cache.graph.setRepeatCallback([this](void) -> bool {
+            bool exited = false;
             if (_overflowCache) {
-                onAudioQueueBusy();
+                exited = onAudioQueueBusy();
             } else {
                 if (produceAudioData(_project->master()->cache())) {
-                    onAudioBlockGenerated();
+                    exited = onAudioBlockGenerated();
                 } else {
-                    onAudioQueueBusy();
+                    exited = onAudioQueueBusy();
                 }
                 getCurrentBeatRange().increment(_processBeatSize);
                 processBeatMiss();
                 if (isLooping())
                     processLooping();
             }
-            if (state() == State::Pause) {
+            if (exited) {
                 std::cout << "Shutting down process graph, clearing cache" << std::endl;
                 clearAudioQueue();
                 clearOverflowCache();
