@@ -15,7 +15,6 @@ inline Audio::AScheduler::AScheduler(void)
                 if (produceAudioData(_project->master()->cache())) {
                     onAudioBlockGenerated();
                 } else {
-                    std::cout << "Busy" << std::endl;
                     onAudioQueueBusy();
                 }
                 getCurrentBeatRange().increment(_processBeatSize);
@@ -23,9 +22,13 @@ inline Audio::AScheduler::AScheduler(void)
                 if (isLooping())
                     processLooping();
             }
-            if (state() == State::Pause)
-                std::cout << "State:" << static_cast<int>(state()) << std::endl;
-            return state() == State::Play;
+            if (state() == State::Pause) {
+                std::cout << "Shutting down process graph, clearing cache" << std::endl;
+                clearAudioQueue();
+                clearOverflowCache();
+                return false;
+            } else
+                return true;
         });
     }
 }

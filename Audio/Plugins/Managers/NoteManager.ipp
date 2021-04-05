@@ -7,7 +7,6 @@
 
 inline void Audio::NoteManager::feedNotes(const NoteEvents &notes) noexcept
 {
-    std::cout << "NEW NOTE\n";
     for (const auto &note : notes) {
         auto &target = _cache.modifiers[note.key];
         switch (note.type) {

@@ -25,7 +25,10 @@ bool AScheduler::setState(const State state) noexcept
             if (expected == State::Play)
                 return false;
         }
-        scheduleCurrentGraph();
+        if (!getCurrentGraph().running())
+            scheduleCurrentGraph();
+        else
+            return false;
         break;
     }
     return true;
