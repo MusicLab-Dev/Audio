@@ -69,6 +69,7 @@ inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, P
             node().cache().clear();
             plugin.receiveAudio(node().cache());
         } else {
+            std::cout << "Forget to merge lol" << std::endl;
             // Merge audio
         }
     }

@@ -184,14 +184,10 @@ inline bool Audio::AScheduler::produceAudioData(const BufferView output)
 
 inline bool Audio::AScheduler::flushOverflowCache(void)
 {
-    const auto cacheSize = _overflowCache.size<std::uint8_t>();
-    // std::cout << "flush: Queue size: " << _AudioQueue.size() << std::endl;
-    const bool ok = _AudioQueue.tryPushRange(
+    return _AudioQueue.tryPushRange(
         _overflowCache.byteData(),
-        _overflowCache.byteData() + cacheSize
+        _overflowCache.byteData() + _overflowCache.size<std::uint8_t>()
     );
-
-    return ok;
 }
 
 inline void Audio::AScheduler::clearAudioQueue(void)
@@ -221,8 +217,9 @@ inline void Audio::AScheduler::buildGraph(void)
                 _overflowCache.release();
                 return true;
             // The delayed data must be re-delayed
-            } else
+            } else {
                 return false;
+            }
         // There is no data delayed
         } else
             return true;
@@ -239,13 +236,16 @@ inline void Audio::AScheduler::buildGraph(void)
     conditional.precede(noteTask.first);
     // If master is the only node, connect his tasks
     if (parent->children().empty()) {
-        noteTask.first.succeed(audioTask.first);
-        return;
-    }
-    for (auto &child : parent->children()) {
-        buildNodeTask<Playback>(child.get(), noteTask, audioTask);
+        noteTask.first.precede(audioTask.first);
+        if (!parent->parent())
+            return;
+    } else {
+        for (auto &child : parent->children()) {
+            buildNodeTask<Playback>(child.get(), noteTask, audioTask);
+        }
     }
     if constexpr (Playback == PlaybackMode::Partition || Playback == PlaybackMode::OnTheFly) {
+        parent = parent->parent();
         while (parent) {
             auto parentAudioTask = MakeSchedulerTask<Playback, false, true>(graph, parent->flags(), this, parent, nullptr);
             parentAudioTask.first.setName(parent->name() + "_audio");

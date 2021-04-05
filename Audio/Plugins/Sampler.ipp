@@ -74,6 +74,7 @@ inline void Audio::Sampler::receiveAudio(BufferView output)
         const std::size_t bufferIdx = (bufferIdxDt >= 0) ? bufferIdxDt % KeysPerOctave : (KeysPerOctave + bufferIdxDt) % KeysPerOctave;
         const std::int32_t nOctave = (bufferIdxDt >= 0) ? bufferIdxDt / KeysPerOctave : -((KeysPerOctave - bufferIdxDt - 1) / KeysPerOctave);
 
+
         // std::cout << "buffer idx dt: " << bufferIdxDt << std::endl;
         // std::cout << "buffer idx: " << bufferIdx << std::endl;
         // std::cout << "nOctave: " << nOctave << std::endl;
@@ -90,14 +91,14 @@ inline void Audio::Sampler::receiveAudio(BufferView output)
         // std::cout << "readSize: " << readSize << std::endl;
         // std::cout << std::endl;
         if (!nOctave) {
-            const int nextReadIndex = sampleSize - (_noteManager.readIndex(key) + audioSpecs().processBlockSize);
+            const auto baseIndex = _noteManager.readIndex(key);
+            const int nextReadIndex = sampleSize - (baseIndex + audioSpecs().processBlockSize);
             const auto readSize = nextReadIndex < 0 ? outSize + nextReadIndex : outSize;
 
+            // std::cout << "baseIndex: " << baseIndex << ", nextRead: " << nextReadIndex << ", readSize: " << readSize << std::endl;
             for (auto i = 0u; i < readSize; ++i) {
-                const auto idx = _noteManager.readIndex(key) + i;
-                out[i] += sampleBuffer[idx] * _noteManager.getEnveloppeGain(key, idx, _noteManager.trigger(key))
-                    / static_cast<float>(activeNote);
-                // _noteManager.incrementReadIndex(key, sampleSize);
+                const auto idx = baseIndex + i;
+                out[i] += sampleBuffer[idx] * _noteManager.getEnveloppeGain(key, idx, _noteManager.trigger(key)) / static_cast<float>(activeNote);
             }
             _noteManager.incrementReadIndex(key, sampleSize, readSize);
         }

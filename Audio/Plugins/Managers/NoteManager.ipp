@@ -15,11 +15,12 @@ inline void Audio::NoteManager::feedNotes(const NoteEvents &notes) noexcept
             std::cout << "ON: " << _cache.actives.size() << std::endl;
             const auto it = _cache.actives.find(note.key);
             if (it == _cache.actives.end()) {
+                std::cout << "  - push ON\n";
                 _cache.actives.push(note.key);
                 _cache.triggers[note.key] = true;
             } else {
                 // Reset trigger
-                std::cout << "reset trigger on\n";
+                std::cout << "  - reset ON\n";
                 _cache.triggers[note.key] = true;
                 _cache.readIndexes[note.key] = 0u;
                 setEnveloppeIndex(note.key, 0u);
