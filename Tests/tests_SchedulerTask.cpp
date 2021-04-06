@@ -256,7 +256,7 @@ TEST(SchedulerTask, NotesCollection)
     {
 
         auto sampler = MAKE_DUMMY(Sampler);
-        auto samplerP = reinterpret_cast<Sampler *>(sampler->getPlugin());
+        auto samplerP = reinterpret_cast<Sampler *>(sampler->plugin());
 
         // samplerP->loadSample<float>("/home/Pedro/Documents/AUDIO/Kick.wav");
         // samplerP->loadSample("/home/Pedro/Musique/Zaå Wezs.wav");
@@ -348,7 +348,7 @@ TEST(SchedulerTask, NotesCollection)
         // scheduler.project()->setBPM(60);
 
         // for (auto &child : scheduler.project()->master()->children()) {
-        //     auto plugin = reinterpret_cast<std::size_t *>(child->getPlugin());
+        //     auto plugin = reinterpret_cast<std::size_t *>(child->plugin());
         //     auto dummy = reinterpret_cast<DummyPluginBase *>(&(plugin[1]));
         //     std::cout << child->name().toStdView() << ": " << std::endl;
         //     std::cout << "notes: " << dummy->noteData.size() <<std::endl;
@@ -364,7 +364,7 @@ TEST(SchedulerTask, NotesCollection)
 //     {
 //         auto sampler = MAKE_DUMMY(Sampler);
 //         sampler->setName(Core::FlatString("sampler1"));
-//         auto samplerP = reinterpret_cast<Sampler *>(sampler->getPlugin());
+//         auto samplerP = reinterpret_cast<Sampler *>(sampler->plugin());
 
 //         auto master = MAKE_DUMMY(DummyAudioIO);
 //         master->setName(Core::FlatString("master"));

@@ -42,7 +42,7 @@ public:
     Node &operator=(Node &&other) noexcept = default;
 
     /** @brief Get the internal plugin */
-    [[nodiscard]] IPlugin *getPlugin(void) { return _plugin.get(); }
+    [[nodiscard]] IPlugin *plugin(void) { return _plugin.get(); }
 
     /** @brief Set the internal plugin */
     void setPlugin(PluginPtr &&plugin);
@@ -74,12 +74,6 @@ public:
     /** @brief Get / Set the name of the node */
     [[nodiscard]] const Core::FlatString &name(void) const noexcept { return _name; }
     void setName(Core::FlatString &&name) noexcept { _name = name; }
-
-
-    /** @brief Get a reference to the node plugin */
-    /** @todo replace by Plugin ref */
-    [[nodiscard]] PluginPtr &plugin(void) noexcept { return _plugin; }
-    [[nodiscard]] const PluginPtr &plugin(void) const noexcept { return _plugin; }
 
 
     /** @brief Get a reference to the node partitions */
