@@ -29,7 +29,7 @@ class alignas_cacheline Audio::AScheduler
 {
 public:
     /** @brief Internal play state */
-    enum class State {
+    enum class State : int {
         Pause, Play
     };
 
@@ -136,14 +136,14 @@ public:
         { return const_cast<Flow::Graph &>(const_cast<const AScheduler *>(this)->getCurrentGraph()); }
 
     /** @brief Get the currently used beat range (depend of playback mode) */
-    [[nodiscard]] const Audio::BeatRange &getCurrentBeatRange(void) const noexcept;
-    [[nodiscard]] Audio::BeatRange &getCurrentBeatRange(void) noexcept
-        { return const_cast<Audio::BeatRange &>(const_cast<const AScheduler *>(this)->getCurrentBeatRange()); }
-
+    [[nodiscard]] const BeatRange &getCurrentBeatRange(void) const noexcept;
+    [[nodiscard]] BeatRange &getCurrentBeatRange(void) noexcept
+        { return const_cast<BeatRange &>(const_cast<const AScheduler *>(this)->getCurrentBeatRange()); }
 
     /** @brief Invalidates a graph */
     template<PlaybackMode Playback>
     void invalidateGraph(void);
+    template<bool SetDirty = true>
     void invalidateCurrentGraph(void);
 
 
@@ -172,7 +172,7 @@ public:
     void clearAudioQueue(void);
 
 
-    /** @brief Will consome audio data from the global queue */
+    /** @brief Will consume audio data from the global queue */
     static inline std::size_t ConsumeAudioData(std::uint8_t *data, const std::size_t size)
         { return _AudioQueue.popRange(data, data + size); }
 
@@ -202,6 +202,8 @@ private:
     double _beatMissOffset { 0.0 };
     Node *_partitionNode { nullptr };
     std::uint32_t _partitionIndex { 0 };
+    std::array<bool, Audio::PlaybackModeCount> _dirtyFlags {};
+    // 8 bytes
 
     // Cacheline 3
     PlaybackGraphs _graphs {};
