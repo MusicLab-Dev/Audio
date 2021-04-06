@@ -13,15 +13,15 @@ inline Audio::AScheduler::AScheduler(void)
             if (_overflowCache) {
                 exited = onAudioQueueBusy();
             } else {
+                getCurrentBeatRange().increment(_processBeatSize);
+                processBeatMiss();
+                if (isLooping())
+                    processLooping();
                 if (produceAudioData(_project->master()->cache())) {
                     exited = onAudioBlockGenerated();
                 } else {
                     exited = onAudioQueueBusy();
                 }
-                getCurrentBeatRange().increment(_processBeatSize);
-                processBeatMiss();
-                if (isLooping())
-                    processLooping();
             }
             if (exited) {
                 std::cout << "Shutting down process graph, clearing cache" << std::endl;
