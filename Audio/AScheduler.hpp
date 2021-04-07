@@ -210,7 +210,7 @@ private:
 
 
     /** @brief Audio callback queue */
-    static inline Core::SPSCQueue<std::uint8_t> _AudioQueue { 65536 };
+    static inline Core::SPSCQueue<std::uint8_t> _AudioQueue { 2048 * 4 * 4 };
 
 
     /** @brief Build a graph */
