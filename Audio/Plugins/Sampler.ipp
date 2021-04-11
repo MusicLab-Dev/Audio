@@ -132,8 +132,32 @@ inline void Audio::Sampler::receiveAudio(BufferView output)
             _noteManager.incrementReadIndex(key, resampleSize, readSize);
         }
     }
-    // std::cout << "<END>" << std::endl;
 
+    static const DSP::FilterSpecs filter {
+        DSP::FilterType::LowPass,
+        DSP::WindowType::Hanning,
+        441,
+        44100,
+        { 5512 * 2, 0 }
+    };
+
+    // std::cout << "<END>" << std::endl;
+    static bool LastBlockActive = false;
+    static auto Cpt = 0u;
+    static Buffer lastBlock(outSize * sizeof(float), 44100, ChannelArrangement::Mono, Format::Floating32);
+    // lastBlock.clear();
+
+    if (LastBlockActive) {
+        DSP::FIR::FilterLastInput(filter, out, out, outSize, lastBlock.data<float>(), outSize);
+        std::memcpy(lastBlock.data<float>(), out, outSize * sizeof(float));
+    } else {
+        DSP::FIR::Filter(filter, out, out, outSize);
+    }
+    // std::cout << "<END>" << std::endl;
+    // std::memcpy(out, tmp.data(), outSize * sizeof(float));
+
+    LastBlockActive = true;
+    Cpt++;
 }
 
 inline void Audio::Sampler::onAudioGenerationStarted(const BeatRange &range)

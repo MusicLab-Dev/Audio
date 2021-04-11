@@ -12,6 +12,8 @@ inline void Audio::DSP::WindowMaker::GenerateFilterCoefficients(const WindowType
         return Hanning(size, windowCoefficients, isSymetric);
     case WindowType::Hamming:
         return Hamming(size, windowCoefficients, isSymetric);
+    case WindowType::Custom:
+        return Custom(size, windowCoefficients, isSymetric);
     default:
         return Hanning(size, windowCoefficients, isSymetric);
     }
@@ -34,5 +36,13 @@ inline void Audio::DSP::WindowMaker::Hamming(const std::size_t size, float *outp
             outputWindow[i] = 0.54f - 0.46f * (std::cos(2.0 * M_PI * i / static_cast<float>(size - 1)));
         }
     } else {
+    }
+}
+
+inline void Audio::DSP::WindowMaker::Custom(const std::size_t size, float *outputWindow, const bool isSymetric) noexcept
+{
+    for (auto i = 0u; i < size * 2; i++) {
+        if (i < size)
+            outputWindow[i] = 0.54f - 0.46f * (std::cos(2.0 * M_PI * i / static_cast<float>(size - 1)));
     }
 }

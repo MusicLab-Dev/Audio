@@ -7,7 +7,7 @@
 
 // #include <Audio/BaseIndex.hpp>
 
-void Scheduler::onAudioBlockGenerated(void)
+bool Scheduler::onAudioBlockGenerated(void)
 {
     // const Audio::BufferView buffer(project()->master()->cache());
     // const auto size = buffer.size<std::uint8_t>();
@@ -20,7 +20,7 @@ void Scheduler::onAudioBlockGenerated(void)
     // if (count)
     //     std::cout << "Audio block non-null: " << count << std::endl;
 
-    // std::cout << "beatrangeProcess: " << this->processBeatSize() << std::endl;
+    std::cout << "beatrangeProcess: " << this->processBeatSize() << std::endl;
     // std::cout << "next beatrange: " << currentBeatRange() << std::endl;
 
 
@@ -28,9 +28,11 @@ void Scheduler::onAudioBlockGenerated(void)
     /** @todo Execute this on main thread */
     dispatchApplyEvents();
     dispatchNotifyEvents();
+
+    return true;
 }
 
-void Scheduler::onAudioQueueBusy(void)
+bool Scheduler::onAudioQueueBusy(void)
 {
     // std::cout << "AudioQueueBusy" << std::endl;
     // std::cout << "next beatrange (busy): " << currentBeatRange() << std::endl;
@@ -38,4 +40,6 @@ void Scheduler::onAudioQueueBusy(void)
     /** @todo Execute this on main thread */
     dispatchApplyEvents();
     dispatchNotifyEvents();
+
+    return true;
 }

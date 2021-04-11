@@ -19,10 +19,11 @@ void shiftCoefficients(Type *filterCoefficients, const std::size_t filterSize, c
 }
 
 template<unsigned ProcessRate, typename Type>
-void interpolate(
+inline Audio::DSP::FIR::VoidType<Type>
+Audio::DSP::FIR::Interpolate(
         Type *producedData, const Type *input,
         const Type *filterCoefs, const std::size_t interpFactor,
-        const std::size_t zeroPadBegin = 0u, const std::size_t zeroPadEnd = 0u)
+        const std::size_t zeroPadBegin, const std::size_t zeroPadEnd)
 {
     const auto outSize = interpFactor - zeroPadEnd;
     // std::cout << "outSize: " << outSize << ", zeroPadBegin: " << zeroPadBegin << ", zeroPadEnd: " << zeroPadEnd << std::endl;
@@ -94,7 +95,7 @@ void interpolateX()
 //     auto c = 0u;
 //     auto failed = 0u;
 //     // for (auto i = 0u; i < ProcessRate - 1; ++i) {
-//     //     interpolate<ProcessRate>(interpolateData, input + i, filterCoefs.data(), interpFactor, ProcessRate - 1 - i);
+//     //     Interpolate<ProcessRate>(interpolateData, input + i, filterCoefs.data(), interpFactor, ProcessRate - 1 - i);
 //     //     auto produced = producedCache.pushRange(interpolateData.begin(), interpolateData.end());
 //     //     p += produced;
 //     //     while (producedCache.tryPopRange(decimData.begin(), decimData.end())) {
@@ -112,7 +113,7 @@ void interpolateX()
 //         std::cout << "ii::: " << idx << std::endl;
 //         std::cout << "S::: " << producedCache.size() << std::endl;
 //         // Produce interpFactor of samples
-//         interpolate<ProcessRate>(producedCache.data() + producedCache.size(), input + i, filterCoefs.data(), interpFactor);
+//         Interpolate<ProcessRate>(producedCache.data() + producedCache.size(), input + i, filterCoefs.data(), interpFactor);
 //         p += interpFactor;
 //         for (auto d = 0u; (producedCache.size() / decimFactor); ++d) {
 //             std::cout << "Consume " << std::endl;
@@ -129,8 +130,6 @@ void interpolateX()
 //     std::cout << "consumed total: " << c << std::endl;
 //     std::cout << "::" << output << std::endl;
 // }
-
-#include <queue>
 
 // template<unsigned ProcessRate, typename Type>
 // inline Audio::DSP::FIR::VoidType<Type>
@@ -169,7 +168,7 @@ void interpolateX()
 //     auto c = 0u;
 //     auto failed = 0u;
 //     for (auto i = 0u; i < ProcessRate - 1; ++i) {
-//         interpolate<ProcessRate>(interpolateData.data(), input + i, filterCoefs.data(), interpFactor, ProcessRate - 1 - i);
+//         Interpolate<ProcessRate>(interpolateData.data(), input + i, filterCoefs.data(), interpFactor, ProcessRate - 1 - i);
 //         auto produced = producedCache.pushRange(interpolateData.begin(), interpolateData.end());
 //         p += produced;
 //         while (producedCache.tryPopRange(decimData.begin(), decimData.end())) {
@@ -184,7 +183,7 @@ void interpolateX()
 //         const std::size_t idx = i * ProcessRate;
 //         // std::cout << "ii::: " << idx << std::endl;
 //         // Produce interpFactor of samples
-//         interpolate<ProcessRate>(interpolateData.data(), input + i, filterCoefs.data(), interpFactor);
+//         Interpolate<ProcessRate>(interpolateData.data(), input + i, filterCoefs.data(), interpFactor);
 //         auto produced = producedCache.pushRange(interpolateData.begin(), interpolateData.end());
 //         p += produced;
 //         // if (produced != interpFactor)
@@ -247,7 +246,7 @@ inline Audio::DSP::FIR::VoidType<Type>
     auto failed = 0u;
     for (auto i = offset; i < ProcessRate - 1; ++i) {
         // std::cout << "  ii: " << i << std::endl;
-        interpolate<ProcessRate>(interpolateData.data(), input + i, filterCoefs.data(), interpFactor, ProcessRate - 1 - i);
+        Interpolate<ProcessRate>(interpolateData.data(), input + i, filterCoefs.data(), interpFactor, ProcessRate - 1 - i);
         auto produced = producedCache.pushRange(interpolateData.begin(), interpolateData.end());
         pBegin += produced;
         while (producedCache.tryPopRange(decimData.begin(), decimData.end())) {
@@ -266,7 +265,7 @@ inline Audio::DSP::FIR::VoidType<Type>
         const std::size_t idx = i * ProcessRate;
         // std::cout << "  ii::: " << i << std::endl;
         // Produce interpFactor of samples
-        interpolate<ProcessRate>(interpolateData.data(), input + i, filterCoefs.data(), interpFactor);
+        Interpolate<ProcessRate>(interpolateData.data(), input + i, filterCoefs.data(), interpFactor);
         auto produced = producedCache.pushRange(interpolateData.begin(), interpolateData.end());
         pBody += produced;
         // if (produced != interpFactor)
@@ -296,69 +295,340 @@ inline Audio::DSP::FIR::VoidType<Type>
     // std::cout << "::" << output - out << std::endl;
 }
 
-template<typename Type>
+
+template<unsigned ProcessRate, bool Accumulate, typename Type>
 inline Audio::DSP::FIR::VoidType<Type>
-    Audio::DSP::FIR::Filter(const FilterSpecs specs, const Type *input, Type *output, const std::size_t inputSize, const bool zeroPad) noexcept
+Audio::DSP::FIR::ResampleOctave(
+        const Type *input, Type *output,
+        const std::size_t inputSize, const std::size_t inputSampleRate,
+        const std::int8_t nOctave,
+        const std::size_t offset) noexcept
 {
-    std::cout << "FILTERING FIR..." << std::endl;
+    const auto nOctaveDt = std::abs(nOctave);
 
-    const auto windowSize = specs.windowSize;
-    std::vector<Type> windowFilter(windowSize);
-    WindowMaker::GenerateFilterCoefficients(specs.windowType, windowSize, windowFilter.data());
-    DesignFilter(specs, windowFilter.data(), windowSize);
-
-    std::vector<Type> data(inputSize, 0.0);
-    std::memcpy(data.data(), input, sizeof(Type) * inputSize);
-
-    for (auto i = 0; i < inputSize; ++i) {
-        if (i < windowSize - 1) {
-            output[i] = FilterImpl(data.data() + i, windowFilter.data(), windowSize, windowSize - i - 1);
-        } else {
-            output[i] = FilterImpl(data.data() + i, windowFilter.data(), windowSize, 0u);
-        }
-    }
-    std::for_each(output, output + inputSize, [](Type &value){
-        value /= std::sqrt(2.0) * 2;
-    });
-    std::cout << "FILTERING FIR done." << std::endl;
+    if (nOctave > 0)
+        return DecimateOctaveImpl<ProcessRate>(input, output, inputSize, inputSampleRate, nOctaveDt, offset);
+    else
+        return InterpolateOctaveImpl<ProcessRate>(input, output, inputSize, inputSampleRate, nOctaveDt, offset);
 }
 
-template<typename Type>
+template<unsigned ProcessRate, typename Type>
 inline Audio::DSP::FIR::VoidType<Type>
-    Audio::DSP::FIR::Filter(const FilterSpecs specs, const Type *input, Type *output, const std::size_t inputSize, const Type *lastInput, const std::size_t lastInputSize) noexcept
+Audio::DSP::FIR::InterpolateOctaveImpl(
+        const Type *input, Type *output,
+        const std::size_t inputSize, const std::size_t inputSampleRate,
+        const std::uint8_t nOctave,
+        const std::size_t offset) noexcept
 {
-    std::cout << "FILTERING FIR..." << std::endl;
+    const std::size_t filterSize = nOctave * ProcessRate;
+    const FilterSpecs filterSpecs {
+        FilterType::LowPass,
+        WindowType::Hanning,
+        filterSize,
+        static_cast<float>(inputSampleRate),
+        { inputSampleRate / static_cast<float>(std::pow(2.f, nOctave)), 0.f }
+    };
+    std::vector<Type> filterCoefs(filterSize);
+    WindowMaker::GenerateFilterCoefficients(filterSpecs.windowType, filterSize, filterCoefs.data());
+    DesignFilter(filterSpecs, filterCoefs.data(), filterSize);
+    // shiftCoefficients<ProcessRate>(filterCoefs.data(), filterSize, interpFactor);
 
+    const std::size_t totalBlock = std::ceil(inputSize / static_cast<float>(ProcessRate));
+    const std::size_t lastBlockSize = inputSize % ProcessRate;
+
+
+    // // std::cout << "totalBlock: " << totalBlock << std::endl;
+    // // std::cout << "lastBlockSize: " << lastBlockSize << std::endl;
+    // // std::cout << "inputSize: " << inputSize << std::endl;
+    // // std::cout << "filterSize: " << filterSize << std::endl;
+    // // std::cout << "totalBlock: " << totalBlock << std::endl;
+
+
+    // // return;
+    // const auto out = output;
+    // // std::cout << "::" << output << std::endl;
+    // auto pBegin = 0u;
+    // auto pBody = 0u;
+    // auto cBegin = 0u;
+    // auto cBody = 0u;
+    // auto failed = 0u;
+    // for (auto i = offset; i < ProcessRate - 1; ++i) {
+    //     // std::cout << "  ii: " << i << std::endl;
+    //     Interpolate<ProcessRate>(interpolateData.data(), input + i, filterCoefs.data(), interpFactor, ProcessRate - 1 - i);
+    //     auto produced = producedCache.pushRange(interpolateData.begin(), interpolateData.end());
+    //     pBegin += produced;
+    //     while (producedCache.tryPopRange(decimData.begin(), decimData.end())) {
+    //         // std::cout << "consumed: " << std::endl;
+    //         if constexpr (Accumulate)
+    //             *output += decimData[0];
+    //         else
+    //             *output = decimData[0];
+    //         ++output;
+    //         cBegin += 1;
+    //     }
+    // }
+    // // return;
+    // const auto start = offset ? offset : offset + ProcessRate - 1;
+    // for (auto i = start; i < inputSize; ++i) {
+    //     const std::size_t idx = i * ProcessRate;
+    //     // std::cout << "  ii::: " << i << std::endl;
+    //     // Produce interpFactor of samples
+    //     Interpolate<ProcessRate>(interpolateData.data(), input + i, filterCoefs.data(), interpFactor);
+    //     auto produced = producedCache.pushRange(interpolateData.begin(), interpolateData.end());
+    //     pBody += produced;
+    //     // if (produced != interpFactor)
+    //         // std::cout << "failed production: " << produced << "/" << filterSize << std::endl;
+    //     // else
+    //         // std::cout << "produced: " << produced << std::endl;
+    //     // If possible, consume decimFactor samples
+    //     while (producedCache.tryPopRange(decimData.begin(), decimData.end())) {
+    //         // std::cout << "consumed: " << std::endl;
+    //         if constexpr (Accumulate)
+    //             *output += decimData[0];
+    //         else
+    //             *output = decimData[0];
+    //         ++output;
+    //         cBody += 1;
+    //     }
+    //     // break;
+    // }
+
+}
+
+template<unsigned ProcessRate, typename Type>
+inline Audio::DSP::FIR::VoidType<Type>
+Audio::DSP::FIR::DecimateOctaveImpl(
+        const Type *input, Type *output,
+        const std::size_t inputSize, const std::size_t inputSampleRate,
+        const std::uint8_t nOctave,
+        const std::size_t offset) noexcept
+{
+    // const std::size_t filterSize = (nOctave > 0 ?  :  ) * ProcessRate;
+    // const FilterSpecs filterSpecs {
+    //     FilterType::LowPass,
+    //     WindowType::Hanning,
+    //     filterSize,
+    //     static_cast<float>(inputSampleRate),
+    //     { inputSampleRate / std::pow(2, std::abs(nOctave)), 0.0 }
+    // };
+    // std::vector<Type> filterCoefs(filterSize);
+    // WindowMaker::GenerateFilterCoefficients(filterSpecs.windowType, filterSize, filterCoefs.data());
+    // DesignFilter(filterSpecs, filterCoefs.data(), filterSize);
+    // // shiftCoefficients<ProcessRate>(filterCoefs.data(), filterSize, interpFactor);
+
+    // const std::size_t totalBlock = std::ceil(inputSize / static_cast<float>(ProcessRate));
+    // const std::size_t lastBlockSize = inputSize % ProcessRate;
+    // Core::SPSCQueue<Type> producedCache { std::max(interpFactor, decimFactor) * 2 * ProcessRate * 3 };
+    // std::vector<Type> interpolateData(interpFactor);
+    // std::vector<Type> decimData(decimFactor);
+
+    // // std::cout << "totalBlock: " << totalBlock << std::endl;
+    // // std::cout << "lastBlockSize: " << lastBlockSize << std::endl;
+    // // std::cout << "inputSize: " << inputSize << std::endl;
+    // // std::cout << "filterSize: " << filterSize << std::endl;
+    // // std::cout << "totalBlock: " << totalBlock << std::endl;
+
+
+    // // return;
+    // const auto out = output;
+    // // std::cout << "::" << output << std::endl;
+    // auto pBegin = 0u;
+    // auto pBody = 0u;
+    // auto cBegin = 0u;
+    // auto cBody = 0u;
+    // auto failed = 0u;
+    // for (auto i = offset; i < ProcessRate - 1; ++i) {
+    //     // std::cout << "  ii: " << i << std::endl;
+    //     Interpolate<ProcessRate>(interpolateData.data(), input + i, filterCoefs.data(), interpFactor, ProcessRate - 1 - i);
+    //     auto produced = producedCache.pushRange(interpolateData.begin(), interpolateData.end());
+    //     pBegin += produced;
+    //     while (producedCache.tryPopRange(decimData.begin(), decimData.end())) {
+    //         // std::cout << "consumed: " << std::endl;
+    //         if constexpr (Accumulate)
+    //             *output += decimData[0];
+    //         else
+    //             *output = decimData[0];
+    //         ++output;
+    //         cBegin += 1;
+    //     }
+    // }
+    // // return;
+    // const auto start = offset ? offset : offset + ProcessRate - 1;
+    // for (auto i = start; i < inputSize; ++i) {
+    //     const std::size_t idx = i * ProcessRate;
+    //     // std::cout << "  ii::: " << i << std::endl;
+    //     // Produce interpFactor of samples
+    //     Interpolate<ProcessRate>(interpolateData.data(), input + i, filterCoefs.data(), interpFactor);
+    //     auto produced = producedCache.pushRange(interpolateData.begin(), interpolateData.end());
+    //     pBody += produced;
+    //     // if (produced != interpFactor)
+    //         // std::cout << "failed production: " << produced << "/" << filterSize << std::endl;
+    //     // else
+    //         // std::cout << "produced: " << produced << std::endl;
+    //     // If possible, consume decimFactor samples
+    //     while (producedCache.tryPopRange(decimData.begin(), decimData.end())) {
+    //         // std::cout << "consumed: " << std::endl;
+    //         if constexpr (Accumulate)
+    //             *output += decimData[0];
+    //         else
+    //             *output = decimData[0];
+    //         ++output;
+    //         cBody += 1;
+    //     }
+    //     // break;
+    // }
+}
+
+template<
+    bool RemoveDelay = true,
+    bool ProcessFirstChunk = true,
+    typename Type>
+inline Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::Filter(
+        const Audio::DSP::FilterSpecs specs,
+        const Type *input, Type *output,
+        const std::size_t inputSize) noexcept
+{
+    /** @todo Check if inputSize < windowSize ! */
     const auto windowSize = specs.windowSize;
-    std::vector<Type> windowFilter(windowSize);
-    WindowMaker::GenerateFilterCoefficients(specs.windowType, windowSize, windowFilter.data());
-    DesignFilter(specs, windowFilter.data(), windowSize);
+    std::vector<float> windowFilter(windowSize);
+    Audio::DSP::WindowMaker::GenerateFilterCoefficients(specs.windowType, windowSize, windowFilter.data());
+    Audio::DSP::FIR::DesignFilter(specs, windowFilter.data(), windowSize);
 
-    std::vector<Type> data(inputSize + lastInputSize, 0.0);
-    std::memcpy(data.data(), lastInput, sizeof(Type) * lastInputSize);
-    std::memcpy(data.data() + lastInputSize, input, sizeof(Type) * inputSize);
-
-    for (auto i = 0; i < inputSize; ++i) {
-        const auto idx = i + lastInputSize;
-        if (lastInputSize < windowSize && idx < windowSize - 1) {
-            output[i] = FilterImpl(data.data() + idx, windowFilter.data(), windowSize, windowSize - idx - 1);
-        } else {
-            output[i] = FilterImpl(data.data() + idx, windowFilter.data(), windowSize, 0u);
+    // This remove delay due to the convolution
+    if constexpr (RemoveDelay) {
+        // Highest part of the input
+        for (auto i = 0u; i < inputSize - windowSize / 2 + 1; ++i) {
+            const auto idx = inputSize - i - 1u;
+            output[idx] = FilterImpl(input + idx - windowSize / 2, windowFilter.data(), windowSize, 0u);
+        }
+        // Lower part of the input
+        if constexpr (ProcessFirstChunk) {
+            for (auto i = inputSize - windowSize + 1; i < inputSize - windowSize / 2; ++i) {
+                const auto idx = inputSize - i - 1u;
+                output[idx - windowSize / 2] = FilterImpl(input, windowFilter.data(), windowSize, windowSize - 1 - idx);
+            }
+        }
+    } else {
+        // Hihest part of the input
+        for (auto i = 0u; i < inputSize - windowSize + 1; ++i) {
+            const auto idx = inputSize - i - 1u;
+            // std::cout << "i: " << i << ", idx: " << idx << ", zeroPad: " << 0 << ", inOffset" << (idx - windowSize + 1) << std::endl;
+            output[idx] = FilterImpl(input + idx - windowSize, windowFilter.data(), windowSize, 0u);
+        }
+        // Lower part of the input
+        if constexpr (ProcessFirstChunk) {
+            for (auto i = inputSize - windowSize + 1; i < inputSize; ++i) {
+                const auto idx = inputSize - i - 1u;
+                output[idx] = FilterImpl(input, windowFilter.data(), windowSize, windowSize - 1 - idx);
+            }
         }
     }
+
+    /** @brief Default version, maybe slower */
+    // for (auto i = 0u; i < inputSize; ++i) {
+    //     const auto idx = inputSize - i - 1u;
+    //     const auto dt = (idx < windowSize ? windowSize - 1 - idx : 0u);
+    //     const auto inputOffset = idx > windowSize - 1 ? idx - windowSize + 1 : 0;
+    //     std::cout << i << ", " << idx << ", " << dt << ", " << inputOffset << std::endl;
+    //     output[idx] = FilterImpl(input + inputOffset, coefs, windowSize, dt);
+    // }
+
+    // Normalize output
+    // std::for_each(output, output + inputSize, [](float &value) {
+        // value /= std::sqrt(2.0);
+    // });
+}
+
+template<
+    bool RemoveDelay = true,
+    bool ProcessFirstChunk = true,
+    typename Type>
+inline Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::FilterLastInput(
+        const Audio::DSP::FilterSpecs specs,
+        const Type *input, Type *output,
+        const std::size_t inputSize,
+        const Type *lastInput, const std::size_t lastInputSize) noexcept
+{
+    const auto windowSize = specs.windowSize;
+    std::vector<float> windowFilter(windowSize);
+    Audio::DSP::WindowMaker::GenerateFilterCoefficients(specs.windowType, windowSize, windowFilter.data());
+    Audio::DSP::FIR::DesignFilter(specs, windowFilter.data(), windowSize);
+
+    if constexpr (RemoveDelay) {
+        // Highest part of the input
+        for (auto i = 0u; i < inputSize - windowSize / 2 + 1; ++i) {
+            const auto idx = inputSize - i - 1u;
+            output[idx] = FilterImpl(input + idx - windowSize / 2, windowFilter.data(), windowSize, 0u);
+        }
+        // Lower part of the input
+        if constexpr (ProcessFirstChunk) {
+            const auto lastInputOffset = (lastInputSize < windowSize) ? 0u : (lastInputSize - (windowSize - 1) - 1);
+            for (auto i = inputSize - windowSize + 1; i < inputSize - windowSize / 2; ++i) {
+                const auto idx = inputSize - i - 1u;
+                output[idx - windowSize / 2] = FilterLastInputImpl(input, lastInput + lastInputOffset, windowFilter.data(), windowSize, windowSize - 1 - idx, lastInputSize - lastInputOffset);
+                // output[idx - windowSize / 2] = FilterImpl(input, windowFilter.data(), windowSize, windowSize - 1 - idx);
+            }
+        }
+    } else {
+        // Hihest part of the input
+        for (auto i = 0u; i < inputSize - windowSize + 1; ++i) {
+            const auto idx = inputSize - i - 1u;
+            // std::cout << "i: " << i << ", idx: " << idx << ", zeroPad: " << 0 << ", inOffset" << (idx - windowSize + 1) << std::endl;
+            output[idx] = FilterImpl(input + idx - windowSize, windowFilter.data(), windowSize, 0u);
+        }
+        // Lower part of the input
+        if constexpr (ProcessFirstChunk) {
+            const auto lastInputOffset = (lastInputSize < windowSize) ? 0u : (lastInputSize - (windowSize - 1));
+            for (auto i = inputSize - windowSize + 1; i < inputSize; ++i) {
+                const auto idx = inputSize - i - 1u;
+                output[idx] = FilterLastInputImpl(input, lastInput, windowFilter.data(), windowSize, windowSize - 1 - idx, lastInputSize - lastInputOffset);
+                // output[idx] = FilterImpl(input, windowFilter.data(), windowSize, windowSize - 1 - idx);
+            }
+        }
+    }
+
+    // Normalize output
+    // std::for_each(output, output + inputSize, [](float &value){
+        // value /= std::sqrt(2.0);
+    // });
+
 }
 
 template<typename Type>
 inline Audio::DSP::FIR::ProcessType<Type>
-    Audio::DSP::FIR::FilterImpl(const Type *input, const Type *window, const std::size_t size, const std::size_t zeroPadSize) noexcept
+    Audio::DSP::FIR::FilterImpl(
+            const Type *input, const Type *window,
+            const std::size_t processSize, const std::size_t zeroPad) noexcept
 {
     Type sample { 0.0 };
 
-    for (auto i = zeroPadSize; i < size; ++i) {
-        const auto idx = size - i - 1;
-        sample += (input[idx] * window[idx]);
-        // sample += (input[i] * window[i]);
-        // std::cout << input[i] << std::endl;
+    // Input convultion
+    for (auto i = zeroPad; i < processSize; ++i) {
+        const auto idx = processSize - i - 1;
+        sample += (input[idx] * window[idx + zeroPad]);
+    }
+    return sample;
+}
+
+template<typename Type>
+inline Audio::DSP::FIR::ProcessType<Type>
+    Audio::DSP::FIR::FilterLastInputImpl(
+            const Type *input, const Type *lastInput,
+            const Type *window, const std::size_t processSize,
+            const std::size_t zeroPad, const std::size_t zeroPadLastInput) noexcept
+{
+    Type sample { 0.0 };
+
+    // Input convolution
+    for (auto i = zeroPad; i < processSize; ++i) {
+        const auto idx = processSize - i - 1;
+        sample += (input[idx] * window[idx + zeroPad]);
+    }
+
+    // Last input convolution
+    for (auto i = 0; i < zeroPad; ++i) {
+        const auto idx = processSize - i - 1;
+        sample += (lastInput[idx] * window[zeroPad - i - 1]);
     }
     return sample;
 }
@@ -382,7 +652,7 @@ inline void Audio::DSP::FIR::DesignFilterLowPass(float *windowCoefficients, cons
     const double realRate = 2.0 * cutoffRate;
     for (auto i = 0u; i < size; ++i) {
         int idx = i - first;
-        *windowCoefficients *= (realRate * Utils::sinc(idx * realRate));
+        *windowCoefficients *= (realRate * Utils::sinc<true>(idx * realRate));
         ++windowCoefficients;
     }
 }

@@ -68,12 +68,7 @@ inline void Audio::DSP::Resampler::ResampleOctave(const Type *inputBuffer, Type 
     coreAssert(nOctave,
         throw std::logic_error("DSP::Resampler::ResampleOctave: nOctave must be different than zero."));
 
-    if (nOctave > 0)
-        FIR::Resample<8u, Accumulate>(inputBuffer, outputBuffer, inputSize, sampleRate, 1, std::pow(2, std::abs(nOctave)), offset);
-        // Internal::DecimateOctave(inputBuffer, outputBuffer, inputSize, nOctave);
-    else
-        FIR::Resample<8u, Accumulate>(inputBuffer, outputBuffer, inputSize, sampleRate, std::pow(2, std::abs(nOctave)), 1, offset);
-        // Internal::InterpolateOctave(inputBuffer, outputBuffer, inputSize, -nOctave);
+    FIR::ResampleOctave<8u, Accumulate>(inputBuffer, outputBuffer, inputSize, sampleRate, nOctave, offset);
 }
 
 template<bool Accumulate, typename Type>

@@ -16,8 +16,8 @@ public:
 
     ~Scheduler(void) override = default;
 
-    void onAudioBlockGenerated(void) override;
-    void onAudioQueueBusy(void) override;
+    bool onAudioBlockGenerated(void) override;
+    bool onAudioQueueBusy(void) override;
 
 private:
     Audio::Buffer _cache {};
