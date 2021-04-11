@@ -92,7 +92,7 @@ private:
 
 
 /** @brief A BufferBase is a helper base class for any Buffer or BufferView */
-class alignas_quarter_cacheline Audio::Internal::BufferBase
+class alignas_eighth_cacheline Audio::Internal::BufferBase
 {
 public:
     /** @brief Copy constructor */
@@ -170,6 +170,9 @@ public:
     template<typename Type = std::byte>
     [[nodiscard]] std::size_t capacity(void) const noexcept { return _header->capacity / sizeof(Type); }
 
+    /** @brief Check if the buffer is filled of zero */
+    [[nodiscard]] bool isZero(void) const noexcept;
+
 public: // Internal public functions for buffers compatibility
     /** @brief Get the allocation header */
     [[nodiscard]] AllocationHeader *header(void) const noexcept { return _header; }
@@ -186,10 +189,10 @@ protected:
     void setHeader(AllocationHeader *newHeader) noexcept { _header = newHeader; }
 };
 
-static_assert_fit_quarter_cacheline(Audio::Internal::BufferBase);
+static_assert_fit_eighth_cacheline(Audio::Internal::BufferBase);
 
 /** @brief A Buffer manage ownership of his data */
-class alignas_quarter_cacheline Audio::Buffer : public Audio::Internal::BufferBase
+class alignas_eighth_cacheline Audio::Buffer : public Audio::Internal::BufferBase
 {
 public:
     /** @brief Default constructor */

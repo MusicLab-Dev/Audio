@@ -12,15 +12,15 @@ inline void Audio::NoteManager::feedNotes(const NoteEvents &notes) noexcept
         switch (note.type) {
         case NoteEvent::EventType::On:
         {
-            std::cout << "ON: " << _cache.actives.size() << std::endl;
+            // std::cout << "ON: " << _cache.actives.size() << std::endl;
             const auto it = _cache.actives.find(note.key);
             if (it == _cache.actives.end()) {
-                std::cout << "  - push ON\n";
+                // std::cout << "  - push ON\n";
                 _cache.actives.push(note.key);
                 _cache.triggers[note.key] = true;
             } else {
                 // Reset trigger
-                std::cout << "  - reset ON\n";
+                // std::cout << "  - reset ON\n";
                 _cache.triggers[note.key] = true;
                 _cache.readIndexes[note.key] = 0u;
                 setEnveloppeIndex(note.key, 0u);
@@ -31,7 +31,7 @@ inline void Audio::NoteManager::feedNotes(const NoteEvents &notes) noexcept
         }
         case NoteEvent::EventType::Off:
         {
-            std::cout << "OFF: " << _cache.actives.size() << std::endl;
+            // std::cout << "OFF: " << _cache.actives.size() << std::endl;
             const auto it = _cache.actives.find(note.key);
             if (it != _cache.actives.end()) {
                 _cache.triggers[note.key] = false;
@@ -42,7 +42,7 @@ inline void Audio::NoteManager::feedNotes(const NoteEvents &notes) noexcept
             }
         } break;
         case NoteEvent::EventType::OnOff:
-            std::cout << "ON & OFF: " << _cache.actives.size() << std::endl;
+            // std::cout << "ON & OFF: " << _cache.actives.size() << std::endl;
             // _cache.actives.push(note.key);
             _cache.activesBlock.push(note.key);
             target.noteModifiers.velocity = note.velocity;
@@ -115,12 +115,12 @@ inline void Audio::NoteManager::incrementReadIndex(const Key key, const std::siz
     readIndex += amount;
     // std::cout << "  ::" << _cache.readIndexes[key] << std::endl;
     if (readIndex >= maxIndex) {
-        std::cout << "  :: RESET" << std::endl;
+        // std::cout << "  :: RESET" << std::endl;
         if (const auto it = _cache.actives.find(key); it != _cache.actives.end())
             _cache.actives.erase(it);
         readIndex = 0u;
         trigger = false;
-        std::cout << "  :: RESET" << std::endl;
+        // std::cout << "  :: RESET" << std::endl;
      }
 }
 

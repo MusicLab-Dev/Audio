@@ -78,6 +78,7 @@ public:
         resetAllModifiers();
         resetTriggers();
         resetReadIndexes();
+        _enveloppe.resetTriggerIndex();
     }
 
     /** @brief Reset the internal cache. All notes are turned off */
@@ -114,9 +115,12 @@ public:
 
     [[nodiscard]] std::size_t readIndex(const Key key) const noexcept { return _cache.readIndexes[key]; }
 
-    void setEnveloppeIndex(const Key key, const std::size_t triggerIndex) noexcept { _enveloppe.setTriggerIndex(key, triggerIndex); }
 
+    /** @brief Get the enveloppe gain for a specific key */
     float getEnveloppeGain(const Key key, const std::size_t index, const bool isTrigger) const noexcept { return _enveloppe.getGain(key, index, isTrigger); }
+
+    /** @brief Set the enveloppe index for a specific key */
+    void setEnveloppeIndex(const Key key, const std::size_t triggerIndex) noexcept { _enveloppe.setTriggerIndex(key, triggerIndex); }
 
 private:
     Cache   _cache;

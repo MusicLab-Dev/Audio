@@ -41,6 +41,9 @@ public:
     void triggerOff(const std::size_t index) noexcept;
 
 
+    /** @brief Reset all trigers */
+    void resetTriggerIndex(void) noexcept { _triggerIndex.fill(0u); }
+
     /** @brief Set the internal trigger status */
     void setTriggerIndex(const Key key, const std::size_t triggerIndex) noexcept
     {
@@ -73,8 +76,8 @@ private:
     // bool _isTrigger { true };
     IndexList _triggerIndex;
 
-    std::size_t _attack { 44100u / 100 };
-    std::size_t _release { 44100u / 1000 };
+    std::size_t _attack { 0 }; //44100u / 2 };
+    std::size_t _release { 0 }; //44100u / 1000 };
 };
 
 

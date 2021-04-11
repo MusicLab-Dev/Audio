@@ -24,6 +24,18 @@ inline Audio::Internal::AllocationHeader *Audio::Internal::BufferAllocator::Allo
         return nullptr;
 }
 
+inline bool Audio::Internal::BufferBase::isZero(void) const noexcept
+{
+    // We can assert that a buffer has at least 3 * sizeof(size_t) because its buffer data is aligned to cacheline size
+    // if (!_header || data<std::size_t>()[0] || data<std::size_t>()[_header->size / 2] || data<std::size_t>()[_header->size - sizeof(std::size_t)])
+    //     return false;
+    if (!_header)
+        return true;
+    return std::all_of(byteData(), byteData() + _header->size, [](const auto c) {
+        return c == 0u;
+    });
+}
+
 inline void Audio::Buffer::resize(const std::uint32_t channelByteSize, const SampleRate sampleRate, const ChannelArrangement channelArrangement, const Format format) noexcept
 {
     const auto totalSize = channelByteSize * static_cast<std::size_t>(channelArrangement);

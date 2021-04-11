@@ -13,15 +13,15 @@ inline Audio::AScheduler::AScheduler(void)
             if (_overflowCache) {
                 exited = onAudioQueueBusy();
             } else {
+                getCurrentBeatRange().increment(_processBeatSize);
+                processBeatMiss();
+                if (isLooping())
+                    processLooping();
                 if (produceAudioData(_project->master()->cache())) {
                     exited = onAudioBlockGenerated();
                 } else {
                     exited = onAudioQueueBusy();
                 }
-                getCurrentBeatRange().increment(_processBeatSize);
-                processBeatMiss();
-                if (isLooping())
-                    processLooping();
             }
             // if (exited) {
             //     std::cout << "Shutting down process graph, clearing cache" << std::endl;
@@ -102,9 +102,12 @@ inline const Audio::BeatRange &Audio::AScheduler::getCurrentBeatRange(void) cons
 template<Audio::PlaybackMode Playback>
 inline void Audio::AScheduler::invalidateGraph(void)
 {
-    getCurrentGraph().clear();
+    std::cout << "invalidate graph " << static_cast<std::size_t>(Playback) << std::endl;
+
     if (!_project)
         throw std::logic_error("AScheduler::invalidateGraph: Scheduler has no linked project");
+    getCurrentGraph().clear();
+    _dirtyFlags[static_cast<std::size_t>(playbackMode())] = false;
     if constexpr (Playback == PlaybackMode::Partition || Playback == PlaybackMode::OnTheFly) {
         if (!_partitionNode)
             throw std::logic_error("AScheduler::invalidateGraph: Scheduler has no linked partition node");
@@ -114,8 +117,11 @@ inline void Audio::AScheduler::invalidateGraph(void)
     buildGraph<Playback>();
 }
 
+template<bool SetDirty>
 inline void Audio::AScheduler::invalidateCurrentGraph(void)
 {
+    if constexpr (SetDirty)
+        _dirtyFlags.fill(true);
     switch (playbackMode()) {
     case PlaybackMode::Production:
         return invalidateGraph<PlaybackMode::Production>();
