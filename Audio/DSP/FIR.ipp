@@ -494,18 +494,23 @@ inline Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::Filter(
     Audio::DSP::WindowMaker::GenerateFilterCoefficients(specs.windowType, windowSize, windowFilter.data());
     Audio::DSP::FIR::DesignFilter(specs, windowFilter.data(), windowSize);
 
+
+    auto cptA = 0u;
+    auto cptB = 0u;
     // This remove delay due to the convolution
     if constexpr (RemoveDelay) {
         // Highest part of the input
-        for (auto i = 0u; i < inputSize - windowSize / 2 + 1; ++i) {
+        for (auto i = 0u; i < inputSize - windowSize / 2; ++i) {
             const auto idx = inputSize - i - 1u;
             output[idx] = FilterImpl(input + idx - windowSize / 2, windowFilter.data(), windowSize, 0u);
+            ++cptA;
         }
         // Lower part of the input
         if constexpr (ProcessFirstChunk) {
             for (auto i = inputSize - windowSize + 1; i < inputSize - windowSize / 2; ++i) {
                 const auto idx = inputSize - i - 1u;
                 output[idx - windowSize / 2] = FilterImpl(input, windowFilter.data(), windowSize, windowSize - 1 - idx);
+                ++cptB;
             }
         }
     } else {
@@ -533,6 +538,9 @@ inline Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::Filter(
     //     output[idx] = FilterImpl(input + inputOffset, coefs, windowSize, dt);
     // }
 
+    std::cout << "Processed " << cptA << ", " << cptB << " = " << cptA + cptB << std::endl;
+
+
     // Normalize output
     // std::for_each(output, output + inputSize, [](float &value) {
         // value /= std::sqrt(2.0);
@@ -554,11 +562,17 @@ inline Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::FilterLastInput(
     Audio::DSP::WindowMaker::GenerateFilterCoefficients(specs.windowType, windowSize, windowFilter.data());
     Audio::DSP::FIR::DesignFilter(specs, windowFilter.data(), windowSize);
 
+    std::cout << "\nFilter input: " << input << std::endl;
+
+    auto cptA = 0u;
+    auto cptB = 0u;
     if constexpr (RemoveDelay) {
         // Highest part of the input
-        for (auto i = 0u; i < inputSize - windowSize / 2 + 1; ++i) {
+        std::cout << "  from: " << (inputSize - 1) << ", to: " << inputSize - (inputSize - windowSize / 2 - 1) << std::endl;
+        for (auto i = 0u; i < inputSize - windowSize / 2; ++i) {
             const auto idx = inputSize - i - 1u;
-            output[idx] = FilterImpl(input + idx - windowSize / 2, windowFilter.data(), windowSize, 0u);
+            output[idx] = FilterImpl(input + idx - windowSize / 2 + 1, windowFilter.data(), windowSize, 0u);
+            ++cptA;
         }
         // Lower part of the input
         if constexpr (ProcessFirstChunk) {
@@ -567,6 +581,7 @@ inline Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::FilterLastInput(
                 const auto idx = inputSize - i - 1u;
                 output[idx - windowSize / 2] = FilterLastInputImpl(input, lastInput + lastInputOffset, windowFilter.data(), windowSize, windowSize - 1 - idx, lastInputSize - lastInputOffset);
                 // output[idx - windowSize / 2] = FilterImpl(input, windowFilter.data(), windowSize, windowSize - 1 - idx);
+                ++cptB;
             }
         }
     } else {
@@ -587,6 +602,8 @@ inline Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::FilterLastInput(
         }
     }
 
+    std::cout << "Processed " << cptA << ", " << cptB << " = " << cptA + cptB << std::endl;
+
     // Normalize output
     // std::for_each(output, output + inputSize, [](float &value){
         // value /= std::sqrt(2.0);
@@ -602,10 +619,14 @@ inline Audio::DSP::FIR::ProcessType<Type>
 {
     Type sample { 0.0 };
 
+    // std::cout << "  FilterImpl input: " << input << std::endl;
     // Input convultion
     for (auto i = zeroPad; i < processSize; ++i) {
         const auto idx = processSize - i - 1;
-        sample += (input[idx] * window[idx + zeroPad]);
+        sample += (input[idx] * window[idx]);
+        if (input[idx] >= 1 || input[idx] <= -1) {
+            // std::cout << "    PROBLEM: " << input[idx] << " @ " << idx << std::endl;
+        }
     }
     return sample;
 }

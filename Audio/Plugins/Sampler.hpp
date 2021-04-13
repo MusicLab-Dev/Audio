@@ -121,7 +121,9 @@ private:
     // Cacheline 3 & 4
     NoteManager _noteManager {};
 
-    Buffer _tmp;
+    Buffer _lastBlock;
+    Buffer _cacheBlock;
+    bool _hasLastBlockLoaded { false };
 };
 
 #include "Sampler.ipp"

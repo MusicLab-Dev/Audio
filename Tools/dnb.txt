@@ -10,10 +10,10 @@
 # note add chord 0 69 1 6 7
 # note add chord 0 69 1 7 8
 #
-plugin add Sampler crash
-plugin load_sample crash Samples/crash.wav
-note create crash 4 0 160
-note add crash 0 69 2 0 16
+# plugin add Sampler crash
+# plugin load_sample crash Samples/crash.wav
+# note create crash 4 0 160
+# note add crash 0 69 2 0 16
 #
 # plugin add Sampler hh_close
 # plugin load_sample hh_close Samples/hh_close.wav

@@ -13,16 +13,6 @@ inline void Audio::Sampler::loadSample(const std::string_view &path)
     _buffers[OctaveRootKey] = SampleManager<Type>::LoadSampleFile(std::string(path), specs);
     GenerateOctave<Type>(_buffers[OctaveRootKey], _buffers);
     const auto inSize = _buffers[0].size<float>();
-    _tmp.resize(inSize / 2 * sizeof(float), 44100, ChannelArrangement::Mono, Format::Floating32);
-
-    DSP::Resampler::ResampleOctave<false>(
-        _buffers[0].data<float>(),
-        _tmp.data<float>(),
-        inSize,
-        44100,
-        1
-    );
-
 }
 
 inline void Audio::Sampler::onAudioParametersChanged(void)
@@ -34,6 +24,10 @@ inline void Audio::Sampler::onAudioParametersChanged(void)
         buffer.resize(newSize, audioSpecs().sampleRate, audioSpecs().channelArrangement, audioSpecs().format);
     }
     // _enveloppe.setSampleRate(_specs.sampleRate());
+    _hasLastBlockLoaded = false;
+    // @Todo
+    _lastBlock.resize(1024 * sizeof(float), 44100, ChannelArrangement::Mono, Format::Floating32);
+    _cacheBlock.resize(1024 * sizeof(float), 44100, ChannelArrangement::Mono, Format::Floating32);
 }
 
 inline void Audio::Sampler::setExternalPaths(const ExternalPaths &paths)
@@ -138,29 +132,46 @@ inline void Audio::Sampler::receiveAudio(BufferView output)
         DSP::WindowType::Hanning,
         441,
         44100,
-        { 5512 * 2, 0 }
+        { 5512, 0 }
     };
 
-    // std::cout << "<END>" << std::endl;
-    static bool LastBlockActive = false;
-    static auto Cpt = 0u;
-    static Buffer lastBlock(outSize * sizeof(float), 44100, ChannelArrangement::Mono, Format::Floating32);
-    // lastBlock.clear();
+    // @Todo
+    float wtf[4096];
+    // _lastBlock.resize(4096, 44100, ChannelArrangement::Mono, Format::Floating32);
+    // _cacheBlock = Buffer(4096 + 4, 44100, ChannelArrangement::Mono, Format::Floating32);
 
-    if (LastBlockActive) {
-        DSP::FIR::FilterLastInput(filter, out, out, outSize, lastBlock.data<float>(), outSize);
-        std::memcpy(lastBlock.data<float>(), out, outSize * sizeof(float));
+    // Ca fait dla merde
+    _cacheBlock = Buffer(outSize * sizeof(float), 44100, ChannelArrangement::Mono, Format::Floating32);
+    _cacheBlock.clear();
+    // Ca fait PAS dla merde
+    // _cacheBlock = Buffer(4096 + 1, 44100, ChannelArrangement::Mono, Format::Floating32);
+
+    std::memcpy(&wtf, out, outSize * sizeof(float));
+    std::memcpy(_cacheBlock.data<float>(), out, outSize * sizeof(float));
+
+    if (_hasLastBlockLoaded) {
+        DSP::FIR::FilterLastInput(filter, _cacheBlock.data<float>(), out, outSize, _lastBlock.data<float>(), outSize);
     } else {
-        DSP::FIR::Filter(filter, out, out, outSize);
+        // DSP::FIR::Filter(filter, _cacheBlock.data<float>(), out, outSize);
+        _hasLastBlockLoaded = true;
     }
-    // std::cout << "<END>" << std::endl;
-    // std::memcpy(out, tmp.data(), outSize * sizeof(float));
+    static auto cpt = 0u;
 
-    LastBlockActive = true;
-    Cpt++;
+    std::cout << cpt << std::endl;
+
+    if (cpt > 100 && cpt < 140) {
+        // Buffer wav(outSize * sizeof(float), 44100, ChannelArrangement::Mono, Format::Floating32);
+        // std::memcpy(wav.data<float>(), out, outSize * sizeof(float));
+        // SampleManager<float>::WriteSampleFile("tmp_" + std::to_string(cpt) + ".wav", wav);
+        // exit(23);
+    }
+
+    cpt++;
+    _cacheBlock.swap(_lastBlock);
 }
 
 inline void Audio::Sampler::onAudioGenerationStarted(const BeatRange &range)
 {
     _noteManager.reset();
+    _hasLastBlockLoaded = false;
 }
