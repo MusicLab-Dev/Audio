@@ -187,7 +187,7 @@ private:
     // Cacheline 1
     // Virtual table pointer
     std::unique_ptr<Flow::Scheduler> _scheduler { std::make_unique<Flow::Scheduler>() };
-    Core::TinyVector<Event> _events {};
+    Core::TinyVector<Event> _events {}; // @todo Use two vectors instead of one
     ProjectPtr _project {};
     Buffer _overflowCache {};
     PlaybackMode _playbackMode { PlaybackMode::Production };

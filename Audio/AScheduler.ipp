@@ -144,13 +144,16 @@ inline void Audio::AScheduler::wait(void) noexcept_ndebug
 inline void Audio::AScheduler::dispatchApplyEvents(void)
 {
     for (const auto &event : _events)
-        event.apply();
+        if (event.apply)
+            event.apply();
 }
 
 inline void Audio::AScheduler::dispatchNotifyEvents(void)
 {
-    for (const auto &event : _events)
-        event.notify();
+    for (const auto &event : _events) {
+        if (event.notify)
+            event.notify();
+    }
     _events.clear();
 }
 
