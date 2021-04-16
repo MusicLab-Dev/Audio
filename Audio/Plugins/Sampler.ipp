@@ -75,17 +75,17 @@ inline void Audio::Sampler::receiveAudio(BufferView output)
         // const std::int32_t bufferOctave = (bufferKeyIdxDt >= 0) ? bufferKeyIdxDt / KeysPerOctave : -((KeysPerOctave - bufferKeyIdxDt - 1) / KeysPerOctave);
 
         const std::int32_t realKeyIdx = static_cast<std::int32_t>(key) % KeysPerOctave;
-        const std::int32_t realOctave = realKeyIdx / KeysPerOctave;
+        const std::int32_t realOctave = static_cast<std::int32_t>(key) / KeysPerOctave;
         std::int32_t bufferKeyIdx = realKeyIdx - OctaveRootKey + 1;
         std::int32_t bufferOctave;
 
         if (bufferKeyIdx < 0) {
-            bufferOctave = realOctave - 1;
+            bufferOctave = realOctave - RootOctave - 1;
             bufferKeyIdx += KeysPerOctave;
         } else
-            bufferOctave = realOctave;
+            bufferOctave = realOctave - RootOctave;
 
-
+        // std::cout << "realKeyIdx " << realKeyIdx << " realOctave " << realOctave << " bufferKeyIdx " << bufferKeyIdx << " bufferOctave " << bufferOctave << std::endl;
 
         // std::cout << "buffer idx dt: " << bufferKeyIdxDt << std::endl;
         // std::cout << "buffer idx: " << bufferKeyIdx << std::endl;
