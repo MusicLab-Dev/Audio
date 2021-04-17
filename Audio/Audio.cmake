@@ -93,18 +93,18 @@ set(AudioDSPSources
     ${AudioDSPDir}/PitchShift.cpp
     ${AudioDSPDir}/PitchShift.ipp
     ${AudioDSPDir}/Resampler.hpp
+    ${AudioDSPDir}/Resampler.ipp
     ${AudioDSPDir}/Interpolation.ipp
     ${AudioDSPDir}/Decimation.ipp
-    ${AudioDSPDir}/Resampler.ipp
     ${AudioDSPDir}/Biquad.hpp
     ${AudioDSPDir}/Biquad.ipp
     ${AudioDSPDir}/Biquad.cpp
     ${AudioDSPDir}/EnveloppeGenerator.hpp
     ${AudioDSPDir}/EnveloppeGenerator.ipp
-    ${AudioDSPDir}/FIR.hpp
-    ${AudioDSPDir}/FIR.ipp
-    ${AudioDSPDir}/Window.hpp
-    ${AudioDSPDir}/Window.ipp
+    # ${AudioDSPDir}/FIR.hpp
+    # ${AudioDSPDir}/FIR.ipp
+    ${AudioDSPDir}/Filter.hpp
+    ${AudioDSPDir}/Filter.ipp
 )
 
 set(AudioKissFFTDir ${PROJECT_SOURCE_DIR}/kissfft)

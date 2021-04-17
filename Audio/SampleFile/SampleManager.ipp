@@ -15,7 +15,7 @@ inline Audio::Buffer Audio::SampleManager<Type>::LoadSampleFile(const std::strin
 template<typename Type>
 inline Audio::Buffer Audio::SampleManager<Type>::LoadSampleFileExtension(const std::string &path, const std::string &ext, SampleSpecs &specs, bool displaySpecs)
 {
-    for (auto i = 0; i < sizeof(SupportedExtension) / sizeof(std::pair<int, int>); ++i) {
+    for (auto i = 0u; i < sizeof(SupportedExtension) / sizeof(std::pair<int, int>); ++i) {
         if (std::string(std::get<0>(SupportedExtension[i])) == ext) {
             /** @todo Convert buffer (if needed) into the templated type */
             return std::get<1>(SupportedExtension[i])(path, specs, displaySpecs);
@@ -36,7 +36,7 @@ inline bool Audio::SampleManager<Type>::WriteSampleFile(const std::string &path,
 template<typename Type>
 inline bool Audio::SampleManager<Type>::WriteSampleFileExtension(const std::string &path, const BufferView &sample, const std::string &ext)
 {
-    for (auto i = 0; i < sizeof(SupportedExtension) / sizeof(std::pair<int, int>); ++i) {
+    for (auto i = 0u; i < sizeof(SupportedExtension) / sizeof(std::pair<int, int>); ++i) {
         if (std::string(std::get<0>(SupportedExtension[i])) == ext) {
             /** @todo Convert buffer (if needed) into the templated type */
             return std::get<2>(SupportedExtension[i])(path, sample);

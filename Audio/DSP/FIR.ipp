@@ -248,6 +248,22 @@ inline Audio::DSP::FIR::VoidType<Type>
     for (auto i = offset; i < ProcessRate - 1; ++i) {
         // std::cout << "  ii: " << i << std::endl;
         interpolate<ProcessRate>(interpolateData.data(), input + i, filterCoefs.data(), interpFactor, ProcessRate - 1 - i);
+        {
+            const auto outSize = interpFactor - zeroPadEnd;
+            // std::cout << "outSize: " << outSize << ", zeroPadBegin: " << zeroPadBegin << ", zeroPadEnd: " << zeroPadEnd << std::endl;
+            for (auto i = 0u; i < outSize; ++i) {
+                producedData[outSize - 1 - i] = 0.0;
+                // std::cout << "\ni: " << i << std::endl;
+                // std::cout << "-outIdx: " << outSize - 1 - i << std::endl;
+                for (auto k = zeroPadBegin; k < ProcessRate; ++k) {
+                    // std::cout << "  --k: " << k << std::endl;
+                    // std::cout << "  --  inputIdx: " << k - zeroPadBegin << std::endl;
+                    // std::cout << "  --  filterIdx: " << (i + k * interpFactor) << std::endl;
+                    producedData[outSize - 1 - i] += (input[k - zeroPadBegin] * filterCoefs[i + (k * interpFactor)]) * (interpFactor * 0.707) / 2;
+                }
+            }
+
+        }
         auto produced = producedCache.pushRange(interpolateData.begin(), interpolateData.end());
         pBegin += produced;
         while (producedCache.tryPopRange(decimData.begin(), decimData.end())) {

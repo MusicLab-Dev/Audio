@@ -11,17 +11,30 @@ inline void Audio::Sampler::loadSample(const std::string_view &path)
 {
     SampleSpecs specs;
     _buffers[OctaveRootKey] = SampleManager<Type>::LoadSampleFile(std::string(path), specs);
-    GenerateOctave<Type>(_buffers[OctaveRootKey], _buffers);
-    const auto inSize = _buffers[0].size<float>();
-    _tmp.resize(inSize / 2 * sizeof(float), 44100, ChannelArrangement::Mono, Format::Floating32);
 
-    DSP::Resampler::ResampleOctave<false>(
-        _buffers[0].data<float>(),
-        _tmp.data<float>(),
-        inSize,
-        44100,
-        1
-    );
+    // GenerateOctave<Type>(_buffers[OctaveRootKey], _buffers);
+    // const auto inSize = _buffers[0].size<float>();
+    // _tmp.resize(inSize / 2 * sizeof(float), 44100, ChannelArrangement::Mono, Format::Floating32);
+
+    const auto size = _buffers[OctaveRootKey].size<Type>();
+    for (int i = 0; i < 3; ++i) {
+        _buffers[i].resize(size / std::pow(2, i + 1) * sizeof(Type), 44100, ChannelArrangement::Mono, Format::Floating32);
+        DSP::Resampler<float>().resampleOctave<false, 8u>(_buffers[OctaveRootKey].data<Type>(), _buffers[i].data<Type>(), size, audioSpecs().sampleRate, i + 1);
+        SampleManager<Type>::WriteSampleFile("sample_" + std::to_string(i + 1) + ".wav", _buffers[i]);
+    }
+    for (int i = 0; i < 3; ++i) {
+        _buffers[i].resize(size * std::pow(2, i + 1) * sizeof(Type), 44100, ChannelArrangement::Mono, Format::Floating32);
+        DSP::Resampler<float>().resampleOctave<false, 8u>(_buffers[OctaveRootKey].data<Type>(), _buffers[i].data<Type>(), size, audioSpecs().sampleRate, -i - 1);
+        SampleManager<Type>::WriteSampleFile("sample_" + std::to_string(-i - 1) + ".wav", _buffers[i]);
+    }
+
+    // DSP::Resampler::ResampleOctave<false>(
+    //     _buffers[0].data<float>(),
+    //     _tmp.data<float>(),
+    //     inSize,
+    //     44100,
+    //     1
+    // );
 
 }
 
@@ -48,8 +61,6 @@ inline void Audio::Sampler::sendNotes(const NoteEvents &notes)
     // std::cout << "\t - " << "_NOTES " << notes.size() << std::endl;
     _noteManager.feedNotes(notes);
 }
-
-#include <Audio/DSP/Biquad.hpp>
 
 inline void Audio::Sampler::receiveAudio(BufferView output)
 {
@@ -84,6 +95,8 @@ inline void Audio::Sampler::receiveAudio(BufferView output)
             bufferKeyIdx += KeysPerOctave;
         } else
             bufferOctave = realOctave - RootOctave;
+
+        // bufferKeyIdx = OctaveRootKey;
 
         // std::cout << "realKeyIdx " << realKeyIdx << " realOctave " << realOctave << " bufferKeyIdx " << bufferKeyIdx << " bufferOctave " << bufferOctave << std::endl;
 
@@ -133,7 +146,9 @@ inline void Audio::Sampler::receiveAudio(BufferView output)
             // std::cout << "resampleSize: " << resampleSize << std::endl;
             // std::cout << "resampleOffset: " << resampleOffset << std::endl;
             // std::cout << std::endl;
-            DSP::Resampler::ResampleOctave<true>(sampleBuffer, out, resampleOffset + resampleReadSize, audioSpecs().sampleRate, bufferOctave, resampleOffset);
+
+            DSP::Resampler<float>().resampleOctave<false, 8u>(sampleBuffer, out, resampleReadSize, audioSpecs().sampleRate, bufferOctave, resampleOffset);
+            // DSP::Resampler<float>().resampleOctave<false, 8u>(sampleBuffer + resampleOffset, out, resampleReadSize, audioSpecs().sampleRate, bufferOctave);
             // std::cout << "RESAMPLEED done" << std::endl;
 
             // Apply enveloppe

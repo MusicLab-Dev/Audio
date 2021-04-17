@@ -11,8 +11,6 @@
 #include <cstdint>
 #include <type_traits>
 
-#include "immintrin.h"
-
 #include "Audio/Base.hpp"
 
 namespace Audio::DSP
