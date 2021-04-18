@@ -62,29 +62,29 @@ private:
 
 
 #define REGISTER_CONTROL(Type, Variable, Range, Value, Name, Description) CONTROL(Type, Variable, Range, Value, Name, Description)
-#define REGISTER_CONTROL_ENUM(Type, Variable, Range, Name, Description) CONTROL_ENUM(Type, Variable, Range, Name, Description)
+#define REGISTER_CONTROL_ENUM(Variable, Range, Name, Description) CONTROL_ENUM(Variable, Range, Name, Description)
 
 #define _REGISTER_METADATA_CONTROL(Type, Variable, Range, Value, Name, Description) \
     Audio::ControlMetaData { \
         Audio::TranslationMetaData { Name, Description }, \
         Audio::ParamType::Type, \
-        {}, \
+        Value, \
         Range, \
-        Value \
+        {} \
     }
 
-#define _REGISTER_METADATA_CONTROL_ENUM(Type, Variable, Range, Name, Description) \
+#define _REGISTER_METADATA_CONTROL_ENUM(Variable, Range, Name, Description) \
     Audio::ControlMetaData { \
         Audio::TranslationMetaData { Name, Description }, \
-        Audio::ParamType::Type, \
-        Range, \
+        Audio::ParamType::Enum, \
+        0.0, \
         {}, \
-        {} \
+        Range \
     }
 
 #define _INIT_CONTROL(Type, Variable, Range, Value, Name, Description) Value
 
-#define _INIT_CONTROL_ENUM(Type, Variable, Range, Name, Description) 0.0
+#define _INIT_CONTROL_ENUM(Variable, Range, Name, Description) 0.0
 
 #define _REGISTER_GETTER_REF_CONTROL(Type, Variable, Range, Value, Name, Description) \
     [[nodiscard]] Audio::ParamValue &Variable(void) noexcept { return _controls
@@ -92,21 +92,22 @@ private:
 #define _REGISTER_GETTER_CONTROL(Type, Variable, Range, Value, Name, Description) \
     [[nodiscard]] Audio::ParamValue Variable(void) const noexcept { return _controls
 
-#define _REGISTER_GETTER_REF_CONTROL_ENUM(Type, Variable, Range, Name, Description)  \
+#define _REGISTER_GETTER_REF_CONTROL_ENUM(Variable, Range, Name, Description)  \
     [[nodiscard]] Audio::ParamValue &Variable(void) noexcept { return _controls
 
-#define _REGISTER_GETTER_CONTROL_ENUM(Type, Variable, Range, Name, Description) \
+#define _REGISTER_GETTER_CONTROL_ENUM(Variable, Range, Name, Description) \
     [[nodiscard]] Audio::ParamValue Variable(void) const noexcept { return _controls
 
 #define CONTROL_RANGE(Min, Max) (Audio::ControlMetaData::RangeValues { Min, Max, 0.0 })
 #define CONTROL_RANGE_STEP(Min, Max, Step) (Audio::ControlMetaData::RangeValues { Min, Max, Step })
-#define CONTROL_ENUM(...) (Audio::ControlMetaData::RangeNames { __VA_ARGS__ })
+#define CONTROL_ENUM_RANGE(...) (Audio::ControlMetaData::RangeNames { __VA_ARGS__ })
 
 #define TR_TABLE(...) (Audio::TranslationTable { __VA_ARGS__ })
 #define TR(Lang, Text) (Audio::TranslationPair { Lang, Text })
-#define _FORWARD_TAG(tag) Audio::IPluginFactory::Tags::tag
 
+#define _FORWARD_TAG(tag) Audio::IPluginFactory::Tags::tag
 #define TAGS(...) (Audio::IPluginFactory::Tags { Audio::MakeFlags<Audio::IPluginFactory::Tags, std::uint32_t>(FOR_COMMA_EACH(_FORWARD_TAG, __VA_ARGS__)) })
+
 #define _FORWARD_FLAG(flag) Audio::IPluginFactory::Flags::flag
 #define FLAGS(...) (Audio::IPluginFactory::Flags { Audio::MakeFlags<Audio::IPluginFactory::Flags, std::uint32_t>(FOR_COMMA_EACH(_FORWARD_FLAG, __VA_ARGS__)) })
 

@@ -60,9 +60,9 @@ namespace Audio
 
         struct RangeValues
         {
-            ParamValue min;
-            ParamValue max;
-            ParamValue step;
+            ParamValue min {};
+            ParamValue max {};
+            ParamValue step {};
         };
 
         TranslationMetaData translations;
