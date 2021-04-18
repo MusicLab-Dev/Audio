@@ -249,7 +249,7 @@ inline Audio::DSP::FIR::VoidType<Type>
         // std::cout << "  ii: " << i << std::endl;
         interpolate<ProcessRate>(interpolateData.data(), input + i, filterCoefs.data(), interpFactor, ProcessRate - 1 - i);
         {
-            const auto outSize = interpFactor - zeroPadEnd;
+            const auto outSize = interpFactor;
             // std::cout << "outSize: " << outSize << ", zeroPadBegin: " << zeroPadBegin << ", zeroPadEnd: " << zeroPadEnd << std::endl;
             for (auto i = 0u; i < outSize; ++i) {
                 producedData[outSize - 1 - i] = 0.0;

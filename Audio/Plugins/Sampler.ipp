@@ -12,21 +12,19 @@ inline void Audio::Sampler::loadSample(const std::string_view &path)
     SampleSpecs specs;
     _buffers[OctaveRootKey] = SampleManager<Type>::LoadSampleFile(std::string(path), specs);
 
-    // GenerateOctave<Type>(_buffers[OctaveRootKey], _buffers);
+    GenerateOctave<Type>(_buffers[OctaveRootKey], _buffers);
     // const auto inSize = _buffers[0].size<float>();
     // _tmp.resize(inSize / 2 * sizeof(float), 44100, ChannelArrangement::Mono, Format::Floating32);
 
-    const auto size = _buffers[OctaveRootKey].size<Type>();
-    for (int i = 0; i < 3; ++i) {
-        _buffers[i].resize(size / std::pow(2, i + 1) * sizeof(Type), 44100, ChannelArrangement::Mono, Format::Floating32);
-        DSP::Resampler<float>().resampleOctave<false, 8u>(_buffers[OctaveRootKey].data<Type>(), _buffers[i].data<Type>(), size, audioSpecs().sampleRate, i + 1);
-        SampleManager<Type>::WriteSampleFile("sample_" + std::to_string(i + 1) + ".wav", _buffers[i]);
+    // const auto size = _buffers[OctaveRootKey].size<Type>();
+    for (auto i = 0u; i < 12; ++i) {
+        SampleManager<Type>::WriteSampleFile("sample_" + std::to_string(i) + ".wav", _buffers[i]);
     }
-    for (int i = 0; i < 3; ++i) {
-        _buffers[i].resize(size * std::pow(2, i + 1) * sizeof(Type), 44100, ChannelArrangement::Mono, Format::Floating32);
-        DSP::Resampler<float>().resampleOctave<false, 8u>(_buffers[OctaveRootKey].data<Type>(), _buffers[i].data<Type>(), size, audioSpecs().sampleRate, -i - 1);
-        SampleManager<Type>::WriteSampleFile("sample_" + std::to_string(-i - 1) + ".wav", _buffers[i]);
-    }
+    // for (int i = 0; i < 3; ++i) {
+    //     _buffers[i].resize(size * std::pow(2, i + 1) * sizeof(Type), 44100, ChannelArrangement::Mono, Format::Floating32);
+    //     DSP::Resampler<float>().resampleOctave<false, 8u>(_buffers[OctaveRootKey].data<Type>(), _buffers[i].data<Type>(), size, audioSpecs().sampleRate, -i - 1);
+    //     SampleManager<Type>::WriteSampleFile("sample_" + std::to_string(-i - 1) + ".wav", _buffers[i]);
+    // }
 
     // DSP::Resampler::ResampleOctave<false>(
     //     _buffers[0].data<float>(),
@@ -123,7 +121,7 @@ inline void Audio::Sampler::receiveAudio(BufferView output)
             // std::cout << "baseIndex: " << baseIndex << ", nextRead: " << nextReadIndex << ", readSize: " << readSize << std::endl;
             for (auto i = 0u; i < readSize; ++i) {
                 const auto idx = baseIndex + i;
-                out[i] += sampleBuffer[idx] * _noteManager.getEnveloppeGain(key, idx, _noteManager.trigger(key)) / static_cast<float>(activeNote);
+                out[i] += sampleBuffer[idx] * _noteManager.getEnveloppeGain(key, idx, _noteManager.trigger(key));
             }
             _noteManager.incrementReadIndex(key, sampleSize, readSize);
         }
@@ -147,15 +145,15 @@ inline void Audio::Sampler::receiveAudio(BufferView output)
             // std::cout << "resampleOffset: " << resampleOffset << std::endl;
             // std::cout << std::endl;
 
-            DSP::Resampler<float>().resampleOctave<false, 8u>(sampleBuffer, out, resampleReadSize, audioSpecs().sampleRate, bufferOctave, resampleOffset);
+            DSP::Resampler<float>().resampleOctave<true, 8u>(sampleBuffer, out, resampleReadSize, audioSpecs().sampleRate, bufferOctave, resampleOffset);
             // DSP::Resampler<float>().resampleOctave<false, 8u>(sampleBuffer + resampleOffset, out, resampleReadSize, audioSpecs().sampleRate, bufferOctave);
             // std::cout << "RESAMPLEED done" << std::endl;
 
             // Apply enveloppe
-            // for (auto i = 0u; i < readSize; ++i) {
-            //     const auto idx = _noteManager.readIndex(key) + i;
-            //     out[i] *= _noteManager.getEnveloppeGain(key, idx, _noteManager.trigger(key)) * 2;
-            // }
+            for (auto i = 0u; i < readSize; ++i) {
+                const auto idx = _noteManager.readIndex(key) + i;
+                out[i] *= _noteManager.getEnveloppeGain(key, idx, _noteManager.trigger(key));
+            }
             _noteManager.incrementReadIndex(key, resampleSize, readSize);
         }
     }
