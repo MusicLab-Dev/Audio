@@ -31,8 +31,14 @@ class Audio::Mixer final : public Audio::IPlugin
         TAGS(Mastering),
         /* Control list */
         REGISTER_CONTROL(
+            /* Control type */
+            Floating,
             /* Control variable / getter / setter name */
             masterVolume,
+            /* Control's range */
+            CONTROL_RANGE(0.0, 1.0),
+            /* Control's default value */
+            1.0,
             /* Control name */
             TR_TABLE(
                 TR(English, "Master volume"),

@@ -53,6 +53,14 @@ namespace Audio
     /** @brief Parameter ID */
     using ParamID = std::uint32_t;
 
+    /** @brief Parameter type */
+    enum class ParamType : int {
+        Boolean,
+        Interger,
+        Floating,
+        Enum
+    };
+
     /** @brief Parameter value */
     using ParamValue = double;
 

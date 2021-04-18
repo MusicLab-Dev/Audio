@@ -21,19 +21,16 @@ TEST(Sampler, MetaData)
     ASSERT_EQ(meta.translations.names[1].lang, French);
     ASSERT_EQ(meta.translations.names[1].text, "Sampleur");
     ASSERT_EQ(meta.controls.size(), Sampler::ControlCount);
-    ASSERT_EQ(meta.controls.size(), 4);
 
-    sampler.outputGain() = 42.0;
-    ASSERT_DOUBLE_EQ(cSampler.outputGain(), 42.0);
+    ASSERT_DOUBLE_EQ(cSampler.outputVolume(), 1.0);
+    sampler.outputVolume() = 42.0;
+    ASSERT_DOUBLE_EQ(cSampler.outputVolume(), 42.0);
 
     ASSERT_DOUBLE_EQ(cSampler.getControl(0), 42.0);
     sampler.getControl(0) = 0.24;
     ASSERT_DOUBLE_EQ(sampler.getControl(0), 0.24);
 
-    sampler.pitch() = 0.24;
-    ASSERT_DOUBLE_EQ(cSampler.pitch(), 0.24);
-
-    ASSERT_DOUBLE_EQ(cSampler.getControl(1), 0.24);
+    ASSERT_DOUBLE_EQ(cSampler.getControl(1), 0.01);
     sampler.getControl(1) = 42.0;
     ASSERT_DOUBLE_EQ(sampler.getControl(1), 42.0);
 
@@ -55,6 +52,5 @@ TEST(Sampler, MetaData)
     ASSERT_EQ(pMeta.translations.names[1].lang, French);
     ASSERT_EQ(pMeta.translations.names[1].text, "Sampleur");
     ASSERT_EQ(pMeta.controls.size(), Sampler::ControlCount);
-    ASSERT_EQ(pMeta.controls.size(), 4);
 
 }

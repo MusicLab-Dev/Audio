@@ -35,36 +35,34 @@ class Audio::Sampler final : public Audio::IPlugin
         TAGS(Sampler),
         /* Control list */
         REGISTER_CONTROL(
+            /* Control type */
+            Floating,
             /* Control variable / getter / setter name */
-            outputGain,
+            outputVolume,
+            /* Control's range */
+            CONTROL_RANGE(0.0, 1.0),
+            /* Control's default value */
+            1.0,
             /* Control name */
             TR_TABLE(
-                TR(English, "Output gain"),
+                TR(English, "Output volume"),
                 TR(French, "Volume de sortie")
             ),
             /* Control's description */
             TR_TABLE(
-                TR(English, "Output gain of the sampler"),
+                TR(English, "Output volume of the sampler"),
                 TR(French, "Volume de sortie du sampleur")
             )
         ),
         REGISTER_CONTROL(
-            /* Control variable / getter / setter name */
-            pitch,
-            /* Control name */
-            TR_TABLE(
-                TR(English, "Pitch"),
-                TR(French, "Hauteur")
-            ),
-            /* Control's description */
-            TR_TABLE(
-                TR(English, "Base pitch of the loaded note"),
-                TR(French, "Hauteur de référence la note chargée")
-            )
-        ),
-        REGISTER_CONTROL(
+            /* Control type */
+            Floating,
             /* Control variable / getter / setter name */
             enveloppeAttack,
+            /* Control's range */
+            CONTROL_RANGE(0.0, 1.0),
+            /* Control's default value */
+            0.01,
             /* Control name */
             TR_TABLE(
                 TR(English, "Enveloppe attack"),
@@ -77,8 +75,14 @@ class Audio::Sampler final : public Audio::IPlugin
             )
         ),
         REGISTER_CONTROL(
+            /* Control type */
+            Floating,
             /* Control variable / getter / setter name */
             enveloppeRelease,
+            /* Control's range */
+            CONTROL_RANGE(0.0, 1.0),
+            /* Control's default value */
+            0.01,
             /* Control name */
             TR_TABLE(
                 TR(English, "Enveloppe release"),
