@@ -9,6 +9,7 @@
 
 namespace Audio::DSP::Filter
 {
+    // https://technobyte.org/windowing-design-fir-filter-method/
     enum class WindowType : std::uint8_t
     {
         Hanning = 0,
@@ -35,6 +36,9 @@ namespace Audio::DSP::Filter
     void GenerateFilterCoefficients(const WindowType type, const std::size_t size, float *windowCoefficients, const bool isSymetric = true) noexcept;
     void DesignFilter(const FilterSpecs specs, float *windowCoefficients, const std::size_t windowSize, const bool centered) noexcept;
     void DesignFilterLowPass(float *windowCoefficients, const std::size_t size, const double cutoffRate, const bool centered) noexcept;
+    void DesignFilterHighPass(float *windowCoefficients, const std::size_t size, const double cutoffRate, const bool centered) noexcept;
+    void DesignFilterBandPass(float *windowCoefficients, const std::size_t size, const double cutoffRateBegin, const double cutoffRateEnd, const bool centered) noexcept;
+    void DesignFilterBandStop(float *windowCoefficients, const std::size_t size, const double cutoffRateBegin, const double cutoffRateEnd, const bool centered) noexcept;
 
     void Hanning(const std::size_t size, float *windowCoefficients, const bool isSymetric = true) noexcept;
     void Hamming(const std::size_t size, float *windowCoefficients, const bool isSymetric = true) noexcept;
