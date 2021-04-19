@@ -37,7 +37,7 @@ inline void Audio::NoteManager<Enveloppe>::feedNotes(const NoteEvents &notes) no
             if (it != _cache.actives.end()) {
                 _cache.triggers[note.key] = false;
                 // Reset
-                // std::cout << "reset trigger off\n";
+                std::cout << "reset trigger off\n";
                 // _cache.readIndexes[note.key] = 0u;
                 setEnveloppeIndex(note.key, _cache.readIndexes[note.key]);
             }

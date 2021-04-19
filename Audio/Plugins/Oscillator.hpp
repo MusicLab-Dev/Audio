@@ -29,41 +29,39 @@ class Audio::Oscillator final : public Audio::IPlugin
             TR(French, "Le Oscillateur permet de générer des formes d'ondes audio et de les jouer comme des notes")
         ),
         /* Plugin flags */
-        FLAGS(AudioOutput, NoteInput, SingleExternalInput),
+        FLAGS(AudioOutput, NoteInput),
         /* Plugin tags */
         TAGS(Synth),
         /* Control list */
         REGISTER_CONTROL(
+            /* Control type */
+            Floating,
             /* Control variable / getter / setter name */
-            outputGain,
+            outputVolume,
+            /* Control's range */
+            CONTROL_RANGE(0.0, 1.0),
+            /* Control's default value */
+            1.0,
             /* Control name */
             TR_TABLE(
-                TR(English, "Output gain"),
+                TR(English, "Output volume"),
                 TR(French, "Volume de sortie")
             ),
             /* Control's description */
             TR_TABLE(
-                TR(English, "Output gain of the Oscillator"),
+                TR(English, "Output volume of the Oscillator"),
                 TR(French, "Volume de sortie du Oscillateur")
             )
         ),
         REGISTER_CONTROL(
-            /* Control variable / getter / setter name */
-            pitch,
-            /* Control name */
-            TR_TABLE(
-                TR(English, "Pitch"),
-                TR(French, "Hauteur")
-            ),
-            /* Control's description */
-            TR_TABLE(
-                TR(English, "Base pitch of the loaded note"),
-                TR(French, "Hauteur de référence la note chargée")
-            )
-        ),
-        REGISTER_CONTROL(
+            /* Control type */
+            Floating,
             /* Control variable / getter / setter name */
             enveloppeAttack,
+            /* Control's range */
+            CONTROL_RANGE(0.0, 1.0),
+            /* Control's default value */
+            0.01,
             /* Control name */
             TR_TABLE(
                 TR(English, "Enveloppe attack"),
@@ -76,8 +74,14 @@ class Audio::Oscillator final : public Audio::IPlugin
             )
         ),
         REGISTER_CONTROL(
+            /* Control type */
+            Floating,
             /* Control variable / getter / setter name */
             enveloppeRelease,
+            /* Control's range */
+            CONTROL_RANGE(0.0, 1.0),
+            /* Control's default value */
+            0.01,
             /* Control name */
             TR_TABLE(
                 TR(English, "Enveloppe release"),
@@ -121,23 +125,33 @@ public:
 
 public:
 private:
-    NoteManager<DSP::EnveloppeType::ADSR> _noteManager {};
+    NoteManager<DSP::EnveloppeType::AR> _noteManager {};
     Osc _oscillator;
 
-    template<typename Type>
-    void generateWaveform(const Osc &oscillator, Type *output, const std::size_t outputSize, const float frequency, const SampleRate sampleRate, const std::size_t phaseOffset) noexcept;
+    float getEnveloppeGain(const Key key, const std::size_t index, const bool isTrigger) noexcept
+    {
+        return _noteManager.getEnveloppeGain(key, index, isTrigger, 0.f, enveloppeAttack(), 0.f, 0.f, 0.f, enveloppeRelease(), audioSpecs().sampleRate);
+    }
 
     template<typename Type>
-    void generateSine(Type *output, const std::size_t outputSize, const float frequency, const SampleRate sampleRate, const std::size_t phaseOffset) noexcept;
+    void generateWaveform(const Osc &oscillator, Type *output, const std::size_t outputSize,
+            const float frequency, const SampleRate sampleRate, const std::size_t phaseOffset, const Key key, const bool trigger) noexcept;
 
     template<typename Type>
-    void generateSquare(Type *output, const std::size_t outputSize, const float frequency, const SampleRate sampleRate, const std::size_t phaseOffset) noexcept;
+    void generateSine(Type *output, const std::size_t outputSize,
+            const float frequency, const SampleRate sampleRate, const std::size_t phaseOffset, const Key key, const bool trigger) noexcept;
 
     template<typename Type>
-    void generateTriangle(Type *output, const std::size_t outputSize, const float frequency, const SampleRate sampleRate, const std::size_t phaseOffset) noexcept;
+    void generateSquare(Type *output, const std::size_t outputSize,
+            const float frequency, const SampleRate sampleRate, const std::size_t phaseOffset, const Key key, const bool trigger) noexcept;
 
     template<typename Type>
-    void generateSaw(Type *output, const std::size_t outputSize, const float frequency, const SampleRate sampleRate, const std::size_t phaseOffset) noexcept;
+    void generateTriangle(Type *output, const std::size_t outputSize,
+            const float frequency, const SampleRate sampleRate, const std::size_t phaseOffset, const Key key, const bool trigger) noexcept;
+
+    template<typename Type>
+    void generateSaw(Type *output, const std::size_t outputSize,
+            const float frequency, const SampleRate sampleRate, const std::size_t phaseOffset, const Key key, const bool trigger) noexcept;
 };
 
 #include "Oscillator.ipp"

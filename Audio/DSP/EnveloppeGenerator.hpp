@@ -93,7 +93,7 @@ public:
         //     }
         //     return 0.f;
         // }
-        return 1.f;
+        return 0.f;
     }
 
 private:
