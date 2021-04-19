@@ -94,7 +94,7 @@ inline void Audio::Oscillator::generateSquare(
     const auto end = outputSize + phaseOffset;
 
     for (auto i = phaseOffset, k = 0ul; i < end; ++i, ++k) {
-        output[k] = std::sin(i * frequencyNorm);
+        output[k] = std::sin(i * frequencyNorm) > 0.f ? 1.f : -1.f;
     }
 }
 
@@ -104,11 +104,11 @@ inline void Audio::Oscillator::generateTriangle(
         const float frequency, const SampleRate sampleRate, const std::size_t phaseOffset,
         const Key key, const bool trigger) noexcept
 {
-    const float frequencyNorm = 2.f * M_PI * frequency / sampleRate;
+    const float frequencyNorm = 2.f * M_PI / (frequency / sampleRate);
     const auto end = outputSize + phaseOffset;
 
     for (auto i = phaseOffset, k = 0ul; i < end; ++i, ++k) {
-        output[k] = std::sin(i * frequencyNorm);
+        output[k] = std::asin(std::sin(i * frequencyNorm)) * M_2_PI;
     }
 }
 
@@ -118,10 +118,10 @@ inline void Audio::Oscillator::generateSaw(
         const float frequency, const SampleRate sampleRate, const std::size_t phaseOffset,
         const Key key, const bool trigger) noexcept
 {
-    const float frequencyNorm = 2.f * M_PI * frequency / sampleRate;
+    const float frequencyNorm = M_PI / (frequency / sampleRate);
     const auto end = outputSize + phaseOffset;
 
     for (auto i = phaseOffset, k = 0ul; i < end; ++i, ++k) {
-        output[k] = std::sin(i * frequencyNorm);
+        output[k] = std::atan(Utils::cot(i * frequencyNorm)) * -M_2_PI;
     }
 }
