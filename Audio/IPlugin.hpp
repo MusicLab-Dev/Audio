@@ -56,7 +56,20 @@ namespace Audio
 
     struct ControlMetaData
     {
+        using RangeNames = Core::TinyVector<TranslationTable>;
+
+        struct RangeValues
+        {
+            ParamValue min {};
+            ParamValue max {};
+            ParamValue step {};
+        };
+
         TranslationMetaData translations;
+        ParamType type;
+        ParamValue defaultValue;
+        RangeValues rangeValues;
+        RangeNames rangeNames;
     };
 
     using ControlMetaDataList = Core::TinyVector<ControlMetaData>;
