@@ -77,6 +77,11 @@ inline void Audio::DSP::Filter::DesignFilterBandPass(float *windowCoefficients, 
     }
 }
 
+inline void Audio::DSP::Filter::DesignFilterBandStop(float *windowCoefficients, const std::size_t size, const double cutoffRateBegin, const double cutoffRateEnd, const bool centered) noexcept
+{
+
+}
+
 inline void Audio::DSP::Filter::Hanning(const std::size_t size, float *outputWindow, const bool isSymetric) noexcept
 {
     if (isSymetric) {
