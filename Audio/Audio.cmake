@@ -60,6 +60,8 @@ set(AudioPluginsDir ${AudioDir}/Plugins)
 set(AudioPluginsSources
     ${AudioPluginsDir}/Sampler.hpp
     ${AudioPluginsDir}/Sampler.ipp
+    ${AudioPluginsDir}/Oscillator.hpp
+    ${AudioPluginsDir}/Oscillator.ipp
     ${AudioPluginsDir}/Mixer.hpp
     ${AudioPluginsDir}/Mixer.ipp
 )

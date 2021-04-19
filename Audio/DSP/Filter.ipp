@@ -59,7 +59,7 @@ inline void Audio::DSP::Filter::DesignFilterHighPass(float *windowCoefficients, 
     const double realRate = 2.0 * cutoffRate;
     for (auto i = 0u; i < size; ++i) {
         int idx = i - first;
-        // *windowCoefficients *= Utils::sinc(idx) - (realRate * Utils::sinc<true>(idx * realRate));
+        *windowCoefficients *= Utils::sinc<true>(static_cast<float>(idx)) - (realRate * Utils::sinc<true>(idx * realRate));
         ++windowCoefficients;
     }
 }
@@ -69,10 +69,10 @@ inline void Audio::DSP::Filter::DesignFilterBandPass(float *windowCoefficients, 
     // sinc(x) - cutoffNorm/pi*sinc(cutoffNorm*x/pi)
     const std::size_t first = centered ? (size / 2) : size - 1;
     const double realRateBegin = 2.0 * cutoffRateBegin;
-    const double realRateEnd = 2.0 * cutoffRateEnd;
+    // const double realRateEnd = 2.0 * cutoffRateEnd;
     for (auto i = 0u; i < size; ++i) {
         int idx = i - first;
-        // *windowCoefficients *= Utils::sinc(idx) - (realRate * Utils::sinc<true>(idx * realRate));
+        *windowCoefficients *= Utils::sinc<true>(static_cast<float>(idx)) - (realRateBegin * Utils::sinc<true>(idx * realRateBegin));
         ++windowCoefficients;
     }
 }

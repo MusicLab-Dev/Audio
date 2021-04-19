@@ -1,6 +1,6 @@
 /**
  * @ Author: Pierre Veysseyre
- * @ Description: Sampler
+ * @ Description: Oscillator
  */
 
 #pragma once
@@ -8,31 +8,30 @@
 #include <Core/FlatVector.hpp>
 
 #include <Audio/PluginUtils.hpp>
-#include <Audio/BufferOctave.hpp>
 #include "Managers/NoteManager.hpp"
 
 namespace Audio
 {
-    class Sampler;
+    class Oscillator;
 }
 
-class Audio::Sampler final : public Audio::IPlugin
+class Audio::Oscillator final : public Audio::IPlugin
 {
     REGISTER_PLUGIN(
         /* Plugin's name */
         TR_TABLE(
-            TR(English, "Sampler"),
-            TR(French, "Sampleur")
+            TR(English, "Oscillator"),
+            TR(French, "Oscillateur")
         ),
         /* Plugin description */
         TR_TABLE(
-            TR(English, "Sampler allow to load an audio file and play it as a note"),
-            TR(French, "Le sampleur permet de charger un fichier audio et de le jouer comme une note")
+            TR(English, "Oscillator allow to generate audio waveforms and play them as notes"),
+            TR(French, "Le Oscillateur permet de générer des formes d'ondes audio et de les jouer comme des notes")
         ),
         /* Plugin flags */
         FLAGS(AudioOutput, NoteInput, SingleExternalInput),
         /* Plugin tags */
-        TAGS(Sampler),
+        TAGS(Synth),
         /* Control list */
         REGISTER_CONTROL(
             /* Control variable / getter / setter name */
@@ -44,8 +43,8 @@ class Audio::Sampler final : public Audio::IPlugin
             ),
             /* Control's description */
             TR_TABLE(
-                TR(English, "Output gain of the sampler"),
-                TR(French, "Volume de sortie du sampleur")
+                TR(English, "Output gain of the Oscillator"),
+                TR(French, "Volume de sortie du Oscillateur")
             )
         ),
         REGISTER_CONTROL(
@@ -92,7 +91,20 @@ class Audio::Sampler final : public Audio::IPlugin
         )
     )
 
+    struct Osc
+    {
+        enum class Waveform : std::uint8_t {
+            Sine, Square, Triangle, Saw
+        };
+
+        // inline float get
+
+        float tunning { 0.f };
+        Waveform waveform { Waveform::Sine };
+    };
+
 public:
+
     virtual void receiveAudio(BufferView output);
 
     virtual void sendNotes(const NoteEvents &notes);
@@ -108,24 +120,24 @@ public:
 
 
 public:
-    /** Load a sample file with a specific type */
-    template<typename Type>
-    void loadSample(const std::string_view &path);
-
-    // [[nodiscard]] const OctaveBuffer &getBuffers(void) const noexcept { return _buffers; }
-
 private:
-    // Cacheline 1 & 2
-    BufferOctave _buffers {};
-    // Cacheline 3 & 4
-    NoteManager<DSP::EnveloppeType::AD> _noteManager {};
+    NoteManager<DSP::EnveloppeType::ADSR> _noteManager {};
+    Osc _oscillator;
 
-    Buffer _tmp;
+    template<typename Type>
+    void generateWaveform(const Osc &oscillator, Type *output, const std::size_t outputSize, const float frequency, const SampleRate sampleRate, const std::size_t phaseOffset) noexcept;
 
-    float getEnveloppeGain(const Key key, const std::size_t index, const bool isTrigger) noexcept
-    {
-        return _noteManager.getEnveloppeGain(key, index, isTrigger, 0.f, enveloppeAttack(), 0.f, 0.f, 0.f, enveloppeRelease(), audioSpecs().sampleRate);
-    }
+    template<typename Type>
+    void generateSine(Type *output, const std::size_t outputSize, const float frequency, const SampleRate sampleRate, const std::size_t phaseOffset) noexcept;
+
+    template<typename Type>
+    void generateSquare(Type *output, const std::size_t outputSize, const float frequency, const SampleRate sampleRate, const std::size_t phaseOffset) noexcept;
+
+    template<typename Type>
+    void generateTriangle(Type *output, const std::size_t outputSize, const float frequency, const SampleRate sampleRate, const std::size_t phaseOffset) noexcept;
+
+    template<typename Type>
+    void generateSaw(Type *output, const std::size_t outputSize, const float frequency, const SampleRate sampleRate, const std::size_t phaseOffset) noexcept;
 };
 
-#include "Sampler.ipp"
+#include "Oscillator.ipp"

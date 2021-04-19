@@ -35,6 +35,9 @@ namespace Audio
     /** @brief Middle key */
     static constexpr Key RootKey = 69u;
 
+    /** @brief Middle key */
+    static constexpr float RootKeyFrequency = 440.f;
+
     /** @brief Semitone */
     using Semitone = std::int8_t;
 
