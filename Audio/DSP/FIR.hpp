@@ -5,24 +5,24 @@
 
 #pragma once
 
-#include "Window.hpp"
+#include "Filter.hpp"
 
 namespace Audio::DSP
 {
     class FIR;
 
-    enum class FilterType : std::uint8_t
-    {
-        LowPass = 0,
-        BandPass,
-        BandStop,
-        HighPass
-    };
+    // enum class FilterType : std::uint8_t
+    // {
+    //     LowPass = 0,
+    //     BandPass,
+    //     BandStop,
+    //     HighPass
+    // };
 
     struct FilterSpecs
     {
-        FilterType filterType;
-        WindowType windowType;
+        Filter::FilterType filterType;
+        Filter::WindowType windowType;
         std::size_t windowSize;
         float sampleRate;
         float cutoffs[2];

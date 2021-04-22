@@ -3,6 +3,22 @@
  * @ Description: Merge algorithm
  */
 
+
+template<typename Type>
+void Audio::DSP::Merge(const BufferViews inputs, BufferView output, const std::size_t outputSize, const bool normalize) noexcept
+{
+    const auto inputSize = inputs.size();
+
+    for (auto i = 0ul; i < inputSize; ++i) {
+        const Type *from = inputs[i].data<Type>();
+        Type *to = output.data<Type>();
+        to[0] = from[0] / inputSize;
+        for (auto k = 1ul; k < outputSize; ++k) {
+            to[k] += from[k] / inputSize;
+        }
+    }
+}
+
 template<typename Unit, std::size_t BufferSize, typename ...Args>
 void Audio::DSP::Merge(Unit * const output, Args &&...args) noexcept
 {

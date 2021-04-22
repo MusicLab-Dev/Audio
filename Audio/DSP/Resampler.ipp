@@ -39,7 +39,7 @@ inline void Audio::DSP::Resampler<Type>::resampleSemitone(const Type *inputBuffe
     const auto iFactor = upScale ? Resampler::InterpolationSemitoneFactor : Resampler::DecimationSemitoneFactor;
     const auto dFactor = upScale ? Resampler::DecimationSemitoneFactor : Resampler::InterpolationSemitoneFactor;
     const auto factor = std::max(iFactor, dFactor);
-    const auto factorScale = static_cast<float>(iFactor) * std::sqrt(2.f);
+    const auto factorScale = static_cast<float>(iFactor);
     const std::size_t filterSize = factor * ProcessSize;
     const Filter::FilterSpecs filterSpecs {
         Filter::FilterType::LowPass,
@@ -118,6 +118,7 @@ inline void Audio::DSP::Resampler<Type>::resampleOctave(const Type *inputBuffer,
         static_cast<float>(sampleRate),
         { sampleRate / 2 / static_cast<float>(factor), 0.0 }
     };
+    std::cout << "cutoff:: " << (sampleRate / 2 / static_cast<float>(factor)) << ", size: " << filterSize << std::endl;
 
     _filterCache.resize(filterSize);
     Filter::GenerateFilterCoefficients(filterSpecs.windowType, filterSize, _filterCache.data());

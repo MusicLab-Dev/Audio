@@ -28,7 +28,7 @@ inline void Audio::Oscillator::receiveAudio(BufferView output)
     static auto Cpt = 0ull;
 
     const auto activeNote = _noteManager.getActiveNote();
-    std::cout << "Receive <audio>: " << activeNote.size() << std::endl;
+    // std::cout << "Receive <audio>: " << activeNote.size() << std::endl;
     for (auto iKey = 0u; iKey < activeNote.size(); ++iKey) {
         const auto key = activeNote[iKey];
         const auto trigger = _noteManager.trigger(key);
@@ -48,16 +48,16 @@ inline void Audio::Oscillator::receiveAudio(BufferView output)
     // std::cout << "<END>" << std::endl;
     // auto zeros = std::all_of(out, out + outSize * sizeof(float), [](const auto x) { return x == 0.0f; });
     // std::cout << "__" << Cpt << ": " << zeros << std::endl;
-    auto min = 1000.f;
-    auto max = -1000.f;
-    for (auto i = 0ul; i < outSize; ++i) {
-        min = std::min(out[i], min);
-        max = std::max(out[i], max);
-    }
-    if (min < -1 || max > 1)
-        std::cout << "<<<CLIPING>>>" << std::endl;
-    else
-        std::cout << std::setprecision(4) << "min: " << min << ", max: " << max << std::endl;
+    // auto min = 1000.f;
+    // auto max = -1000.f;
+    // for (auto i = 0ul; i < outSize; ++i) {
+    //     min = std::min(out[i], min);
+    //     max = std::max(out[i], max);
+    // }
+    // if (min < -1 || max > 1)
+    //     std::cout << "<<<CLIPING>>>" << std::endl;
+    // else
+    //     std::cout << std::setprecision(4) << "min: " << min << ", max: " << max << std::endl;
 
     Cpt++;
 }
@@ -105,15 +105,6 @@ inline void Audio::Oscillator::generateSine(
             output[k] = std::sin(i * frequencyNorm) * outGain;
     }
 
-    constexpr auto PrintGain = [](const float outGain) {
-        const std::size_t gainNorm = outGain * 100.f;
-        std::cout << "<";
-        for (auto i = 0ul; i < 100ul; ++i) {
-            std::cout << (i < gainNorm ? "=" : " ");
-        }
-        std::cout << ">" << std::endl;
-    };
-    PrintGain(outGain);
     // (void)_noteManager.enveloppe().adsr<true>(key, phaseOffset, trigger, enveloppeAttack(), enveloppeDecay(), enveloppeSustain(), enveloppeRelease(), audioSpecs().sampleRate);
 }
 

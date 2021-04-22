@@ -64,14 +64,14 @@ void interpolateX()
 // {
 //     const std::size_t filterSize = interpFactor * ProcessRate;
 //     const FilterSpecs filterSpecs {
-//         FilterType::LowPass,
-//         WindowType::Hanning,
+//         Filter::FilterType::LowPass,
+//         Filter::WindowType::Hanning,
 //         filterSize,
 //         static_cast<float>(inputSampleRate),
 //         { inputSampleRate / static_cast<float>(interpFactor) / 2, 0.0 }
 //     };
 //     std::vector<Type> filterCoefs(filterSize);
-//     WindowMaker::GenerateFilterCoefficients(filterSpecs.windowType, filterSize, filterCoefs.data());
+//     Filter::GenerateFilterCoefficients(filterSpecs.windowType, filterSize, filterCoefs.data());
 //     DesignFilter(filterSpecs, filterCoefs.data(), filterSize);
 //     // shiftCoefficients<ProcessRate>(filterCoefs.data(), filterSize, interpFactor);
 
@@ -138,14 +138,14 @@ void interpolateX()
 // {
 //     const std::size_t filterSize = interpFactor * ProcessRate;
 //     const FilterSpecs filterSpecs {
-//         FilterType::LowPass,
-//         WindowType::Hanning,
+//         Filter::FilterType::LowPass,
+//         Filter::WindowType::Hanning,
 //         filterSize,
 //         static_cast<float>(inputSampleRate),
 //         { inputSampleRate / static_cast<float>(interpFactor) / 2, 0.0 }
 //     };
 //     std::vector<Type> filterCoefs(filterSize);
-//     WindowMaker::GenerateFilterCoefficients(filterSpecs.windowType, filterSize, filterCoefs.data());
+//     Filter::GenerateFilterCoefficients(filterSpecs.windowType, filterSize, filterCoefs.data());
 //     DesignFilter(filterSpecs, filterCoefs.data(), filterSize);
 //     // shiftCoefficients<ProcessRate>(filterCoefs.data(), filterSize, interpFactor);
 
@@ -213,14 +213,14 @@ inline Audio::DSP::FIR::VoidType<Type>
 {
     const std::size_t filterSize = interpFactor * ProcessRate;
     const FilterSpecs filterSpecs {
-        FilterType::LowPass,
-        WindowType::Hanning,
+        Filter::FilterType::LowPass,
+        Filter::WindowType::Hanning,
         filterSize,
         static_cast<float>(inputSampleRate),
         { inputSampleRate / 2 / static_cast<float>(std::max(interpFactor, decimFactor)), 0.0 }
     };
     std::vector<Type> filterCoefs(filterSize);
-    WindowMaker::GenerateFilterCoefficients(filterSpecs.windowType, filterSize, filterCoefs.data());
+    Filter::GenerateFilterCoefficients(filterSpecs.windowType, filterSize, filterCoefs.data());
     DesignFilter(filterSpecs, filterCoefs.data(), filterSize);
     // shiftCoefficients<ProcessRate>(filterCoefs.data(), filterSize, interpFactor);
 
@@ -248,22 +248,7 @@ inline Audio::DSP::FIR::VoidType<Type>
     for (auto i = offset; i < ProcessRate - 1; ++i) {
         // std::cout << "  ii: " << i << std::endl;
         interpolate<ProcessRate>(interpolateData.data(), input + i, filterCoefs.data(), interpFactor, ProcessRate - 1 - i);
-        {
-            const auto outSize = interpFactor;
-            // std::cout << "outSize: " << outSize << ", zeroPadBegin: " << zeroPadBegin << ", zeroPadEnd: " << zeroPadEnd << std::endl;
-            for (auto i = 0u; i < outSize; ++i) {
-                producedData[outSize - 1 - i] = 0.0;
-                // std::cout << "\ni: " << i << std::endl;
-                // std::cout << "-outIdx: " << outSize - 1 - i << std::endl;
-                for (auto k = zeroPadBegin; k < ProcessRate; ++k) {
-                    // std::cout << "  --k: " << k << std::endl;
-                    // std::cout << "  --  inputIdx: " << k - zeroPadBegin << std::endl;
-                    // std::cout << "  --  filterIdx: " << (i + k * interpFactor) << std::endl;
-                    producedData[outSize - 1 - i] += (input[k - zeroPadBegin] * filterCoefs[i + (k * interpFactor)]) * (interpFactor * 0.707) / 2;
-                }
-            }
 
-        }
         auto produced = producedCache.pushRange(interpolateData.begin(), interpolateData.end());
         pBegin += produced;
         while (producedCache.tryPopRange(decimData.begin(), decimData.end())) {
@@ -320,7 +305,7 @@ inline Audio::DSP::FIR::VoidType<Type>
 
     const auto windowSize = specs.windowSize;
     std::vector<Type> windowFilter(windowSize);
-    WindowMaker::GenerateFilterCoefficients(specs.windowType, windowSize, windowFilter.data());
+    Filter::GenerateFilterCoefficients(specs.windowType, windowSize, windowFilter.data());
     DesignFilter(specs, windowFilter.data(), windowSize);
 
     std::vector<Type> data(inputSize, 0.0);
@@ -347,7 +332,7 @@ inline Audio::DSP::FIR::VoidType<Type>
 
     const auto windowSize = specs.windowSize;
     std::vector<Type> windowFilter(windowSize);
-    WindowMaker::GenerateFilterCoefficients(specs.windowType, windowSize, windowFilter.data());
+    Filter::GenerateFilterCoefficients(specs.windowType, windowSize, windowFilter.data());
     DesignFilter(specs, windowFilter.data(), windowSize);
 
     std::vector<Type> data(inputSize + lastInputSize, 0.0);
@@ -384,7 +369,7 @@ inline void Audio::DSP::FIR::DesignFilter(const FilterSpecs specs, float *window
 {
     const float cutoffRate = specs.cutoffs[0] / static_cast<float>(specs.sampleRate);
     switch (specs.filterType) {
-    case FilterType::LowPass:
+    case Filter::FilterType::LowPass:
         return DesignFilterLowPass(windowCoefficients, windowSize, cutoffRate, centered);
 
     default:

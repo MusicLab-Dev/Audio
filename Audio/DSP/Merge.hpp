@@ -14,7 +14,8 @@ namespace Audio::DSP
     /** @brief Merge a list of buffer into a separated one.
      *  If normalize is true, all input buffers will be normalize to the number of input.
         Otherwise the inputs are simply summed. */
-    void Merge(const BufferViews inputs, BufferView *output, const bool normalize = false);
+    template<typename Type>
+    void Merge(const BufferViews inputs, BufferView output, const std::size_t outpuSize, const bool normalize = false) noexcept;
 
     template<typename Unit, std::size_t BufferSize, typename ...Args>
     void Merge(Unit * const output, Args &&...args) noexcept;

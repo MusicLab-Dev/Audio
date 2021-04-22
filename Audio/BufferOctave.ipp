@@ -29,14 +29,7 @@ inline void Audio::GenerateOctave(const BufferView input, BufferOctave &octave) 
         std::cout << "min: " << min << " max: " << max << std::endl;
     };
 
-    constexpr auto ApplyRatio = [](BufferView buffer, const float ratio) {
-        const auto size = buffer.size<float>();
-        float *data = buffer.data<float>();
-        std::for_each(data, data + size, [ratio](float &x) { x *= ratio; });
-    };
-
-
-    std::cout << "REF" << std::endl;
+    std::cout << "REF sample:" << std::endl;
     GetMinMax(octave[OctaveRootKey]);
     // Lowest notes
     for (auto i = 0u; i < OctaveRootKey; ++i) {
@@ -45,8 +38,6 @@ inline void Audio::GenerateOctave(const BufferView input, BufferOctave &octave) 
         octave[nextIdx].clear();
         resampler.template resampleSemitone<false, 8u>(octave[lastIdx].data<Type>(), octave[nextIdx].data<Type>(), lastSize, octave[OctaveRootKey].sampleRate(), false);
         // resampler.template resampleOctave<false, 8u>(octave[lastIdx].data<Type>(), octave[nextIdx].data<Type>(), lastSize, octave[OctaveRootKey].sampleRate(), 1);
-        std::cout << lastIdx << std::endl;
-        ApplyRatio(octave[nextIdx], 0.707);
         GetMinMax(octave[nextIdx]);
         lastSize = nextSize;
         lastIdx = nextIdx;
@@ -64,7 +55,6 @@ inline void Audio::GenerateOctave(const BufferView input, BufferOctave &octave) 
         octave[nextIdx].clear();
         resampler.template resampleSemitone<false, 8u>(octave[lastIdx].data<Type>(), octave[nextIdx].data<Type>(), lastSize, octave[OctaveRootKey].sampleRate(), true);
         // resampler.template resampleOctave<false, 8u>(octave[lastIdx].data<Type>(), octave[nextIdx].data<Type>(), lastSize, octave[OctaveRootKey].sampleRate(), 1);
-        ApplyRatio(octave[nextIdx], 0.707);
         GetMinMax(octave[nextIdx]);
         lastSize = nextSize;
         lastIdx = nextIdx;
