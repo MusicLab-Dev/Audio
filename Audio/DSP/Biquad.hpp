@@ -11,7 +11,8 @@
 #include <cstdint>
 #include <type_traits>
 
-#include "Audio/Base.hpp"
+#include <Audio/Base.hpp>
+#include "Filter.hpp"
 
 namespace Audio::DSP
 {
@@ -22,12 +23,12 @@ namespace Audio::DSP
             float a[3] { 0.0 };
             float b[3] { 0.0 };
         };
-        static_assert(sizeof(Coefficients) == 24, "Coefficients must take 24 bytes !");
+        // static_assert(sizeof(Coefficients) == 24, "Coefficients must take 24 bytes !");
 
-        struct Parameters
+        struct Specs
         {
-            Audio::SampleRate sampleRate;
-            Audio::SampleRate cutoff;
+            SampleRate sampleRate;
+            SampleRate cutoff;
             double gain;
             double qFactor;
             bool qAsBandWidth;
@@ -47,21 +48,9 @@ namespace Audio::DSP
             Transposed2     // 2 registers, 3 addOp -> better for floating-points
         };
 
-        /** @brief Describe type used for a second-order IIR filter section */
-        enum class FilterType : uint8_t {
-            LowPass = 0u,
-            HighPass,
-            BandPass,
-            BandPass2,
-            BandStop, /* Notch */
-            Peak,
-            LowShelf,
-            HighShelf
-        };
-
-        template<BiquadParam::FilterType Filter>
+        template<Filter::AdvancedType Filter>
         [[nodiscard]] static Coefficients GenerateCoefficients(
-                const Audio::SampleRate sampleRate, const double freq, const double gain, const double q, bool qAsBandWidth) noexcept;
+                const SampleRate sampleRate, const double freq, const double gain, const double q, bool qAsBandWidth) noexcept;
 
     };
 

@@ -14,9 +14,9 @@ using namespace DSP;
 static void BlockProcessBasic(benchmark::State &state)
 {
     // std::cout << (static_cast<float>(state.range(1)) / state.range(0) * 1'000'000.f) << " ns" << std::endl;
-    // auto filter = BiquadFactory<>::CreateFilter<BiquadParam::FilterType::LowPass, BiquadParam::FormType::Inversed>(static_cast<double>(state.range()), 0.25, 0.0, 0.707);
+    // auto filter = BiquadFactory<>::CreateFilter<BiquadParam::BasicType::LowPass, BiquadParam::FormType::Inversed>(static_cast<double>(state.range()), 0.25, 0.0, 0.707);
 
-    // auto filter = Biquad<BiquadParam::BiquadForm::DirectForm1, BiquadParam::FilterType::LowPass>();
+    // auto filter = Biquad<BiquadParam::BiquadForm::DirectForm1, BiquadParam::BasicType::LowPass>();
     // auto filter = BiquadMaker<BiquadParam::Optimization::Optimized, float>::MakeBiquad(state.range(0), 0.2, 0);
     auto filter = BiquadMaker<BiquadParam::Optimization::Optimized, float>::MakeBiquad(state.range(0), 0.2, 0);
     // filter.

@@ -17,20 +17,20 @@ inline void Audio::DSP::Filter::GenerateFilterCoefficients(const WindowType type
     }
 }
 
-inline void Audio::DSP::Filter::DesignFilter(const FilterSpecs specs, float *windowCoefficients, const std::size_t windowSize, const bool centered) noexcept
+inline void Audio::DSP::Filter::DesignFilter(const Specs specs, float *windowCoefficients, const std::size_t windowSize, const bool centered) noexcept
 {
     const float cutoffRateBegin = specs.cutoffs[0] / static_cast<float>(specs.sampleRate);
     switch (specs.filterType) {
-    case FilterType::LowPass:
+    case BasicType::LowPass:
         return DesignFilterLowPass(windowCoefficients, windowSize, cutoffRateBegin, centered);
-    case FilterType::HighPass:
+    case BasicType::HighPass:
         return DesignFilterHighPass(windowCoefficients, windowSize, cutoffRateBegin, centered);
-    case FilterType::BandPass:
+    case BasicType::BandPass:
     {
         const float cutoffRateEnd = specs.cutoffs[1] / static_cast<float>(specs.sampleRate);
         return DesignFilterBandPass(windowCoefficients, windowSize, cutoffRateBegin, cutoffRateEnd, centered);
     }
-    case FilterType::BandStop:
+    case BasicType::BandStop:
     {
         const float cutoffRateEnd = specs.cutoffs[1] / static_cast<float>(specs.sampleRate);
         return DesignFilterBandStop(windowCoefficients, windowSize, cutoffRateBegin, cutoffRateEnd, centered);

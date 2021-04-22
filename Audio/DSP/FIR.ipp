@@ -63,8 +63,8 @@ void interpolateX()
 //     Audio::DSP::FIR::ResampleX(const Type *input, Type *output, const std::size_t inputSize, const std::size_t inputSampleRate, const std::size_t interpFactor, const std::size_t decimFactor) noexcept
 // {
 //     const std::size_t filterSize = interpFactor * ProcessRate;
-//     const FilterSpecs filterSpecs {
-//         Filter::FilterType::LowPass,
+//     const Specs filterSpecs {
+//         Filter::BasicType::LowPass,
 //         Filter::WindowType::Hanning,
 //         filterSize,
 //         static_cast<float>(inputSampleRate),
@@ -137,8 +137,8 @@ void interpolateX()
 //     Audio::DSP::FIR::ResampleSTD(const Type *input, Type *output, const std::size_t inputSize, const std::size_t inputSampleRate, const std::size_t interpFactor, const std::size_t decimFactor) noexcept
 // {
 //     const std::size_t filterSize = interpFactor * ProcessRate;
-//     const FilterSpecs filterSpecs {
-//         Filter::FilterType::LowPass,
+//     const Specs filterSpecs {
+//         Filter::BasicType::LowPass,
 //         Filter::WindowType::Hanning,
 //         filterSize,
 //         static_cast<float>(inputSampleRate),
@@ -212,8 +212,8 @@ inline Audio::DSP::FIR::VoidType<Type>
     Audio::DSP::FIR::Resample(const Type *input, Type *output, const std::size_t inputSize, const std::size_t inputSampleRate, const std::size_t interpFactor, const std::size_t decimFactor, const std::size_t offset) noexcept
 {
     const std::size_t filterSize = interpFactor * ProcessRate;
-    const FilterSpecs filterSpecs {
-        Filter::FilterType::LowPass,
+    const Specs filterSpecs {
+        Filter::BasicType::LowPass,
         Filter::WindowType::Hanning,
         filterSize,
         static_cast<float>(inputSampleRate),
@@ -299,7 +299,7 @@ inline Audio::DSP::FIR::VoidType<Type>
 
 template<typename Type>
 inline Audio::DSP::FIR::VoidType<Type>
-    Audio::DSP::FIR::Filter(const FilterSpecs specs, const Type *input, Type *output, const std::size_t inputSize, const bool zeroPad) noexcept
+    Audio::DSP::FIR::Filter(const Specs specs, const Type *input, Type *output, const std::size_t inputSize, const bool zeroPad) noexcept
 {
     std::cout << "FILTERING FIR..." << std::endl;
 
@@ -326,7 +326,7 @@ inline Audio::DSP::FIR::VoidType<Type>
 
 template<typename Type>
 inline Audio::DSP::FIR::VoidType<Type>
-    Audio::DSP::FIR::Filter(const FilterSpecs specs, const Type *input, Type *output, const std::size_t inputSize, const Type *lastInput, const std::size_t lastInputSize) noexcept
+    Audio::DSP::FIR::Filter(const Specs specs, const Type *input, Type *output, const std::size_t inputSize, const Type *lastInput, const std::size_t lastInputSize) noexcept
 {
     std::cout << "FILTERING FIR..." << std::endl;
 
@@ -365,11 +365,11 @@ inline Audio::DSP::FIR::ProcessType<Type>
 }
 
 
-inline void Audio::DSP::FIR::DesignFilter(const FilterSpecs specs, float *windowCoefficients, const std::size_t windowSize, const bool centered) noexcept
+inline void Audio::DSP::FIR::DesignFilter(const Specs specs, float *windowCoefficients, const std::size_t windowSize, const bool centered) noexcept
 {
     const float cutoffRate = specs.cutoffs[0] / static_cast<float>(specs.sampleRate);
     switch (specs.filterType) {
-    case Filter::FilterType::LowPass:
+    case Filter::BasicType::LowPass:
         return DesignFilterLowPass(windowCoefficients, windowSize, cutoffRate, centered);
 
     default:

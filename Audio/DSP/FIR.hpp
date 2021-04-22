@@ -11,17 +11,9 @@ namespace Audio::DSP
 {
     class FIR;
 
-    // enum class FilterType : std::uint8_t
-    // {
-    //     LowPass = 0,
-    //     BandPass,
-    //     BandStop,
-    //     HighPass
-    // };
-
-    struct FilterSpecs
+    struct Specs
     {
-        Filter::FilterType filterType;
+        Filter::BasicType filterType;
         Filter::WindowType windowType;
         std::size_t windowSize;
         float sampleRate;
@@ -40,11 +32,11 @@ public:
 
     /** @brief Perform filtering using convolution. ZeroPad is used to 'add' zero before the input during processing stage */
     template<typename Type>
-    static VoidType<Type> Filter(const FilterSpecs specs, const Type *input, Type *output, const std::size_t inputSize, const bool zeroPad = true) noexcept;
+    static VoidType<Type> Filter(const Specs specs, const Type *input, Type *output, const std::size_t inputSize, const bool zeroPad = true) noexcept;
 
     /** @brief Perform filtering using convolution. LastInput is used instead of zero padding */
     template<typename Type>
-    static VoidType<Type> Filter(const FilterSpecs specs, const Type *input, Type *output, const std::size_t inputSize, const Type *lastInput, const std::size_t lastInputSize) noexcept;
+    static VoidType<Type> Filter(const Specs specs, const Type *input, Type *output, const std::size_t inputSize, const Type *lastInput, const std::size_t lastInputSize) noexcept;
 
 
     /** @brief Perform interpolation combine with filtering. It save cpu ! */
@@ -65,7 +57,7 @@ public:
 
     static std::size_t GetResampleSize(const std::size_t size, const std::size_t interpFactor, const std::size_t decimFactor) noexcept;
 
-    static void DesignFilter(const FilterSpecs filterSpecs, float *windowCoefficients, const std::size_t windowSize, const bool centered = true) noexcept;
+    static void DesignFilter(const Specs filterSpecs, float *windowCoefficients, const std::size_t windowSize, const bool centered = true) noexcept;
     static void DesignFilterLowPass(float *windowCoefficients, const std::size_t size, const double cutoffRate, const bool centered) noexcept;
 
 private:

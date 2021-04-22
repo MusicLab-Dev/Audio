@@ -13,6 +13,7 @@
 
 namespace Audio::DSP
 {
+    /** @brief Handler to perform resampling using FIR for filtering stage */
     template<typename Type>
     class Resampler;
 }

@@ -16,7 +16,8 @@ namespace Audio::DSP::Filter
         Hamming
     };
 
-    enum class FilterType : std::uint8_t
+    /** @brief Describe type used for basic filter */
+    enum class BasicType : std::uint8_t
     {
         LowPass = 0,
         BandPass,
@@ -24,9 +25,22 @@ namespace Audio::DSP::Filter
         HighPass
     };
 
-    struct FilterSpecs
+    /** @brief Describe type used for a second-order IIR filter section */
+    enum class AdvancedType : uint8_t
     {
-        FilterType filterType;
+        LowPass = 0u,
+        HighPass,
+        BandPass,
+        BandPass2,
+        BandStop, /* Notch */
+        Peak,
+        LowShelf,
+        HighShelf
+    };
+
+    struct Specs
+    {
+        BasicType filterType;
         WindowType windowType;
         std::size_t windowSize;
         float sampleRate;
@@ -34,7 +48,7 @@ namespace Audio::DSP::Filter
     };
 
     void GenerateFilterCoefficients(const WindowType type, const std::size_t size, float *windowCoefficients, const bool isSymetric = true) noexcept;
-    void DesignFilter(const FilterSpecs specs, float *windowCoefficients, const std::size_t windowSize, const bool centered) noexcept;
+    void DesignFilter(const Specs specs, float *windowCoefficients, const std::size_t windowSize, const bool centered) noexcept;
     void DesignFilterLowPass(float *windowCoefficients, const std::size_t size, const double cutoffRate, const bool centered) noexcept;
     void DesignFilterHighPass(float *windowCoefficients, const std::size_t size, const double cutoffRate, const bool centered) noexcept;
     void DesignFilterBandPass(float *windowCoefficients, const std::size_t size, const double cutoffRateBegin, const double cutoffRateEnd, const bool centered) noexcept;

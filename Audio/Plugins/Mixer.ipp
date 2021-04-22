@@ -7,6 +7,7 @@
 
 #include <Audio/DSP/Merge.hpp>
 #include <Audio/DSP/FIR.hpp>
+// #include <Audio/DSP/Biquad.hpp>
 
 inline void Audio::Mixer::receiveAudio(BufferView output)
 {
@@ -47,8 +48,8 @@ inline void Audio::Mixer::receiveAudio(BufferView output)
     };
 
     // DSP::FIR::Filter<float>(
-    //     DSP::FilterSpecs {
-    //         DSP::Filter::FilterType::LowPass,
+    //     DSP::Specs {
+    //         DSP::Filter::BasicType::LowPass,
     //         DSP::Filter::WindowType::Hanning,
     //         // size
     //     }
