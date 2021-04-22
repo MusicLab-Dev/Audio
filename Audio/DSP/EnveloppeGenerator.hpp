@@ -167,7 +167,7 @@ public:
         }
 
         // Smooth gain when sudden changes
-        static constexpr auto SmoothLimit = 0.5f;
+        // static constexpr auto SmoothLimit = 0.5f;
         // if (const float dt = std::abs(outGain - _lastGain[key]); dt > SmoothLimit) {
         //     _lastGain[key] = (outGain + _lastGain[key]) / 2.f;
         // } else {

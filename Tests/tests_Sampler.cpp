@@ -30,7 +30,7 @@ TEST(Sampler, MetaData)
     sampler.getControl(0) = 0.24;
     ASSERT_DOUBLE_EQ(sampler.getControl(0), 0.24);
 
-    ASSERT_DOUBLE_EQ(cSampler.getControl(1), 0.01);
+    ASSERT_DOUBLE_EQ(cSampler.getControl(1), 0.001);
     sampler.getControl(1) = 42.0;
     ASSERT_DOUBLE_EQ(sampler.getControl(1), 42.0);
 
