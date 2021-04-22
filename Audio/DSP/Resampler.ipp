@@ -41,7 +41,7 @@ inline void Audio::DSP::Resampler<Type>::resampleSemitone(const Type *inputBuffe
     const auto factor = std::max(iFactor, dFactor);
     const auto factorScale = static_cast<float>(iFactor);
     const std::size_t filterSize = factor * ProcessSize;
-    const Filter::Specs filterSpecs {
+    const Filter::FIRSpecs filterSpecs {
         Filter::BasicType::LowPass,
         Filter::WindowType::Hanning,
         filterSize,
@@ -50,7 +50,7 @@ inline void Audio::DSP::Resampler<Type>::resampleSemitone(const Type *inputBuffe
     };
 
     _filterCache.resize(filterSize);
-    Filter::GenerateFilterCoefficients(filterSpecs.windowType, filterSize, _filterCache.data());
+    Filter::GenerateWindow(filterSpecs.windowType, filterSize, _filterCache.data());
     Filter::DesignFilter(filterSpecs, _filterCache.data(), filterSize, true);
 
     std::cout << "Resample: " << inputSize << ", " << upScale << std::endl;
@@ -111,7 +111,7 @@ inline void Audio::DSP::Resampler<Type>::resampleOctave(const Type *inputBuffer,
     const std::size_t factor = std::pow(2, std::abs(nOctave));
     const auto factorScale = static_cast<float>(nOctave > 0 ? 1 : factor);
     const std::size_t filterSize = factor * ProcessSize;
-    const Filter::Specs filterSpecs {
+    const Filter::FIRSpecs filterSpecs {
         Filter::BasicType::LowPass,
         Filter::WindowType::Hanning,
         filterSize,
@@ -121,7 +121,7 @@ inline void Audio::DSP::Resampler<Type>::resampleOctave(const Type *inputBuffer,
     std::cout << "cutoff:: " << (sampleRate / 2 / static_cast<float>(factor)) << ", size: " << filterSize << std::endl;
 
     _filterCache.resize(filterSize);
-    Filter::GenerateFilterCoefficients(filterSpecs.windowType, filterSize, _filterCache.data());
+    Filter::GenerateWindow(filterSpecs.windowType, filterSize, _filterCache.data());
     Filter::DesignFilter(filterSpecs, _filterCache.data(), filterSize, true);
 
     if (nOctave == 0) {

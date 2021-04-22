@@ -1,69 +1,108 @@
 /**
- * @ Author: Pierre Veysseyre
- * @ Description: FIR.hpp
+ * @file FIR.hpp
+ * @brief FIR filtering
+ *
+ * @author Pierre V
+ * @date 2021-04-22
  */
 
 #pragma once
+
+#include <Core/Vector.hpp>
 
 #include "Filter.hpp"
 
 namespace Audio::DSP
 {
+    /** FIR instance */
+    template<typename Type>
     class FIR;
 
-    struct Specs
-    {
-        Filter::BasicType filterType;
-        Filter::WindowType windowType;
-        std::size_t windowSize;
-        float sampleRate;
-        float cutoffs[2];
-    };
+    /** FIR filter using an FIR instance */
+    template<typename Type>
+    class FIRFilter;
 
+    // struct Filter::FIRSpecs
+    // {
+    //     Filter::BasicType filterType;
+    //     Filter::WindowType windowType;
+    //     std::size_t size;
+    //     float sampleRate;
+    //     float cutoffs[2] { 0.0f, 0.0f };
+
+    //     bool operator==(const Filter::FIRSpecs other) {
+    //         return (
+    //             filterType == other.filterType &&
+    //             windowType == other.windowType &&
+    //             size == other.size &&
+    //             sampleRate == other.sampleRate &&
+    //             cutoffs[0] == other.cutoffs[0] &&
+    //             cutoffs[1] == other.cutoffs[1]
+    //         );
+    //     }
+    // };
 }
 
+template<typename Type>
 class Audio::DSP::FIR
 {
 public:
-    template<typename Type>
+    using Cache = Core::TinyVector<Type>;
+
     using VoidType = std::enable_if_t<std::is_floating_point_v<Type>, void>;
-    template<typename Type>
     using ProcessType = std::enable_if_t<std::is_floating_point_v<Type>, Type>;
 
     /** @brief Perform filtering using convolution. ZeroPad is used to 'add' zero before the input during processing stage */
-    template<typename Type>
-    static VoidType<Type> Filter(const Specs specs, const Type *input, Type *output, const std::size_t inputSize, const bool zeroPad = true) noexcept;
+    VoidType filter(const Type *input, const std::size_t inputSize, Type *output, const bool useLastInput) noexcept;
 
     /** @brief Perform filtering using convolution. LastInput is used instead of zero padding */
-    template<typename Type>
-    static VoidType<Type> Filter(const Specs specs, const Type *input, Type *output, const std::size_t inputSize, const Type *lastInput, const std::size_t lastInputSize) noexcept;
+    VoidType filter(
+            const Type *input, const std::size_t inputSize,
+            const Type *filterCoefficients, const std::size_t filterSize,
+            Type *output,
+            const Type *lastInput, const std::size_t lastInputSize) noexcept;
 
+    /** @brief Get the internal cache coefficients */
+    [[nodiscard]] const Cache &coefficients(void) const noexcept { return _coefficients; }
+    [[nodiscard]] Cache &coefficients(void) noexcept { return _coefficients; }
 
-    /** @brief Perform interpolation combine with filtering. It save cpu ! */
-    template<unsigned ProcessRate, bool Accumulate, typename Type>
-    static VoidType<Type> Resample(
-            const Type *input, Type *output,
-            const std::size_t inputSize, const std::size_t inputSampleRate,
-            const std::size_t interpFactor, const std::size_t decimFactor,
-            const std::size_t offset = 0u) noexcept;
-
-    /** @brief Perform interpolation combine with filtering. It save cpu ! */
-    template<unsigned ProcessRate, typename Type>
-    static VoidType<Type> ResampleSTD(const Type *input, Type *output, const std::size_t inputSize, const std::size_t inputSampleRate, const std::size_t interpFactor, const std::size_t decimFactor) noexcept;
-
-    /** @brief Perform interpolation combine with filtering. It save cpu ! */
-    template<unsigned ProcessRate, typename Type>
-    static VoidType<Type> ResampleX(const Type *input, Type *output, const std::size_t inputSize, const std::size_t inputSampleRate, const std::size_t interpFactor, const std::size_t decimFactor) noexcept;
-
-    static std::size_t GetResampleSize(const std::size_t size, const std::size_t interpFactor, const std::size_t decimFactor) noexcept;
-
-    static void DesignFilter(const Specs filterSpecs, float *windowCoefficients, const std::size_t windowSize, const bool centered = true) noexcept;
-    static void DesignFilterLowPass(float *windowCoefficients, const std::size_t size, const double cutoffRate, const bool centered) noexcept;
+    /** @brief Get the internal cache for the last input */
+    [[nodiscard]] const Cache &lastInput(void) const noexcept { return _lastInputCache; }
+    [[nodiscard]] Cache &lastInput(void) noexcept { return _lastInputCache; }
 
 private:
-    template<typename Type>
-    static ProcessType<Type> FilterImpl(const Type *input, const Type *window, const std::size_t size, const std::size_t zeroPadSize) noexcept;
+    // ProcessType filterImpl(const Type *input, const Type *window, const std::size_t size, const std::size_t zeroPadSize) noexcept;
 
+    /** @brief Filter cache coefficients */
+    Cache _coefficients;
+    /** @brief Last input cache used for block processing */
+    Cache _lastInputCache;
+};
+
+template<typename Type>
+class Audio::DSP::FIRFilter
+{
+public:
+    FIRFilter(const Filter::FIRSpecs specs) : _specs(specs) { setSpecs(specs); }
+
+    /** @brief Set the internal instance specs. It will recompute the instance coefficients */
+    bool setSpecs(const Filter::FIRSpecs specs) noexcept;
+
+    /** @brief Reset the internal last input cache */
+    void resetLastInputCache(void) noexcept { _instance.lastInput().clear(); }
+
+    /** @brief Filter an input signal */
+    void filter(const Type *input, const std::size_t inputSize, Type *output, const bool useLastInput) noexcept { _instance.filter(input, inputSize, output, useLastInput); }
+
+    /** @brief Helper used */
+    // static void DesignFilter(const Filter::FIRSpecs filterSpecs, float *windowCoefficients, const std::size_t windowSize, const bool centered = true) noexcept;
+    // static void DesignFilterLowPass(float *windowCoefficients, const std::size_t size, const double cutoffRate, const bool centered) noexcept;
+
+private:
+    /** @brief FIR instance */
+    FIR<Type> _instance;
+    /** @brief Filter specs */
+    Filter::FIRSpecs _specs;
 };
 
 #include "FIR.ipp"

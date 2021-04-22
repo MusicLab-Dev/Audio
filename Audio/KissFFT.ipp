@@ -111,7 +111,7 @@ inline void KissFFT::Engine::Filter(const FirFilterSpecs filterSpecs, const Type
     {
         // Get the filter coefficients
         std::vector<TypeScalar> filterCoefs(processSize, 0.f);
-        Audio::DSP::WindowMaker::GenerateFilterCoefficients(filterSpecs.windowType, windowSize, filterCoefs.data());
+        Audio::DSP::WindowMaker::GenerateWindow(filterSpecs.windowType, windowSize, filterCoefs.data());
         // DSP::FIR::DesignFilter(filterSpecs, filterCoefs.data(), windowSize);
         // Filter impulse response output
         std::vector<TypeCpx> filterFreqs(processSize);
