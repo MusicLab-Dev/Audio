@@ -81,7 +81,8 @@ public:
         resetAllModifiers();
         resetTriggers();
         resetReadIndexes();
-        _enveloppe.resetTriggerIndex();
+        _enveloppe.resetTriggerIndexes();
+        _enveloppe.resetInternalGains();
     }
 
     /** @brief Reset the internal cache. All notes are turned off */
@@ -120,19 +121,24 @@ public:
 
     void setReadIndex(const Key key, const std::size_t index) noexcept { _cache.readIndexes[key] = key; }
 
-
-    /** @brief Get the enveloppe gain for a specific key */
-    float getEnveloppeGain(const Key key, const std::size_t index, const bool isTrigger,
+    float getEnveloppeGain(
+            const Key key, const std::size_t index, const bool trigger,
             const float delay, const float attack,
             const float hold, const float decay,
             const float sustain, const float release,
-            const SampleRate sampleRate) const noexcept
+            const SampleRate sampleRate) noexcept
     {
-        return _enveloppe.getGain(key, index, isTrigger, delay, attack, hold, decay, sustain, release, sampleRate);
+        const auto gain = _enveloppe.getGain(key, index, trigger, delay, attack, hold, decay, sustain, release, sampleRate);
+        // std::cout << "attack:::: " << attack << std::endl;
+        // std::cout << "samplerate:::: " << sampleRate << std::endl;
+        if (!gain) {
+            // _cache
+        }
+        return gain;
     }
 
-    /** @brief Set the enveloppe index for a specific key */
-    void setEnveloppeIndex(const Key key, const std::size_t triggerIndex) noexcept { _enveloppe.setTriggerIndex(key, triggerIndex); }
+    [[nodiscard]] const DSP::EnveloppeBase<Enveloppe> &enveloppe(void) const noexcept { return _enveloppe; }
+    [[nodiscard]] DSP::EnveloppeBase<Enveloppe> &enveloppe(void) noexcept { return _enveloppe; }
 
 private:
     Cache   _cache;

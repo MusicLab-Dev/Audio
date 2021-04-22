@@ -54,45 +54,10 @@ class Audio::Sampler final : public Audio::IPlugin
                 TR(French, "Volume de sortie du sampleur")
             )
         ),
-        REGISTER_CONTROL(
-            /* Control type */
-            Floating,
-            /* Control variable / getter / setter name */
-            enveloppeAttack,
-            /* Control's range */
-            CONTROL_RANGE(0.0, 1.0),
-            /* Control's default value */
-            0.01,
-            /* Control name */
-            TR_TABLE(
-                TR(English, "Enveloppe attack"),
-                TR(French, "Attaque de l'enveloppe")
-            ),
-            /* Control's description */
-            TR_TABLE(
-                TR(English, "Attack duration used by the enveloppe to determine volume gain"),
-                TR(French, "Hauteur de référence la note chargée")
-            )
-        ),
-        REGISTER_CONTROL(
-            /* Control type */
-            Floating,
-            /* Control variable / getter / setter name */
-            enveloppeRelease,
-            /* Control's range */
-            CONTROL_RANGE(0.0, 1.0),
-            /* Control's default value */
-            0.01,
-            /* Control name */
-            TR_TABLE(
-                TR(English, "Enveloppe release"),
-                TR(French, "Extinction de l'enveloppe")
-            ),
-            /* Control's description */
-            TR_TABLE(
-                TR(English, "Release duration used by the enveloppe to determine volume gain"),
-                TR(French, "Hauteur de référence la note chargée")
-            )
+        /* Enveloppe controls (attack, release) */
+        REGISTER_CONTROL_ENVELOPPE_AR(
+            enveloppeAttack, 0.001, CONTROL_RANGE(0.0, 10.0),
+            enveloppeRelease, 0.001, CONTROL_RANGE(0.0, 10.0)
         )
     )
 
@@ -122,13 +87,13 @@ private:
     // Cacheline 1 & 2
     BufferOctave _buffers {};
     // Cacheline 3 & 4
-    NoteManager<DSP::EnveloppeType::AD> _noteManager {};
+    NoteManager<DSP::EnveloppeType::AR> _noteManager {};
 
     Buffer _tmp;
 
     float getEnveloppeGain(const Key key, const std::size_t index, const bool isTrigger) noexcept
     {
-        return _noteManager.getEnveloppeGain(key, index, isTrigger, 0.f, enveloppeAttack(), 0.f, 0.f, 0.f, enveloppeRelease(), audioSpecs().sampleRate);
+        return _noteManager.enveloppe().attackRelease(key, index, isTrigger, enveloppeAttack(), enveloppeRelease(), audioSpecs().sampleRate);
     }
 };
 

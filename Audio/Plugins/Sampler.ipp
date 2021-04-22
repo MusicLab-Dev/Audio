@@ -48,6 +48,7 @@ inline void Audio::Sampler::receiveAudio(BufferView output)
     float *sampleBuffer = nullptr;
     std::size_t sampleSize = 0u;
 
+    // std::cout << "Receive audio" << std::endl;
     const auto activeNote = _noteManager.getActiveNote();
     for (auto iKey = 0u; iKey < activeNote.size(); ++iKey) {
         const auto key = activeNote[iKey];

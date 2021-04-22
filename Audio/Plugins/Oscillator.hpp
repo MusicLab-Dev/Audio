@@ -41,7 +41,7 @@ class Audio::Oscillator final : public Audio::IPlugin
             /* Control's range */
             CONTROL_RANGE(0.0, 1.0),
             /* Control's default value */
-            1.0,
+            1.0 / 2,
             /* Control name */
             TR_TABLE(
                 TR(English, "Output volume"),
@@ -53,45 +53,12 @@ class Audio::Oscillator final : public Audio::IPlugin
                 TR(French, "Volume de sortie du Oscillateur")
             )
         ),
-        REGISTER_CONTROL(
-            /* Control type */
-            Floating,
-            /* Control variable / getter / setter name */
-            enveloppeAttack,
-            /* Control's range */
-            CONTROL_RANGE(0.0, 1.0),
-            /* Control's default value */
-            0.01,
-            /* Control name */
-            TR_TABLE(
-                TR(English, "Enveloppe attack"),
-                TR(French, "Attaque de l'enveloppe")
-            ),
-            /* Control's description */
-            TR_TABLE(
-                TR(English, "Attack duration used by the enveloppe to determine volume gain"),
-                TR(French, "Hauteur de référence la note chargée")
-            )
-        ),
-        REGISTER_CONTROL(
-            /* Control type */
-            Floating,
-            /* Control variable / getter / setter name */
-            enveloppeRelease,
-            /* Control's range */
-            CONTROL_RANGE(0.0, 1.0),
-            /* Control's default value */
-            0.01,
-            /* Control name */
-            TR_TABLE(
-                TR(English, "Enveloppe release"),
-                TR(French, "Extinction de l'enveloppe")
-            ),
-            /* Control's description */
-            TR_TABLE(
-                TR(English, "Release duration used by the enveloppe to determine volume gain"),
-                TR(French, "Hauteur de référence la note chargée")
-            )
+        /* Enveloppe controls (attack, decay, sustain, release) */
+        REGISTER_CONTROL_ENVELOPPE_ADSR(
+            enveloppeAttack, 0.1, CONTROL_RANGE(0.0, 10.0),
+            enveloppeDecay, 0.2, CONTROL_RANGE(0.0, 10.0),
+            enveloppeSustain, 0.8, CONTROL_RANGE(0.0, 1.0),
+            enveloppeRelease, 0.2, CONTROL_RANGE(0.0, 10.0)
         )
     )
 
@@ -125,33 +92,34 @@ public:
 
 public:
 private:
-    NoteManager<DSP::EnveloppeType::AR> _noteManager {};
+    NoteManager<DSP::EnveloppeType::ADSR> _noteManager {};
     Osc _oscillator;
 
     float getEnveloppeGain(const Key key, const std::size_t index, const bool isTrigger) noexcept
     {
-        return _noteManager.getEnveloppeGain(key, index, isTrigger, 0.f, enveloppeAttack(), 0.f, 0.f, 0.f, enveloppeRelease(), audioSpecs().sampleRate);
+        return _noteManager.enveloppe().adsr(key, index, isTrigger, enveloppeAttack(), enveloppeDecay(), enveloppeSustain(), enveloppeRelease(), audioSpecs().sampleRate);
+        // return _noteManager.getEnveloppeGain(key, index, isTrigger, 0ul, enveloppeAttack(), 0ul, enveloppeDecay(), enveloppeSustain(), enveloppeRelease(), audioSpecs().sampleRate);
     }
 
-    template<typename Type>
+    template<bool Accumulate = true, typename Type>
     void generateWaveform(const Osc &oscillator, Type *output, const std::size_t outputSize,
-            const float frequency, const SampleRate sampleRate, const std::size_t phaseOffset, const Key key, const bool trigger) noexcept;
+            const float frequency, const SampleRate sampleRate, const std::size_t phaseOffset, const Key key, const bool trigger, const float gain) noexcept;
 
-    template<typename Type>
+    template<bool Accumulate, typename Type>
     void generateSine(Type *output, const std::size_t outputSize,
-            const float frequency, const SampleRate sampleRate, const std::size_t phaseOffset, const Key key, const bool trigger) noexcept;
+            const float frequency, const SampleRate sampleRate, const std::size_t phaseOffset, const Key key, const bool trigger, const float gain) noexcept;
 
-    template<typename Type>
+    template<bool Accumulate, typename Type>
     void generateSquare(Type *output, const std::size_t outputSize,
-            const float frequency, const SampleRate sampleRate, const std::size_t phaseOffset, const Key key, const bool trigger) noexcept;
+            const float frequency, const SampleRate sampleRate, const std::size_t phaseOffset, const Key key, const bool trigger, const float gain) noexcept;
 
-    template<typename Type>
+    template<bool Accumulate, typename Type>
     void generateTriangle(Type *output, const std::size_t outputSize,
-            const float frequency, const SampleRate sampleRate, const std::size_t phaseOffset, const Key key, const bool trigger) noexcept;
+            const float frequency, const SampleRate sampleRate, const std::size_t phaseOffset, const Key key, const bool trigger, const float gain) noexcept;
 
-    template<typename Type>
+    template<bool Accumulate, typename Type>
     void generateSaw(Type *output, const std::size_t outputSize,
-            const float frequency, const SampleRate sampleRate, const std::size_t phaseOffset, const Key key, const bool trigger) noexcept;
+            const float frequency, const SampleRate sampleRate, const std::size_t phaseOffset, const Key key, const bool trigger, const float gain) noexcept;
 };
 
 #include "Oscillator.ipp"

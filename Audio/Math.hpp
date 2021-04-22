@@ -32,4 +32,26 @@ namespace Utils
         return 1.f / std::tan(x);
     }
 
+    /**
+     * @brief Exponential interpolation.
+     * @warning Only efficient on positive values !
+     */
+    template<typename Type>
+    std::enable_if_t<std::is_floating_point_v<Type>, Type>
+        expInterpUnsafe(Type from, Type to, Type x) noexcept
+    {
+        const auto range = to - from;
+        const auto normX = (x - from) / range;
+        return std::pow(normX, M_E) * range + from;
+    }
+
+    /**
+     * @brief Exponential interpolation from 0 to 1
+     */
+    template<typename Type>
+    std::enable_if_t<std::is_floating_point_v<Type>, Type>
+        expInterpSafe(Type x) noexcept
+    {
+        return std::pow(x, M_E);
+    }
 }
