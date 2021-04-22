@@ -48,3 +48,45 @@ bool Audio::DSP::FIRFilter<Type>::setSpecs(const Filter::FIRSpecs specs) noexcep
 
     return true;
 }
+
+template<typename Type>
+bool Audio::DSP::FIRFilter<Type>::setCutoffs(const float cutoffFrom, const float cutoffTo) noexcept
+{
+    return setSpecs(
+        Filter::FIRSpecs {
+            _specs.filterType,
+            _specs.windowType,
+            _specs.size,
+            _specs.sampleRate,
+            { cutoffFrom, cutoffTo }
+        }
+    );
+}
+
+template<typename Type>
+bool Audio::DSP::FIRFilter<Type>::setSampleRate(const float sampleRate) noexcept
+{
+    return setSpecs(
+        Filter::FIRSpecs {
+            _specs.filterType,
+            _specs.windowType,
+            _specs.size,
+            sampleRate,
+            { _specs.cutoffs[0], _specs.cutoffs[1] }
+        }
+    );
+}
+
+template<typename Type>
+bool Audio::DSP::FIRFilter<Type>::setFilterType(const Filter::BasicType filterType) noexcept
+{
+    return setSpecs(
+        Filter::FIRSpecs {
+            filterType,
+            _specs.windowType,
+            _specs.size,
+            _specs.sampleRate,
+            { _specs.cutoffs[0], _specs.cutoffs[1] }
+        }
+    );
+}

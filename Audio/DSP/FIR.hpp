@@ -85,18 +85,20 @@ class Audio::DSP::FIRFilter
 public:
     FIRFilter(const Filter::FIRSpecs specs) : _specs(specs) { setSpecs(specs); }
 
-    /** @brief Set the internal instance specs. It will recompute the instance coefficients */
+    /** @brief Set the internal specs. It will recompute the instance coefficients */
     bool setSpecs(const Filter::FIRSpecs specs) noexcept;
+    /** @brief Set the internal cutoffs */
+    bool setCutoffs(const float cutoffFrom, const float cutoffTo = 0.0f) noexcept;
+    /** @brief Set the internal sampleRate */
+    bool setSampleRate(const float sampleRate) noexcept;
+    /** @brief Set the internal sampleRate */
+    bool setFilterType(const Filter::BasicType filterType) noexcept;
 
     /** @brief Reset the internal last input cache */
     void resetLastInputCache(void) noexcept { _instance.lastInput().clear(); }
 
     /** @brief Filter an input signal */
     void filter(const Type *input, const std::size_t inputSize, Type *output, const bool useLastInput) noexcept { _instance.filter(input, inputSize, output, useLastInput); }
-
-    /** @brief Helper used */
-    // static void DesignFilter(const Filter::FIRSpecs filterSpecs, float *windowCoefficients, const std::size_t windowSize, const bool centered = true) noexcept;
-    // static void DesignFilterLowPass(float *windowCoefficients, const std::size_t size, const double cutoffRate, const bool centered) noexcept;
 
 private:
     /** @brief FIR instance */

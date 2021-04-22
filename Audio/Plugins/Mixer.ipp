@@ -47,14 +47,6 @@ inline void Audio::Mixer::receiveAudio(BufferView output)
             std::cout << std::setprecision(4) << "min: " << min << ", max: " << max << std::endl;
     };
 
-    // DSP::FIR::Filter<float>(
-    //     DSP::Specs {
-    //         DSP::Filter::BasicType::LowPass,
-    //         DSP::Filter::WindowType::Hanning,
-    //         // size
-    //     }
-    // );
-
     PrintRangeClip(output);
 }
 
