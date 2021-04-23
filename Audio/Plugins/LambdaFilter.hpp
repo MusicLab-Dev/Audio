@@ -130,6 +130,9 @@ class Audio::LambdaFilter final : public Audio::IPlugin
     )
 
 public:
+    /** @brief Plugin constructor */
+    LambdaFilter(const IPluginFactory *factory) noexcept : IPlugin(factory) {}
+
     virtual void sendAudio(const BufferViews &inputs);
     virtual void receiveAudio(BufferView output);
 

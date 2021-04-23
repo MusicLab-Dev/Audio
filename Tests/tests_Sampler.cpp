@@ -13,7 +13,7 @@ using namespace Audio;
 TEST(Sampler, MetaData)
 {
     const auto &meta = Sampler::GetMetaData();
-    Sampler sampler;
+    Sampler sampler(nullptr);
     const auto &cSampler = sampler;
 
     ASSERT_EQ(meta.translations.names[0].lang, English);

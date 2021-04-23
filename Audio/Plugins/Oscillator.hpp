@@ -75,6 +75,8 @@ class Audio::Oscillator final : public Audio::IPlugin
     };
 
 public:
+    /** @brief Plugin constructor */
+    Oscillator(const IPluginFactory *factory) noexcept : IPlugin(factory) {}
 
     virtual void receiveAudio(BufferView output);
 
