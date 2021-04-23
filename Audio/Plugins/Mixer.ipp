@@ -41,10 +41,10 @@ inline void Audio::Mixer::receiveAudio(BufferView output)
             min = std::min(out[i], min);
             max = std::max(out[i], max);
         }
-        if (min <= -1 || max >= 1)
-            std::cout << "<<<CLIPING>>>" << std::endl;
-        else
-            std::cout << std::setprecision(4) << "min: " << min << ", max: " << max << std::endl;
+        // if (min <= -1 || max >= 1)
+        //     std::cout << "<<<CLIPING>>>" << std::endl;
+        // else
+        //     std::cout << std::setprecision(4) << "min: " << min << ", max: " << max << std::endl;
     };
 
     PrintRangeClip(output);

@@ -118,7 +118,7 @@ inline void Audio::DSP::Resampler<Type>::resampleOctave(const Type *inputBuffer,
         static_cast<float>(sampleRate),
         { sampleRate / 2 / static_cast<float>(factor), 0.0 }
     };
-    std::cout << "cutoff:: " << (sampleRate / 2 / static_cast<float>(factor)) << ", size: " << filterSize << std::endl;
+    // std::cout << "cutoff:: " << (sampleRate / 2 / static_cast<float>(factor)) << ", size: " << filterSize << std::endl;
 
     _filterCache.resize(filterSize);
     Filter::GenerateWindow(filterSpecs.windowType, filterSize, _filterCache.data());
