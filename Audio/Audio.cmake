@@ -13,10 +13,11 @@ set(AudioSources
     ${AudioDir}/SchedulerTask.ipp
     ${AudioDir}/Automation.hpp
     ${AudioDir}/Base.hpp
-    ${AudioDir}/Math.hpp
+    ${AudioDir}/BaseVolume.hpp
     ${AudioDir}/BaseDevice.hpp
     ${AudioDir}/BaseIndex.hpp
     ${AudioDir}/BaseIndex.cpp
+    ${AudioDir}/Math.hpp
     ${AudioDir}/Buffer.hpp
     ${AudioDir}/BufferOctave.hpp
     ${AudioDir}/Buffer.ipp

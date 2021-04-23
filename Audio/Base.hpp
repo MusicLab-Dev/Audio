@@ -6,6 +6,7 @@
 #pragma once
 
 #include <cstdint>
+#include <cmath>
 
 #include <Core/Vector.hpp>
 #include <Core/FlatVector.hpp>
@@ -14,6 +15,7 @@
 
 #include "BaseDevice.hpp"
 #include "BaseIndex.hpp"
+#include "BaseVolume.hpp"
 
 namespace Audio
 {
@@ -66,15 +68,6 @@ namespace Audio
 
     /** @brief Parameter value */
     using ParamValue = double;
-
-    /** @brief Gain value */
-    using Gain = float;
-
-    /** @brief Analog decibel max (dBu) */
-    static constexpr float DBUMax = 12.0f;
-
-    /** @brief DB value */
-    using DB = float;
 
     /** @brief Audio channels arrangement */
     enum class ChannelArrangement : std::uint8_t {

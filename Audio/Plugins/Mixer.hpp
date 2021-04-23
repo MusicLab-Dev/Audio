@@ -32,8 +32,8 @@ class Audio::Mixer final : public Audio::IPlugin
         /* Control list */
         REGISTER_CONTROL_OUTPUT_VOLUME(
             masterVolume,
-            1.0,
-            CONTROL_RANGE(0.0, 1.0)
+            0.0,
+            CONTROL_RANGE(-100.0, 0.0)
         )
     )
 

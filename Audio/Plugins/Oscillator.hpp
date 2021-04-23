@@ -37,8 +37,8 @@ class Audio::Oscillator final : public Audio::IPlugin
         /* Control list */
         REGISTER_CONTROL_OUTPUT_VOLUME(
             masterVolume,
-            0.5,
-            CONTROL_RANGE(0.0, 1.0)
+            -DBUMax,
+            CONTROL_RANGE(-100.0, 0.0)
         ),
         /* Enveloppe controls (attack, decay, sustain, release) */
         REGISTER_CONTROL_ENVELOPPE_ADSR(
@@ -62,6 +62,9 @@ class Audio::Oscillator final : public Audio::IPlugin
     };
 
 public:
+    /** @brief Default gain for each voice */
+    static constexpr DB DefaultVoiceGain = -DBUMax;
+
     /** @brief Plugin constructor */
     Oscillator(const IPluginFactory *factory) noexcept : IPlugin(factory) {}
 
@@ -93,23 +96,23 @@ private:
 
     template<bool Accumulate = true, typename Type>
     void generateWaveform(const Osc &oscillator, Type *output, const std::size_t outputSize,
-            const float frequency, const SampleRate sampleRate, const std::size_t phaseOffset, const Key key, const bool trigger, const float gain) noexcept;
+            const float frequency, const SampleRate sampleRate, const std::size_t phaseOffset, const Key key, const bool trigger, const DB gain) noexcept;
 
     template<bool Accumulate, typename Type>
     void generateSine(Type *output, const std::size_t outputSize,
-            const float frequency, const SampleRate sampleRate, const std::size_t phaseOffset, const Key key, const bool trigger, const float gain) noexcept;
+            const float frequency, const SampleRate sampleRate, const std::size_t phaseOffset, const Key key, const bool trigger, const DB gain) noexcept;
 
     template<bool Accumulate, typename Type>
     void generateSquare(Type *output, const std::size_t outputSize,
-            const float frequency, const SampleRate sampleRate, const std::size_t phaseOffset, const Key key, const bool trigger, const float gain) noexcept;
+            const float frequency, const SampleRate sampleRate, const std::size_t phaseOffset, const Key key, const bool trigger, const DB gain) noexcept;
 
     template<bool Accumulate, typename Type>
     void generateTriangle(Type *output, const std::size_t outputSize,
-            const float frequency, const SampleRate sampleRate, const std::size_t phaseOffset, const Key key, const bool trigger, const float gain) noexcept;
+            const float frequency, const SampleRate sampleRate, const std::size_t phaseOffset, const Key key, const bool trigger, const DB gain) noexcept;
 
     template<bool Accumulate, typename Type>
     void generateSaw(Type *output, const std::size_t outputSize,
-            const float frequency, const SampleRate sampleRate, const std::size_t phaseOffset, const Key key, const bool trigger, const float gain) noexcept;
+            const float frequency, const SampleRate sampleRate, const std::size_t phaseOffset, const Key key, const bool trigger, const DB gain) noexcept;
 };
 
 #include "Oscillator.ipp"

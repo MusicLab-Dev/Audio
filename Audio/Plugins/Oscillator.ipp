@@ -20,6 +20,7 @@ inline void Audio::Oscillator::sendNotes(const NoteEvents &notes)
 
 inline void Audio::Oscillator::receiveAudio(BufferView output)
 {
+    const DB voiceGain = ConvertDecibelToRatio(masterVolume() + DefaultVoiceGain);
     const auto outSize = output.size<float>();
     float *out = reinterpret_cast<float *>(output.byteData());
 
@@ -40,7 +41,7 @@ inline void Audio::Oscillator::receiveAudio(BufferView output)
         // const auto readSize = nextReadIndex < 0 ? outSize + nextReadIndex : outSize;
 
         // std::cout << "freq: " << frequency << std::endl;
-        generateWaveform(_oscillator, out, outSize, frequency, audioSpecs().sampleRate, phaseIndex, key, trigger, 0.2);//1.f / static_cast<float>(activeNote.size()));
+        generateWaveform(_oscillator, out, outSize, frequency, audioSpecs().sampleRate, phaseIndex, key, trigger, voiceGain);//1.f / static_cast<float>(activeNote.size()));
         // const auto g = getEnveloppeGain(key, phaseIndex, trigger);
         _noteManager.incrementReadIndex(key, 0ul, audioSpecs().processBlockSize);
         // std::cout << g << std::endl;

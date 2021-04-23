@@ -62,9 +62,6 @@ public:
         return rms;
     }
 
-    /** @brief Convert a sample value to the decibel unit */
-    [[nodiscard]] static DB ConvertToDecibel(const Type value) noexcept { return 20.0f * std::log10(std::abs(value) / static_cast<double>(std::numeric_limits<Type>::max())); }
-
 
 /** @brief Internal methods */
 public:
