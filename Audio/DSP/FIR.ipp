@@ -7,50 +7,66 @@
  */
 
 template<typename Type>
-typename Audio::DSP::FIR<Type>::VoidType Audio::DSP::FIR<Type>::filter(const Type *input, const std::size_t inputSize, Type *output, const bool useLastInput) noexcept
+template<bool UseLastInput>
+typename Audio::DSP::VoidType<Type> Audio::DSP::FIR<Type>::filter(const Type *input, const std::size_t inputSize, Type *output) noexcept
 {
     const auto filterSize = _coefficients.size();
     const auto filterSizeMinusOne = filterSize - 1;
-    const auto inputSizeMinusFilter = inputSize - filterSize;
+    // const auto filterSizePlusOne = filterSize + 1;
 
-    // Zero padd
+    // Begin
     for (auto i = 0ul; i < filterSizeMinusOne; ++i) {
-        std::cout << "First: " << i << std::endl;
+        output[i] = filterImpl<UseLastInput>(input, filterSize, filterSizeMinusOne - i);
     }
     // Body
-    for (auto i = filterSizeMinusOne; i < inputSizeMinusFilter; ++i) {
-        std::cout << "Body: " << i << std::endl;
+    const Type *inputShifted = input - filterSizeMinusOne;
+    for (auto i = filterSizeMinusOne; i < inputSize; ++i) {
+        output[i] = filterImpl<false>(inputShifted + i, filterSize);
     }
-    // End
-    for (auto i = inputSizeMinusFilter; i < inputSize; ++i) {
-        std::cout << "End: " << i << std::endl;
-    }
+    // Save for last input
+    std::memcpy(_lastInputCache.data(), input + inputSize - filterSizeMinusOne, filterSizeMinusOne * sizeof(Type));
 }
 
 template<typename Type>
-typename Audio::DSP::FIR<Type>::VoidType Audio::DSP::FIR<Type>::filter(
-        const Type *input, const std::size_t inputSize,
-        const Type *filterCoefficients, const std::size_t filterSize,
-        Type *output,
-        const Type *lastInput, const std::size_t lastInputSize) noexcept
+template<bool UseLastInput>
+typename Audio::DSP::ProcessType<Type> Audio::DSP::FIR<Type>::filterImpl(const Type *input, const std::size_t size, const std::size_t zeroPad) noexcept
 {
+    const std::size_t realSize = size - zeroPad;
+    Type sample { 0.0 };
 
+    if constexpr (UseLastInput) {
+        for (auto i = 0ul; i < zeroPad; ++i) {
+            sample += _lastInputCache[i] * _coefficients[i];
+        }
+    }
+    for (auto i = 0ul; i < realSize; ++i) {
+        sample += input[i] * _coefficients[zeroPad + i];
+    }
+    return sample;
 }
 
 template<typename Type>
-bool Audio::DSP::FIRFilter<Type>::setSpecs(const Filter::FIRSpecs specs) noexcept
+template<bool UseLastInput>
+typename Audio::DSP::VoidType<Type> Audio::DSP::FIRFilter<Type>::filter(const Type *input, const std::size_t inputSize, Type *output) noexcept
+{
+    _instance.template filter<true>(input, inputSize, output);
+}
+
+
+template<typename Type>
+inline bool Audio::DSP::FIRFilter<Type>::setSpecs(const Filter::FIRSpecs specs) noexcept
 {
     if (_specs == specs)
         return false;
     _instance.coefficients().resize(specs.size);
-    _instance.lastInput().resize(specs.size);
+    _instance.lastInput().resize(specs.size - 1);
     Filter::GenerateFilter(specs, _instance.coefficients().data());
 
     return true;
 }
 
 template<typename Type>
-bool Audio::DSP::FIRFilter<Type>::setCutoffs(const float cutoffFrom, const float cutoffTo) noexcept
+inline bool Audio::DSP::FIRFilter<Type>::setCutoffs(const float cutoffFrom, const float cutoffTo) noexcept
 {
     return setSpecs(
         Filter::FIRSpecs {
@@ -64,7 +80,7 @@ bool Audio::DSP::FIRFilter<Type>::setCutoffs(const float cutoffFrom, const float
 }
 
 template<typename Type>
-bool Audio::DSP::FIRFilter<Type>::setSampleRate(const float sampleRate) noexcept
+inline bool Audio::DSP::FIRFilter<Type>::setSampleRate(const float sampleRate) noexcept
 {
     return setSpecs(
         Filter::FIRSpecs {
@@ -78,7 +94,7 @@ bool Audio::DSP::FIRFilter<Type>::setSampleRate(const float sampleRate) noexcept
 }
 
 template<typename Type>
-bool Audio::DSP::FIRFilter<Type>::setFilterType(const Filter::BasicType filterType) noexcept
+inline bool Audio::DSP::FIRFilter<Type>::setFilterType(const Filter::BasicType filterType) noexcept
 {
     return setSpecs(
         Filter::FIRSpecs {

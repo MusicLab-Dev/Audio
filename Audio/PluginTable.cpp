@@ -47,10 +47,12 @@ void Audio::PluginTable::decrementRefCount(IPlugin *plugin) noexcept_ndebug
 #include <Audio/Plugins/Mixer.hpp>
 #include <Audio/Plugins/Sampler.hpp>
 #include <Audio/Plugins/Oscillator.hpp>
+#include <Audio/Plugins/LambdaFilter.hpp>
 
 Audio::PluginTable::PluginTable(void)
 {
     registerFactory<Audio::Mixer>();
     registerFactory<Audio::Sampler>();
     registerFactory<Audio::Oscillator>();
+    registerFactory<Audio::LambdaFilter>();
 }

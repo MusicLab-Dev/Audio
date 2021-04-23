@@ -64,6 +64,8 @@ set(AudioPluginsSources
     ${AudioPluginsDir}/Oscillator.ipp
     ${AudioPluginsDir}/Mixer.hpp
     ${AudioPluginsDir}/Mixer.ipp
+    ${AudioPluginsDir}/LambdaFilter.hpp
+    ${AudioPluginsDir}/LambdaFilter.ipp
 )
 
 set(AudioPluginManagerDir ${AudioPluginsDir}/Managers)

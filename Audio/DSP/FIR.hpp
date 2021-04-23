@@ -22,6 +22,12 @@ namespace Audio::DSP
     template<typename Type>
     class FIRFilter;
 
+    template<typename Type>
+    using VoidType = std::enable_if_t<std::is_floating_point_v<Type>, void>;
+    template<typename Type>
+    using ProcessType = std::enable_if_t<std::is_floating_point_v<Type>, Type>;
+
+
     // struct Filter::FIRSpecs
     // {
     //     Filter::BasicType filterType;
@@ -49,18 +55,9 @@ class Audio::DSP::FIR
 public:
     using Cache = Core::TinyVector<Type>;
 
-    using VoidType = std::enable_if_t<std::is_floating_point_v<Type>, void>;
-    using ProcessType = std::enable_if_t<std::is_floating_point_v<Type>, Type>;
-
-    /** @brief Perform filtering using convolution. ZeroPad is used to 'add' zero before the input during processing stage */
-    VoidType filter(const Type *input, const std::size_t inputSize, Type *output, const bool useLastInput) noexcept;
-
-    /** @brief Perform filtering using convolution. LastInput is used instead of zero padding */
-    VoidType filter(
-            const Type *input, const std::size_t inputSize,
-            const Type *filterCoefficients, const std::size_t filterSize,
-            Type *output,
-            const Type *lastInput, const std::size_t lastInputSize) noexcept;
+    /** @brief Perform filtering using convolution. */
+    template<bool UseLastInput>
+    VoidType<Type> filter(const Type *input, const std::size_t inputSize, Type *output) noexcept;
 
     /** @brief Get the internal cache coefficients */
     [[nodiscard]] const Cache &coefficients(void) const noexcept { return _coefficients; }
@@ -71,7 +68,8 @@ public:
     [[nodiscard]] Cache &lastInput(void) noexcept { return _lastInputCache; }
 
 private:
-    // ProcessType filterImpl(const Type *input, const Type *window, const std::size_t size, const std::size_t zeroPadSize) noexcept;
+    template<bool UseLastInput>
+    ProcessType<Type> filterImpl(const Type *input, const std::size_t size, const std::size_t zeroPad = 0ul) noexcept;
 
     /** @brief Filter cache coefficients */
     Cache _coefficients;
@@ -83,6 +81,8 @@ template<typename Type>
 class Audio::DSP::FIRFilter
 {
 public:
+    FIRFilter(void) = default;
+
     FIRFilter(const Filter::FIRSpecs specs) : _specs(specs) { setSpecs(specs); }
 
     /** @brief Set the internal specs. It will recompute the instance coefficients */
@@ -98,7 +98,8 @@ public:
     void resetLastInputCache(void) noexcept { _instance.lastInput().clear(); }
 
     /** @brief Filter an input signal */
-    void filter(const Type *input, const std::size_t inputSize, Type *output, const bool useLastInput) noexcept { _instance.filter(input, inputSize, output, useLastInput); }
+    template<bool UseLastInput>
+    VoidType<Type> filter(const Type *input, const std::size_t inputSize, Type *output) noexcept;
 
 private:
     /** @brief FIR instance */
