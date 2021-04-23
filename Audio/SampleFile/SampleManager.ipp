@@ -3,8 +3,8 @@
  * @ Description: SampleManager.ipp
  */
 
-template<typename Type>
-inline Audio::Buffer Audio::SampleManager<Type>::LoadSampleFile(const std::string &path, SampleSpecs &specs, bool displaySpecs)
+template<typename Type, bool Normalize>
+inline Audio::Buffer Audio::SampleManager<Type, Normalize>::LoadSampleFile(const std::string &path, SampleSpecs &specs, bool displaySpecs)
 {
     auto ext = std::filesystem::path(path).extension();
     if (ext.empty())
@@ -12,8 +12,8 @@ inline Audio::Buffer Audio::SampleManager<Type>::LoadSampleFile(const std::strin
     return LoadSampleFileExtension(path, ext.string(), specs, displaySpecs);
 }
 
-template<typename Type>
-inline Audio::Buffer Audio::SampleManager<Type>::LoadSampleFileExtension(const std::string &path, const std::string &ext, SampleSpecs &specs, bool displaySpecs)
+template<typename Type, bool Normalize>
+inline Audio::Buffer Audio::SampleManager<Type, Normalize>::LoadSampleFileExtension(const std::string &path, const std::string &ext, SampleSpecs &specs, bool displaySpecs)
 {
     for (auto i = 0u; i < sizeof(SupportedExtension) / sizeof(std::pair<int, int>); ++i) {
         if (std::string(std::get<0>(SupportedExtension[i])) == ext) {
@@ -24,8 +24,8 @@ inline Audio::Buffer Audio::SampleManager<Type>::LoadSampleFileExtension(const s
     throw std::runtime_error("Audio::SampleManager::LoadSampleFileExtension: Extension file not supported: '" + ext + "'.");
 }
 
-template<typename Type>
-inline bool Audio::SampleManager<Type>::WriteSampleFile(const std::string &path,const BufferView &sample)
+template<typename Type, bool Normalize>
+inline bool Audio::SampleManager<Type, Normalize>::WriteSampleFile(const std::string &path,const BufferView &sample)
 {
     auto ext = std::filesystem::path(path).extension();
     if (ext.empty())
@@ -33,8 +33,8 @@ inline bool Audio::SampleManager<Type>::WriteSampleFile(const std::string &path,
     return WriteSampleFileExtension(path, sample, ext.string());
 }
 
-template<typename Type>
-inline bool Audio::SampleManager<Type>::WriteSampleFileExtension(const std::string &path, const BufferView &sample, const std::string &ext)
+template<typename Type, bool Normalize>
+inline bool Audio::SampleManager<Type, Normalize>::WriteSampleFileExtension(const std::string &path, const BufferView &sample, const std::string &ext)
 {
     for (auto i = 0u; i < sizeof(SupportedExtension) / sizeof(std::pair<int, int>); ++i) {
         if (std::string(std::get<0>(SupportedExtension[i])) == ext) {
