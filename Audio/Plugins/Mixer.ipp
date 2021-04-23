@@ -11,26 +11,12 @@
 
 inline void Audio::Mixer::receiveAudio(BufferView output)
 {
-    const auto size = output.size<float>();
-    const float *out = output.data<float>();
+    // const auto size = output.size<float>();
+    // const float *out = output.data<float>();
 
     // std::cout << "MIXER SIZE: " << _cache.size() << std::endl;
 
-    DSP::Merge<float>(_cache, output, size, true);
-
-    constexpr auto PrintGain = [](const float outGain) {
-        const std::size_t gainNorm = outGain * 100.f;
-        std::cout << "<";
-        for (auto i = 0ul; i < 100ul; ++i) {
-            std::cout << (i < gainNorm ? "=" : " ");
-        }
-        std::cout << ">" << std::endl;
-    };
-    constexpr auto ApplyRatio = [](BufferView buffer, const float ratio) {
-        const auto size = buffer.size<float>();
-        float *data = buffer.data<float>();
-        std::for_each(data, data + size, [ratio](float &x) { x *= ratio; });
-    };
+    DSP::Merge<float>(_cache, output, true);
 
     constexpr auto PrintRangeClip = [](const BufferView buffer) {
         const auto size = buffer.size<float>();

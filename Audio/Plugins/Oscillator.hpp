@@ -8,6 +8,8 @@
 #include <Core/FlatVector.hpp>
 
 #include <Audio/PluginControlUtils.hpp>
+#include <Audio/Volume.hpp>
+
 #include "Managers/NoteManager.hpp"
 
 namespace Audio
@@ -81,6 +83,7 @@ public:
 private:
     NoteManager<DSP::EnveloppeType::ADSR> _noteManager {};
     Osc _oscillator;
+    Volume<float> _volumeHandler;
 
     float getEnveloppeGain(const Key key, const std::size_t index, const bool isTrigger) noexcept
     {

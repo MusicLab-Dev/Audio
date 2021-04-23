@@ -5,13 +5,13 @@
 
 
 template<typename Type>
-void Audio::DSP::Merge(const BufferViews inputs, BufferView output, const std::size_t outputSize, const bool normalize) noexcept
+void Audio::DSP::Merge(const BufferViews inputs, BufferView output, const bool normalize) noexcept
 {
     const auto inputSize = inputs.size();
+    const std::size_t outputSize = output.size<Type>();
 
     if (!inputSize)
         return;
-
     Type *to = output.data<Type>();
     for (auto i = 0ul; i < 1ul; ++i) {
         const Type *from = inputs[0].data<Type>();

@@ -44,7 +44,7 @@ inline void Audio::Oscillator::receiveAudio(BufferView output)
         // const auto g = getEnveloppeGain(key, phaseIndex, trigger);
         _noteManager.incrementReadIndex(key, 0ul, audioSpecs().processBlockSize);
         // std::cout << g << std::endl;
-        std::cout << "  " << phaseIndex << std::endl;
+        // std::cout << "  " << phaseIndex << std::endl;
     }
     // std::cout << "<END>" << std::endl;
     // auto zeros = std::all_of(out, out + outSize * sizeof(float), [](const auto x) { return x == 0.0f; });
@@ -105,6 +105,10 @@ inline void Audio::Oscillator::generateSine(
         else
             output[k] = std::sin(i * frequencyNorm) * outGain;
     }
+
+    // _volumeHandler.assignRangeFunctor(output, outputSize, phaseOffset, [this, key, trigger, frequencyNorm, gain](const std::size_t index) {
+    //     return std::sin(index * frequencyNorm) * getEnveloppeGain(key, index, trigger) * gain;
+    // });
 
     // (void)_noteManager.enveloppe().adsr<true>(key, phaseOffset, trigger, enveloppeAttack(), enveloppeDecay(), enveloppeSustain(), enveloppeRelease(), audioSpecs().sampleRate);
 }

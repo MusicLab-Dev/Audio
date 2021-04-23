@@ -42,6 +42,7 @@ namespace Utils
     {
         const auto range = to - from;
         const auto normX = (x - from) / range;
+
         return std::pow(normX, M_E) * range + from;
     }
 

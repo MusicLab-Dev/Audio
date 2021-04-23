@@ -47,11 +47,14 @@ set(AudioSources
     ${AudioDir}/PluginTable.hpp
     ${AudioDir}/PluginTable.ipp
     ${AudioDir}/PluginUtils.hpp
+    ${AudioDir}/PluginControlUtils.hpp
     ${AudioDir}/Project.hpp
     ${AudioDir}/Project.ipp
     ${AudioDir}/UtilsMidi.hpp
     ${AudioDir}/KissFFT.hpp
     ${AudioDir}/KissFFT.ipp
+    ${AudioDir}/Volume.hpp
+    ${AudioDir}/Volume.ipp
 )
 
 
@@ -110,7 +113,6 @@ set(AudioDSPSources
     ${AudioDSPDir}/Filter.hpp
     ${AudioDSPDir}/Filter.ipp
     ${AudioDSPDir}/Window.ipp
-    ${AudioDSPDir}/Volume.hpp
 )
 
 set(AudioKissFFTDir ${PROJECT_SOURCE_DIR}/kissfft)

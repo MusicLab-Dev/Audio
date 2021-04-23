@@ -30,8 +30,7 @@ inline void Audio::LambdaFilter::receiveAudio(BufferView output)
 
 inline void Audio::LambdaFilter::sendAudio(const BufferViews &inputs)
 {
-    if (const auto inputSize = inputs.size(); inputSize) {
-        const auto size = inputs[0].size<float>();
-        DSP::Merge<float>(inputs, _cache, size, true);
+    if (inputs.size()) {
+        DSP::Merge<float>(inputs, _cache, true);
     }
 }

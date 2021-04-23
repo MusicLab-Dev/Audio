@@ -70,6 +70,12 @@ namespace Audio
     /** @brief Gain value */
     using Gain = float;
 
+    /** @brief Analog decibel max (dBu) */
+    static constexpr float DBUMax = 12.0f;
+
+    /** @brief DB value */
+    using DB = float;
+
     /** @brief Audio channels arrangement */
     enum class ChannelArrangement : std::uint8_t {
         Mono = 1,
