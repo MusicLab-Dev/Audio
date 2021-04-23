@@ -23,6 +23,7 @@ inline void Audio::Oscillator::receiveAudio(BufferView output)
     const auto outSize = output.size<float>();
     float *out = reinterpret_cast<float *>(output.byteData());
 
+    output.clear();
 
     // std::cout << "Oscillator::receiveAudio::sampleSize: " << sampleSize << std::endl;
     static auto Cpt = 0ull;

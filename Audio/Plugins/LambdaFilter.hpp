@@ -34,25 +34,10 @@ class Audio::LambdaFilter final : public Audio::IPlugin
         /* Plugin tags */
         TAGS(Filter),
         /* Control list */
-        REGISTER_CONTROL(
-            /* Control type */
-            Floating,
-            /* Control variable / getter / setter name */
-            masterVolume,
-            /* Control's range */
-            CONTROL_RANGE(0.0, 1.0),
-            /* Control's default value */
+        REGISTER_CONTROL_OUTPUT_VOLUME(
+            outputVolume,
             1.0,
-            /* Control name */
-            TR_TABLE(
-                TR(English, "Master volume"),
-                TR(French, "Volume master")
-            ),
-            /* Control's description */
-            TR_TABLE(
-                TR(English, "Output volume of the LambdaFilter"),
-                TR(French, "Volume de sortie du sampleur")
-            )
+            CONTROL_RANGE(0.0, 1.0)
         ),
         REGISTER_CONTROL(
             /* Control type */

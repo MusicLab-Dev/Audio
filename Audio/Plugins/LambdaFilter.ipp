@@ -24,7 +24,8 @@ inline void Audio::LambdaFilter::onAudioGenerationStarted(const BeatRange &range
 inline void Audio::LambdaFilter::receiveAudio(BufferView output)
 {
     float *out = output.data<float>();
-    _firFilter.filter<true>(_cache.data<float>(), audioSpecs().processBlockSize, out);
+    // _firFilter.filter<true>(_cache.data<float>(), audioSpecs().processBlockSize, out);
+    std::memcpy(out, _cache.data<float>(), audioSpecs().processBlockSize * GetFormatByteLength(audioSpecs().format));
 }
 
 inline void Audio::LambdaFilter::sendAudio(const BufferViews &inputs)

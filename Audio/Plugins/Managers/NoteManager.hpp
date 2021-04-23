@@ -132,7 +132,8 @@ public:
         // std::cout << "attack:::: " << attack << std::endl;
         // std::cout << "samplerate:::: " << sampleRate << std::endl;
         if (!gain) {
-            // _cache
+            setReadIndex(key, 0ul);
+            _enveloppe.resetTriggerIndexes();
         }
         return gain;
     }

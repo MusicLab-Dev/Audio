@@ -7,7 +7,7 @@
 
 #include <Core/FlatVector.hpp>
 
-#include <Audio/PluginUtils.hpp>
+#include <Audio/PluginControlUtils.hpp>
 #include <Audio/BufferOctave.hpp>
 #include "Managers/NoteManager.hpp"
 
@@ -34,25 +34,10 @@ class Audio::Sampler final : public Audio::IPlugin
         /* Plugin tags */
         TAGS(Sampler),
         /* Control list */
-        REGISTER_CONTROL(
-            /* Control type */
-            Floating,
-            /* Control variable / getter / setter name */
+        REGISTER_CONTROL_OUTPUT_VOLUME(
             outputVolume,
-            /* Control's range */
-            CONTROL_RANGE(0.0, 1.0),
-            /* Control's default value */
             1.0,
-            /* Control name */
-            TR_TABLE(
-                TR(English, "Output volume"),
-                TR(French, "Volume de sortie")
-            ),
-            /* Control's description */
-            TR_TABLE(
-                TR(English, "Output volume of the sampler"),
-                TR(French, "Volume de sortie du sampleur")
-            )
+            CONTROL_RANGE(0.0, 1.0)
         ),
         /* Enveloppe controls (attack, release) */
         REGISTER_CONTROL_ENVELOPPE_AR(

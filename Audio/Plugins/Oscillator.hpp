@@ -7,7 +7,7 @@
 
 #include <Core/FlatVector.hpp>
 
-#include <Audio/PluginUtils.hpp>
+#include <Audio/PluginControlUtils.hpp>
 #include "Managers/NoteManager.hpp"
 
 namespace Audio
@@ -33,25 +33,10 @@ class Audio::Oscillator final : public Audio::IPlugin
         /* Plugin tags */
         TAGS(Synth),
         /* Control list */
-        REGISTER_CONTROL(
-            /* Control type */
-            Floating,
-            /* Control variable / getter / setter name */
-            outputVolume,
-            /* Control's range */
-            CONTROL_RANGE(0.0, 1.0),
-            /* Control's default value */
-            1.0 / 2,
-            /* Control name */
-            TR_TABLE(
-                TR(English, "Output volume"),
-                TR(French, "Volume de sortie")
-            ),
-            /* Control's description */
-            TR_TABLE(
-                TR(English, "Output volume of the Oscillator"),
-                TR(French, "Volume de sortie du Oscillateur")
-            )
+        REGISTER_CONTROL_OUTPUT_VOLUME(
+            masterVolume,
+            0.5,
+            CONTROL_RANGE(0.0, 1.0)
         ),
         /* Enveloppe controls (attack, decay, sustain, release) */
         REGISTER_CONTROL_ENVELOPPE_ADSR(

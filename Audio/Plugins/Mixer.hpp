@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <Audio/PluginUtils.hpp>
+#include <Audio/PluginControlUtils.hpp>
 
 namespace Audio
 {
@@ -30,25 +30,10 @@ class Audio::Mixer final : public Audio::IPlugin
         /* Plugin tags */
         TAGS(Mastering),
         /* Control list */
-        REGISTER_CONTROL(
-            /* Control type */
-            Floating,
-            /* Control variable / getter / setter name */
+        REGISTER_CONTROL_OUTPUT_VOLUME(
             masterVolume,
-            /* Control's range */
-            CONTROL_RANGE(0.0, 1.0),
-            /* Control's default value */
             1.0,
-            /* Control name */
-            TR_TABLE(
-                TR(English, "Master volume"),
-                TR(French, "Volume master")
-            ),
-            /* Control's description */
-            TR_TABLE(
-                TR(English, "Output volume of the Mixer"),
-                TR(French, "Volume de sortie du sampleur")
-            )
+            CONTROL_RANGE(0.0, 1.0)
         )
     )
 

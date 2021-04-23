@@ -9,13 +9,26 @@ void Audio::DSP::Merge(const BufferViews inputs, BufferView output, const std::s
 {
     const auto inputSize = inputs.size();
 
-    for (auto i = 0ul; i < inputSize; ++i) {
-        const Type *from = inputs[i].data<Type>();
-        Type *to = output.data<Type>();
-        to[0] = from[0] / inputSize;
-        for (auto k = 1ul; k < outputSize; ++k) {
-            to[k] += from[k] / inputSize;
+    if (!inputSize)
+        return;
+
+    Type *to = output.data<Type>();
+    for (auto i = 0ul; i < 1ul; ++i) {
+        const Type *from = inputs[0].data<Type>();
+        for (auto k = 0ul; k < outputSize; ++k) {
+            to[k] = from[k];
         }
+    }
+    for (auto i = 1ul; i < inputSize; ++i) {
+        const Type *from = inputs[0].data<Type>();
+
+        from = inputs[1].data<Type>();
+        for (auto k = 0ul; k < outputSize; ++k) {
+            to[k] += from[k];
+        }
+    }
+    for (auto k = 0ul; k < outputSize; ++k) {
+        to[k] /= inputSize;
     }
 }
 
