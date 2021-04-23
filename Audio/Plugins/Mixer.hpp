@@ -38,6 +38,9 @@ class Audio::Mixer final : public Audio::IPlugin
     )
 
 public:
+    /** @brief Plugin constructor */
+    Mixer(const IPluginFactory *factory) noexcept : IPlugin(factory) {}
+
     virtual void sendAudio(const BufferViews &inputs);
     virtual void receiveAudio(BufferView output);
 

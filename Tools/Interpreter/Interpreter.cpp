@@ -419,7 +419,7 @@ void Interpreter::parsePluginCommand(void)
         getNextWord();
         const auto samplePath = _word;
         auto &node = getNode(pluginName);
-        reinterpret_cast<Audio::Sampler *>(node.ptr->plugin().get())->loadSample<float>(samplePath);
+        node.ptr->plugin()->setExternalPaths(Audio::ExternalPaths { samplePath });
         changed = true;
         break;
     }

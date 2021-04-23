@@ -47,10 +47,14 @@ class Audio::Sampler final : public Audio::IPlugin
     )
 
 public:
+    /** @brief Plugin constructor */
+    Sampler(const IPluginFactory *factory) noexcept : IPlugin(factory) {}
+
     virtual void receiveAudio(BufferView output);
 
     virtual void sendNotes(const NoteEvents &notes);
 
+    virtual const ExternalPaths &getExternalPaths(void) const { return _externalPaths; }
     virtual void setExternalPaths(const ExternalPaths &paths);
 
     virtual void onAudioParametersChanged(void);
@@ -75,6 +79,7 @@ private:
     NoteManager<DSP::EnveloppeType::AR> _noteManager {};
 
     Buffer _tmp;
+    ExternalPaths _externalPaths;
 
     float getEnveloppeGain(const Key key, const std::size_t index, const bool isTrigger) noexcept
     {

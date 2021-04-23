@@ -36,7 +36,7 @@ public:
 
     virtual SDK getSDK(void) const final { return SDK::Internal; }
 
-    [[nodiscard]] virtual IPlugin *instantiate(void) final { return new Plugin(); }
+    [[nodiscard]] virtual IPlugin *instantiate(void) final { return new Plugin(this); }
 
 private:
 };

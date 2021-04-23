@@ -29,6 +29,7 @@ inline void Audio::Sampler::onAudioParametersChanged(void)
 
 inline void Audio::Sampler::setExternalPaths(const ExternalPaths &paths)
 {
+    _externalPaths = paths;
     if (!paths.empty()) {
         loadSample<float>(paths[0]);
     }

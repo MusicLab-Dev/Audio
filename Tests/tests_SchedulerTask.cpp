@@ -20,8 +20,9 @@ public:
 
     virtual ~Scheduler(void) override = default;
 
-    virtual void onAudioBlockGenerated(void) {
+    virtual bool onAudioBlockGenerated(void) {
         std::cout << " <onAudioBlockGenerated> \n";
+        return false;
     }
 };
 
