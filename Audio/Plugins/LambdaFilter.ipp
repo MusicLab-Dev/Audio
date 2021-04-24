@@ -10,13 +10,14 @@
 
 inline void Audio::LambdaFilter::onAudioGenerationStarted(const BeatRange &range)
 {
-    _firFilter.setSpecs(
-        DSP::Filter::FIRSpecs {
+    _filter.setSpecs(
+        DSP::Filter::FIRSpec {
             static_cast<DSP::Filter::BasicType>(filterType()),
             DSP::Filter::WindowType::Hanning,
             255ul,
             static_cast<double>(audioSpecs().sampleRate),
-            { cutoffFrequencyFrom(), cutoffFrequencyTo() }
+            { cutoffFrequencyFrom(), cutoffFrequencyTo() },
+            1.0
         }
     );
     _cache.resize(GetFormatByteLength(audioSpecs().format) * audioSpecs().processBlockSize, audioSpecs().sampleRate, audioSpecs().channelArrangement, audioSpecs().format);
@@ -27,7 +28,7 @@ inline void Audio::LambdaFilter::receiveAudio(BufferView output)
 {
     float *out = output.data<float>();
     output.clear();
-    _firFilter.filter<true>(_cache.data<float>(), audioSpecs().processBlockSize, out);
+    _filter.filter(_cache.data<float>(), audioSpecs().processBlockSize, out);
     // std::memcpy(out, _cache.data<float>(), audioSpecs().processBlockSize * GetFormatByteLength(audioSpecs().format));
 }
 

@@ -7,40 +7,33 @@
  */
 
 template<typename Type>
-template<bool UseLastInput>
-typename Audio::DSP::VoidType<Type> Audio::DSP::FIR<Type>::filter(const Type *input, const std::size_t inputSize, Type *output) noexcept
+typename Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::Internal::Instance<Type>::filter(const Type *input, const std::size_t inputSize, Type *output) noexcept
 {
     const auto filterSize = _coefficients.size();
     const auto filterSizeMinusOne = filterSize - 1;
-    // const auto filterSizePlusOne = filterSize + 1;
 
     // Begin
     for (auto i = 0ul; i < filterSizeMinusOne; ++i) {
-        output[i] = filterImpl<UseLastInput>(input, filterSize, filterSizeMinusOne - i);
+        output[i] = filterImpl(input, filterSize, filterSizeMinusOne - i);
     }
     // Body
     const Type *inputShifted = input - filterSizeMinusOne;
     for (auto i = filterSizeMinusOne; i < inputSize; ++i) {
-        output[i] = filterImpl<false>(inputShifted + i, filterSize);
+        output[i] = filterImpl(inputShifted + i, filterSize);
     }
     // Save for last input
     std::memcpy(_lastInputCache.data(), input + inputSize - filterSizeMinusOne, filterSizeMinusOne * sizeof(Type));
 }
 
 template<typename Type>
-template<bool UseLastInput>
-typename Audio::DSP::ProcessType<Type> Audio::DSP::FIR<Type>::filterImpl(const Type *input, const std::size_t size, const std::size_t zeroPad) noexcept
+typename Audio::DSP::FIR::ProcessType<Type> Audio::DSP::FIR::Internal::Instance<Type>::filterImpl(const Type *input, const std::size_t size, const std::size_t zeroPad) noexcept
 {
     const std::size_t realSize = size - zeroPad;
     const std::size_t realSizeMinusOne = realSize - 1;
     Type sample { 0.0 };
 
-    // WXYZabcde
-    //  01234
-    if constexpr (UseLastInput) {
-        for (auto i = 0ul; i < zeroPad; ++i) {
-            sample += _lastInputCache[realSizeMinusOne + i] * _coefficients[i];
-        }
+    for (auto i = 0ul; i < zeroPad; ++i) {
+        sample += _lastInputCache[realSizeMinusOne + i] * _coefficients[i];
     }
     for (auto i = 0ul; i < realSize; ++i) {
         sample += input[i] * _coefficients[zeroPad + i];
@@ -48,65 +41,40 @@ typename Audio::DSP::ProcessType<Type> Audio::DSP::FIR<Type>::filterImpl(const T
     return sample;
 }
 
-template<typename Type>
-template<bool UseLastInput>
-typename Audio::DSP::VoidType<Type> Audio::DSP::FIRFilter<Type>::filter(const Type *input, const std::size_t inputSize, Type *output) noexcept
+template<unsigned InstanceCount, typename Type>
+typename Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::Internal::MultiInstance<InstanceCount, Type>::filter(const Type *input, const std::size_t inputSize, Type *output) noexcept
 {
-    _instance.template filter<true>(input, inputSize, output);
-}
+    const auto filterSize = _coefficients.size();
+    const auto filterSizeMinusOne = filterSize - 1;
 
-template<typename Type>
-inline bool Audio::DSP::FIRFilter<Type>::setSpecs(const Filter::FIRSpecs specs) noexcept
-{
-    if (_specs == specs)
-        return false;
-    _specs = specs;
-    _instance.coefficients().resize(specs.size);
-    _instance.lastInput().resize(specs.size - 1);
-    _instance.lastInput().clear();
-    Filter::GenerateFilter(specs, _instance.coefficients().data());
-
-    return true;
-}
-
-template<typename Type>
-inline bool Audio::DSP::FIRFilter<Type>::setCutoffs(const float cutoffFrom, const float cutoffTo) noexcept
-{
-    return setSpecs(
-        Filter::FIRSpecs {
-            _specs.filterType,
-            _specs.windowType,
-            _specs.size,
-            _specs.sampleRate,
-            { cutoffFrom, cutoffTo }
+    // Begin
+    for (auto i = 0ul; i < filterSizeMinusOne; ++i) {
+        output[i] = filterImpl(input, filterSize, filterSizeMinusOne - i);
+    }
+    // Body
+    const Type *inputShifted = input - filterSizeMinusOne;
+    for (auto i = filterSizeMinusOne; i < inputSize; ++i) {
+        // Apply all instance
+        for (const auto &coefs : _coefficients) {
+            output[i] = filterImpl(inputShifted + i, filterSize, coefs.data());
         }
-    );
+    }
+    // Save for last input
+    std::memcpy(_lastInputCache.data(), input + inputSize - filterSizeMinusOne, filterSizeMinusOne * sizeof(Type));
 }
 
-template<typename Type>
-inline bool Audio::DSP::FIRFilter<Type>::setSampleRate(const float sampleRate) noexcept
+template<unsigned InstanceCount, typename Type>
+typename Audio::DSP::FIR::ProcessType<Type> Audio::DSP::FIR::Internal::MultiInstance<InstanceCount, Type>::filterImpl(const Type *input, const std::size_t size, const Type *coefs, const std::size_t zeroPad) noexcept
 {
-    return setSpecs(
-        Filter::FIRSpecs {
-            _specs.filterType,
-            _specs.windowType,
-            _specs.size,
-            sampleRate,
-            { _specs.cutoffs[0], _specs.cutoffs[1] }
-        }
-    );
-}
+    const std::size_t realSize = size - zeroPad;
+    const std::size_t realSizeMinusOne = realSize - 1;
+    Type sample { 0.0 };
 
-template<typename Type>
-inline bool Audio::DSP::FIRFilter<Type>::setFilterType(const Filter::BasicType filterType) noexcept
-{
-    return setSpecs(
-        Filter::FIRSpecs {
-            filterType,
-            _specs.windowType,
-            _specs.size,
-            _specs.sampleRate,
-            { _specs.cutoffs[0], _specs.cutoffs[1] }
-        }
-    );
+    for (auto i = 0ul; i < zeroPad; ++i) {
+        sample += _lastInputCache[realSizeMinusOne + i] * _coefficients[i];
+    }
+    for (auto i = 0ul; i < realSize; ++i) {
+        sample += input[i] * coefs[zeroPad + i];
+    }
+    return sample;
 }

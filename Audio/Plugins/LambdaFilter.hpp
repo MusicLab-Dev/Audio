@@ -124,7 +124,7 @@ public:
     virtual void onAudioGenerationStarted(const BeatRange &range);
 
 private:
-    DSP::FIRFilter<float> _firFilter;
+    DSP::FIR::BasicFilter<float> _filter;
     Buffer _cache;
 };
 
