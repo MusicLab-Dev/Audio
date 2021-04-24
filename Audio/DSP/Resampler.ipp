@@ -41,12 +41,13 @@ inline void Audio::DSP::Resampler<Type>::resampleSemitone(const Type *inputBuffe
     const auto factor = std::max(iFactor, dFactor);
     const auto factorScale = static_cast<float>(iFactor);
     const std::size_t filterSize = factor * ProcessSize;
-    const Filter::FIRSpecs filterSpecs {
+    const Filter::FIRSpec filterSpecs {
         Filter::BasicType::LowPass,
         Filter::WindowType::Hanning,
         filterSize,
         static_cast<double>(sampleRate),
-        { sampleRate / 2.0 / static_cast<double>(factor), 0.0 }
+        { sampleRate / 2.0 / static_cast<double>(factor), 0.0 },
+        1.0
     };
 
     _filterCache.resize(filterSize);
@@ -111,12 +112,13 @@ inline void Audio::DSP::Resampler<Type>::resampleOctave(const Type *inputBuffer,
     const std::size_t factor = std::pow(2, std::abs(nOctave));
     const auto factorScale = static_cast<float>(nOctave > 0 ? 1 : factor);
     const std::size_t filterSize = factor * ProcessSize;
-    const Filter::FIRSpecs filterSpecs {
+    const Filter::FIRSpec filterSpecs {
         Filter::BasicType::LowPass,
         Filter::WindowType::Hanning,
         filterSize,
         static_cast<double>(sampleRate),
-        { sampleRate / 2.0 / static_cast<double>(factor), 0.0 }
+        { sampleRate / 2.0 / static_cast<double>(factor), 0.0 },
+        1.0
     };
     // std::cout << "cutoff:: " << (sampleRate / 2 / static_cast<float>(factor)) << ", size: " << filterSize << std::endl;
 

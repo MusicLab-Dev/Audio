@@ -22,7 +22,8 @@ inline void Audio::Sampler::loadSample(const std::string_view &path)
     //     DSP::Filter::WindowType::Hanning,
     //     255ul,
     //     static_cast<double>(audioSpecs().sampleRate),
-    //     { 1000.0, 0.0 }
+    //     { 1000.0, 0.0 },
+    //     1.0
     // });
 
     // BufferView ref(_buffers[OctaveRootKey]);

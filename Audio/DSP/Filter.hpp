@@ -9,6 +9,8 @@
 
 namespace Audio::DSP::Filter
 {
+    // http://www.labbookpages.co.uk/audio/firWindowing.html
+    // https://dsp.stackexchange.com/questions/9408/fir-filter-with-linear-phase-4-types
     // https://technobyte.org/windowing-design-fir-filter-method/
     enum class WindowType : std::uint8_t
     {
@@ -38,28 +40,24 @@ namespace Audio::DSP::Filter
         HighShelf
     };
 
-    struct FIRSpecs
+    struct FIRSpec
     {
         BasicType filterType { BasicType::LowPass };
         WindowType windowType { WindowType::Hanning };
         std::size_t size;
         double sampleRate;
         double cutoffs[2];
+        double gain;
 
-        bool operator==(const FIRSpecs &other) {
+        bool operator==(const FIRSpec &other) {
             return (
-                filterType
-                 == other.filterType &&
-                windowType
-                 == other.windowType &&
-                size
-                 == other.size &&
-                sampleRate
-                 == other.sampleRate &&
-                cutoffs[0] ==
-                other.cutoffs[0] &&
-                cutoffs[1]
-                 == other.cutoffs[1]
+                filterType == other.filterType &&
+                windowType == other.windowType &&
+                size == other.size &&
+                sampleRate == other.sampleRate &&
+                cutoffs[0] == other.cutoffs[0] &&
+                cutoffs[1] == other.cutoffs[1] &&
+                gain == other.gain
             );
         }
     };
@@ -74,15 +72,15 @@ namespace Audio::DSP::Filter
      * @brief Design filter coefficients within a window
      * @warning Call GenerateWindow before to populate the window for the filter coefficients
      */
-    void DesignFilter(const FIRSpecs specs, float *window, const std::size_t windowSize, const bool centered) noexcept;
+    void DesignFilter(const FIRSpec specs, float *window, const std::size_t windowSize, const bool centered) noexcept;
 
     /** @brief Helper to fully generate filter coefficients */
-    void GenerateFilter(const FIRSpecs specs, float *window, const bool centered = true) noexcept;
+    void GenerateFilter(const FIRSpec specs, float *window, const bool centered = true) noexcept;
 
-    void DesignFilterLowPass(float *window, const std::size_t size, const double cutoffRate, const bool centered) noexcept;
-    void DesignFilterHighPass(float *window, const std::size_t size, const double cutoffRate, const bool centered) noexcept;
-    void DesignFilterBandPass(float *window, const std::size_t size, const double cutoffRateBegin, const double cutoffRateEnd, const bool centered) noexcept;
-    void DesignFilterBandStop(float *window, const std::size_t size, const double cutoffRateBegin, const double cutoffRateEnd, const bool centered) noexcept;
+    void DesignFilterLowPass(float *window, const std::size_t size, const double cutoffRate, const double gain, const bool centered) noexcept;
+    void DesignFilterHighPass(float *window, const std::size_t size, const double cutoffRate, const double gain, const bool centered) noexcept;
+    void DesignFilterBandPass(float *window, const std::size_t size, const double cutoffRateBegin, const double cutoffRateEnd, const double gain, const bool centered) noexcept;
+    void DesignFilterBandStop(float *window, const std::size_t size, const double cutoffRateBegin, const double cutoffRateEnd, const double gain, const bool centered) noexcept;
 
     void Hanning(const std::size_t size, float *window, const bool isSymetric = true) noexcept;
     void Hamming(const std::size_t size, float *window, const bool isSymetric = true) noexcept;

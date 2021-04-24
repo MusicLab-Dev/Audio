@@ -111,6 +111,7 @@ set(AudioDSPSources
     ${AudioDSPDir}/EnveloppeGenerator.ipp
     ${AudioDSPDir}/FIR.hpp
     ${AudioDSPDir}/FIR.ipp
+    ${AudioDSPDir}/FIRFilter.ipp
     ${AudioDSPDir}/Filter.hpp
     ${AudioDSPDir}/Filter.ipp
     ${AudioDSPDir}/Window.ipp
