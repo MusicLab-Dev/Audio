@@ -45,9 +45,9 @@ class Audio::LambdaFilter final : public Audio::IPlugin
             /* Control variable / getter / setter name */
             cutoffFrequencyFrom,
             /* Control's range */
-            CONTROL_RANGE(0.0, 1.0),
+            CONTROL_RANGE(0.0, 20'000.0),
             /* Control's default value */
-            0.5,
+            440.0,
             /* Control name */
             TR_TABLE(
                 TR(English, "First cutoff frequency"),
@@ -65,9 +65,9 @@ class Audio::LambdaFilter final : public Audio::IPlugin
             /* Control variable / getter / setter name */
             cutoffFrequencyTo,
             /* Control's range */
-            CONTROL_RANGE(0.0, 1.0),
+            CONTROL_RANGE(0.0, 20'000.0),
             /* Control's default value */
-            0.8,
+            1000.0,
             /* Control name */
             TR_TABLE(
                 TR(English, "Second cutoff frequency"),

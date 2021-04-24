@@ -13,8 +13,8 @@ inline void Audio::DSP::Filter::GenerateFilter(const FIRSpecs specs, float *wind
 
 inline void Audio::DSP::Filter::DesignFilter(const FIRSpecs specs, float *window, const std::size_t windowSize, const bool centered) noexcept
 {
-    const float cutoffRateBegin = specs.cutoffs[0] / static_cast<float>(specs.sampleRate);
-    const float cutoffRateEnd = specs.cutoffs[1] / static_cast<float>(specs.sampleRate);
+    const double cutoffRateBegin = specs.cutoffs[0] / specs.sampleRate;
+    const double cutoffRateEnd = specs.cutoffs[1] / specs.sampleRate;
 
     switch (specs.filterType) {
     case BasicType::LowPass:

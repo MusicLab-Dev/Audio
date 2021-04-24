@@ -10,13 +10,16 @@
 
 inline void Audio::LambdaFilter::onAudioGenerationStarted(const BeatRange &range)
 {
-    _firFilter.setSpecs(DSP::Filter::FIRSpecs {
-        static_cast<DSP::Filter::BasicType>(filterType()),
+    const DSP::Filter::FIRSpecs specs {
+        DSP::Filter::BasicType::LowPass,
         DSP::Filter::WindowType::Hanning,
         255ul,
-        static_cast<float>(audioSpecs().sampleRate),
-        { static_cast<float>(cutoffFrequencyFrom()), static_cast<float>(cutoffFrequencyTo()) }
-    });
+        44100,
+        { 0.1, 0.1 }
+    };
+
+    _firFilter.setSpecs(specs);
+    std::cout << static_cast<float>(cutoffFrequencyFrom() * audioSpecs().sampleRate / 2.0f) << std::endl;
     _cache.resize(GetFormatByteLength(audioSpecs().format) * audioSpecs().processBlockSize, audioSpecs().sampleRate, audioSpecs().channelArrangement, audioSpecs().format);
     _cache.clear();
 }
@@ -24,8 +27,9 @@ inline void Audio::LambdaFilter::onAudioGenerationStarted(const BeatRange &range
 inline void Audio::LambdaFilter::receiveAudio(BufferView output)
 {
     float *out = output.data<float>();
-    // _firFilter.filter<true>(_cache.data<float>(), audioSpecs().processBlockSize, out);
-    std::memcpy(out, _cache.data<float>(), audioSpecs().processBlockSize * GetFormatByteLength(audioSpecs().format));
+    output.clear();
+    _firFilter.filter<true>(_cache.data<float>(), audioSpecs().processBlockSize, out);
+    // std::memcpy(out, _cache.data<float>(), audioSpecs().processBlockSize * GetFormatByteLength(audioSpecs().format));
 }
 
 inline void Audio::LambdaFilter::sendAudio(const BufferViews &inputs)

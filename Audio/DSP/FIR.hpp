@@ -26,27 +26,6 @@ namespace Audio::DSP
     using VoidType = std::enable_if_t<std::is_floating_point_v<Type>, void>;
     template<typename Type>
     using ProcessType = std::enable_if_t<std::is_floating_point_v<Type>, Type>;
-
-
-    // struct Filter::FIRSpecs
-    // {
-    //     Filter::BasicType filterType;
-    //     Filter::WindowType windowType;
-    //     std::size_t size;
-    //     float sampleRate;
-    //     float cutoffs[2] { 0.0f, 0.0f };
-
-    //     bool operator==(const Filter::FIRSpecs other) {
-    //         return (
-    //             filterType == other.filterType &&
-    //             windowType == other.windowType &&
-    //             size == other.size &&
-    //             sampleRate == other.sampleRate &&
-    //             cutoffs[0] == other.cutoffs[0] &&
-    //             cutoffs[1] == other.cutoffs[1]
-    //         );
-    //     }
-    // };
 }
 
 template<typename Type>

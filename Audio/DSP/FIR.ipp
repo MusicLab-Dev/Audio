@@ -32,11 +32,14 @@ template<bool UseLastInput>
 typename Audio::DSP::ProcessType<Type> Audio::DSP::FIR<Type>::filterImpl(const Type *input, const std::size_t size, const std::size_t zeroPad) noexcept
 {
     const std::size_t realSize = size - zeroPad;
+    const std::size_t realSizeMinusOne = realSize - 1;
     Type sample { 0.0 };
 
+    // WXYZabcde
+    //  01234
     if constexpr (UseLastInput) {
         for (auto i = 0ul; i < zeroPad; ++i) {
-            sample += _lastInputCache[i] * _coefficients[i];
+            sample += _lastInputCache[realSizeMinusOne + i] * _coefficients[i];
         }
     }
     for (auto i = 0ul; i < realSize; ++i) {
@@ -52,14 +55,15 @@ typename Audio::DSP::VoidType<Type> Audio::DSP::FIRFilter<Type>::filter(const Ty
     _instance.template filter<true>(input, inputSize, output);
 }
 
-
 template<typename Type>
 inline bool Audio::DSP::FIRFilter<Type>::setSpecs(const Filter::FIRSpecs specs) noexcept
 {
     if (_specs == specs)
         return false;
+    _specs = specs;
     _instance.coefficients().resize(specs.size);
     _instance.lastInput().resize(specs.size - 1);
+    _instance.lastInput().clear();
     Filter::GenerateFilter(specs, _instance.coefficients().data());
 
     return true;

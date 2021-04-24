@@ -45,8 +45,8 @@ inline void Audio::DSP::Resampler<Type>::resampleSemitone(const Type *inputBuffe
         Filter::BasicType::LowPass,
         Filter::WindowType::Hanning,
         filterSize,
-        static_cast<float>(sampleRate),
-        { sampleRate / 2 / static_cast<float>(factor), 0.0 }
+        static_cast<double>(sampleRate),
+        { sampleRate / 2.0 / static_cast<double>(factor), 0.0 }
     };
 
     _filterCache.resize(filterSize);
@@ -115,8 +115,8 @@ inline void Audio::DSP::Resampler<Type>::resampleOctave(const Type *inputBuffer,
         Filter::BasicType::LowPass,
         Filter::WindowType::Hanning,
         filterSize,
-        static_cast<float>(sampleRate),
-        { sampleRate / 2 / static_cast<float>(factor), 0.0 }
+        static_cast<double>(sampleRate),
+        { sampleRate / 2.0 / static_cast<double>(factor), 0.0 }
     };
     // std::cout << "cutoff:: " << (sampleRate / 2 / static_cast<float>(factor)) << ", size: " << filterSize << std::endl;
 

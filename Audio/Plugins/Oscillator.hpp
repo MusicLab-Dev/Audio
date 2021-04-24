@@ -63,6 +63,7 @@ class Audio::Oscillator final : public Audio::IPlugin
 
 public:
     /** @brief Default gain for each voice */
+    // static constexpr DB DefaultVoiceGain = 0;
     static constexpr DB DefaultVoiceGain = -DBUMax;
 
     /** @brief Plugin constructor */

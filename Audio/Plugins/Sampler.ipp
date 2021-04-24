@@ -6,6 +6,8 @@
 #include <Audio/BufferOctave.hpp>
 #include <Audio/SampleFile/SampleManager.hpp>
 
+#include <Audio/DSP/FIR.hpp>
+
 template<typename Type>
 inline void Audio::Sampler::loadSample(const std::string_view &path)
 {
@@ -14,9 +16,19 @@ inline void Audio::Sampler::loadSample(const std::string_view &path)
 
     GenerateOctave<Type>(_buffers[OctaveRootKey], _buffers);
 
-    // for (auto i = 0u; i < 12; ++i) {
-    //     SampleManager<Type>::WriteSampleFile("sample_" + std::to_string(i) + ".wav", _buffers[i]);
-    // }
+    // static DSP::FIRFilter<float> filter;
+    // filter.setSpecs(DSP::Filter::FIRSpecs {
+    //     DSP::Filter::BasicType::LowPass,
+    //     DSP::Filter::WindowType::Hanning,
+    //     255ul,
+    //     static_cast<double>(audioSpecs().sampleRate),
+    //     { 1000.0, 0.0 }
+    // });
+
+    // BufferView ref(_buffers[OctaveRootKey]);
+    // Buffer filtered(ref.channelByteSize(), ref.sampleRate(), ref.channelArrangement(), ref.format());
+    // filter.filter<false>(ref.data<float>(), ref.size<float>(), filtered.data<float>());
+    // SampleManager<float>::WriteSampleFile("filtered.wav", filtered);
 }
 
 inline void Audio::Sampler::onAudioParametersChanged(void)

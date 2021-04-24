@@ -40,20 +40,26 @@ namespace Audio::DSP::Filter
 
     struct FIRSpecs
     {
-        BasicType filterType;
-        WindowType windowType;
+        BasicType filterType { BasicType::LowPass };
+        WindowType windowType { WindowType::Hanning };
         std::size_t size;
-        float sampleRate;
-        float cutoffs[2];
+        double sampleRate;
+        double cutoffs[2];
 
-        bool operator==(const FIRSpecs other) {
+        bool operator==(const FIRSpecs &other) {
             return (
-                filterType == other.filterType &&
-                windowType == other.windowType &&
-                size == other.size &&
-                sampleRate == other.sampleRate &&
-                cutoffs[0] == other.cutoffs[0] &&
-                cutoffs[1] == other.cutoffs[1]
+                filterType
+                 == other.filterType &&
+                windowType
+                 == other.windowType &&
+                size
+                 == other.size &&
+                sampleRate
+                 == other.sampleRate &&
+                cutoffs[0] ==
+                other.cutoffs[0] &&
+                cutoffs[1]
+                 == other.cutoffs[1]
             );
         }
     };
