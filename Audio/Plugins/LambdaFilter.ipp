@@ -10,16 +10,15 @@
 
 inline void Audio::LambdaFilter::onAudioGenerationStarted(const BeatRange &range)
 {
-    const DSP::Filter::FIRSpecs specs {
-        DSP::Filter::BasicType::LowPass,
-        DSP::Filter::WindowType::Hanning,
-        255ul,
-        44100,
-        { 0.1, 0.1 }
-    };
-
-    _firFilter.setSpecs(specs);
-    std::cout << static_cast<float>(cutoffFrequencyFrom() * audioSpecs().sampleRate / 2.0f) << std::endl;
+    _firFilter.setSpecs(
+        DSP::Filter::FIRSpecs {
+            static_cast<DSP::Filter::BasicType>(filterType()),
+            DSP::Filter::WindowType::Hanning,
+            255ul,
+            static_cast<double>(audioSpecs().sampleRate),
+            { cutoffFrequencyFrom(), cutoffFrequencyTo() }
+        }
+    );
     _cache.resize(GetFormatByteLength(audioSpecs().format) * audioSpecs().processBlockSize, audioSpecs().sampleRate, audioSpecs().channelArrangement, audioSpecs().format);
     _cache.clear();
 }
