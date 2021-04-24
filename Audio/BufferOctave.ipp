@@ -26,10 +26,10 @@ inline void Audio::GenerateOctave(const BufferView input, BufferOctave &octave) 
             min = std::min(min, data[i]);
             max = std::max(max, data[i]);
         }
-        std::cout << "min: " << min << " max: " << max << std::endl;
+        // std::cout << "min: " << min << " max: " << max << std::endl;
     };
 
-    std::cout << "REF sample:" << std::endl;
+    // std::cout << "REF sample:" << std::endl;
     GetMinMax(octave[OctaveRootKey]);
     // Lowest notes
     for (auto i = 0u; i < OctaveRootKey; ++i) {
