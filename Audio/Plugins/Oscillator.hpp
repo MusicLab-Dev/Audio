@@ -37,7 +37,7 @@ class Audio::Oscillator final : public Audio::IPlugin
         /* Control list */
         REGISTER_CONTROL_OUTPUT_VOLUME(
             masterVolume,
-            -DBUMax,
+            -DBUMax / 2,
             CONTROL_RANGE(-100.0, 0.0)
         ),
         /* Enveloppe controls (attack, decay, sustain, release) */
