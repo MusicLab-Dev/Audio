@@ -98,11 +98,13 @@ class Audio::DSP::FIR::BasicFilter
 {
 public:
     BasicFilter(void) = default;
+    BasicFilter(const DSP::Filter::FIRSpec specs) { init(specs); }
 
-    BasicFilter(const DSP::Filter::FIRSpec specs) : _specs(specs) { setSpecs(specs); }
+    /** @brief Initialize the internal filter specs */
+    bool init(const DSP::Filter::FIRSpec &specs) noexcept { return setSpecs(specs); }
 
     /** @brief Set the internal specs. It will recompute the instance coefficients */
-    bool setSpecs(const DSP::Filter::FIRSpec specs) noexcept;
+    bool setSpecs(const DSP::Filter::FIRSpec &specs) noexcept;
     /** @brief Set the internal cutoffs */
     bool setCutoffs(const float cutoffFrom, const float cutoffTo = 0.0f) noexcept;
     /** @brief Set the internal sampleRate */
@@ -138,6 +140,10 @@ public:
     using GainList = std::initializer_list<DB>;
 
     MultiFilter(void) = default;
+    MultiFilter(const DSP::Filter::WindowType windowType, const std::size_t filterSize, const float sampleRate) { init(windowType, filterSize, sampleRate); }
+
+    /** @brief Initialize the internal filters specs */
+    bool init(const DSP::Filter::WindowType windowType, const std::size_t filterSize, const float sampleRate) noexcept;
 
     /** @brief Set the internal cutoffs */
     bool setCutoffs(const CutoffList &cutoffs) noexcept;
@@ -170,7 +176,7 @@ private:
     CutoffArray _cutoffs;
     GainArray _gains;
 
-    void reloadInstances(const DSP::Filter::WindowType &windowType, const std::size_t filterSize, const float sampleRate) noexcept;
+    void reloadInstances(const DSP::Filter::WindowType windowType, const std::size_t filterSize, const float sampleRate) noexcept;
     void reloadInstance(const DSP::Filter::FIRSpec &specs, std::size_t instanceIndex) noexcept;
 };
 

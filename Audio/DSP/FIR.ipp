@@ -49,7 +49,9 @@ typename Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::Internal::MultiInstanc
 
     // Begin
     for (auto i = 0ul; i < filterSizeMinusOne; ++i) {
-        output[i] = filterImpl(input, filterSize, filterSizeMinusOne - i);
+        for (const auto &coefs : _coefficients) {
+            output[i] = filterImpl(input, filterSize, coefs.data(), filterSizeMinusOne - i);
+        }
     }
     // Body
     const Type *inputShifted = input - filterSizeMinusOne;

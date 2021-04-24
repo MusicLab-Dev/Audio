@@ -13,11 +13,14 @@ namespace Audio
     /** @brief Gain value */
     using Gain = float;
 
-    /** @brief Analog decibel max (dBu) */
-    static constexpr float DBUMax = 12.0f;
-
     /** @brief DB value */
     using DB = float;
+
+    /** @brief Analog decibel max (dBu) */
+    static constexpr DB DBUMax = 12.0f;
+
+    /** @brief Default plugin output volume */
+    static constexpr DB DefaultPluginOutputVolume = -3.0;
 
     /** @brief Convert a sample value to the decibel unit */
     template<typename Type>

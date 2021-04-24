@@ -1,6 +1,6 @@
 /**
- * @file LambdaFilter.ipp
- * @brief Lambda filter implementation
+ * @file GammaEqualizer.ipp
+ * @brief Gamma equalize implementation
  *
  * @author Pierre V
  * @date 2021-04-23
@@ -8,23 +8,18 @@
 
 #include <Audio/DSP/Merge.hpp>
 
-inline void Audio::LambdaFilter::onAudioGenerationStarted(const BeatRange &range)
+inline void Audio::GammaEqualizer::onAudioGenerationStarted(const BeatRange &range)
 {
     _filter.init(
-        DSP::Filter::FIRSpec {
-            static_cast<DSP::Filter::BasicType>(filterType()),
-            DSP::Filter::WindowType::Hanning,
-            255ul,
-            static_cast<double>(audioSpecs().sampleRate),
-            { cutoffFrequencyFrom(), cutoffFrequencyTo() },
-            1.0
-        }
+        DSP::Filter::WindowType::Hanning,
+        255ul,
+        static_cast<double>(audioSpecs().sampleRate)
     );
     _cache.resize(GetFormatByteLength(audioSpecs().format) * audioSpecs().processBlockSize, audioSpecs().sampleRate, audioSpecs().channelArrangement, audioSpecs().format);
     _cache.clear();
 }
 
-inline void Audio::LambdaFilter::receiveAudio(BufferView output)
+inline void Audio::GammaEqualizer::receiveAudio(BufferView output)
 {
     float *out = output.data<float>();
     output.clear();
@@ -32,7 +27,7 @@ inline void Audio::LambdaFilter::receiveAudio(BufferView output)
     // std::memcpy(out, _cache.data<float>(), audioSpecs().processBlockSize * GetFormatByteLength(audioSpecs().format));
 }
 
-inline void Audio::LambdaFilter::sendAudio(const BufferViews &inputs)
+inline void Audio::GammaEqualizer::sendAudio(const BufferViews &inputs)
 {
     if (inputs.size()) {
         DSP::Merge<float>(inputs, _cache, true);

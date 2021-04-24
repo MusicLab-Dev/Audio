@@ -36,9 +36,9 @@ class Audio::Oscillator final : public Audio::IPlugin
         TAGS(Synth),
         /* Control list */
         REGISTER_CONTROL_OUTPUT_VOLUME(
-            masterVolume,
-            -3.0,
-            CONTROL_RANGE(-100.0, 6.0)
+            outputVolume,
+            DefaultPluginOutputVolume,
+            CONTROL_OUTPUT_VOLUME_RANGE()
         ),
         /* Enveloppe controls (attack, decay, sustain, release) */
         REGISTER_CONTROL_ENVELOPPE_ADSR(

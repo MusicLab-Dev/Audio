@@ -69,7 +69,9 @@ set(AudioPluginsSources
     ${AudioPluginsDir}/Mixer.hpp
     ${AudioPluginsDir}/Mixer.ipp
     ${AudioPluginsDir}/LambdaFilter.hpp
-    ${AudioPluginsDir}/LambdaFilter.ipp
+    ${AudioPluginsDir}/LambdaFilter.hpp
+    ${AudioPluginsDir}/GammaEqualizer.ipp
+    ${AudioPluginsDir}/GammaEqualizer.ipp
 )
 
 set(AudioPluginManagerDir ${AudioPluginsDir}/Managers)

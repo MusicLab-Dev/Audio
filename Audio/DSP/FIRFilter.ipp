@@ -6,8 +6,11 @@
  * @date 2021-04-24
  */
 
+/**
+ * @brief BasicFilter implementation
+ */
 template<typename Type>
-inline bool Audio::DSP::FIR::BasicFilter<Type>::setSpecs(const Filter::FIRSpec specs) noexcept
+inline bool Audio::DSP::FIR::BasicFilter<Type>::setSpecs(const DSP::Filter::FIRSpec &specs) noexcept
 {
     if (_specs == specs)
         return false;
@@ -51,7 +54,7 @@ inline bool Audio::DSP::FIR::BasicFilter<Type>::setSampleRate(const float sample
 }
 
 template<typename Type>
-inline bool Audio::DSP::FIR::BasicFilter<Type>::setFilterType(const Filter::BasicType filterType) noexcept
+inline bool Audio::DSP::FIR::BasicFilter<Type>::setFilterType(const DSP::Filter::BasicType filterType) noexcept
 {
     return setSpecs(
         Filter::FIRSpec {
@@ -66,7 +69,7 @@ inline bool Audio::DSP::FIR::BasicFilter<Type>::setFilterType(const Filter::Basi
 }
 
 template<typename Type>
-inline bool Audio::DSP::FIR::BasicFilter<Type>::setWindowType(const Filter::WindowType windowType) noexcept
+inline bool Audio::DSP::FIR::BasicFilter<Type>::setWindowType(const DSP::Filter::WindowType windowType) noexcept
 {
     return setSpecs(
         Filter::FIRSpec {
@@ -80,20 +83,33 @@ inline bool Audio::DSP::FIR::BasicFilter<Type>::setWindowType(const Filter::Wind
     );
 }
 
-#include <iostream>
-
+/**
+ * @brief MultiFilter implementation
+ */
 template<unsigned InstanceCount, typename Type>
-inline void Audio::DSP::FIR::MultiFilter<InstanceCount, Type>::reloadInstance(const Filter::FIRSpec &specs, const std::size_t instanceIndex) noexcept
+inline bool Audio::DSP::FIR::MultiFilter<InstanceCount, Type>::init(const DSP::Filter::WindowType windowType, const std::size_t filterSize, const float sampleRate) noexcept
 {
-    _instances[instanceIndex].coefficients().resize(specs.size);
-    _instances[instanceIndex].lastInput().resize(specs.size - 1);
-    _instances[instanceIndex].lastInput().clear();
-
-    Filter::GenerateFilter(specs, _instances[instanceIndex].coefficients().data());
+    if (_windowType == windowType && _filterSize == filterSize && _sampleRate == sampleRate)
+        return false;
+    _windowType = windowType;
+    _filterSize = filterSize;
+    _sampleRate = sampleRate;
+    reloadInstances(_windowType, _filterSize, _sampleRate);
+    return true;
 }
 
 template<unsigned InstanceCount, typename Type>
-inline void Audio::DSP::FIR::MultiFilter<InstanceCount, Type>::reloadInstances(const DSP::Filter::WindowType &windowType, const std::size_t filterSize, const float sampleRate) noexcept
+inline void Audio::DSP::FIR::MultiFilter<InstanceCount, Type>::reloadInstance(const DSP::Filter::FIRSpec &specs, const std::size_t instanceIndex) noexcept
+{
+    _instances.coefficients()[instanceIndex].resize(specs.size);
+    _instances.lastInput().resize(specs.size - 1);
+    _instances.lastInput().clear();
+
+    Filter::GenerateFilter(specs, _instances.coefficients()[instanceIndex].data());
+}
+
+template<unsigned InstanceCount, typename Type>
+inline void Audio::DSP::FIR::MultiFilter<InstanceCount, Type>::reloadInstances(const DSP::Filter::WindowType windowType, const std::size_t filterSize, const float sampleRate) noexcept
 {
     // First filter (low-pass)
     reloadInstance(
@@ -156,7 +172,7 @@ inline bool Audio::DSP::FIR::MultiFilter<InstanceCount, Type>::setFilterSize(con
 }
 
 template<unsigned InstanceCount, typename Type>
-inline bool Audio::DSP::FIR::MultiFilter<InstanceCount, Type>::setWindowType(const Filter::WindowType windowType) noexcept
+inline bool Audio::DSP::FIR::MultiFilter<InstanceCount, Type>::setWindowType(const DSP::Filter::WindowType windowType) noexcept
 {
     if (_windowType == _windowType)
         return false;
