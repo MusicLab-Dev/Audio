@@ -61,10 +61,10 @@ public: \
 private:
 
 
-#define REGISTER_CONTROL(Type, Variable, Range, Value, Name, Description) CONTROL(Type, Variable, Range, Value, Name, Description)
+#define REGISTER_CONTROL(Type, Variable, Value, Range, Name, Description) CONTROL(Type, Variable, Value, Range, Name, Description)
 #define REGISTER_CONTROL_ENUM(Variable, Range, Name, Description) CONTROL_ENUM(Variable, Range, Name, Description)
 
-#define _REGISTER_METADATA_CONTROL(Type, Variable, Range, Value, Name, Description) \
+#define _REGISTER_METADATA_CONTROL(Type, Variable, Value, Range, Name, Description) \
     Audio::ControlMetaData { \
         Audio::TranslationMetaData { Name, Description }, \
         Audio::ParamType::Type, \
@@ -82,14 +82,14 @@ private:
         Range \
     }
 
-#define _INIT_CONTROL(Type, Variable, Range, Value, Name, Description) Value
+#define _INIT_CONTROL(Type, Variable, Value, Range, Name, Description) Value
 
 #define _INIT_CONTROL_ENUM(Variable, Range, Name, Description) 0.0
 
-#define _REGISTER_GETTER_REF_CONTROL(Type, Variable, Range, Value, Name, Description) \
+#define _REGISTER_GETTER_REF_CONTROL(Type, Variable, Value, Range, Name, Description) \
     [[nodiscard]] Audio::ParamValue &Variable(void) noexcept { return _controls
 
-#define _REGISTER_GETTER_CONTROL(Type, Variable, Range, Value, Name, Description) \
+#define _REGISTER_GETTER_CONTROL(Type, Variable, Value, Range, Name, Description) \
     [[nodiscard]] Audio::ParamValue Variable(void) const noexcept { return _controls
 
 #define _REGISTER_GETTER_REF_CONTROL_ENUM(Variable, Range, Name, Description)  \

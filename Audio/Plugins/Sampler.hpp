@@ -36,8 +36,8 @@ class Audio::Sampler final : public Audio::IPlugin
         /* Control list */
         REGISTER_CONTROL_OUTPUT_VOLUME(
             outputVolume,
-            1.0,
-            CONTROL_RANGE(0.0, 1.0)
+            DefaultPluginOutputVolume,
+            CONTROL_OUTPUT_VOLUME_RANGE()
         ),
         /* Enveloppe controls (attack, release) */
         REGISTER_CONTROL_ENVELOPPE_AR(

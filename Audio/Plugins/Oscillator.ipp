@@ -20,7 +20,7 @@ inline void Audio::Oscillator::sendNotes(const NoteEvents &notes)
 
 inline void Audio::Oscillator::receiveAudio(BufferView output)
 {
-    const DB voiceGain = ConvertDecibelToRatio(masterVolume() + DefaultVoiceGain);
+    const DB voiceGain = ConvertDecibelToRatio(outputVolume() + DefaultVoiceGain);
     const auto outSize = output.size<float>();
     float *out = reinterpret_cast<float *>(output.byteData());
 

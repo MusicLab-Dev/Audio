@@ -13,7 +13,7 @@
  */
 #define REGISTER_CONTROL_ENVELOPPE_ATTACK(Name, Value, Range) \
     REGISTER_CONTROL( \
-        Floating, Name, Range, Value, \
+        Floating, Name, Value, Range, \
         TR_TABLE( \
             TR(English, "Enveloppe attack"), \
             TR(French, "Attaque de l'enveloppe") \
@@ -26,7 +26,7 @@
 
 #define REGISTER_CONTROL_ENVELOPPE_DECAY(Name, Value, Range) \
     REGISTER_CONTROL( \
-        Floating, Name, Range, Value, \
+        Floating, Name, Value, Range, \
         TR_TABLE( \
             TR(English, "Enveloppe decay"), \
             TR(French, "Chute de l'enveloppe") \
@@ -39,7 +39,7 @@
 
 #define REGISTER_CONTROL_ENVELOPPE_SUSTAIN(Name, Value, Range) \
     REGISTER_CONTROL( \
-        Floating, Name, Range, Value, \
+        Floating, Name, Value, Range, \
         TR_TABLE( \
             TR(English, "Enveloppe sustain"), \
             TR(French, "Niveau intermédiaire de l'enveloppe") \
@@ -52,7 +52,7 @@
 
 #define REGISTER_CONTROL_ENVELOPPE_RELEASE(Name, Value, Range) \
     REGISTER_CONTROL( \
-        Floating, Name, Range, Value, \
+        Floating, Name, Value, Range, \
         TR_TABLE( \
             TR(English, "Enveloppe release"), \
             TR(French, "Extinction de l'enveloppe") \
@@ -70,9 +70,11 @@
 /**
  * @brief Helper for volume controls
  */
+#define CONTROL_OUTPUT_VOLUME_RANGE() CONTROL_RANGE(-12.0, 12.0)
+
 #define REGISTER_CONTROL_OUTPUT_VOLUME(Name, Value, Range) \
     REGISTER_CONTROL( \
-        Floating, Name, Range, Value, \
+        Floating, Name, Value, Range, \
         TR_TABLE( \
             TR(English, "Output volume"), \
             TR(French, "Volume de sortie") \
@@ -80,5 +82,23 @@
         TR_TABLE( \
             TR(English, "Output volume of the plugin"), \
             TR(French, "Volume de sortie du plugin") \
+        ) \
+    )
+
+/**
+ * @brief Helper for filter/equalizer controls
+ */
+#define CONTROL_FILTER_CUTOFF_DEFAULT_RANGE() CONTROL_RANGE(0.0, 20'000.0)
+
+#define REGISTER_CONTROL_FILTER_CUTOFF(Name, Value, Range) \
+    REGISTER_CONTROL( \
+        Floating, Name, Value, Range, \
+        TR_TABLE( \
+            TR(English, "Cutoff frequency"), \
+            TR(French, "Fréquence de coupure") \
+        ), \
+        TR_TABLE( \
+            TR(English, "Cutoff frequency"), \
+            TR(French, "Fréquence de coupure") \
         ) \
     )

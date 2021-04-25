@@ -22,12 +22,12 @@ class Audio::LambdaFilter final : public Audio::IPlugin
         /* Plugin's name */
         TR_TABLE(
             TR(English, "LambdaFilter"),
-            TR(French, "Filtre lambda")
+            TR(French, "Filtre Lambda")
         ),
         /* Plugin description */
         TR_TABLE(
             TR(English, "LambdaFilter allow to filter audio signal"),
-            TR(French, "Le Filtre lambda permet de filtre de l'audio")
+            TR(French, "Le filtre Lambda permet de filtrer de l'audio")
         ),
         /* Plugin flags */
         FLAGS(AudioInput, AudioOutput),
@@ -36,50 +36,20 @@ class Audio::LambdaFilter final : public Audio::IPlugin
         /* Control list */
         REGISTER_CONTROL_OUTPUT_VOLUME(
             outputVolume,
-            1.0,
-            CONTROL_RANGE(0.0, 1.0)
+            DefaultPluginOutputVolume,
+            CONTROL_OUTPUT_VOLUME_RANGE()
         ),
-        REGISTER_CONTROL(
-            /* Control type */
-            Floating,
-            /* Control variable / getter / setter name */
+        REGISTER_CONTROL_FILTER_CUTOFF(
             cutoffFrequencyFrom,
-            /* Control's range */
-            CONTROL_RANGE(0.0, 20'000.0),
-            /* Control's default value */
             440.0,
-            /* Control name */
-            TR_TABLE(
-                TR(English, "First cutoff frequency"),
-                TR(French, "Première fréquence de coupure")
-            ),
-            /* Control's description */
-            TR_TABLE(
-                TR(English, "First cutoff frequency"),
-                TR(French, "Première fréquence de coupure")
-            )
+            CONTROL_FILTER_CUTOFF_DEFAULT_RANGE()
         ),
-        REGISTER_CONTROL(
-            /* Control type */
-            Floating,
-            /* Control variable / getter / setter name */
+        REGISTER_CONTROL_FILTER_CUTOFF(
             cutoffFrequencyTo,
-            /* Control's range */
-            CONTROL_RANGE(0.0, 20'000.0),
-            /* Control's default value */
             1000.0,
-            /* Control name */
-            TR_TABLE(
-                TR(English, "Second cutoff frequency"),
-                TR(French, "Deuxième fréquence de coupure")
-            ),
-            /* Control's description */
-            TR_TABLE(
-                TR(English, "First cutoff frequency"),
-                TR(French, "Deuxième fréquence de coupure")
-            )
-        )
-        ,REGISTER_CONTROL_ENUM(
+            CONTROL_FILTER_CUTOFF_DEFAULT_RANGE()
+        ),
+        REGISTER_CONTROL_ENUM(
             /* Control variable / getter / setter name */
             filterType,
             /* Control's range */

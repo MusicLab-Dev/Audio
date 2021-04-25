@@ -19,6 +19,9 @@ namespace Audio::DSP::FIR
         template<typename Type>
         using Cache = Core::TinyVector<Type>;
 
+        using CutoffList = std::initializer_list<float>;
+        using GainList = std::initializer_list<DB>;
+
         /** @brief Instance with coefficients cache & lastInputCache */
         template<typename Type>
         class Instance;
@@ -73,7 +76,8 @@ public:
     using CacheList = std::array<Cache<Type>, InstanceCount>;
 
     /** @brief Perform filtering using convolution. */
-    VoidType<Type> filter(const Type *input, const std::size_t inputSize, Type *output) noexcept;
+    /** @brief Perform filtering using convolution and gains for each instance */
+    VoidType<Type> filter(const Type *input, const std::size_t inputSize, Type *output, const Internal::GainList gains) noexcept;
 
     /** @brief Get the internal cache coefficients */
     [[nodiscard]] const CacheList &coefficients(void) const noexcept { return _coefficients; }
@@ -98,15 +102,19 @@ class Audio::DSP::FIR::BasicFilter
 {
 public:
     BasicFilter(void) = default;
+    BasicFilter(const DSP::Filter::FIRSpec specs) { init(specs); }
 
-    BasicFilter(const DSP::Filter::FIRSpec specs) : _specs(specs) { setSpecs(specs); }
+    /** @brief Initialize the internal filter specs */
+    void init(const DSP::Filter::FIRSpec &specs) noexcept;
 
     /** @brief Set the internal specs. It will recompute the instance coefficients */
-    bool setSpecs(const DSP::Filter::FIRSpec specs) noexcept;
+    bool setSpecs(const DSP::Filter::FIRSpec &specs) noexcept;
     /** @brief Set the internal cutoffs */
     bool setCutoffs(const float cutoffFrom, const float cutoffTo = 0.0f) noexcept;
     /** @brief Set the internal sampleRate */
     bool setSampleRate(const float sampleRate) noexcept;
+    /** @brief Set the internal sampleRate */
+    bool setSize(const std::size_t ize) noexcept;
     /** @brief Set the internal filter type */
     bool setFilterType(const DSP::Filter::BasicType filterType) noexcept;
     /** @brief Set the internal window type */
@@ -114,6 +122,8 @@ public:
 
     /** @brief Reset the internal last input cache */
     void resetLastInputCache(void) noexcept { _instance.lastInput().clear(); }
+    /** @brief Resize the internal last input cache */
+    void resizeLastInputCache(const std::size_t size) noexcept { _instance.lastInput().resize(size); }
 
     /** @brief Call the filter instance */
     VoidType<Type> filter(const Type *input, const std::size_t inputSize, Type *output) noexcept { _instance.filter(input, inputSize, output); }
@@ -134,15 +144,17 @@ class Audio::DSP::FIR::MultiFilter
 public:
     using CutoffArray = std::array<float, InstanceCount - 1ul>;
     using GainArray = std::array<DB, InstanceCount>;
-    using CutoffList = std::initializer_list<float>;
-    using GainList = std::initializer_list<DB>;
 
     MultiFilter(void) = default;
+    MultiFilter(const DSP::Filter::WindowType windowType, const std::size_t filterSize, const float sampleRate) { init(windowType, filterSize, sampleRate); }
+
+    /** @brief Initialize the internal filters specs */
+    void init(const DSP::Filter::WindowType windowType, const std::size_t filterSize, const float sampleRate) noexcept;
 
     /** @brief Set the internal cutoffs */
-    bool setCutoffs(const CutoffList &cutoffs) noexcept;
+    bool setCutoffs(const Internal::CutoffList &cutoffs) noexcept;
     /** @brief Set the internal cutoffs */
-    bool setGains(const GainList &cutoffs) noexcept;
+    bool setGains(const Internal::GainList &cutoffs) noexcept;
     /** @brief Set the internal sampleRate */
     bool setSampleRate(const float sampleRate) noexcept;
     /** @brief Set the internal window type */
@@ -150,12 +162,19 @@ public:
     /** @brief Set the internal sampleRate */
     bool setFilterSize(const std::size_t filterSize) noexcept;
 
+    /** @brief Reset all gains to 0dB */
+    void resetGains(void) noexcept { _gains.fill(0.0); }
+
+    // bool
 
     /** @brief Reset the internal last input cache */
     void resetLastInputCache(void) noexcept { _instances.lastInput().clear(); }
 
     /** @brief Call the filter instance */
-    VoidType<Type> filter(const Type *input, const std::size_t inputSize, Type *output) noexcept { _instances.filter(input, inputSize, output); }
+    // VoidType<Type> filter(const Type *input, const std::size_t inputSize, Type *output) noexcept { _instances.filter(input, inputSize, output); }
+
+    /** @brief Call the filter instance with specific gains for each instance */
+    VoidType<Type> filter(const Type *input, const std::size_t inputSize, Type *output, const Internal::GainList &gains) noexcept { _instances.filter(input, inputSize, output, gains); }
 
 private:
     /** @brief Internal instances */
@@ -170,7 +189,7 @@ private:
     CutoffArray _cutoffs;
     GainArray _gains;
 
-    void reloadInstances(const DSP::Filter::WindowType &windowType, const std::size_t filterSize, const float sampleRate) noexcept;
+    void reloadInstances(const DSP::Filter::WindowType windowType, const std::size_t filterSize, const float sampleRate) noexcept;
     void reloadInstance(const DSP::Filter::FIRSpec &specs, std::size_t instanceIndex) noexcept;
 };
 
