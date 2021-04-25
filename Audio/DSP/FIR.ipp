@@ -83,14 +83,3 @@ typename Audio::DSP::FIR::ProcessType<Type> Audio::DSP::FIR::Internal::MultiInst
     }
     return sample;
 }
-
-inline void Audio::DSP::FIR::DesignFilterLowPass(float *windowCoefficients, const std::size_t size, const double cutoffRate, const bool centered) noexcept
-{
-    const std::size_t first = centered ? (size / 2) : size - 1;
-    const double realRate = 2.0 * cutoffRate;
-    for (auto i = 0u; i < size; ++i) {
-        int idx = i - first;
-        *windowCoefficients *= (realRate * Utils::sinc(idx * realRate));
-        ++windowCoefficients;
-    }
-}

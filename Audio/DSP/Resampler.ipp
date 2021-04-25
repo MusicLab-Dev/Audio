@@ -168,7 +168,8 @@ inline void Audio::DSP::Resampler<Type>::resampleOctave(const Type *inputBuffer,
         for (auto i = inputOffset; i < filterSize; i += factor) {
             const auto count = filterSize - zeroPads;
             Type sample {};
-            for (auto j = 0ul, k = zeroPads; j < count; ++j, ++k)
+            auto k = zeroPads;
+            for (auto j = 0ul; j < count; ++j, ++k)
                 sample += inputBuffer[j] * _filterCache[k];
             if constexpr (Accumulate)
                 outputBuffer[outIdx] += sample * factorScale;

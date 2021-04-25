@@ -3,6 +3,8 @@
  * @ Description: Window.ipp
  */
 
+#define _USE_MATH_DEFINES
+#include <math.h>
 #include <cmath>
 
 inline void Audio::DSP::Filter::GenerateFilter(const FIRSpec specs, float *window, const bool centered) noexcept
