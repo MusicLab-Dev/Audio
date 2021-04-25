@@ -34,24 +34,6 @@ class Audio::Mixer final : public Audio::IPlugin
             masterVolume,
             0.0,
             CONTROL_OUTPUT_VOLUME_RANGE()
-        ),
-        REGISTER_CONTROL(
-            Boolean, ctrl, false, CONTROL_RANGE(false, true),
-            TR_TABLE(
-                TR(English, "Test Control")
-            ),
-            TR_TABLE(
-                TR(English, "Don't forget to delete me later lol")
-            )
-        ),
-        REGISTER_CONTROL(
-            Integer, ctrl2, 0, CONTROL_RANGE_STEP(-100, 100, 15),
-            TR_TABLE(
-                TR(English, "Test Control 2")
-            ),
-            TR_TABLE(
-                TR(English, "Don't forget to delete me later lol")
-            )
         )
     )
 

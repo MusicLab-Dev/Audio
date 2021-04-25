@@ -21,7 +21,7 @@
 #define _REGISTER_GETTER_CONTROL_EACH_7(prefix, i, x, ...)  _CONCATENATE_SECOND(prefix, x) [i]; } _REGISTER_GETTER_CONTROL_EACH_6(prefix, i + 1, __VA_ARGS__)
 #define _REGISTER_GETTER_CONTROL_EACH_8(prefix, i, x, ...)  _CONCATENATE_SECOND(prefix, x) [i]; } _REGISTER_GETTER_CONTROL_EACH_7(prefix, i + 1, __VA_ARGS__)
 #define _REGISTER_GETTER_CONTROL_EACH_9(prefix, i, x, ...)  _CONCATENATE_SECOND(prefix, x) [i]; } _REGISTER_GETTER_CONTROL_EACH_8(prefix, i + 1, __VA_ARGS__)
-#define _REGISTER_GETTER_CONTROL_EACH_10(prefix, i, x, ...) _CONCATENATE_SECOND(prefix, x) [i]; } _REGISTER_GETTER_CONTROL_EACH_9(prefix, i + 1, ___VA_ARGS__)
+#define _REGISTER_GETTER_CONTROL_EACH_10(prefix, i, x, ...) _CONCATENATE_SECOND(prefix, x) [i]; } _REGISTER_GETTER_CONTROL_EACH_9(prefix, i + 1, __VA_ARGS__)
 #define _REGISTER_GETTER_CONTROL_EACH_11(prefix, i, x, ...) _CONCATENATE_SECOND(prefix, x) [i]; } _REGISTER_GETTER_CONTROL_EACH_10(prefix, i + 1, __VA_ARGS__)
 #define _REGISTER_GETTER_CONTROL_EACH_12(prefix, i, x, ...) _CONCATENATE_SECOND(prefix, x) [i]; } _REGISTER_GETTER_CONTROL_EACH_11(prefix, i + 1, __VA_ARGS__)
 #define _REGISTER_GETTER_CONTROL_EACH_13(prefix, i, x, ...) _CONCATENATE_SECOND(prefix, x) [i]; } _REGISTER_GETTER_CONTROL_EACH_12(prefix, i + 1, __VA_ARGS__)
