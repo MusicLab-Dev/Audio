@@ -70,7 +70,7 @@
 /**
  * @brief Helper for volume controls
  */
-#define CONTROL_OUTPUT_VOLUME_RANGE() CONTROL_RANGE(-12.0, 12.0)
+#define CONTROL_OUTPUT_VOLUME_RANGE() CONTROL_RANGE(-48.0, 12.0)
 
 #define REGISTER_CONTROL_OUTPUT_VOLUME(Name, Value, Range) \
     REGISTER_CONTROL( \
@@ -88,7 +88,9 @@
 /**
  * @brief Helper for filter/equalizer controls
  */
-#define CONTROL_FILTER_CUTOFF_DEFAULT_RANGE() CONTROL_RANGE(0.0, 20'000.0)
+#define CONTROL_FILTER_CUTOFF_DEFAULT_RANGE() CONTROL_RANGE(0.0, 1000.0)
+#define CONTROL_EQUALIZER_BAND_DEFAULT_RANGE() CONTROL_RANGE(-18.0, 18.0)
+#define CONTROL_EQUALIZER_BAND_DEFAULT_VALUE() 0.0
 
 #define REGISTER_CONTROL_FILTER_CUTOFF(Name, Value, Range) \
     REGISTER_CONTROL( \
@@ -101,4 +103,20 @@
             TR(English, "Cutoff frequency"), \
             TR(French, "Fréquence de coupure") \
         ) \
+    )
+
+#define REGISTER_CONTROL_EQUALIZER_BANDS(Name, Count, Range) \
+    _FOR_EACH( Count, \
+        REGISTER_CONTROL( \
+            Floating, Name, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE, Range, \
+            TR_TABLE( \
+                TR(English, "Cutoff frequency"), \
+                TR(French, "Fréquence de coupure") \
+            ), \
+            TR_TABLE( \
+                TR(English, "Cutoff frequency"), \
+                TR(French, "Fréquence de coupure") \
+            ) \
+        ), \
+         \
     )

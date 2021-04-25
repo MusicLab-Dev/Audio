@@ -7,19 +7,19 @@
  */
 
 template<typename Type>
-typename Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::Internal::Instance<Type>::filter(const Type *input, const std::size_t inputSize, Type *output) noexcept
+typename Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::Internal::Instance<Type>::filter(const Type *input, const std::size_t inputSize, Type *output, const Type outGain) noexcept
 {
     const auto filterSize = _coefficients.size();
     const auto filterSizeMinusOne = filterSize - 1;
 
     // Begin
     for (auto i = 0ul; i < filterSizeMinusOne; ++i) {
-        output[i] = filterImpl(input, filterSize, filterSizeMinusOne - i);
+        output[i] = filterImpl(input, filterSize, filterSizeMinusOne - i) * outGain;
     }
     // Body
     const Type *inputShifted = input - filterSizeMinusOne;
     for (auto i = filterSizeMinusOne; i < inputSize; ++i) {
-        output[i] = filterImpl(inputShifted + i, filterSize);
+        output[i] = filterImpl(inputShifted + i, filterSize) * outGain;
     }
     // Save for last input
     std::memcpy(_lastInputCache.data(), input + inputSize - filterSizeMinusOne, filterSizeMinusOne * sizeof(Type));

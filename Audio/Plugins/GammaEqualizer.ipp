@@ -26,7 +26,9 @@ inline void Audio::GammaEqualizer::receiveAudio(BufferView output)
 {
     float *out = output.data<float>();
     output.clear();
-    _filter.filter(_cache.data<float>(), audioSpecs().processBlockSize, out, { 0, 1 });
+    _filter.filter(_cache.data<float>(), audioSpecs().processBlockSize, out, {
+        0, 1
+    });
     // std::memcpy(out, _cache.data<float>(), audioSpecs().processBlockSize * GetFormatByteLength(audioSpecs().format));
 }
 

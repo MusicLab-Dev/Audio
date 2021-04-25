@@ -50,7 +50,7 @@ class Audio::DSP::FIR::Internal::Instance
 {
 public:
     /** @brief Perform filtering using convolution. */
-    VoidType<Type> filter(const Type *input, const std::size_t inputSize, Type *output) noexcept;
+    VoidType<Type> filter(const Type *input, const std::size_t inputSize, Type *output, const Type outGain) noexcept;
 
     /** @brief Get the internal cache coefficients */
     [[nodiscard]] const Cache<Type> &coefficients(void) const noexcept { return _coefficients; }
@@ -126,7 +126,7 @@ public:
     void resizeLastInputCache(const std::size_t size) noexcept { _instance.lastInput().resize(size); }
 
     /** @brief Call the filter instance */
-    VoidType<Type> filter(const Type *input, const std::size_t inputSize, Type *output) noexcept { _instance.filter(input, inputSize, output); }
+    VoidType<Type> filter(const Type *input, const std::size_t inputSize, Type *output, const Type outGain = 1.0) noexcept { _instance.filter(input, inputSize, output, outGain); }
 
 private:
     /** @brief Internal instance */
