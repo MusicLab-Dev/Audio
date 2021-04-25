@@ -28,6 +28,8 @@ inline void Audio::LambdaFilter::receiveAudio(BufferView output)
 {
     float *out = output.data<float>();
     output.clear();
+    // Update filter cutoffs
+    _filter.setCutoffs(cutoffFrequencyFrom(), cutoffFrequencyTo());
     _filter.filter(_cache.data<float>(), audioSpecs().processBlockSize, out);
     // std::memcpy(out, _cache.data<float>(), audioSpecs().processBlockSize * GetFormatByteLength(audioSpecs().format));
 }

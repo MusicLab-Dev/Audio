@@ -67,13 +67,11 @@ namespace Audio::DSP::Filter
      * @warning Window output is [0:1]
      */
     void GenerateWindow(const WindowType type, const std::size_t size, float *window, const bool centered = true) noexcept;
-
     /**
      * @brief Design filter coefficients within a window
      * @warning Call GenerateWindow before to populate the window for the filter coefficients
      */
     void DesignFilter(const FIRSpec specs, float *window, const std::size_t windowSize, const bool centered) noexcept;
-
     /** @brief Helper to fully generate filter coefficients */
     void GenerateFilter(const FIRSpec specs, float *window, const bool centered = true) noexcept;
 
