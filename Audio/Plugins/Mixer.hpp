@@ -36,7 +36,7 @@ class Audio::Mixer final : public Audio::IPlugin
             CONTROL_RANGE(-100.0, 0.0)
         ),
         REGISTER_CONTROL(
-            Boolean, ctrl, CONTROL_RANGE(false, true), false,
+            Boolean, ctrl, false, CONTROL_RANGE(false, true),
             TR_TABLE(
                 TR(English, "Test Control")
             ),
@@ -45,7 +45,7 @@ class Audio::Mixer final : public Audio::IPlugin
             )
         ),
         REGISTER_CONTROL(
-            Integer, ctrl2, CONTROL_RANGE_STEP(-100, 100, 15), 0,
+            Integer, ctrl2, 0, CONTROL_RANGE_STEP(-100, 100, 15),
             TR_TABLE(
                 TR(English, "Test Control 2")
             ),
