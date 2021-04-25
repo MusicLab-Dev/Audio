@@ -109,7 +109,7 @@ template<typename Type>
 template<bool Accumulate, unsigned ProcessSize>
 inline void Audio::DSP::Resampler<Type>::resampleOctave(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const SampleRate sampleRate, const int nOctave, const std::size_t inputOffset) noexcept
 {
-    const std::size_t factor = std::pow(2, std::abs(nOctave));
+    const std::size_t factor = static_cast<std::size_t>(std::pow(2, std::abs(nOctave)));
     const auto factorScale = static_cast<float>(nOctave > 0 ? 1 : factor);
     const std::size_t filterSize = factor * ProcessSize;
     const Filter::FIRSpec filterSpecs {

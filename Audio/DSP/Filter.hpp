@@ -45,9 +45,9 @@ namespace Audio::DSP::Filter
         BasicType filterType { BasicType::LowPass };
         WindowType windowType { WindowType::Hanning };
         std::size_t size;
-        double sampleRate;
-        double cutoffs[2];
-        double gain;
+        float sampleRate;
+        float cutoffs[2];
+        float gain;
 
         bool operator==(const FIRSpec &other) {
             return (
@@ -75,10 +75,10 @@ namespace Audio::DSP::Filter
     /** @brief Helper to fully generate filter coefficients */
     void GenerateFilter(const FIRSpec specs, float *window, const bool centered = true) noexcept;
 
-    void DesignFilterLowPass(float *window, const std::size_t size, const double cutoffRate, const double gain, const bool centered) noexcept;
-    void DesignFilterHighPass(float *window, const std::size_t size, const double cutoffRate, const double gain, const bool centered) noexcept;
-    void DesignFilterBandPass(float *window, const std::size_t size, const double cutoffRateBegin, const double cutoffRateEnd, const double gain, const bool centered) noexcept;
-    void DesignFilterBandStop(float *window, const std::size_t size, const double cutoffRateBegin, const double cutoffRateEnd, const double gain, const bool centered) noexcept;
+    void DesignFilterLowPass(float *window, const std::size_t size, const float cutoffRate, const float gain, const bool centered) noexcept;
+    void DesignFilterHighPass(float *window, const std::size_t size, const float cutoffRate, const float gain, const bool centered) noexcept;
+    void DesignFilterBandPass(float *window, const std::size_t size, const float cutoffRateBegin, const float cutoffRateEnd, const float gain, const bool centered) noexcept;
+    void DesignFilterBandStop(float *window, const std::size_t size, const float cutoffRateBegin, const float cutoffRateEnd, const float gain, const bool centered) noexcept;
 
     void Hanning(const std::size_t size, float *window, const bool isSymetric = true) noexcept;
     void Hamming(const std::size_t size, float *window, const bool isSymetric = true) noexcept;

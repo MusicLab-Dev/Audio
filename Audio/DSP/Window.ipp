@@ -22,7 +22,7 @@ inline void Audio::DSP::Filter::Hanning(const std::size_t size, float *outputWin
 {
     if (isSymetric) {
         for (auto i = 0u; i < size; i++) {
-            outputWindow[i] = 0.5f - 0.5f * (std::cos(2.0 * M_PI * i / static_cast<float>(size - 1)));
+            outputWindow[i] = 0.5f - 0.5f * (std::cos(static_cast<float>(2.0f * M_PI * i) / static_cast<float>(size - 1)));
         }
     } else {
     }
@@ -32,7 +32,7 @@ inline void Audio::DSP::Filter::Hamming(const std::size_t size, float *outputWin
 {
     if (isSymetric) {
         for (auto i = 0u; i < size; i++) {
-            outputWindow[i] = 0.54f - 0.46f * (std::cos(2.0 * M_PI * i / static_cast<float>(size - 1)));
+            outputWindow[i] = 0.54f - 0.46f * (std::cos(static_cast<float>(2.0f * M_PI * i) / static_cast<float>(size - 1)));
         }
     } else {
     }

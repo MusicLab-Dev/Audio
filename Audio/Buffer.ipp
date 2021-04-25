@@ -36,7 +36,7 @@ inline bool Audio::Internal::BufferBase::isZero(void) const noexcept
     });
 }
 
-inline void Audio::Buffer::resize(const std::uint32_t channelByteSize, const SampleRate sampleRate, const ChannelArrangement channelArrangement, const Format format) noexcept
+inline void Audio::Buffer::resize(const std::size_t channelByteSize, const SampleRate sampleRate, const ChannelArrangement channelArrangement, const Format format) noexcept
 {
     const auto totalSize = channelByteSize * static_cast<std::size_t>(channelArrangement);
 

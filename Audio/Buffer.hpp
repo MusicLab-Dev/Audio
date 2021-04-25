@@ -199,7 +199,7 @@ public:
     Buffer(void) : BufferBase(nullptr) {}
 
     /** @brief Allocate the buffer */
-    Buffer(const std::uint32_t channelByteSize, const SampleRate sampleRate, const ChannelArrangement channelArrangement, const Format format)
+    Buffer(const std::size_t channelByteSize, const SampleRate sampleRate, const ChannelArrangement channelArrangement, const Format format)
         : Internal::BufferBase(Internal::BufferAllocator::Allocate(channelByteSize, sampleRate, channelArrangement, format)) {}
 
     /** @brief A buffer cannot be copied, use a BufferView or 'copy' function instead */
@@ -219,7 +219,7 @@ public:
 
 
     /** @brief Resize the buffer if needed to fit requirements */
-    void resize(const std::uint32_t channelByteSize, const SampleRate sampleRate, const ChannelArrangement channelArrangement, const Format format) noexcept;
+    void resize(const std::size_t channelByteSize, const SampleRate sampleRate, const ChannelArrangement channelArrangement, const Format format) noexcept;
 
     /** @brief Copy the target buffer */
     void copy(const Internal::BufferBase &target);
