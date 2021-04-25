@@ -23,12 +23,12 @@ inline Audio::AScheduler::AScheduler(void)
                     exited = onAudioQueueBusy();
                 }
             }
-            // if (exited) {
-            //     std::cout << "Shutting down process graph, clearing cache" << std::endl;
-            //     clearAudioQueue();
-            //     clearOverflowCache();
-            //     return false;
-            // } else
+            if (exited) {
+                std::cout << "Shutting down process graph, clearing cache" << std::endl;
+                clearAudioQueue();
+                clearOverflowCache();
+                return false;
+            } else
                 return true;
         });
     }
