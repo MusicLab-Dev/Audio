@@ -122,15 +122,6 @@ set(AudioDSPSources
     ${AudioDSPDir}/Filter.hpp
 )
 
-set(AudioKissFFTDir ${PROJECT_SOURCE_DIR}/kissfft)
-
-set(AudioKissFFTSources
-    ${AudioKissFFTDir}/kiss_fft.h
-    ${AudioKissFFTDir}/kiss_fft.c
-    ${AudioKissFFTDir}/tools/kiss_fftr.h
-    ${AudioKissFFTDir}/tools/kiss_fftr.c
-)
-
 add_library(${PROJECT_NAME}
     ${AudioSources}
     ${AudioPluginsSources}

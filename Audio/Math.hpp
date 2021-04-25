@@ -19,7 +19,7 @@ namespace Utils
         if (!x)
             return 1.0;
         if constexpr (NormalizePi)
-            x *= M_PI;
+            x *= static_cast<Type>(M_PI);
         return std::sin(x) / x;
     }
 
