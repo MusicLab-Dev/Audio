@@ -16,7 +16,7 @@ namespace Audio
 {
     struct NoteEvent;
     struct Note;
-};
+}
 
 /** @brief Default Note event */
 struct alignas_eighth_cacheline Audio::NoteEvent

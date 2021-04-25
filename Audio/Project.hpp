@@ -14,7 +14,7 @@ namespace Audio
     class Project;
 
     using ProjectPtr = std::shared_ptr<Project>;
-};
+}
 
 class alignas_cacheline Audio::Project
 {

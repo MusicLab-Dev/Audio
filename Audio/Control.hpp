@@ -16,7 +16,7 @@ namespace Audio
 
     /** @brief A list of automations */
     using Automations = Core::FlatVector<Automation>;
-};
+}
 
 /** @brief Represent a control change event in an audio block space */
 struct alignas_quarter_cacheline Audio::ControlEvent

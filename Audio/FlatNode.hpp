@@ -12,7 +12,7 @@ namespace Audio
     struct FlatNode;
 
     using FlatTree = Core::FlatVector<FlatNode>;
-};
+}
 
 struct alignas_quarter_cacheline Audio::FlatNode
 {

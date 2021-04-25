@@ -39,7 +39,7 @@ inline void Audio::DSP::Filter::DesignFilterLowPass(float *window, const std::si
     // Normalize to [0:1]
     const double realRate = 2.0 * cutoffRate;
     for (auto i = 0u; i < size; ++i) {
-        int idx = i - first;
+        int idx = static_cast<int>(i - first);
         *window++ *= (realRate * Utils::sinc<true>(idx * realRate)) * gain;
     }
 }

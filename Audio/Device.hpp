@@ -22,7 +22,7 @@ namespace Audio
 
     /** @brief Functor used as an audio callback */
     using AudioCallback = Core::Functor<void(std::uint8_t *, std::size_t)>;
-};
+}
 
 
 /** @brief Device represent an SDL audio device, it can be used either for input OR output */

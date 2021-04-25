@@ -10,7 +10,7 @@
 namespace Audio
 {
     class PluginPtr;
-};
+}
 
 /** @brief Store IPlugin shared ownership */
 class Audio::PluginPtr

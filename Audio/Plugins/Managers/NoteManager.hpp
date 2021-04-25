@@ -18,7 +18,7 @@ namespace Audio
 
     template<DSP::EnveloppeType Enveloppe>
     using NoteManagerPtr = std::unique_ptr<NoteManager<Enveloppe>>;
-};
+}
 
 /** @brief Note manager store states of each note */
 template<Audio::DSP::EnveloppeType Enveloppe>

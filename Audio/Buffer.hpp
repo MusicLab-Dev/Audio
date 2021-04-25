@@ -39,8 +39,8 @@ namespace Audio
             // Chrono timestamp {}
             AllocationHeader *next { nullptr };
         };
-    };
-};
+    }
+}
 
 class alignas_cacheline Audio::Internal::BufferAllocator
 {

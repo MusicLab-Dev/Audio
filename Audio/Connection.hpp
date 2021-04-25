@@ -10,7 +10,7 @@
 namespace Audio
 {
     class Connection;
-};
+}
 
 /** @brief A node connection */
 class alignas_quarter_cacheline Audio::Connection

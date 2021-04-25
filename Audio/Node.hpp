@@ -22,7 +22,7 @@ namespace Audio
 
     /** @brief A list of nodes */
     using Nodes = Core::FlatVector<NodePtr>;
-};
+}
 
 /** @brief A node contains a plugin, a partition table and an automation table */
 class  Audio::Node

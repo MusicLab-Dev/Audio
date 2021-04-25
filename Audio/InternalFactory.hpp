@@ -11,7 +11,7 @@ namespace Audio
 {
     template<typename Plugin>
     class InternalFactory;
-};
+}
 
 template<typename Plugin>
 class Audio::InternalFactory final : public Audio::IPluginFactory

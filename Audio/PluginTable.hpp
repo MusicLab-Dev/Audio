@@ -22,7 +22,7 @@ namespace Audio
 
     /** @brief Vector of reference counters */
     using RefCounts = Core::TinyVector<std::uint32_t>;
-};
+}
 
 class alignas_cacheline Audio::PluginTable
 {

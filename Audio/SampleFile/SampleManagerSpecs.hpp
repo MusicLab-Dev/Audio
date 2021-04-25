@@ -15,4 +15,4 @@ namespace Audio
         std::uint32_t sampleRate { 0u };
         std::uint16_t bytePerSample { 0u };
     };
-};
+}

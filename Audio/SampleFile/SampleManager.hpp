@@ -15,7 +15,7 @@ namespace Audio
 {
     template<typename Type, bool Normalize = false>
     struct SampleManager;
-};
+}
 
 #include <iostream>
 

@@ -13,7 +13,7 @@
 namespace Audio
 {
     struct SampleManagerWAV;
-};
+}
 
 struct Audio::SampleManagerWAV
 {

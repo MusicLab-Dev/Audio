@@ -10,7 +10,7 @@
 namespace Audio
 {
     class Partition;
-};
+}
 
 class alignas_half_cacheline Audio::Partition
 {

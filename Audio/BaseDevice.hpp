@@ -57,4 +57,4 @@ namespace Audio
 
     /** @brief Size of an audio block */
     using BlockSize = std::uint16_t;
-};
+}

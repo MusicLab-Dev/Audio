@@ -13,7 +13,7 @@ namespace Audio
 
     /** @brief A sorted list of points */
     using Points = Core::SortedFlatVector<Point>;
-};
+}
 
 static_assert_fit_quarter_cacheline(Audio::Point);
 

@@ -10,7 +10,7 @@
 namespace Audio
 {
     struct ParameterTable;
-};
+}
 
 #include <iostream>
 

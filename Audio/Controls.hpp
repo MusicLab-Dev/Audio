@@ -20,4 +20,4 @@ namespace Audio
 
     /** @brief A flat vector that contains Note of a partition and has a cache of notes on the fly in its header */
     using Controls = Core::TinyFlatVector<Control, ControlsOnTheFly>;
-};
+}

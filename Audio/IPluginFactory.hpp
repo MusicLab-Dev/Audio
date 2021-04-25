@@ -17,7 +17,7 @@ namespace Audio
     using PluginFactoryPtr = std::unique_ptr<IPluginFactory>;
 
     using DLLSignature = IPluginFactory *(*)(void);
-};
+}
 
 class Audio::IPluginFactory
 {

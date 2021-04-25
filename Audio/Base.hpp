@@ -123,4 +123,4 @@ namespace Audio
 
     /** @brief Count of playback modes */
     constexpr std::size_t PlaybackModeCount = static_cast<std::size_t>(PlaybackMode::OnTheFly) + 1;
-};
+}
