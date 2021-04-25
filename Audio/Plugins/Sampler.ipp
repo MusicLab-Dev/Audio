@@ -117,4 +117,5 @@ inline void Audio::Sampler::receiveAudio(BufferView output)
 inline void Audio::Sampler::onAudioGenerationStarted(const BeatRange &range)
 {
     _noteManager.reset();
+    _hasLastBlockLoaded = false;
 }

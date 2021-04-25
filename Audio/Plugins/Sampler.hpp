@@ -10,6 +10,7 @@
 #include <Audio/PluginControlUtils.hpp>
 #include <Audio/BufferOctave.hpp>
 #include "Managers/NoteManager.hpp"
+#include <Audio/DSP/FIR.hpp>
 
 namespace Audio
 {

@@ -119,6 +119,7 @@ set(AudioDSPSources
     ${AudioDSPDir}/Filter.hpp
     ${AudioDSPDir}/Filter.ipp
     ${AudioDSPDir}/Window.ipp
+    ${AudioDSPDir}/Filter.hpp
 )
 
 set(AudioKissFFTDir ${PROJECT_SOURCE_DIR}/kissfft)
