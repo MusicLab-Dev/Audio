@@ -105,18 +105,38 @@
         ) \
     )
 
-#define REGISTER_CONTROL_EQUALIZER_BANDS(Name, Count, Range) \
-    _FOR_EACH( Count, \
-        REGISTER_CONTROL( \
-            Floating, Name, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE, Range, \
-            TR_TABLE( \
-                TR(English, "Cutoff frequency"), \
-                TR(French, "Fréquence de coupure") \
-            ), \
-            TR_TABLE( \
-                TR(English, "Cutoff frequency"), \
-                TR(French, "Fréquence de coupure") \
-            ) \
+#define REGISTER_CONTROL_FILTER_CUTOFF_DESCRIPTION(Name, Value, Range, Description) \
+    REGISTER_CONTROL( \
+        Floating, Name, Value, Range, \
+        TR_TABLE( \
+            TR(English, "Cutoff frequency " Description), \
+            TR(French, "Fréquence de coupure " Description) \
         ), \
-         \
+        TR_TABLE( \
+            TR(English, "Cutoff frequency " Description), \
+            TR(French, "Fréquence de coupure " Description) \
+        ) \
     )
+
+#define FOR_COMMA_RANGE(N, what, Name, StartFrequency, Count, Range)    _FOR_COMMA_RANGE_##N(what, Name, StartFrequency, Count, Range)
+#define _FOR_COMMA_RANGE_0(what)
+#define _FOR_COMMA_RANGE_1(what, Name, StartFrequency, Count, Range)    what(Name##_0, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz")
+#define _FOR_COMMA_RANGE_2(what, Name, StartFrequency, Count, Range)    what(Name##_1, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_COMMA_RANGE_1(what, Name, StartFrequency * 2, Count, Range)
+#define _FOR_COMMA_RANGE_3(what, Name, StartFrequency, Count, Range)    what(Name##_2, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_COMMA_RANGE_2(what, Name, StartFrequency * 2, Count, Range)
+#define _FOR_COMMA_RANGE_4(what, Name, StartFrequency, Count, Range)    what(Name##_3, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_COMMA_RANGE_3(what, Name, StartFrequency * 2, Count, Range)
+#define _FOR_COMMA_RANGE_5(what, Name, StartFrequency, Count, Range)    what(Name##_4, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_COMMA_RANGE_4(what, Name, StartFrequency * 2, Count, Range)
+#define _FOR_COMMA_RANGE_6(what, Name, StartFrequency, Count, Range)    what(Name##_5, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_COMMA_RANGE_5(what, Name, StartFrequency * 2, Count, Range)
+#define _FOR_COMMA_RANGE_7(what, Name, StartFrequency, Count, Range)    what(Name##_6, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_COMMA_RANGE_6(what, Name, StartFrequency * 2, Count, Range)
+#define _FOR_COMMA_RANGE_8(what, Name, StartFrequency, Count, Range)    what(Name##_7, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_COMMA_RANGE_7(what, Name, StartFrequency * 2, Count, Range)
+#define _FOR_COMMA_RANGE_9(what, Name, StartFrequency, Count, Range)    what(Name##_8, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_COMMA_RANGE_8(what, Name, StartFrequency * 2, Count, Range)
+#define _FOR_COMMA_RANGE_10(what, Name, StartFrequency, Count, Range)   what(Name##_9, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_COMMA_RANGE_9(what, Name, StartFrequency * 2, Count, Range)
+#define _FOR_COMMA_RANGE_11(what, Name, StartFrequency, Count, Range)   what(Name##_10, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_COMMA_RANGE_10(what, Name, StartFrequency * 2, Count, Range)
+#define _FOR_COMMA_RANGE_12(what, Name, StartFrequency, Count, Range)   what(Name##_11, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_COMMA_RANGE_11(what, Name, StartFrequency * 2, Count, Range)
+#define _FOR_COMMA_RANGE_13(what, Name, StartFrequency, Count, Range)   what(Name##_12, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_COMMA_RANGE_12(what, Name, StartFrequency * 2, Count, Range)
+#define _FOR_COMMA_RANGE_14(what, Name, StartFrequency, Count, Range)   what(Name##_13, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_COMMA_RANGE_13(what, Name, StartFrequency * 2, Count, Range)
+#define _FOR_COMMA_RANGE_15(what, Name, StartFrequency, Count, Range)   what(Name##_14, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_COMMA_RANGE_14(what, Name, StartFrequency * 2, Count, Range)
+#define _FOR_COMMA_RANGE_16(what, Name, StartFrequency, Count, Range)   what(Name##_15, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_COMMA_RANGE_15(what, Name, StartFrequency * 2, Count, Range)
+
+
+#define REGISTER_CONTROL_EQUALIZER_BANDS(Name, StartFrequency, Count, Range) \
+    FOR_COMMA_RANGE(Count, REGISTER_CONTROL_FILTER_CUTOFF_DESCRIPTION, Name, StartFrequency, Count, Range)

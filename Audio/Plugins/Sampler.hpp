@@ -43,7 +43,52 @@ class Audio::Sampler final : public Audio::IPlugin
         REGISTER_CONTROL_ENVELOPPE_AR(
             enveloppeAttack, 0.001, CONTROL_RANGE(0.0, 10.0),
             enveloppeRelease, 0.001, CONTROL_RANGE(0.0, 10.0)
+        ),
+        REGISTER_CONTROL_OUTPUT_VOLUME(
+            outputVolume4,
+            DefaultPluginOutputVolume,
+            CONTROL_OUTPUT_VOLUME_RANGE()
+        ),
+        REGISTER_CONTROL_OUTPUT_VOLUME(
+            outputVolume5,
+            DefaultPluginOutputVolume,
+            CONTROL_OUTPUT_VOLUME_RANGE()
+        ),
+        REGISTER_CONTROL_OUTPUT_VOLUME(
+            outputVolume6,
+            DefaultPluginOutputVolume,
+            CONTROL_OUTPUT_VOLUME_RANGE()
+        ),
+        REGISTER_CONTROL_OUTPUT_VOLUME(
+            outputVolume7,
+            DefaultPluginOutputVolume,
+            CONTROL_OUTPUT_VOLUME_RANGE()
+        ),
+        REGISTER_CONTROL_OUTPUT_VOLUME(
+            outputVolume8,
+            DefaultPluginOutputVolume,
+            CONTROL_OUTPUT_VOLUME_RANGE()
+        ),
+        REGISTER_CONTROL_OUTPUT_VOLUME(
+            outputVolume9,
+            DefaultPluginOutputVolume,
+            CONTROL_OUTPUT_VOLUME_RANGE()
         )
+        // ,REGISTER_CONTROL_OUTPUT_VOLUME(
+        //     outputVolume10,
+        //     DefaultPluginOutputVolume,
+        //     CONTROL_OUTPUT_VOLUME_RANGE()
+        // )
+        // ,REGISTER_CONTROL_OUTPUT_VOLUME(
+        //     outputVolume11,
+        //     DefaultPluginOutputVolume,
+        //     CONTROL_OUTPUT_VOLUME_RANGE()
+        // )
+        // ,REGISTER_CONTROL_OUTPUT_VOLUME(
+        //     outputVolume12,
+        //     DefaultPluginOutputVolume,
+        //     CONTROL_OUTPUT_VOLUME_RANGE()
+        // )
     )
 
 public:

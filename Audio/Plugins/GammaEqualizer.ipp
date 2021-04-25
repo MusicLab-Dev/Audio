@@ -13,7 +13,8 @@ inline void Audio::GammaEqualizer::onAudioGenerationStarted(const BeatRange &ran
     _filter.init(
         DSP::Filter::WindowType::Hanning,
         255ul,
-        static_cast<double>(audioSpecs().sampleRate)
+        static_cast<double>(audioSpecs().sampleRate),
+        128.0
     );
     // _filter.setGains({
 
@@ -27,7 +28,16 @@ inline void Audio::GammaEqualizer::receiveAudio(BufferView output)
     float *out = output.data<float>();
     output.clear();
     _filter.filter(_cache.data<float>(), audioSpecs().processBlockSize, out, {
-        0, 1
+        ConvertDecibelToRatio(frequenyBands_0()),
+        ConvertDecibelToRatio(frequenyBands_1())
+        // ConvertDecibelToRatio(frequenyBands_2()),
+        // ConvertDecibelToRatio(frequenyBands_3()),
+        // ConvertDecibelToRatio(frequenyBands_4()),
+        // ConvertDecibelToRatio(frequenyBands_5()),
+        // ConvertDecibelToRatio(frequenyBands_6()),
+        // ConvertDecibelToRatio(frequenyBands_7()),
+        // ConvertDecibelToRatio(frequenyBands_8()),
+        // ConvertDecibelToRatio(frequenyBands_9())
     });
     // std::memcpy(out, _cache.data<float>(), audioSpecs().processBlockSize * GetFormatByteLength(audioSpecs().format));
 }

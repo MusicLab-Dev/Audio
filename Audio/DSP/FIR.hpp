@@ -21,6 +21,8 @@ namespace Audio::DSP::FIR
 
         using CutoffList = std::initializer_list<float>;
         using GainList = std::initializer_list<DB>;
+        template<unsigned InstanceCount>
+        using GainArray = std::array<DB, InstanceCount>;
 
         /** @brief Instance with coefficients cache & lastInputCache */
         template<typename Type>
@@ -75,9 +77,8 @@ class Audio::DSP::FIR::Internal::MultiInstance
 public:
     using CacheList = std::array<Cache<Type>, InstanceCount>;
 
-    /** @brief Perform filtering using convolution. */
     /** @brief Perform filtering using convolution and gains for each instance */
-    VoidType<Type> filter(const Type *input, const std::size_t inputSize, Type *output, const Internal::GainList gains) noexcept;
+    VoidType<Type> filter(const Type *input, const std::size_t inputSize, Type *output, const GainArray<InstanceCount> &gains) noexcept;
 
     /** @brief Get the internal cache coefficients */
     [[nodiscard]] const CacheList &coefficients(void) const noexcept { return _coefficients; }
@@ -143,13 +144,12 @@ class Audio::DSP::FIR::MultiFilter
 
 public:
     using CutoffArray = std::array<float, InstanceCount - 1ul>;
-    using GainArray = std::array<DB, InstanceCount>;
 
     MultiFilter(void) = default;
-    MultiFilter(const DSP::Filter::WindowType windowType, const std::size_t filterSize, const float sampleRate) { init(windowType, filterSize, sampleRate); }
+    MultiFilter(const DSP::Filter::WindowType windowType, const std::size_t filterSize, const float sampleRate, const double rootFreq) { init(windowType, filterSize, sampleRate, rootFreq); }
 
     /** @brief Initialize the internal filters specs */
-    void init(const DSP::Filter::WindowType windowType, const std::size_t filterSize, const float sampleRate) noexcept;
+    void init(const DSP::Filter::WindowType windowType, const std::size_t filterSize, const float sampleRate, const double rootFreq) noexcept;
 
     /** @brief Set the internal cutoffs */
     bool setCutoffs(const Internal::CutoffList &cutoffs) noexcept;
@@ -174,7 +174,8 @@ public:
     // VoidType<Type> filter(const Type *input, const std::size_t inputSize, Type *output) noexcept { _instances.filter(input, inputSize, output); }
 
     /** @brief Call the filter instance with specific gains for each instance */
-    VoidType<Type> filter(const Type *input, const std::size_t inputSize, Type *output, const Internal::GainList &gains) noexcept { _instances.filter(input, inputSize, output, gains); }
+    template<typename GainType, std::size_t GainSize>
+    VoidType<Type> filter(const Type *input, const std::size_t inputSize, Type *output, const GainType(&gains)[GainSize]) noexcept;
 
 private:
     /** @brief Internal instances */
@@ -187,7 +188,7 @@ private:
 
     /** @brief Detached filters specs */
     CutoffArray _cutoffs;
-    GainArray _gains;
+    Internal::GainArray<InstanceCount> _gains;
 
     void reloadInstances(const DSP::Filter::WindowType windowType, const std::size_t filterSize, const float sampleRate) noexcept;
     void reloadInstance(const DSP::Filter::FIRSpec &specs, std::size_t instanceIndex) noexcept;

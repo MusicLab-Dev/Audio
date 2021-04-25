@@ -19,7 +19,7 @@ namespace Audio
 class Audio::GammaEqualizer final : public Audio::IPlugin
 {
 public:
-    static constexpr auto BandCount = 2ul;
+    static constexpr auto BandCount = 8ul;
 
     REGISTER_PLUGIN(
         TR_TABLE(
@@ -36,13 +36,41 @@ public:
             outputVolume,
             0.0,
             CONTROL_OUTPUT_VOLUME_RANGE()
-        )
-        // ,
-        // REGISTER_CONTROL_EQUALIZER_BANDS(
-        //     frequenyBands,
-        //     BandCount,
+        ),
+        //(10) 32 - 64 - 128 - 256 - 512 - 1024 - 2048 - 4096 - 8192 - 16384
+        // (9) 64 - 128 - 256 - 512 - 1024 - 2048 - 4096 - 8192 - 16384
+        // (8) 128 - 256 - 512 - 1024 - 2048 - 4096 - 8192 - 16384
+        // (8) 71 - 142 - 284 - 569 - 1186 - 2371 - 4743 - 9487
+        // (7) 128 - 256 - 512 - 1024 - 2048 - 4096 - 8192 - 16384
+        // (6) 128 - 256 - 512 - 1024 - 2048 - 4096 - 8192 - 16384
+        // (5) 128 - 256 - 512 - 1024 - 2048 - 4096 - 8192 - 16384
+        // (4) 128 - 256 - 512 - 1024 - 2048 - 4096 - 8192 - 16384
+        // (3) 128 - 256 - 512 - 1024 - 2048 - 4096 - 8192 - 16384
+        // (2) 128 - 256 - 512 - 1024 - 2048 - 4096 - 8192 - 16384
+        // REGISTER_CONTROL_FILTER_CUTOFF(
+        //     cutoffLow,
+        //     CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(),
         //     CONTROL_EQUALIZER_BAND_DEFAULT_RANGE()
+        // ),
+
+        // REGISTER_CONTROL_FILTER_CUTOFF(
+        //     cutoffHigh,
+        //     CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(),
+        //     CONTROL_EQUALIZER_BAND_DEFAULT_RANGE()
+        // ),
+        // REGISTER_CONTROL_FILTER_CUTOFF_DESCRIPTION(
+        //     cutoff,
+        //     CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(),
+        //     CONTROL_EQUALIZER_BAND_DEFAULT_RANGE(),
+        //     "32Hz"
         // )
+        // ,
+        REGISTER_CONTROL_EQUALIZER_BANDS(
+            frequenyBands,
+            128,
+            8,
+            CONTROL_EQUALIZER_BAND_DEFAULT_RANGE()
+        )
     )
 
 public:

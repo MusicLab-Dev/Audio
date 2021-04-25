@@ -109,11 +109,28 @@ inline bool Audio::DSP::FIR::BasicFilter<Type>::setWindowType(const DSP::Filter:
  * @brief MultiFilter implementation
  */
 template<unsigned InstanceCount, typename Type>
-inline void Audio::DSP::FIR::MultiFilter<InstanceCount, Type>::init(const DSP::Filter::WindowType windowType, const std::size_t filterSize, const float sampleRate) noexcept
+template<typename GainType, std::size_t GainSize>
+typename Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::MultiFilter<InstanceCount, Type>::filter(const Type *input, const std::size_t inputSize, Type *output, const GainType(&gains)[GainSize]) noexcept
+{
+    static_assert(GainSize <= InstanceCount, "Audio::DSP::FIR::MultiFilter::filter: gains input must not be greater than the internal InstanceCount.");
+    for (auto i = 0u; i < GainSize; ++i) {
+        _gains[i] = gains[i];
+    }
+    for (auto i = GainSize; i < InstanceCount; ++i) {
+        _gains[i] = 0.0;
+    }
+    _instances.filter(input, inputSize, output, _gains);
+}
+
+template<unsigned InstanceCount, typename Type>
+inline void Audio::DSP::FIR::MultiFilter<InstanceCount, Type>::init(const DSP::Filter::WindowType windowType, const std::size_t filterSize, const float sampleRate, const double rootFreq) noexcept
 {
     _windowType = windowType;
     _filterSize = filterSize;
     _sampleRate = sampleRate;
+    for (auto &cutoff : _cutoffs) {
+
+    }
     reloadInstances(_windowType, _filterSize, _sampleRate);
 }
 
@@ -142,7 +159,7 @@ inline void Audio::DSP::FIR::MultiFilter<InstanceCount, Type>::reloadInstances(c
         },
         0ul
     );
-    // Middle filters
+    // Middle filters (band-pass)
     for (auto i = 1ul; i < InstanceCount - 1ul; ++i) {
         reloadInstance(
             Filter::FIRSpec {
@@ -151,7 +168,7 @@ inline void Audio::DSP::FIR::MultiFilter<InstanceCount, Type>::reloadInstances(c
                 filterSize,
                 sampleRate,
                 { _cutoffs[i - 1ul], _cutoffs[i]},
-               _gains[i - 1ul]
+               _gains[i]
              },
             i
         );
@@ -163,7 +180,7 @@ inline void Audio::DSP::FIR::MultiFilter<InstanceCount, Type>::reloadInstances(c
             windowType,
             filterSize,
             sampleRate,
-            { _cutoffs[InstanceCount - 1ul], 0.0 },
+            { _cutoffs[InstanceCount - 2ul], 0.0 },
             _gains[InstanceCount - 1ul]
         },
         InstanceCount - 1ul
