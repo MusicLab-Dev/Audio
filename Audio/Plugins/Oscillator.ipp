@@ -99,7 +99,8 @@ inline void Audio::Oscillator::generateSine(
     const auto end = outputSize + phaseOffset;
 
     float outGain = 1.f;
-    for (auto i = phaseOffset, k = 0ul; i < end; ++i, ++k) {
+    auto k = 0ul;
+    for (auto i = phaseOffset; i < end; ++i, ++k) {
         outGain = getEnveloppeGain(key, i, trigger) * gain;
         if constexpr (Accumulate)
             output[k] += std::sin(i * frequencyNorm) * outGain;
@@ -123,7 +124,8 @@ inline void Audio::Oscillator::generateSquare(
     const float frequencyNorm = 2.f * M_PI * frequency / sampleRate;
     const auto end = outputSize + phaseOffset;
 
-    for (auto i = phaseOffset, k = 0ul; i < end; ++i, ++k) {
+    auto k = 0ul;
+    for (auto i = phaseOffset; i < end; ++i, ++k) {
         if constexpr (Accumulate)
             output[k] += std::sin(i * frequencyNorm) > 0.f ? 1.f : -1.f;
         else
@@ -140,7 +142,8 @@ inline void Audio::Oscillator::generateTriangle(
     const float frequencyNorm = 2.f * M_PI / (frequency / sampleRate);
     const auto end = outputSize + phaseOffset;
 
-    for (auto i = phaseOffset, k = 0ul; i < end; ++i, ++k) {
+    auto k = 0ul;
+    for (auto i = phaseOffset; i < end; ++i, ++k) {
         if constexpr (Accumulate)
             output[k] += std::asin(std::sin(i * frequencyNorm)) * M_2_PI;
         else
@@ -157,7 +160,8 @@ inline void Audio::Oscillator::generateSaw(
     const float frequencyNorm = M_PI / (frequency / sampleRate);
     const auto end = outputSize + phaseOffset;
 
-    for (auto i = phaseOffset, k = 0ul; i < end; ++i, ++k) {
+    auto k = 0ul;
+    for (auto i = phaseOffset; i < end; ++i, ++k) {
         if constexpr (Accumulate)
             output[k] += std::atan(Utils::cot(i * frequencyNorm)) * -M_2_PI;
         else

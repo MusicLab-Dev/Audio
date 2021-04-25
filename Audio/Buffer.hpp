@@ -233,6 +233,8 @@ public:
     void resample(const SampleRate newSampleRate) noexcept;
 };
 
+static_assert_fit_eighth_cacheline(Audio::Buffer);
+
 /** @brief A BufferView holds a reference to an existing buffer without managing data ownership */
 class Audio::BufferView : public Internal::BufferBase
 {
@@ -256,5 +258,7 @@ public:
     /** @brief Move assignment */
     BufferView &operator=(BufferView &&other) noexcept = default;
 };
+
+static_assert_fit_eighth_cacheline(Audio::BufferView);
 
 #include "Buffer.ipp"

@@ -45,8 +45,8 @@ inline void Audio::AScheduler::addEvent(Apply &&apply)
 {
     if (getCurrentGraph().running())
         _events.push(Event {
-            apply: std::forward<Apply>(apply),
-            notify: NotifyFunctor()
+            std::forward<Apply>(apply),
+            NotifyFunctor()
         });
     else {
         apply();
@@ -58,8 +58,8 @@ inline void Audio::AScheduler::addEvent(Apply &&apply, Notify &&notify)
 {
     if (getCurrentGraph().running())
         _events.push(Event {
-            apply: std::forward<Apply>(apply),
-            notify: std::forward<Notify>(notify)
+            std::forward<Apply>(apply),
+            std::forward<Notify>(notify)
         });
     else {
         apply();
