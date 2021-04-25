@@ -2,9 +2,11 @@ cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
 
 get_filename_component(AudioRoot ${CMAKE_CURRENT_LIST_FILE} PATH)
 
-include(${AudioRoot}/CompileOptions/CompileOptions.cmake)
+include(${AudioRoot}/CompileOptions/ToolchainOptions.cmake)
 
 project(Audio)
+
+include(${AudioRoot}/CompileOptions/CompileOptions.cmake)
 
 add_submodule_directory(${AudioRoot}/Flow)
 

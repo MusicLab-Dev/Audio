@@ -92,7 +92,7 @@ private:
 
 
 /** @brief A BufferBase is a helper base class for any Buffer or BufferView */
-class alignas_quarter_cacheline Audio::Internal::BufferBase
+class alignas_eighth_cacheline Audio::Internal::BufferBase
 {
 public:
     /** @brief Copy constructor */
@@ -186,10 +186,10 @@ protected:
     void setHeader(AllocationHeader *newHeader) noexcept { _header = newHeader; }
 };
 
-static_assert_fit_quarter_cacheline(Audio::Internal::BufferBase);
+static_assert_fit_eighth_cacheline(Audio::Internal::BufferBase);
 
 /** @brief A Buffer manage ownership of his data */
-class alignas_quarter_cacheline Audio::Buffer : public Audio::Internal::BufferBase
+class alignas_eighth_cacheline Audio::Buffer : public Audio::Internal::BufferBase
 {
 public:
     /** @brief Default constructor */
@@ -230,6 +230,8 @@ public:
     void resample(const SampleRate newSampleRate) noexcept;
 };
 
+static_assert_fit_eighth_cacheline(Audio::Buffer);
+
 /** @brief A BufferView holds a reference to an existing buffer without managing data ownership */
 class Audio::BufferView : public Internal::BufferBase
 {
@@ -253,5 +255,7 @@ public:
     /** @brief Move assignment */
     BufferView &operator=(BufferView &&other) noexcept = default;
 };
+
+static_assert_fit_eighth_cacheline(Audio::BufferView);
 
 #include "Buffer.ipp"

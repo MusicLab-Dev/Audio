@@ -15,6 +15,11 @@
 
 #include "Audio/Base.hpp"
 
+// Dummy MSVC doesn't find M_PI
+#ifndef M_PI
+# define M_PI       3.14159265358979323846   // pi
+#endif
+
 namespace Audio::DSP
 {
     /** @brief Describe the parameters used for a second-order IIR filter section */
