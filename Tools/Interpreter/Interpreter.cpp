@@ -33,7 +33,7 @@ constexpr auto SettingsHelpText =
         "Usage: settings [SubCommand] [Parameters, ...]\n"
         "Settings command list:\n"
         "- list\n\tList every settings parameters\n"
-        "- sampleRate {Interger} (default: 44100)\n\tChange the sample rate\n"
+        "- sampleRate {Integer} (default: 44100)\n\tChange the sample rate\n"
         "- channelArrangement {'M': mono | 'S': stereo} (default: Mono)\n\tChange the channel arrangement rate\n"
         "- format {'F32' | 'I8' | 'I16' | 'I32' } (default: 'F32')\n\tChange the channel format rate\n"
         "- blockSize {Integer} (default: '2048')\n\tChange the audio callback block size\n";

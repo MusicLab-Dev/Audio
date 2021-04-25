@@ -61,7 +61,7 @@ namespace Audio
     /** @brief Parameter type */
     enum class ParamType : int {
         Boolean,
-        Interger,
+        Integer,
         Floating,
         Enum
     };
