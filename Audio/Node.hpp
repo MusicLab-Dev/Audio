@@ -42,7 +42,7 @@ public:
     Node &operator=(Node &&other) noexcept = default;
 
     /** @brief Get the internal plugin */
-    [[nodiscard]] IPlugin *getPlugin(void) { return _plugin.get(); }
+    [[nodiscard]] IPlugin *plugin(void) { return _plugin.get(); }
 
     /** @brief Set the internal plugin */
     void setPlugin(PluginPtr &&plugin);
@@ -76,12 +76,6 @@ public:
     void setName(Core::FlatString &&name) noexcept { _name = name; }
 
 
-    /** @brief Get a reference to the node plugin */
-    /** @todo replace by Plugin ref */
-    [[nodiscard]] PluginPtr &plugin(void) noexcept { return _plugin; }
-    [[nodiscard]] const PluginPtr &plugin(void) const noexcept { return _plugin; }
-
-
     /** @brief Get a reference to the node partitions */
     [[nodiscard]] Partitions &partitions(void) noexcept { return _partitions; }
     [[nodiscard]] const Partitions &partitions(void) const noexcept { return _partitions; }
@@ -109,9 +103,6 @@ public:
     /** @brief Signal called when the generation of the audio block start */
     void onAudioGenerationStarted(const BeatRange &range) noexcept;
 
-    void f() {
-        sizeof(*this);
-    }
 private:
     Node               *_parent { nullptr }; // 8
     PluginPtr           _plugin { nullptr }; // 8

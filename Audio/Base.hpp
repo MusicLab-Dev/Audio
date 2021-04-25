@@ -6,6 +6,7 @@
 #pragma once
 
 #include <cstdint>
+#include <cmath>
 
 #include <Core/Vector.hpp>
 #include <Core/FlatVector.hpp>
@@ -14,6 +15,7 @@
 
 #include "BaseDevice.hpp"
 #include "BaseIndex.hpp"
+#include "BaseVolume.hpp"
 
 namespace Audio
 {
@@ -35,6 +37,9 @@ namespace Audio
     /** @brief Middle key */
     static constexpr Key RootKey = 69u;
 
+    /** @brief Middle key */
+    static constexpr float RootKeyFrequency = 440.f;
+
     /** @brief Semitone */
     using Semitone = std::int8_t;
 
@@ -53,11 +58,16 @@ namespace Audio
     /** @brief Parameter ID */
     using ParamID = std::uint32_t;
 
+    /** @brief Parameter type */
+    enum class ParamType : int {
+        Boolean,
+        Integer,
+        Floating,
+        Enum
+    };
+
     /** @brief Parameter value */
     using ParamValue = double;
-
-    /** @brief Gain value */
-    using Gain = float;
 
     /** @brief Audio channels arrangement */
     enum class ChannelArrangement : std::uint8_t {
@@ -96,7 +106,7 @@ namespace Audio
 
     /** @brief Make a combination of flags out of an enum class */
     template<typename Output, typename Intermediate, typename ...Inputs>
-    [[nodiscard]] Output MakeFlags(const Inputs ...inputs) noexcept
+    [[nodiscard]] inline Output MakeFlags(const Inputs ...inputs) noexcept
         { return static_cast<Output>((... | static_cast<Intermediate>(inputs))); }
 
 

@@ -22,7 +22,7 @@ namespace Audio
     constexpr auto French = "FR";
 
     /** @brief A list of paths */
-    using ExternalPaths = Core::TinyVector<std::string_view>;
+    using ExternalPaths = Core::TinyVector<std::string>;
 
     struct TranslationPair
     {
@@ -56,7 +56,20 @@ namespace Audio
 
     struct ControlMetaData
     {
+        using RangeNames = Core::TinyVector<TranslationTable>;
+
+        struct RangeValues
+        {
+            ParamValue min {};
+            ParamValue max {};
+            ParamValue step {};
+        };
+
         TranslationMetaData translations;
+        ParamType type;
+        ParamValue defaultValue;
+        RangeValues rangeValues;
+        RangeNames rangeNames;
     };
 
     using ControlMetaDataList = Core::TinyVector<ControlMetaData>;
@@ -77,8 +90,15 @@ class Audio::IPlugin
 public:
     using Flags = IPluginFactory::Flags;
 
+    /** @brief Plugin constructor */
+    IPlugin(const IPluginFactory *factory) noexcept : _factory(factory) {}
+
     /** @brief Virtual destructor */
     virtual ~IPlugin(void) noexcept = default;
+
+
+    /** @brief Get related factory */
+    [[nodiscard]] const IPluginFactory *factory(void) const noexcept { return _factory; }
 
 
     /** @brief Get the audio specs of this plugin */
@@ -128,7 +148,8 @@ public:
     virtual void sendControls(const ControlEvents &controls) { throw std::runtime_error("IPlugin::sendControls: Not implemented"); }
 
 
-    /** @brief Set a plugin's external paths (if flag SingleExternalInput or MultipleExternalInputs is set) */
+    /** @brief Get / Set a plugin's external paths (if flag SingleExternalInput or MultipleExternalInputs is set) */
+    virtual const ExternalPaths &getExternalPaths(void) const { throw std::runtime_error("IPlugin::getExternalPaths: Not implemented"); }
     virtual void setExternalPaths(const ExternalPaths &paths) { throw std::runtime_error("IPlugin::setExternalPaths: Not implemented"); }
 
 
@@ -151,5 +172,6 @@ public: // See REGISTER_PLUGIN in PluginUtils
     [[nodiscard]] virtual const PluginMetaData &getMetaData(void) const noexcept = 0;
 
 private:
+    const IPluginFactory *_factory { nullptr };
     AudioSpecs _specs;
 };

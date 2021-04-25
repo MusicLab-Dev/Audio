@@ -71,7 +71,7 @@ public:
 
     virtual std::string_view getPath(void) const = 0;
 
-    // virtual Flags getFlags(void) = 0;
+    virtual Flags getFlags(void) const = 0;
 
     virtual Tags getTags(void) const = 0;
 

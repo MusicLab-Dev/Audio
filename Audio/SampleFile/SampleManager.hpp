@@ -13,13 +13,13 @@
 
 namespace Audio
 {
-    template<typename Type>
+    template<typename Type, bool Normalize = false>
     struct SampleManager;
 };
 
 #include <iostream>
 
-template<typename Type>
+template<typename Type, bool Normalize>
 struct Audio::SampleManager
 {
     static const constexpr std::tuple<

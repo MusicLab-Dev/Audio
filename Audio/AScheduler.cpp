@@ -25,7 +25,11 @@ bool AScheduler::setState(const State state) noexcept
             if (expected == State::Play)
                 return false;
         }
-        scheduleCurrentGraph();
+        if (!getCurrentGraph().running()) {
+            if (_dirtyFlags[static_cast<std::size_t>(playbackMode())])
+                invalidateCurrentGraph<false>();
+            scheduleCurrentGraph();
+        }
         break;
     }
     return true;

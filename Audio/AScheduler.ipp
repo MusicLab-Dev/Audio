@@ -9,25 +9,27 @@ inline Audio::AScheduler::AScheduler(void)
 {
     for (auto &cache : _graphs) {
         cache.graph.setRepeatCallback([this](void) -> bool {
-            static auto SampleCpt = 0u;
-
+            bool exited = false;
             if (_overflowCache) {
-                onAudioQueueBusy();
+                exited = onAudioQueueBusy();
             } else {
-                if (produceAudioData(_project->master()->cache())) {
-                    onAudioBlockGenerated();
-                } else {
-                    onAudioQueueBusy();
-                }
                 getCurrentBeatRange().increment(_processBeatSize);
                 processBeatMiss();
                 if (isLooping())
                     processLooping();
-                SampleCpt += _processBlockSize;
+                if (produceAudioData(_project->master()->cache())) {
+                    exited = onAudioBlockGenerated();
+                } else {
+                    exited = onAudioQueueBusy();
+                }
             }
-            if (state() == State::Pause)
-                std::cout << "State:" << static_cast<int>(state()) << std::endl;
-            return state() == State::Play;
+            if (exited) {
+                std::cout << "Shutting down process graph, clearing cache" << std::endl;
+                clearAudioQueue();
+                clearOverflowCache();
+                return false;
+            } else
+                return true;
         });
     }
 }
@@ -100,9 +102,12 @@ inline const Audio::BeatRange &Audio::AScheduler::getCurrentBeatRange(void) cons
 template<Audio::PlaybackMode Playback>
 inline void Audio::AScheduler::invalidateGraph(void)
 {
-    getCurrentGraph().clear();
+    std::cout << "invalidate graph " << static_cast<std::size_t>(Playback) << std::endl;
+
     if (!_project)
         throw std::logic_error("AScheduler::invalidateGraph: Scheduler has no linked project");
+    getCurrentGraph().clear();
+    _dirtyFlags[static_cast<std::size_t>(playbackMode())] = false;
     if constexpr (Playback == PlaybackMode::Partition || Playback == PlaybackMode::OnTheFly) {
         if (!_partitionNode)
             throw std::logic_error("AScheduler::invalidateGraph: Scheduler has no linked partition node");
@@ -112,8 +117,11 @@ inline void Audio::AScheduler::invalidateGraph(void)
     buildGraph<Playback>();
 }
 
+template<bool SetDirty>
 inline void Audio::AScheduler::invalidateCurrentGraph(void)
 {
+    if constexpr (SetDirty)
+        _dirtyFlags.fill(true);
     switch (playbackMode()) {
     case PlaybackMode::Production:
         return invalidateGraph<PlaybackMode::Production>();
@@ -136,13 +144,16 @@ inline void Audio::AScheduler::wait(void) noexcept_ndebug
 inline void Audio::AScheduler::dispatchApplyEvents(void)
 {
     for (const auto &event : _events)
-        event.apply();
+        if (event.apply)
+            event.apply();
 }
 
 inline void Audio::AScheduler::dispatchNotifyEvents(void)
 {
-    for (const auto &event : _events)
-        event.notify();
+    for (const auto &event : _events) {
+        if (event.notify)
+            event.notify();
+    }
     _events.clear();
 }
 
@@ -182,14 +193,20 @@ inline bool Audio::AScheduler::produceAudioData(const BufferView output)
 
 inline bool Audio::AScheduler::flushOverflowCache(void)
 {
-    const auto cacheSize = _overflowCache.size<std::uint8_t>();
-    // std::cout << "flush: Queue size: " << _AudioQueue.size() << std::endl;
-    const bool ok = _AudioQueue.tryPushRange(
+    return _AudioQueue.tryPushRange(
         _overflowCache.byteData(),
-        _overflowCache.byteData() + cacheSize
+        _overflowCache.byteData() + _overflowCache.size<std::uint8_t>()
     );
+}
 
-    return ok;
+inline void Audio::AScheduler::clearAudioQueue(void)
+{
+    _overflowCache.release();
+}
+
+inline void Audio::AScheduler::clearOverflowCache(void)
+{
+    _AudioQueue.clear();
 }
 
 template<Audio::PlaybackMode Playback>
@@ -209,8 +226,9 @@ inline void Audio::AScheduler::buildGraph(void)
                 _overflowCache.release();
                 return true;
             // The delayed data must be re-delayed
-            } else
+            } else {
                 return false;
+            }
         // There is no data delayed
         } else
             return true;
@@ -227,13 +245,16 @@ inline void Audio::AScheduler::buildGraph(void)
     conditional.precede(noteTask.first);
     // If master is the only node, connect his tasks
     if (parent->children().empty()) {
-        noteTask.first.succeed(audioTask.first);
-        return;
-    }
-    for (auto &child : parent->children()) {
-        buildNodeTask<Playback>(child.get(), noteTask, audioTask);
+        noteTask.first.precede(audioTask.first);
+        if (!parent->parent())
+            return;
+    } else {
+        for (auto &child : parent->children()) {
+            buildNodeTask<Playback>(child.get(), noteTask, audioTask);
+        }
     }
     if constexpr (Playback == PlaybackMode::Partition || Playback == PlaybackMode::OnTheFly) {
+        parent = parent->parent();
         while (parent) {
             auto parentAudioTask = MakeSchedulerTask<Playback, false, true>(graph, parent->flags(), this, parent, nullptr);
             parentAudioTask.first.setName(parent->name() + "_audio");

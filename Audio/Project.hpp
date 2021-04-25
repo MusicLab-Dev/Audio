@@ -50,9 +50,8 @@ public:
 
 private:
     NodePtr             _master {};
-    PlaybackMode        _playbackMode { PlaybackMode::Production };
-    BPM                 _bpm { 150.f };
     Core::FlatString    _name {};
+    BPM                 _bpm { 150.f };
 };
 
 static_assert_fit_cacheline(Audio::Project);

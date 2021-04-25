@@ -13,12 +13,15 @@
 
 namespace Audio
 {
+    template<DSP::EnveloppeType Enveloppe>
     class NoteManager;
 
-    using NoteManagerPtr = std::unique_ptr<NoteManager>;
+    template<DSP::EnveloppeType Enveloppe>
+    using NoteManagerPtr = std::unique_ptr<NoteManager<Enveloppe>>;
 };
 
 /** @brief Note manager store states of each note */
+template<Audio::DSP::EnveloppeType Enveloppe>
 class alignas_double_cacheline Audio::NoteManager
 {
 public:
@@ -71,6 +74,16 @@ public:
     /** @brief Process a list of notes and update the internal cache */
     void feedNotes(const NoteEvents &notes) noexcept;
 
+    /** @brief Reset all */
+    void reset(void)
+    {
+        resetCache();
+        resetAllModifiers();
+        resetTriggers();
+        resetReadIndexes();
+        _enveloppe.resetTriggerIndexes();
+        _enveloppe.resetInternalGains();
+    }
 
     /** @brief Reset the internal cache. All notes are turned off */
     void resetCache(void) noexcept;
@@ -106,15 +119,33 @@ public:
 
     [[nodiscard]] std::size_t readIndex(const Key key) const noexcept { return _cache.readIndexes[key]; }
 
-    void setEvenveloppeIndex(const Key key, const std::size_t triggerIndex) noexcept { _enveloppe.setTriggerIndex(key, triggerIndex); }
+    void setReadIndex(const Key key, const std::size_t index) noexcept { _cache.readIndexes[key] = key; }
 
-    float getEnveloppeGain(const Key key, const std::size_t index, const bool isTrigger) const noexcept { return _enveloppe.getGain(key, index, isTrigger); }
+    float getEnveloppeGain(
+            const Key key, const std::size_t index, const bool trigger,
+            const float delay, const float attack,
+            const float hold, const float decay,
+            const float sustain, const float release,
+            const SampleRate sampleRate) noexcept
+    {
+        const auto gain = _enveloppe.getGain(key, index, trigger, delay, attack, hold, decay, sustain, release, sampleRate);
+        // std::cout << "attack:::: " << attack << std::endl;
+        // std::cout << "samplerate:::: " << sampleRate << std::endl;
+        if (!gain) {
+            setReadIndex(key, 0ul);
+            _enveloppe.resetTriggerIndexes();
+        }
+        return gain;
+    }
+
+    [[nodiscard]] const DSP::EnveloppeBase<Enveloppe> &enveloppe(void) const noexcept { return _enveloppe; }
+    [[nodiscard]] DSP::EnveloppeBase<Enveloppe> &enveloppe(void) noexcept { return _enveloppe; }
 
 private:
     Cache   _cache;
-    DSP::AttackRelease _enveloppe;
+    DSP::EnveloppeBase<Enveloppe> _enveloppe;
 };
 
-static_assert_alignof_double_cacheline(Audio::NoteManager);
+// static_assert_alignof_double_cacheline(Audio::NoteManager);
 
 #include "NoteManager.ipp"

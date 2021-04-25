@@ -30,13 +30,15 @@ public:
 
     virtual std::string_view getPath(void) const final { return std::string_view(Path); }
 
+    virtual Flags getFlags(void) const final { return Plugin::MetaData().flags; }
+
     virtual Tags getTags(void) const final { return Plugin::MetaData().tags; }
 
     // virtual Capabilities getCapabilities(void) final;
 
     virtual SDK getSDK(void) const final { return SDK::Internal; }
 
-    [[nodiscard]] virtual IPlugin *instantiate(void) final { return new Plugin(); }
+    [[nodiscard]] virtual IPlugin *instantiate(void) final { return new Plugin(this); }
 
 private:
 };

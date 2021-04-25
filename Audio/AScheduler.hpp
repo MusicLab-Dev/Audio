@@ -29,7 +29,7 @@ class alignas_cacheline Audio::AScheduler
 {
 public:
     /** @brief Internal play state */
-    enum class State {
+    enum class State : int {
         Pause, Play
     };
 
@@ -136,25 +136,27 @@ public:
         { return const_cast<Flow::Graph &>(const_cast<const AScheduler *>(this)->getCurrentGraph()); }
 
     /** @brief Get the currently used beat range (depend of playback mode) */
-    [[nodiscard]] const Audio::BeatRange &getCurrentBeatRange(void) const noexcept;
-    [[nodiscard]] Audio::BeatRange &getCurrentBeatRange(void) noexcept
-        { return const_cast<Audio::BeatRange &>(const_cast<const AScheduler *>(this)->getCurrentBeatRange()); }
-
+    [[nodiscard]] const BeatRange &getCurrentBeatRange(void) const noexcept;
+    [[nodiscard]] BeatRange &getCurrentBeatRange(void) noexcept
+        { return const_cast<BeatRange &>(const_cast<const AScheduler *>(this)->getCurrentBeatRange()); }
 
     /** @brief Invalidates a graph */
     template<PlaybackMode Playback>
     void invalidateGraph(void);
+    template<bool SetDirty = true>
     void invalidateCurrentGraph(void);
 
 
     /** @brief Callback called when scheduler is set to play */
     void onAudioProcessStarted(const BeatRange &beatRange);
 
-    /** @brief Virtual callback called when a frame is generated */
-    virtual void onAudioBlockGenerated(void) = 0;
+    /** @brief Virtual callback called when a frame is generated
+     *  @return true if the current graph has to stop */
+    [[nodiscard]] virtual bool onAudioBlockGenerated(void) = 0;
 
-    /** @brief Virtual callback called  */
-    virtual void onAudioQueueBusy(void) = 0;
+    /** @brief Virtual callback called
+     *  @return true if the current graph has to stop */
+    [[nodiscard]] virtual bool onAudioQueueBusy(void) = 0;
 
     /** @brief Will wait until the processing graph is completed
      *  Never call this without setting state to 'Pause' during the whole wait call */
@@ -163,8 +165,14 @@ public:
     /** @brief Init internal cache */
     void prepareCache(const AudioSpecs &specs);
 
+    /** @brief Clear the overflow cache */
+    void clearOverflowCache(void);
 
-    /** @brief Will consome audio data from the global queue */
+    /** @brief Clear the audio queue */
+    void clearAudioQueue(void);
+
+
+    /** @brief Will consume audio data from the global queue */
     static inline std::size_t ConsumeAudioData(std::uint8_t *data, const std::size_t size)
         { return _AudioQueue.popRange(data, data + size); }
 
@@ -179,7 +187,7 @@ private:
     // Cacheline 1
     // Virtual table pointer
     std::unique_ptr<Flow::Scheduler> _scheduler { std::make_unique<Flow::Scheduler>() };
-    Core::TinyVector<Event> _events {};
+    Core::TinyVector<Event> _events {}; // @todo Use two vectors instead of one
     ProjectPtr _project {};
     Buffer _overflowCache {};
     PlaybackMode _playbackMode { PlaybackMode::Production };
@@ -188,19 +196,21 @@ private:
     // Cacheline 2
     std::size_t _processBlockSize { 0u };
     Audio::BeatRange _loopBeatRange {};
-    bool _isLooping { true };
+    bool _isLooping { false };
     Beat _processBeatSize { 0u };
     double _beatMissCount { 0.0 };
     double _beatMissOffset { 0.0 };
     Node *_partitionNode { nullptr };
     std::uint32_t _partitionIndex { 0 };
+    std::array<bool, Audio::PlaybackModeCount> _dirtyFlags {};
+    // 8 bytes
 
     // Cacheline 3
     PlaybackGraphs _graphs {};
 
 
     /** @brief Audio callback queue */
-    static inline Core::SPSCQueue<std::uint8_t> _AudioQueue { 65536 };
+    static inline Core::SPSCQueue<std::uint8_t> _AudioQueue { 2048 * 4 * 4 };
 
 
     /** @brief Build a graph */

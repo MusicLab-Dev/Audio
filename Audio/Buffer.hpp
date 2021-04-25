@@ -170,6 +170,9 @@ public:
     template<typename Type = std::byte>
     [[nodiscard]] std::size_t capacity(void) const noexcept { return _header->capacity / sizeof(Type); }
 
+    /** @brief Check if the buffer is filled of zero */
+    [[nodiscard]] bool isZero(void) const noexcept;
+
 public: // Internal public functions for buffers compatibility
     /** @brief Get the allocation header */
     [[nodiscard]] AllocationHeader *header(void) const noexcept { return _header; }

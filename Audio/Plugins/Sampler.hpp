@@ -7,7 +7,7 @@
 
 #include <Core/FlatVector.hpp>
 
-#include <Audio/PluginUtils.hpp>
+#include <Audio/PluginControlUtils.hpp>
 #include <Audio/BufferOctave.hpp>
 #include "Managers/NoteManager.hpp"
 
@@ -34,69 +34,27 @@ class Audio::Sampler final : public Audio::IPlugin
         /* Plugin tags */
         TAGS(Sampler),
         /* Control list */
-        REGISTER_CONTROL(
-            /* Control variable / getter / setter name */
-            outputGain,
-            /* Control name */
-            TR_TABLE(
-                TR(English, "Output gain"),
-                TR(French, "Volume de sortie")
-            ),
-            /* Control's description */
-            TR_TABLE(
-                TR(English, "Output gain of the sampler"),
-                TR(French, "Volume de sortie du sampleur")
-            )
+        REGISTER_CONTROL_OUTPUT_VOLUME(
+            outputVolume,
+            DefaultPluginOutputVolume,
+            CONTROL_OUTPUT_VOLUME_RANGE()
         ),
-        REGISTER_CONTROL(
-            /* Control variable / getter / setter name */
-            pitch,
-            /* Control name */
-            TR_TABLE(
-                TR(English, "Pitch"),
-                TR(French, "Hauteur")
-            ),
-            /* Control's description */
-            TR_TABLE(
-                TR(English, "Base pitch of the loaded note"),
-                TR(French, "Hauteur de référence la note chargée")
-            )
-        ),
-        REGISTER_CONTROL(
-            /* Control variable / getter / setter name */
-            enveloppeAttack,
-            /* Control name */
-            TR_TABLE(
-                TR(English, "Enveloppe attack"),
-                TR(French, "Attaque de l'enveloppe")
-            ),
-            /* Control's description */
-            TR_TABLE(
-                TR(English, "Attack duration used by the enveloppe to determine volume gain"),
-                TR(French, "Hauteur de référence la note chargée")
-            )
-        ),
-        REGISTER_CONTROL(
-            /* Control variable / getter / setter name */
-            enveloppeRelease,
-            /* Control name */
-            TR_TABLE(
-                TR(English, "Enveloppe release"),
-                TR(French, "Extinction de l'enveloppe")
-            ),
-            /* Control's description */
-            TR_TABLE(
-                TR(English, "Release duration used by the enveloppe to determine volume gain"),
-                TR(French, "Hauteur de référence la note chargée")
-            )
+        /* Enveloppe controls (attack, release) */
+        REGISTER_CONTROL_ENVELOPPE_AR(
+            enveloppeAttack, 0.001, CONTROL_RANGE(0.0, 10.0),
+            enveloppeRelease, 0.001, CONTROL_RANGE(0.0, 10.0)
         )
     )
 
 public:
+    /** @brief Plugin constructor */
+    Sampler(const IPluginFactory *factory) noexcept : IPlugin(factory) {}
+
     virtual void receiveAudio(BufferView output);
 
     virtual void sendNotes(const NoteEvents &notes);
 
+    virtual const ExternalPaths &getExternalPaths(void) const { return _externalPaths; }
     virtual void setExternalPaths(const ExternalPaths &paths);
 
     virtual void onAudioParametersChanged(void);
@@ -104,7 +62,7 @@ public:
     // virtual void sendControls(const ControlEvents &controls) noexcept {
     // }
 
-    virtual void onAudioGenerationStarted(const BeatRange &range) {}
+    virtual void onAudioGenerationStarted(const BeatRange &range);
 
 
 public:
@@ -118,9 +76,15 @@ private:
     // Cacheline 1 & 2
     BufferOctave _buffers {};
     // Cacheline 3 & 4
-    NoteManager _noteManager {};
+    NoteManager<DSP::EnveloppeType::AR> _noteManager {};
 
     Buffer _tmp;
+    ExternalPaths _externalPaths;
+
+    float getEnveloppeGain(const Key key, const std::size_t index, const bool isTrigger) noexcept
+    {
+        return _noteManager.enveloppe().attackRelease(key, index, isTrigger, enveloppeAttack(), enveloppeRelease(), audioSpecs().sampleRate);
+    }
 };
 
 #include "Sampler.ipp"

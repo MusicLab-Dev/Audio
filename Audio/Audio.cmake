@@ -13,10 +13,11 @@ set(AudioSources
     ${AudioDir}/SchedulerTask.ipp
     ${AudioDir}/Automation.hpp
     ${AudioDir}/Base.hpp
-    ${AudioDir}/Math.hpp
+    ${AudioDir}/BaseVolume.hpp
     ${AudioDir}/BaseDevice.hpp
     ${AudioDir}/BaseIndex.hpp
     ${AudioDir}/BaseIndex.cpp
+    ${AudioDir}/Math.hpp
     ${AudioDir}/Buffer.hpp
     ${AudioDir}/BufferOctave.hpp
     ${AudioDir}/Buffer.ipp
@@ -47,11 +48,14 @@ set(AudioSources
     ${AudioDir}/PluginTable.hpp
     ${AudioDir}/PluginTable.ipp
     ${AudioDir}/PluginUtils.hpp
+    ${AudioDir}/PluginControlUtils.hpp
     ${AudioDir}/Project.hpp
     ${AudioDir}/Project.ipp
     ${AudioDir}/UtilsMidi.hpp
     ${AudioDir}/KissFFT.hpp
     ${AudioDir}/KissFFT.ipp
+    ${AudioDir}/Volume.hpp
+    ${AudioDir}/Volume.ipp
 )
 
 
@@ -60,8 +64,16 @@ set(AudioPluginsDir ${AudioDir}/Plugins)
 set(AudioPluginsSources
     ${AudioPluginsDir}/Sampler.hpp
     ${AudioPluginsDir}/Sampler.ipp
+    ${AudioPluginsDir}/Oscillator.hpp
+    ${AudioPluginsDir}/Oscillator.ipp
     ${AudioPluginsDir}/Mixer.hpp
     ${AudioPluginsDir}/Mixer.ipp
+    ${AudioPluginsDir}/LambdaFilter.hpp
+    ${AudioPluginsDir}/LambdaFilter.hpp
+    ${AudioPluginsDir}/SigmaFilter.hpp
+    ${AudioPluginsDir}/SigmaFilter.hpp
+    ${AudioPluginsDir}/GammaEqualizer.ipp
+    ${AudioPluginsDir}/GammaEqualizer.ipp
 )
 
 set(AudioPluginManagerDir ${AudioPluginsDir}/Managers)
@@ -93,9 +105,9 @@ set(AudioDSPSources
     ${AudioDSPDir}/PitchShift.cpp
     ${AudioDSPDir}/PitchShift.ipp
     ${AudioDSPDir}/Resampler.hpp
+    ${AudioDSPDir}/Resampler.ipp
     ${AudioDSPDir}/Interpolation.ipp
     ${AudioDSPDir}/Decimation.ipp
-    ${AudioDSPDir}/Resampler.ipp
     ${AudioDSPDir}/Biquad.hpp
     ${AudioDSPDir}/Biquad.ipp
     ${AudioDSPDir}/Biquad.cpp
@@ -103,7 +115,9 @@ set(AudioDSPSources
     ${AudioDSPDir}/EnveloppeGenerator.ipp
     ${AudioDSPDir}/FIR.hpp
     ${AudioDSPDir}/FIR.ipp
-    ${AudioDSPDir}/Window.hpp
+    ${AudioDSPDir}/FIRFilter.ipp
+    ${AudioDSPDir}/Filter.hpp
+    ${AudioDSPDir}/Filter.ipp
     ${AudioDSPDir}/Window.ipp
 )
 

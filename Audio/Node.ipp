@@ -26,8 +26,9 @@ inline void Audio::Node::prepareCache(const AudioSpecs &specs)
 inline void Audio::Node::onAudioGenerationStarted(const BeatRange &range) noexcept
 {
     // We process plugins from bottom to top
+    _cache.clear();
+    plugin()->onAudioGenerationStarted(range);
     for (auto &child : _children) {
         child->onAudioGenerationStarted(range);
     }
-    plugin()->onAudioGenerationStarted(range);
 }

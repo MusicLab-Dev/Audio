@@ -1,0 +1,101 @@
+/**
+ * @file LambdaFilter.hpp
+ * @brief Lambda filter plugin using FIR method
+ *
+ * @author Pierre V
+ * @date 2021-04-23
+ */
+
+#pragma once
+
+#include <Audio/PluginUtils.hpp>
+#include <Audio/DSP/FIR.hpp>
+
+namespace Audio
+{
+    class LambdaFilter;
+}
+
+class Audio::LambdaFilter final : public Audio::IPlugin
+{
+    REGISTER_PLUGIN(
+        /* Plugin's name */
+        TR_TABLE(
+            TR(English, "LambdaFilter"),
+            TR(French, "Filtre Lambda")
+        ),
+        /* Plugin description */
+        TR_TABLE(
+            TR(English, "LambdaFilter allow to filter audio signal"),
+            TR(French, "Le filtre Lambda permet de filtrer de l'audio")
+        ),
+        /* Plugin flags */
+        FLAGS(AudioInput, AudioOutput),
+        /* Plugin tags */
+        TAGS(Filter),
+        /* Control list */
+        REGISTER_CONTROL_OUTPUT_VOLUME(
+            outputVolume,
+            0.0,
+            CONTROL_OUTPUT_VOLUME_RANGE()
+        ),
+        REGISTER_CONTROL_FILTER_CUTOFF(
+            cutoffFrequencyFrom,
+            440.0,
+            CONTROL_FILTER_CUTOFF_DEFAULT_RANGE()
+        ),
+        REGISTER_CONTROL_FILTER_CUTOFF(
+            cutoffFrequencyTo,
+            1000.0,
+            CONTROL_FILTER_CUTOFF_DEFAULT_RANGE()
+        ),
+        REGISTER_CONTROL_ENUM(
+            /* Control variable / getter / setter name */
+            filterType,
+            /* Control's range */
+            CONTROL_ENUM_RANGE(
+                TR_TABLE(
+                    TR(English, "Low-pass"),
+                    TR(French, "Passe bas")
+                ),
+                TR_TABLE(
+                    TR(English, "High-pass"),
+                    TR(French, "Passe haut")
+                ),
+                TR_TABLE(
+                    TR(English, "Band-pass"),
+                    TR(French, "Passe bande")
+                ),
+                TR_TABLE(
+                    TR(English, "Band-stop"),
+                    TR(French, "Stop bande")
+                )
+            ),
+            /* Control name */
+            TR_TABLE(
+                TR(English, "Second cutoff frequency"),
+                TR(French, "Deuxième fréquence de coupure")
+            ),
+            /* Control's description */
+            TR_TABLE(
+                TR(English, "First cutoff frequency"),
+                TR(French, "Deuxième fréquence de coupure")
+            )
+        )
+    )
+
+public:
+    /** @brief Plugin constructor */
+    LambdaFilter(const IPluginFactory *factory) noexcept : IPlugin(factory) {}
+
+    virtual void sendAudio(const BufferViews &inputs);
+    virtual void receiveAudio(BufferView output);
+
+    virtual void onAudioGenerationStarted(const BeatRange &range);
+
+private:
+    DSP::FIR::BasicFilter<float> _filter;
+    Buffer _cache;
+};
+
+#include "LambdaFilter.ipp"

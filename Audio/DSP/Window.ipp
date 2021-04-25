@@ -1,23 +1,24 @@
 /**
- * @ Author: Pierre Veysseyre
- * @ Description: Window.ipp
+ * @file Window.ipp
+ * @brief Window methods implementation
+ *
+ * @author Pierre V
+ * @date 2021-04-22
  */
 
-#include <cmath>
-
-inline void Audio::DSP::WindowMaker::GenerateFilterCoefficients(const WindowType type, const std::size_t size, float *windowCoefficients, const bool isSymetric) noexcept
+inline void Audio::DSP::Filter::GenerateWindow(const WindowType type, const std::size_t size, float *window, const bool isSymetric) noexcept
 {
     switch (type) {
     case WindowType::Hanning:
-        return Hanning(size, windowCoefficients, isSymetric);
+        return Hanning(size, window, isSymetric);
     case WindowType::Hamming:
-        return Hamming(size, windowCoefficients, isSymetric);
+        return Hamming(size, window, isSymetric);
     default:
-        return Hanning(size, windowCoefficients, isSymetric);
+        return Hanning(size, window, isSymetric);
     }
 }
 
-inline void Audio::DSP::WindowMaker::Hanning(const std::size_t size, float *outputWindow, const bool isSymetric) noexcept
+inline void Audio::DSP::Filter::Hanning(const std::size_t size, float *outputWindow, const bool isSymetric) noexcept
 {
     if (isSymetric) {
         for (auto i = 0u; i < size; i++) {
@@ -27,7 +28,7 @@ inline void Audio::DSP::WindowMaker::Hanning(const std::size_t size, float *outp
     }
 }
 
-inline void Audio::DSP::WindowMaker::Hamming(const std::size_t size, float *outputWindow, const bool isSymetric) noexcept
+inline void Audio::DSP::Filter::Hamming(const std::size_t size, float *outputWindow, const bool isSymetric) noexcept
 {
     if (isSymetric) {
         for (auto i = 0u; i < size; i++) {

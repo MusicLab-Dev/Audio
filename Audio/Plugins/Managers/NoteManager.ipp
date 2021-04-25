@@ -5,25 +5,39 @@
 
 #include <iostream>
 
-inline void Audio::NoteManager::feedNotes(const NoteEvents &notes) noexcept
+template<Audio::DSP::EnveloppeType Enveloppe>
+inline void Audio::NoteManager<Enveloppe>::feedNotes(const NoteEvents &notes) noexcept
 {
-    std::cout << "NEW NOTE\n";
+    static constexpr auto Debug = false;
+    if constexpr (Debug) {
+        if (const auto notesSize = notes.size(); notesSize)
+            std::cout << "<<Process " << std::to_string(notesSize) << " notes>>" << std::endl;
+    }
     for (const auto &note : notes) {
         auto &target = _cache.modifiers[note.key];
+        if constexpr (Debug)
+            std::cout << ":: " << note << std::endl;
         switch (note.type) {
         case NoteEvent::EventType::On:
         {
-            std::cout << "ON: " << _cache.actives.size() << std::endl;
+            if constexpr (Debug)
+                std::cout << "---ON: " << _cache.actives.size() << std::endl;
             const auto it = _cache.actives.find(note.key);
             if (it == _cache.actives.end()) {
+                if constexpr (Debug)
+                    std::cout << "  \\__push" << std::endl;
                 _cache.actives.push(note.key);
                 _cache.triggers[note.key] = true;
+                enveloppe().setTriggerIndex(note.key, 0u);
+                enveloppe().resetGain(note.key);
             } else {
+                if constexpr (Debug)
+                    std::cout << "  \\__reset" << std::endl;
                 // Reset trigger
-                std::cout << "reset trigger on\n";
                 _cache.triggers[note.key] = true;
                 _cache.readIndexes[note.key] = 0u;
-                setEvenveloppeIndex(note.key, 0u);
+                enveloppe().setTriggerIndex(note.key, 0u);
+                enveloppe().resetGain(note.key);
             }
             target.noteModifiers.velocity = note.velocity;
             target.noteModifiers.tuning = note.tuning;
@@ -31,23 +45,21 @@ inline void Audio::NoteManager::feedNotes(const NoteEvents &notes) noexcept
         }
         case NoteEvent::EventType::Off:
         {
-            std::cout << "OFF: " << _cache.actives.size() << std::endl;
+            if constexpr (Debug)
+                std::cout << "---OFF: " << _cache.actives.size() << std::endl;
             const auto it = _cache.actives.find(note.key);
             if (it != _cache.actives.end()) {
-                _cache.triggers[note.key] = false;
+                if constexpr (Debug)
+                    std::cout << "  \\__reset trigger off" << std::endl;
                 // Reset
-                // std::cout << "reset trigger off\n";
-                // std::cout << "reset trigger off\n";
-                // std::cout << "reset trigger off\n";
-                // std::cout << "reset trigger off\n";
-                // std::cout << "reset trigger off\n";
-                // std::cout << "reset trigger off\n";
+                _cache.triggers[note.key] = false;
                 // _cache.readIndexes[note.key] = 0u;
-                setEvenveloppeIndex(note.key, _cache.readIndexes[note.key]);
+                enveloppe().setTriggerIndex(note.key, _cache.readIndexes[note.key]);
             }
         } break;
         case NoteEvent::EventType::OnOff:
-            std::cout << "ON & OFF: " << _cache.actives.size() << std::endl;
+            if constexpr (Debug)
+                std::cout << "---ON & OFF: " << _cache.actives.size() << std::endl;
             // _cache.actives.push(note.key);
             _cache.activesBlock.push(note.key);
             target.noteModifiers.velocity = note.velocity;
@@ -61,15 +73,19 @@ inline void Audio::NoteManager::feedNotes(const NoteEvents &notes) noexcept
             break;
         };
     }
+    if constexpr (Debug)
+        std::cout << "__actives: " << _cache.actives.size() << std::endl;
 }
 
-inline void Audio::NoteManager::resetCache(void) noexcept
+template<Audio::DSP::EnveloppeType Enveloppe>
+inline void Audio::NoteManager<Enveloppe>::resetCache(void) noexcept
 {
     _cache.actives.clear();
     resetBlockCache();
 }
 
-inline void Audio::NoteManager::resetBlockCache(void) noexcept
+template<Audio::DSP::EnveloppeType Enveloppe>
+inline void Audio::NoteManager<Enveloppe>::resetBlockCache(void) noexcept
 {
     for (const auto &note : _cache.activesBlock) {
         if (const auto it = _cache.actives.find(note); it != _cache.actives.end())
@@ -78,12 +94,14 @@ inline void Audio::NoteManager::resetBlockCache(void) noexcept
     _cache.activesBlock.clear();
 }
 
-inline void Audio::NoteManager::resetReadIndexes(void) noexcept
+template<Audio::DSP::EnveloppeType Enveloppe>
+inline void Audio::NoteManager<Enveloppe>::resetReadIndexes(void) noexcept
 {
     _cache.readIndexes.fill(0u);
 }
 
-inline void Audio::NoteManager::resetNoteModifiers(void) noexcept
+template<Audio::DSP::EnveloppeType Enveloppe>
+inline void Audio::NoteManager<Enveloppe>::resetNoteModifiers(void) noexcept
 {
     for (auto &modifier : _cache.modifiers) {
         modifier.noteModifiers = NoteModifiers {
@@ -92,7 +110,8 @@ inline void Audio::NoteManager::resetNoteModifiers(void) noexcept
     }
 }
 
-inline void Audio::NoteManager::resetPolyModifiers(void) noexcept
+template<Audio::DSP::EnveloppeType Enveloppe>
+inline void Audio::NoteManager<Enveloppe>::resetPolyModifiers(void) noexcept
 {
     for (auto &modifier : _cache.modifiers) {
         modifier.polyPressureModifiers = NoteModifiers {
@@ -101,7 +120,8 @@ inline void Audio::NoteManager::resetPolyModifiers(void) noexcept
     }
 }
 
-inline void Audio::NoteManager::resetAllModifiers(void) noexcept
+template<Audio::DSP::EnveloppeType Enveloppe>
+inline void Audio::NoteManager<Enveloppe>::resetAllModifiers(void) noexcept
 {
     _cache.modifiers.fill(NoteCache {
         NoteModifiers { 0u, 0u },
@@ -109,7 +129,8 @@ inline void Audio::NoteManager::resetAllModifiers(void) noexcept
     });
 }
 
-inline void Audio::NoteManager::incrementReadIndex(const Key key, const std::size_t maxIndex, std::size_t amount) noexcept
+template<Audio::DSP::EnveloppeType Enveloppe>
+inline void Audio::NoteManager<Enveloppe>::incrementReadIndex(const Key key, const std::size_t maxIndex, std::size_t amount) noexcept
 {
     auto &trigger = _cache.triggers[key];
     auto &readIndex = _cache.readIndexes[key];
@@ -119,22 +140,24 @@ inline void Audio::NoteManager::incrementReadIndex(const Key key, const std::siz
 
     readIndex += amount;
     // std::cout << "  ::" << _cache.readIndexes[key] << std::endl;
-    if (readIndex >= maxIndex) {
-        std::cout << "  :: RESET" << std::endl;
+    if (maxIndex && readIndex >= maxIndex) {
+        // std::cout << "  :: RESET" << std::endl;
         if (const auto it = _cache.actives.find(key); it != _cache.actives.end())
             _cache.actives.erase(it);
         readIndex = 0u;
         trigger = false;
-        std::cout << "  :: RESET" << std::endl;
+        // std::cout << "  :: RESET" << std::endl;
      }
 }
 
-inline void Audio::NoteManager::resetTriggers(void) noexcept
+template<Audio::DSP::EnveloppeType Enveloppe>
+inline void Audio::NoteManager<Enveloppe>::resetTriggers(void) noexcept
 {
     _cache.triggers.fill(false);
 }
 
-inline bool Audio::NoteManager::setTrigger(const Key key, const bool state) noexcept
+template<Audio::DSP::EnveloppeType Enveloppe>
+inline bool Audio::NoteManager<Enveloppe>::setTrigger(const Key key, const bool state) noexcept
 {
     if (state == _cache.triggers[key])
         return false;
