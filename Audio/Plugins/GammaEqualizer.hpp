@@ -34,7 +34,7 @@ public:
         TAGS(EQ),
         REGISTER_CONTROL_OUTPUT_VOLUME(
             outputVolume,
-            DefaultPluginOutputVolume,
+            0.0,
             CONTROL_OUTPUT_VOLUME_RANGE()
         )
         // ,

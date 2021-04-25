@@ -70,6 +70,8 @@ set(AudioPluginsSources
     ${AudioPluginsDir}/Mixer.ipp
     ${AudioPluginsDir}/LambdaFilter.hpp
     ${AudioPluginsDir}/LambdaFilter.hpp
+    ${AudioPluginsDir}/SigmaFilter.hpp
+    ${AudioPluginsDir}/SigmaFilter.hpp
     ${AudioPluginsDir}/GammaEqualizer.ipp
     ${AudioPluginsDir}/GammaEqualizer.ipp
 )

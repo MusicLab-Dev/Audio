@@ -1,6 +1,6 @@
 /**
- * @file LambdaFilter.hpp
- * @brief Lambda filter plugin using FIR method
+ * @file SigmaFilter.hpp
+ * @brief Sigma filter plugin using FIR method
  *
  * @author Pierre V
  * @date 2021-04-23
@@ -9,25 +9,25 @@
 #pragma once
 
 #include <Audio/PluginUtils.hpp>
-#include <Audio/DSP/FIR.hpp>
+#include <Audio/DSP/Biquad.hpp>
 
 namespace Audio
 {
-    class LambdaFilter;
+    class SigmaFilter;
 }
 
-class Audio::LambdaFilter final : public Audio::IPlugin
+class Audio::SigmaFilter final : public Audio::IPlugin
 {
     REGISTER_PLUGIN(
         /* Plugin's name */
         TR_TABLE(
-            TR(English, "LambdaFilter"),
-            TR(French, "Filtre Lambda")
+            TR(English, "SigmaFilter"),
+            TR(French, "Filtre Sigma")
         ),
         /* Plugin description */
         TR_TABLE(
-            TR(English, "LambdaFilter allow to filter audio signal"),
-            TR(French, "Le filtre Lambda permet de filtrer de l'audio")
+            TR(English, "SigmaFilter allow to filter audio signal"),
+            TR(French, "Le filtre Sigma permet de filtrer de l'audio")
         ),
         /* Plugin flags */
         FLAGS(AudioInput, AudioOutput),
@@ -41,7 +41,7 @@ class Audio::LambdaFilter final : public Audio::IPlugin
         ),
         REGISTER_CONTROL_FILTER_CUTOFF(
             cutoffFrequencyFrom,
-            440.0,
+            120.0,
             CONTROL_FILTER_CUTOFF_DEFAULT_RANGE()
         ),
         REGISTER_CONTROL_FILTER_CUTOFF(
@@ -86,7 +86,7 @@ class Audio::LambdaFilter final : public Audio::IPlugin
 
 public:
     /** @brief Plugin constructor */
-    LambdaFilter(const IPluginFactory *factory) noexcept : IPlugin(factory) {}
+    SigmaFilter(const IPluginFactory *factory) noexcept : IPlugin(factory) {}
 
     virtual void sendAudio(const BufferViews &inputs);
     virtual void receiveAudio(BufferView output);
@@ -94,8 +94,9 @@ public:
     virtual void onAudioGenerationStarted(const BeatRange &range);
 
 private:
-    DSP::FIR::BasicFilter<float> _filter;
+    DSP::Biquad::Filter<DSP::Biquad::Internal::Form::Transposed2> _filter;
+    // DSP::X<DSP::Biquad::BiquadParam::InternalForm::Transposed2> _filter;
     Buffer _cache;
 };
 
-#include "LambdaFilter.ipp"
+#include "SigmaFilter.ipp"
