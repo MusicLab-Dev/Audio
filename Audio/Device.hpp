@@ -100,11 +100,11 @@ public:
 
 
     /** @brief Get/Set the actual audio block size */
-    [[nodiscard]] std::uint16_t blockSize(void) const noexcept { return _descriptor.blockSize; }
-    void setBlockSize(const std::uint16_t blockSize) noexcept { _descriptor.blockSize = blockSize; }
+    [[nodiscard]] BlockSize blockSize(void) const noexcept { return _descriptor.blockSize; }
+    void setBlockSize(const BlockSize blockSize) noexcept { _descriptor.blockSize = blockSize; }
 
     /** @brief Get/Set the actual midi channels */
-    [[nodiscard]] std::uint16_t midiChannels(void) const noexcept { return _descriptor.midiChannels; }
+    [[nodiscard]] MidiChannels midiChannels(void) const noexcept { return _descriptor.midiChannels; }
     void setMidiChannels(const MidiChannels midiChannels) noexcept { _descriptor.midiChannels = midiChannels; }
 
 
