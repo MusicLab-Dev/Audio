@@ -73,7 +73,7 @@ void AScheduler::setProcessParamByBeatSize(const Beat processBeatSize, const Sam
     UNUSED(sampleRate);
 }
 
-void AScheduler::setProcessParamByBlockSize(const std::size_t processBlockSize, const SampleRate sampleRate)
+void AScheduler::setProcessParamByBlockSize(const BlockSize processBlockSize, const SampleRate sampleRate)
 {
     const double beats = static_cast<double>(processBlockSize) / sampleRate * project()->tempo() * Audio::BeatPrecision;
     const double beatsFloor = std::floor(beats);

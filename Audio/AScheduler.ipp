@@ -43,7 +43,7 @@ inline Audio::AScheduler::AScheduler(ProjectPtr &&project)
 template<typename Apply>
 inline void Audio::AScheduler::addEvent(Apply &&apply)
 {
-    if (getCurrentGraph().running())
+    if (!_hasExitedGraph)
         _events.push(Event {
             std::forward<Apply>(apply),
             NotifyFunctor()
@@ -56,7 +56,7 @@ inline void Audio::AScheduler::addEvent(Apply &&apply)
 template<typename Apply, typename Notify>
 inline void Audio::AScheduler::addEvent(Apply &&apply, Notify &&notify)
 {
-    if (getCurrentGraph().running())
+    if (!_hasExitedGraph)
         _events.push(Event {
             std::forward<Apply>(apply),
             std::forward<Notify>(notify)
@@ -159,6 +159,7 @@ inline void Audio::AScheduler::dispatchNotifyEvents(void)
 
 inline void Audio::AScheduler::scheduleCurrentGraph(void)
 {
+    _hasExitedGraph = false;
     onAudioProcessStarted(getCurrentBeatRange());
     _scheduler->schedule(getCurrentGraph());
 }
