@@ -34,10 +34,10 @@ namespace Audio::DSP::Biquad
         struct Specs
         {
             DSP::Filter::AdvancedType filterType { DSP::Filter::AdvancedType::LowPass };
-            double sampleRate;
-            double cutoffs[2];
-            double gain;
-            double qFactor;
+            float sampleRate;
+            float cutoffs[2];
+            float gain;
+            float qFactor;
             bool qAsBandWidth;
         };
 
@@ -55,15 +55,16 @@ namespace Audio::DSP::Biquad
             Transposed2     // 2 registers, 3 addOp -> better for floating-points
         };
 
-        [[nodiscard]] Coefficients GenerateCoefficientsLowPass(const double sampleRate, const double freq, const double gain, const double q, bool qAsBandWidth) noexcept;
-        [[nodiscard]] Coefficients GenerateCoefficientsLowShelf(const double sampleRate, const double freq, const double gain, const double q, bool qAsBandWidth) noexcept;
-        [[nodiscard]] Coefficients GenerateCoefficientsHighPass(const double sampleRate, const double freq, const double gain, const double q, bool qAsBandWidth) noexcept;
-        [[nodiscard]] Coefficients GenerateCoefficientsHighShelf(const double sampleRate, const double freq, const double gain, const double q, bool qAsBandWidth) noexcept;
-        [[nodiscard]] Coefficients GenerateCoefficientsBandPass(const double sampleRate, const double freq, const double gain, const double q, bool qAsBandWidth) noexcept;
-        [[nodiscard]] Coefficients GenerateCoefficientsBandStop(const double sampleRate, const double freq, const double gain, const double q, bool qAsBandWidth) noexcept;
-        [[nodiscard]] Coefficients GenerateCoefficientsPeak(const double sampleRate, const double freq, const double gain, const double q, bool qAsBandWidth) noexcept;
+        [[nodiscard]] Coefficients GenerateCoefficientsLowPass(const float sampleRate, const float freq, const float q, const bool qAsBandWidth) noexcept;
+        [[nodiscard]] Coefficients GenerateCoefficientsHighPass(const float sampleRate, const float freq, const float q, const bool qAsBandWidth) noexcept;
+        [[nodiscard]] Coefficients GenerateCoefficientsBandPass(const float sampleRate, const float freq, const float q, const bool qAsBandWidth) noexcept;
+        [[nodiscard]] Coefficients GenerateCoefficientsBandStop(const float sampleRate, const float freq, const float q, const bool qAsBandWidth) noexcept;
+        [[nodiscard]] Coefficients GenerateCoefficientsPeak(const float sampleRate, const float freq, const float gain, const float q, const bool qAsBandWidth) noexcept;
+        [[nodiscard]] Coefficients GenerateCoefficientsLowShelf(const float sampleRate, const float freq, const float gain, const float q) noexcept;
+        [[nodiscard]] Coefficients GenerateCoefficientsHighShelf(const float sampleRate, const float freq, const float gain, const float q) noexcept;
 
-    };
+    }
+
     [[nodiscard]] Internal::Coefficients GenerateCoefficients(const Internal::Specs &specs) noexcept;
 
     // template<Internal::Optimization Opti>

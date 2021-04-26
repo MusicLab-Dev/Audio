@@ -52,8 +52,6 @@ set(AudioSources
     ${AudioDir}/Project.hpp
     ${AudioDir}/Project.ipp
     ${AudioDir}/UtilsMidi.hpp
-    ${AudioDir}/KissFFT.hpp
-    ${AudioDir}/KissFFT.ipp
     ${AudioDir}/Volume.hpp
     ${AudioDir}/Volume.ipp
 )
@@ -101,9 +99,6 @@ set(AudioDSPDir ${AudioDir}/DSP)
 set(AudioDSPSources
     ${AudioDSPDir}/Merge.hpp
     ${AudioDSPDir}/Merge.ipp
-    ${AudioDSPDir}/PitchShift.hpp
-    ${AudioDSPDir}/PitchShift.cpp
-    ${AudioDSPDir}/PitchShift.ipp
     ${AudioDSPDir}/Resampler.hpp
     ${AudioDSPDir}/Resampler.ipp
     ${AudioDSPDir}/Interpolation.ipp
@@ -127,11 +122,9 @@ add_library(${PROJECT_NAME}
     ${AudioPluginsSources}
     ${AudioPluginManagersSources}
     ${AudioDSPSources}
-    ${AudioKissFFTSources}
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${AudioDir}/..)
-target_include_directories(${PROJECT_NAME} PUBLIC ${AudioDir}/../kissfft/)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC Core Flow)
 

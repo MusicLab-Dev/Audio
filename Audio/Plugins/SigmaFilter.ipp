@@ -8,7 +8,7 @@
 
 #include <Audio/DSP/Merge.hpp>
 
-inline void Audio::SigmaFilter::onAudioGenerationStarted(const BeatRange &range)
+inline void Audio::SigmaFilter::onAudioGenerationStarted(const BeatRange &)
 {
     // _filter.init(
     //     DSP::Filter::FIRSpec {
@@ -26,7 +26,7 @@ inline void Audio::SigmaFilter::onAudioGenerationStarted(const BeatRange &range)
 
 inline void Audio::SigmaFilter::receiveAudio(BufferView output)
 {
-    const DB outGain = ConvertDecibelToRatio(outputVolume());
+    const DB outGain = ConvertDecibelToRatio(static_cast<DB>(outputVolume()));
     float *out = output.data<float>();
     output.clear();
     // Update filter cutoffs

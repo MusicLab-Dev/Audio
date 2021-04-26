@@ -29,10 +29,10 @@ namespace Audio
         /** @brief Header of the buffer allocation */
         struct alignas_cacheline AllocationHeader
         {
-            std::size_t bucketIndex {};
             std::size_t capacity {};
-            std::size_t size {};
             std::size_t channelByteSize {};
+            std::size_t size {};
+            std::size_t bucketIndex {};
             SampleRate sampleRate {};
             ChannelArrangement channelArrangement {};
             Format format {};

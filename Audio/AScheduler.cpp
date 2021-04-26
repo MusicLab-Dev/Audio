@@ -69,7 +69,8 @@ void AScheduler::processLooping(void)
 
 void AScheduler::setProcessParamByBeatSize(const Beat processBeatSize, const SampleRate sampleRate)
 {
-
+    UNUSED(processBeatSize);
+    UNUSED(sampleRate);
 }
 
 void AScheduler::setProcessParamByBlockSize(const std::size_t processBlockSize, const SampleRate sampleRate)
@@ -81,10 +82,10 @@ void AScheduler::setProcessParamByBlockSize(const std::size_t processBlockSize, 
     _processBlockSize = processBlockSize;
     if (auto ceilDt = beatsCeil - beats, floorDt = beats - beatsFloor; ceilDt < floorDt) {
         _beatMissOffset = -ceilDt;
-        _processBeatSize = beatsCeil;
+        _processBeatSize = static_cast<std::uint32_t>(beatsCeil);
     } else {
         _beatMissOffset = floorDt;
-        _processBeatSize = beatsFloor;
+        _processBeatSize = static_cast<std::uint32_t>(beatsFloor);
     }
     _beatMissCount = 0.0;
     for (auto &cache : _graphs)

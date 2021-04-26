@@ -98,7 +98,7 @@ namespace Audio
         SampleRate sampleRate { 0u };
         ChannelArrangement channelArrangement { 0u };
         Format format { Format::Floating32 };
-        std::size_t processBlockSize { 0u };
+        std::uint32_t processBlockSize { 0u };
 
         /** @brief Equality operators */
         [[nodiscard]] bool operator==(const AudioSpecs &other) const noexcept

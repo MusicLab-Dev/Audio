@@ -130,7 +130,7 @@ inline void Audio::NoteManager<Enveloppe>::resetAllModifiers(void) noexcept
 }
 
 template<Audio::DSP::EnveloppeType Enveloppe>
-inline void Audio::NoteManager<Enveloppe>::incrementReadIndex(const Key key, const std::size_t maxIndex, std::size_t amount) noexcept
+inline void Audio::NoteManager<Enveloppe>::incrementReadIndex(const Key key, const std::uint32_t maxIndex, std::uint32_t amount) noexcept
 {
     auto &trigger = _cache.triggers[key];
     auto &readIndex = _cache.readIndexes[key];

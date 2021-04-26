@@ -83,7 +83,7 @@ namespace Audio
     };
 
     static_assert_fit_cacheline(PluginMetaData);
-};
+}
 
 class Audio::IPlugin
 {
@@ -133,24 +133,24 @@ public:
 
 
     /** @brief  */
-    virtual void sendAudio(const BufferViews &inputs) { throw std::runtime_error("IPlugin::sendAudio: Not implemented"); }
+    virtual void sendAudio(const BufferViews &inputs) { UNUSED(inputs); throw std::runtime_error("IPlugin::sendAudio: Not implemented"); }
 
     /** @brief  */
-    virtual void receiveAudio(BufferView output) { throw std::runtime_error("IPlugin::receiveAudio: Not implemented"); }
+    virtual void receiveAudio(BufferView output) { UNUSED(output); throw std::runtime_error("IPlugin::receiveAudio: Not implemented"); }
 
     /** @brief  */
-    virtual void sendNotes(const NoteEvents &notes) { throw std::runtime_error("IPlugin::sendNotes: Not implemented"); }
+    virtual void sendNotes(const NoteEvents &notes) { UNUSED(notes); throw std::runtime_error("IPlugin::sendNotes: Not implemented"); }
 
     /** @brief  */
-    virtual void receiveNotes(NoteEvents &notes) { throw std::runtime_error("IPlugin::receiveNotes: Not implemented"); }
+    virtual void receiveNotes(NoteEvents &notes) { UNUSED(notes); throw std::runtime_error("IPlugin::receiveNotes: Not implemented"); }
 
     /** @brief  */
-    virtual void sendControls(const ControlEvents &controls) { throw std::runtime_error("IPlugin::sendControls: Not implemented"); }
+    virtual void sendControls(const ControlEvents &controls) { UNUSED(controls); throw std::runtime_error("IPlugin::sendControls: Not implemented"); }
 
 
     /** @brief Get / Set a plugin's external paths (if flag SingleExternalInput or MultipleExternalInputs is set) */
     virtual const ExternalPaths &getExternalPaths(void) const { throw std::runtime_error("IPlugin::getExternalPaths: Not implemented"); }
-    virtual void setExternalPaths(const ExternalPaths &paths) { throw std::runtime_error("IPlugin::setExternalPaths: Not implemented"); }
+    virtual void setExternalPaths(const ExternalPaths &paths) { UNUSED(paths); throw std::runtime_error("IPlugin::setExternalPaths: Not implemented"); }
 
 
     /** @brief Signal called when the generation of the audio block start */

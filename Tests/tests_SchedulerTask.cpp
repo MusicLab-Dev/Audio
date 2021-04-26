@@ -238,7 +238,6 @@ static constexpr BlockSize BS = 4096;
 
 
 #include "DummyPlugin.hpp"
-#include <Audio/DSP/PitchShift.hpp>
 
 #define MAKE_DUMMY(PluginClass) \
     std::make_unique<Node>(PluginPtr(new PluginClass()));
@@ -265,7 +264,6 @@ TEST(SchedulerTask, NotesCollection)
 
         // auto samplerBuffer = BufferView(samplerP->getBuffers()[0]);
 
-        // auto b = PitchShift::Shift<float>(samplerBuffer, 1);
 
         // return;
         auto master = MAKE_DUMMY(DummyAudioIO);

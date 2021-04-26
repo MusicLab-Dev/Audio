@@ -56,11 +56,11 @@ inline void Audio::Sampler::sendNotes(const NoteEvents &notes)
 
 inline void Audio::Sampler::receiveAudio(BufferView output)
 {
-    const auto outSize = output.size<float>();
+    const std::uint32_t outSize = static_cast<std::uint32_t>(output.size<float>());
     float *out = reinterpret_cast<float *>(output.byteData());
 
     float *sampleBuffer = nullptr;
-    std::size_t sampleSize = 0u;
+    std::uint32_t sampleSize = 0u;
 
     // std::cout << "Receive audio" << std::endl;
     const auto activeNote = _noteManager.getActiveNote();
@@ -80,12 +80,12 @@ inline void Audio::Sampler::receiveAudio(BufferView output)
             bufferOctave = realOctave - RootOctave;
 
         sampleBuffer = _buffers[bufferKeyIdx].data<float>();
-        sampleSize = _buffers[bufferKeyIdx].size<float>();
+        sampleSize = static_cast<std::uint32_t>(_buffers[bufferKeyIdx].size<float>());
 
         if (!bufferOctave) {
-            const auto baseIndex = _noteManager.readIndex(key);
-            const int nextReadIndex = sampleSize - (baseIndex + audioSpecs().processBlockSize);
-            const auto readSize = nextReadIndex < 0 ? outSize + nextReadIndex : outSize;
+            const std::uint32_t baseIndex = _noteManager.readIndex(key);
+            const int nextReadIndex = static_cast<int>(sampleSize - (baseIndex + audioSpecs().processBlockSize));
+            const auto readSize = nextReadIndex < 0 ? outSize - static_cast<std::uint32_t>(-nextReadIndex) : outSize;
 
             for (auto i = 0u; i < readSize; ++i) {
                 const auto idx = baseIndex + i;
@@ -95,12 +95,12 @@ inline void Audio::Sampler::receiveAudio(BufferView output)
         }
         else {
             sampleBuffer = _buffers[bufferKeyIdx].data<float>();
-            sampleSize = _buffers[bufferKeyIdx].size<float>();
-            const std::size_t resampleSize = sampleSize * std::pow(2, -bufferOctave);
-            const std::size_t resampleOffset = _noteManager.readIndex(key) * std::pow(2, bufferOctave);
-            const int nextReadIndex = resampleSize - (_noteManager.readIndex(key) + audioSpecs().processBlockSize);
+            sampleSize = static_cast<std::uint32_t>(_buffers[bufferKeyIdx].size<float>());
+            const std::uint32_t resampleSize = static_cast<std::uint32_t>(static_cast<float>(sampleSize) * std::pow(2, -bufferOctave));
+            const std::uint32_t resampleOffset = static_cast<std::uint32_t>(static_cast<float>(_noteManager.readIndex(key)) * std::pow(2, bufferOctave));
+            const int nextReadIndex = static_cast<int>(resampleSize - (_noteManager.readIndex(key) + audioSpecs().processBlockSize));
             const auto readSize = nextReadIndex < 0 ? outSize + nextReadIndex : outSize;
-            const auto resampleReadSize = readSize * std::pow(2, bufferOctave);
+            const std::uint32_t resampleReadSize = static_cast<std::uint32_t>(static_cast<float>(readSize) * std::pow(2, bufferOctave));
 
             DSP::Resampler<float>().resampleOctave<true, 8u>(sampleBuffer, out, resampleReadSize, audioSpecs().sampleRate, bufferOctave, resampleOffset);
 
@@ -114,7 +114,7 @@ inline void Audio::Sampler::receiveAudio(BufferView output)
     }
 }
 
-inline void Audio::Sampler::onAudioGenerationStarted(const BeatRange &range)
+inline void Audio::Sampler::onAudioGenerationStarted(const BeatRange &)
 {
     _noteManager.reset();
 }

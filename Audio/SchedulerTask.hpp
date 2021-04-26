@@ -19,7 +19,7 @@ namespace Audio
             IPlugin::Flags Begin = IPlugin::Flags::AudioInput, IPlugin::Flags End = IPlugin::Flags::NoteOutput>
     [[nodiscard]] std::pair<Flow::Task, const NoteEvents *> MakeSchedulerTask(Flow::Graph &graph, const IPlugin::Flags flags,
             const AScheduler *scheduler, Node *node, const NoteEvents * const parentNoteStack);
-};
+}
 
 template<Audio::IPlugin::Flags Flags, bool ProcessNotesAndControls, bool ProcessAudio, Audio::PlaybackMode Playback>
 class alignas_cacheline Audio::SchedulerTask

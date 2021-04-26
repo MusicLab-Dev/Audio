@@ -8,27 +8,29 @@ template<typename Type>
 void Audio::DSP::Merge(const BufferViews inputs, BufferView output, const bool normalize) noexcept
 {
     const auto inputSize = inputs.size();
+    const auto typedInputSize = static_cast<Type>(inputSize);
     const std::size_t outputSize = output.size<Type>();
 
+    UNUSED(normalize);
     if (!inputSize)
         return;
     Type *to = output.data<Type>();
-    for (auto i = 0ul; i < 1ul; ++i) {
+    for (auto i = 0u; i < 1u; ++i) {
         const Type *from = inputs[0].data<Type>();
-        for (auto k = 0ul; k < outputSize; ++k) {
+        for (auto k = 0u; k < outputSize; ++k) {
             to[k] = from[k];
         }
     }
-    for (auto i = 1ul; i < inputSize; ++i) {
+    for (auto i = 1u; i < inputSize; ++i) {
         const Type *from = inputs[0].data<Type>();
 
         from = inputs[1].data<Type>();
-        for (auto k = 0ul; k < outputSize; ++k) {
+        for (auto k = 0u; k < outputSize; ++k) {
             to[k] += from[k];
         }
     }
-    for (auto k = 0ul; k < outputSize; ++k) {
-        to[k] /= inputSize;
+    for (auto k = 0u; k < outputSize; ++k) {
+        to[k] /= typedInputSize;
     }
 }
 

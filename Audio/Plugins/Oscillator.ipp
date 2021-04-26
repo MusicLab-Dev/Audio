@@ -5,12 +5,19 @@
 
 #include <iomanip>
 
+inline void Audio::Oscillator::onAudioGenerationStarted(const BeatRange &range)
+{
+    UNUSED(range);
+    _noteManager.reset();
+}
+
 inline void Audio::Oscillator::onAudioParametersChanged(void)
 {
 }
 
 inline void Audio::Oscillator::setExternalPaths(const ExternalPaths &paths)
 {
+    UNUSED(paths);
 }
 
 inline void Audio::Oscillator::sendNotes(const NoteEvents &notes)
@@ -20,7 +27,7 @@ inline void Audio::Oscillator::sendNotes(const NoteEvents &notes)
 
 inline void Audio::Oscillator::receiveAudio(BufferView output)
 {
-    const DB voiceGain = ConvertDecibelToRatio(outputVolume() + DefaultVoiceGain);
+    const DB voiceGain = ConvertDecibelToRatio(static_cast<float>(outputVolume()) + DefaultVoiceGain);
     const auto outSize = output.size<float>();
     float *out = reinterpret_cast<float *>(output.byteData());
 
@@ -64,16 +71,11 @@ inline void Audio::Oscillator::receiveAudio(BufferView output)
     Cpt++;
 }
 
-inline void Audio::Oscillator::onAudioGenerationStarted(const BeatRange &range)
-{
-    _noteManager.reset();
-}
-
 template<bool Accumulate, typename Type>
 inline void Audio::Oscillator::generateWaveform(
         const Osc &oscillator, Type *output, const std::size_t outputSize,
-        const float frequency, const SampleRate sampleRate, const std::size_t phaseOffset,
-        const Key key, const bool trigger, const float gain) noexcept
+        const float frequency, const SampleRate sampleRate, const std::uint32_t phaseOffset,
+        const Key key, const bool trigger, const DB gain) noexcept
 {
     switch (oscillator.waveform) {
     case Osc::Waveform::Sine:
@@ -92,10 +94,10 @@ inline void Audio::Oscillator::generateWaveform(
 template<bool Accumulate, typename Type>
 inline void Audio::Oscillator::generateSine(
         Type *output, const std::size_t outputSize,
-        const float frequency, const SampleRate sampleRate, const std::size_t phaseOffset,
-        const Key key, const bool trigger, const float gain) noexcept
+        const float frequency, const SampleRate sampleRate, const std::uint32_t phaseOffset,
+        const Key key, const bool trigger, const DB gain) noexcept
 {
-    const float frequencyNorm = 2.f * M_PI * frequency / sampleRate;
+    const float frequencyNorm = 2.f * static_cast<float>(M_PI) * frequency / static_cast<float>(sampleRate);
     const auto end = outputSize + phaseOffset;
 
     float outGain = 1.f;
@@ -103,9 +105,9 @@ inline void Audio::Oscillator::generateSine(
     for (auto i = phaseOffset; i < end; ++i, ++k) {
         outGain = getEnveloppeGain(key, i, trigger) * gain;
         if constexpr (Accumulate)
-            output[k] += std::sin(i * frequencyNorm) * outGain;
+            output[k] += static_cast<Type>(std::sin(static_cast<float>(i) * frequencyNorm) * outGain);
         else
-            output[k] = std::sin(i * frequencyNorm) * outGain;
+            output[k] = static_cast<Type>(std::sin(static_cast<float>(i) * frequencyNorm) * outGain);
     }
 
     // _volumeHandler.assignRangeFunctor(output, outputSize, phaseOffset, [this, key, trigger, frequencyNorm, gain](const std::size_t index) {
@@ -118,53 +120,62 @@ inline void Audio::Oscillator::generateSine(
 template<bool Accumulate, typename Type>
 inline void Audio::Oscillator::generateSquare(
         Type *output, const std::size_t outputSize,
-        const float frequency, const SampleRate sampleRate, const std::size_t phaseOffset,
-        const Key key, const bool trigger, const float gain) noexcept
+        const float frequency, const SampleRate sampleRate, const std::uint32_t phaseOffset,
+        const Key key, const bool trigger, const DB gain) noexcept
 {
-    const float frequencyNorm = 2.f * M_PI * frequency / sampleRate;
+    UNUSED(key);
+    UNUSED(trigger);
+    UNUSED(gain);
+    const float frequencyNorm = 2.f * static_cast<float>(M_PI) * frequency / static_cast<float>(sampleRate);
     const auto end = outputSize + phaseOffset;
 
     auto k = 0ul;
     for (auto i = phaseOffset; i < end; ++i, ++k) {
         if constexpr (Accumulate)
-            output[k] += std::sin(i * frequencyNorm) > 0.f ? 1.f : -1.f;
+            output[k] += std::sin(static_cast<float>(i) * frequencyNorm) > 0.f ? 1.f : -1.f;
         else
-            output[k] = std::sin(i * frequencyNorm) > 0.f ? 1.f : -1.f;
+            output[k] = std::sin(static_cast<float>(i) * frequencyNorm) > 0.f ? 1.f : -1.f;
     }
 }
 
 template<bool Accumulate, typename Type>
 inline void Audio::Oscillator::generateTriangle(
         Type *output, const std::size_t outputSize,
-        const float frequency, const SampleRate sampleRate, const std::size_t phaseOffset,
-        const Key key, const bool trigger, const float gain) noexcept
+        const float frequency, const SampleRate sampleRate, const std::uint32_t phaseOffset,
+        const Key key, const bool trigger, const DB gain) noexcept
 {
-    const float frequencyNorm = 2.f * M_PI / (frequency / sampleRate);
+    UNUSED(key);
+    UNUSED(trigger);
+    UNUSED(gain);
+    const float frequencyNorm = 2.f * static_cast<float>(M_PI) / frequency / static_cast<float>(sampleRate);
     const auto end = outputSize + phaseOffset;
 
     auto k = 0ul;
     for (auto i = phaseOffset; i < end; ++i, ++k) {
         if constexpr (Accumulate)
-            output[k] += std::asin(std::sin(i * frequencyNorm)) * M_2_PI;
+            output[k] += static_cast<Type>(std::asin(std::sin(static_cast<float>(i) * frequencyNorm)) * M_2_PI);
         else
-            output[k] = std::asin(std::sin(i * frequencyNorm)) * M_2_PI;
+            output[k] = static_cast<Type>(std::asin(std::sin(static_cast<float>(i) * frequencyNorm)) * M_2_PI);
     }
 }
 
 template<bool Accumulate, typename Type>
 inline void Audio::Oscillator::generateSaw(
         Type *output, const std::size_t outputSize,
-        const float frequency, const SampleRate sampleRate, const std::size_t phaseOffset,
-        const Key key, const bool trigger, const float gain) noexcept
+        const float frequency, const SampleRate sampleRate, const std::uint32_t phaseOffset,
+        const Key key, const bool trigger, const DB gain) noexcept
 {
-    const float frequencyNorm = M_PI / (frequency / sampleRate);
+    UNUSED(key);
+    UNUSED(trigger);
+    UNUSED(gain);
+    const float frequencyNorm = static_cast<float>(M_PI) / frequency / static_cast<float>(sampleRate);
     const auto end = outputSize + phaseOffset;
 
     auto k = 0ul;
     for (auto i = phaseOffset; i < end; ++i, ++k) {
         if constexpr (Accumulate)
-            output[k] += std::atan(Utils::cot(i * frequencyNorm)) * -M_2_PI;
+            output[k] += std::atan(Utils::cot(static_cast<float>(i) * frequencyNorm)) * static_cast<float>(-M_2_PI);
         else
-            output[k] = std::atan(Utils::cot(i * frequencyNorm)) * -M_2_PI;
+            output[k] = std::atan(Utils::cot(static_cast<float>(i) * frequencyNorm)) * static_cast<float>(-M_2_PI);
     }
 }

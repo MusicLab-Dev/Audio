@@ -13,7 +13,7 @@ template<typename Type>
 inline void Audio::DSP::FIR::BasicFilter<Type>::init(const DSP::Filter::FIRSpec &specs) noexcept
 {
     setSpecs(specs);
-    resizeLastInputCache(_specs.size - 1ul);
+    resizeLastInputCache(_specs.size - 1u);
     resetLastInputCache();
 }
 
@@ -59,7 +59,7 @@ inline bool Audio::DSP::FIR::BasicFilter<Type>::setSampleRate(const float sample
 }
 
 template<typename Type>
-inline bool Audio::DSP::FIR::BasicFilter<Type>::setSize(const std::size_t size) noexcept
+inline bool Audio::DSP::FIR::BasicFilter<Type>::setSize(const std::uint32_t size) noexcept
 {
     resizeLastInputCache(size - 1ul);
     resetLastInputCache();
@@ -109,8 +109,8 @@ inline bool Audio::DSP::FIR::BasicFilter<Type>::setWindowType(const DSP::Filter:
  * @brief MultiFilter implementation
  */
 template<unsigned InstanceCount, typename Type>
-template<typename GainType, std::size_t GainSize>
-typename Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::MultiFilter<InstanceCount, Type>::filter(const Type *input, const std::size_t inputSize, Type *output, const GainType(&gains)[GainSize]) noexcept
+template<typename GainType, std::uint32_t GainSize>
+typename Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::MultiFilter<InstanceCount, Type>::filter(const Type *input, const std::uint32_t inputSize, Type *output, const GainType(&gains)[GainSize]) noexcept
 {
     static_assert(GainSize <= InstanceCount, "Audio::DSP::FIR::MultiFilter::filter: gains input must not be greater than the internal InstanceCount.");
     for (auto i = 0u; i < GainSize; ++i) {
@@ -123,19 +123,20 @@ typename Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::MultiFilter<InstanceCo
 }
 
 template<unsigned InstanceCount, typename Type>
-inline void Audio::DSP::FIR::MultiFilter<InstanceCount, Type>::init(const DSP::Filter::WindowType windowType, const std::size_t filterSize, const float sampleRate, const double rootFreq) noexcept
+inline void Audio::DSP::FIR::MultiFilter<InstanceCount, Type>::init(const DSP::Filter::WindowType windowType, const std::uint32_t filterSize, const float sampleRate, const double rootFreq) noexcept
 {
     _windowType = windowType;
     _filterSize = filterSize;
     _sampleRate = sampleRate;
-    for (auto &cutoff : _cutoffs) {
+    // for (auto &cutoff : _cutoffs) {
 
-    }
+    // }
+    UNUSED(rootFreq);
     reloadInstances(_windowType, _filterSize, _sampleRate);
 }
 
 template<unsigned InstanceCount, typename Type>
-inline void Audio::DSP::FIR::MultiFilter<InstanceCount, Type>::reloadInstance(const DSP::Filter::FIRSpec &specs, const std::size_t instanceIndex) noexcept
+inline void Audio::DSP::FIR::MultiFilter<InstanceCount, Type>::reloadInstance(const DSP::Filter::FIRSpec &specs, const std::uint32_t instanceIndex) noexcept
 {
     _instances.coefficients()[instanceIndex].resize(specs.size);
     _instances.lastInput().resize(specs.size - 1);
@@ -145,7 +146,7 @@ inline void Audio::DSP::FIR::MultiFilter<InstanceCount, Type>::reloadInstance(co
 }
 
 template<unsigned InstanceCount, typename Type>
-inline void Audio::DSP::FIR::MultiFilter<InstanceCount, Type>::reloadInstances(const DSP::Filter::WindowType windowType, const std::size_t filterSize, const float sampleRate) noexcept
+inline void Audio::DSP::FIR::MultiFilter<InstanceCount, Type>::reloadInstances(const DSP::Filter::WindowType windowType, const std::uint32_t filterSize, const float sampleRate) noexcept
 {
     // First filter (low-pass)
     reloadInstance(
@@ -160,7 +161,7 @@ inline void Audio::DSP::FIR::MultiFilter<InstanceCount, Type>::reloadInstances(c
         0ul
     );
     // Middle filters (band-pass)
-    for (auto i = 1ul; i < InstanceCount - 1ul; ++i) {
+    for (auto i = 1u; i < InstanceCount - 1ul; ++i) {
         reloadInstance(
             Filter::FIRSpec {
                 Filter::BasicType::BandPass,
@@ -198,7 +199,7 @@ inline bool Audio::DSP::FIR::MultiFilter<InstanceCount, Type>::setSampleRate(con
 }
 
 template<unsigned InstanceCount, typename Type>
-inline bool Audio::DSP::FIR::MultiFilter<InstanceCount, Type>::setFilterSize(const std::size_t filterSize) noexcept
+inline bool Audio::DSP::FIR::MultiFilter<InstanceCount, Type>::setFilterSize(const std::uint32_t filterSize) noexcept
 {
     if (_filterSize == filterSize)
         return false;

@@ -44,7 +44,7 @@ namespace Audio::DSP::Filter
     {
         BasicType filterType { BasicType::LowPass };
         WindowType windowType { WindowType::Hanning };
-        std::size_t size;
+        std::uint32_t size;
         float sampleRate;
         float cutoffs[2];
         float gain;

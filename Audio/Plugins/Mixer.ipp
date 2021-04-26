@@ -7,7 +7,12 @@
 
 #include <Audio/DSP/Merge.hpp>
 #include <Audio/DSP/FIR.hpp>
-// #include <Audio/DSP/Biquad.hpp>
+
+inline void Audio::Mixer::onAudioGenerationStarted(const BeatRange &range)
+{
+    UNUSED(range);
+    _cache.clear();
+}
 
 inline void Audio::Mixer::receiveAudio(BufferView output)
 {

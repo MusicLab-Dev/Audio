@@ -20,12 +20,12 @@ TEST(BeatRange, Comparisons)
 
     // bounds
     BeatRange boundInf { 5, 10 };
-    BeatRange boundSup { 20, 25 };
+    // BeatRange boundSup { 20, 25 };
 
     // overlap
-    BeatRange rangeOverlapInf { 5, 15 };
-    BeatRange rangeOverlapInside { 15, 18 };
-    BeatRange rangeOverlapSup { 18, 25 };
+    // BeatRange rangeOverlapInf { 5, 15 };
+    // BeatRange rangeOverlapInside { 15, 18 };
+    // BeatRange rangeOverlapSup { 18, 25 };
 
 
     EXPECT_TRUE(inf < range);

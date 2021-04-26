@@ -13,7 +13,7 @@
 void Audio::PluginTable::addPlugin(IPlugin *plugin) noexcept_ndebug
 {
     _instances.push(plugin);
-    _counters.push(1ul);
+    _counters.push(1u);
 }
 
 void Audio::PluginTable::incrementRefCount(IPlugin *plugin) noexcept_ndebug

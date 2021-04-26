@@ -7,13 +7,13 @@
  */
 
 template<typename Type>
-typename Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::Internal::Instance<Type>::filter(const Type *input, const std::size_t inputSize, Type *output, const Type outGain) noexcept
+typename Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::Internal::Instance<Type>::filter(const Type *input, const std::uint32_t inputSize, Type *output, const Type outGain) noexcept
 {
-    const auto filterSize = _coefficients.size();
+    const auto filterSize = static_cast<std::uint32_t>(_coefficients.size());
     const auto filterSizeMinusOne = filterSize - 1;
 
     // Begin
-    for (auto i = 0ul; i < filterSizeMinusOne; ++i) {
+    for (auto i = 0u; i < filterSizeMinusOne; ++i) {
         output[i] = filterImpl(input, filterSize, filterSizeMinusOne - i) * outGain;
     }
     // Body
@@ -26,30 +26,30 @@ typename Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::Internal::Instance<Typ
 }
 
 template<typename Type>
-typename Audio::DSP::FIR::ProcessType<Type> Audio::DSP::FIR::Internal::Instance<Type>::filterImpl(const Type *input, const std::size_t size, const std::size_t zeroPad) noexcept
+typename Audio::DSP::FIR::ProcessType<Type> Audio::DSP::FIR::Internal::Instance<Type>::filterImpl(const Type *input, const std::uint32_t size, const std::uint32_t zeroPad) noexcept
 {
-    const std::size_t realSize = size - zeroPad;
-    const std::size_t realSizeMinusOne = realSize - 1;
-    Type sample { 0.0 };
+    const std::uint32_t realSize = size - zeroPad;
+    const std::uint32_t realSizeMinusOne = realSize - 1;
+    Type sample {};
 
-    for (auto i = 0ul; i < zeroPad; ++i) {
+    for (auto i = 0u; i < zeroPad; ++i) {
         sample += _lastInputCache[realSizeMinusOne + i] * _coefficients[i];
     }
-    for (auto i = 0ul; i < realSize; ++i) {
+    for (auto i = 0u; i < realSize; ++i) {
         sample += input[i] * _coefficients[zeroPad + i];
     }
     return sample;
 }
 
 template<unsigned InstanceCount, typename Type>
-typename Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::Internal::MultiInstance<InstanceCount, Type>::filter(const Type *input, const std::size_t inputSize, Type *output, const Internal::GainArray<InstanceCount> &gains) noexcept
+typename Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::Internal::MultiInstance<InstanceCount, Type>::filter(const Type *input, const std::uint32_t inputSize, Type *output, const Internal::GainArray<InstanceCount> &gains) noexcept
 {
-    const auto filterSize = _coefficients.size();
+    const auto filterSize = static_cast<std::uint32_t>(_coefficients.size());
     const auto filterSizeMinusOne = filterSize - 1;
 
     // Begin
-    for (auto i = 0ul; i < filterSizeMinusOne; ++i) {
-        auto k = 0ul;
+    for (auto i = 0u; i < filterSizeMinusOne; ++i) {
+        auto k = 0u;
         for (const auto gain : gains) {
             std::cout << gain << std::endl;
             output[i] = filterImpl(input, filterSize, _coefficients[k++].data(), filterSizeMinusOne - i) * gain;
@@ -59,7 +59,7 @@ typename Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::Internal::MultiInstanc
     const Type *inputShifted = input - filterSizeMinusOne;
     for (auto i = filterSizeMinusOne; i < inputSize; ++i) {
         // Apply all instance
-        auto k = 0ul;
+        auto k = 0u;
         for (const auto gain : gains) {
             // std::cout << gain << std::endl;
             output[i] = filterImpl(inputShifted + i, filterSize, _coefficients[k++].data()) * gain;
@@ -71,16 +71,16 @@ typename Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::Internal::MultiInstanc
 }
 
 template<unsigned InstanceCount, typename Type>
-typename Audio::DSP::FIR::ProcessType<Type> Audio::DSP::FIR::Internal::MultiInstance<InstanceCount, Type>::filterImpl(const Type *input, const std::size_t size, const Type *coefs, const std::size_t zeroPad) noexcept
+typename Audio::DSP::FIR::ProcessType<Type> Audio::DSP::FIR::Internal::MultiInstance<InstanceCount, Type>::filterImpl(const Type *input, const std::uint32_t size, const Type *coefs, const std::uint32_t zeroPad) noexcept
 {
-    const std::size_t realSize = size - zeroPad;
-    const std::size_t realSizeMinusOne = realSize - 1;
+    const std::uint32_t realSize = size - zeroPad;
+    const std::uint32_t realSizeMinusOne = realSize - 1;
     Type sample { 0.0 };
 
-    for (auto i = 0ul; i < zeroPad; ++i) {
+    for (auto i = 0u; i < zeroPad; ++i) {
         sample += _lastInputCache[realSizeMinusOne + i] * _coefficients[i];
     }
-    for (auto i = 0ul; i < realSize; ++i) {
+    for (auto i = 0u; i < realSize; ++i) {
         sample += input[i] * coefs[zeroPad + i];
     }
     return sample;

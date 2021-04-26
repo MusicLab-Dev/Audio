@@ -26,7 +26,7 @@ class alignas_double_cacheline Audio::NoteManager
 {
 public:
     using KeyList = Core::TinyVector<Key>;
-    using IndexList = std::array<std::size_t, KeyCount>;
+    using IndexList = std::array<std::uint32_t, KeyCount>;
     using TriggerList = std::array<bool, KeyCount>;
 
     /** @brief Modifiers of a note */
@@ -60,9 +60,9 @@ public:
     static_assert_alignof_double_cacheline(Cache);
 
 
-    std::size_t getAllActiveNoteSize(void) const noexcept { return getActiveNoteSize() + getActiveNoteBlockSize(); }
-    std::size_t getActiveNoteSize(void) const noexcept { return _cache.actives.size(); }
-    std::size_t getActiveNoteBlockSize(void) const noexcept { return _cache.activesBlock.size(); }
+    std::uint32_t getAllActiveNoteSize(void) const noexcept { return getActiveNoteSize() + getActiveNoteBlockSize(); }
+    std::uint32_t getActiveNoteSize(void) const noexcept { return _cache.actives.size(); }
+    std::uint32_t getActiveNoteBlockSize(void) const noexcept { return _cache.activesBlock.size(); }
 
     KeyList &getActiveNote(void) noexcept { return _cache.actives; }
     KeyList &getActiveNoteBlock(void) noexcept { return _cache.activesBlock; }
@@ -115,14 +115,14 @@ public:
     void resetReadIndexes(void) noexcept;
 
     /** @brief Increment the read index of given key */
-    void incrementReadIndex(const Key key, const std::size_t maxIndex, std::size_t amount = 1u) noexcept;
+    void incrementReadIndex(const Key key, const std::uint32_t maxIndex, std::uint32_t amount = 1u) noexcept;
 
-    [[nodiscard]] std::size_t readIndex(const Key key) const noexcept { return _cache.readIndexes[key]; }
+    [[nodiscard]] std::uint32_t readIndex(const Key key) const noexcept { return _cache.readIndexes[key]; }
 
-    void setReadIndex(const Key key, const std::size_t index) noexcept { _cache.readIndexes[key] = key; }
+    void setReadIndex(const Key key, const std::uint32_t index) noexcept { _cache.readIndexes[key] = key; }
 
     float getEnveloppeGain(
-            const Key key, const std::size_t index, const bool trigger,
+            const Key key, const std::uint32_t index, const bool trigger,
             const float delay, const float attack,
             const float hold, const float decay,
             const float sustain, const float release,
@@ -132,7 +132,7 @@ public:
         // std::cout << "attack:::: " << attack << std::endl;
         // std::cout << "samplerate:::: " << sampleRate << std::endl;
         if (!gain) {
-            setReadIndex(key, 0ul);
+            setReadIndex(key, 0u);
             _enveloppe.resetTriggerIndexes();
         }
         return gain;

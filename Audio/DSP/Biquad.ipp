@@ -10,7 +10,7 @@ template<Audio::DSP::Biquad::Internal::Form Form>
 inline void Audio::DSP::Biquad::Filter<Form>::resetRegisters(void) noexcept
 {
     for (auto i = 0u; i < sizeof(_regs) / 4; ++i)
-        _regs[i] = 0.0;
+        _regs[i] = 0.0f;
 }
 
 template<>
@@ -94,28 +94,28 @@ inline Audio::DSP::Biquad::Internal::Coefficients Audio::DSP::Biquad::GenerateCo
 {
     switch (specs.filterType) {
     case DSP::Filter::AdvancedType::LowPass:
-        return Internal::GenerateCoefficientsLowPass(specs.sampleRate, specs.cutoffs[0], specs.gain, specs.qFactor, specs.qAsBandWidth);
+        return Internal::GenerateCoefficientsLowPass(specs.sampleRate, specs.cutoffs[0], specs.qFactor, specs.qAsBandWidth);
     case DSP::Filter::AdvancedType::HighPass:
-        return Internal::GenerateCoefficientsHighPass(specs.sampleRate, specs.cutoffs[0], specs.gain, specs.qFactor, specs.qAsBandWidth);
+        return Internal::GenerateCoefficientsHighPass(specs.sampleRate, specs.cutoffs[0], specs.qFactor, specs.qAsBandWidth);
     default:
-        return Internal::GenerateCoefficientsLowPass(specs.sampleRate, specs.cutoffs[0], specs.gain, specs.qFactor, specs.qAsBandWidth);
+        return Internal::GenerateCoefficientsLowPass(specs.sampleRate, specs.cutoffs[0], specs.qFactor, specs.qAsBandWidth);
     }
 }
 
-inline Audio::DSP::Biquad::Internal::Coefficients Audio::DSP::Biquad::Internal::GenerateCoefficientsLowPass(const double sampleRate, const double freq, const double gain, const double q, bool qAsBandWidth) noexcept
+inline Audio::DSP::Biquad::Internal::Coefficients Audio::DSP::Biquad::Internal::GenerateCoefficientsLowPass(const float sampleRate, const float freq, const float q, const bool qAsBandWidth) noexcept
 {
-    const auto omega = 2.0 * M_PI * freq / sampleRate;
-    const auto tsin = std::sin(omega);
-    const auto tcos = std::cos(omega);
-    const double alpha = qAsBandWidth ? (tsin * std::sinh(std::log(2.0) / 2.0 * q * omega / tsin)) : (tsin / (2.0 * q));
+    const float omega = 2.0f * static_cast<float>(M_PI) * freq / sampleRate;
+    const float tsin = std::sin(omega);
+    const float tcos = std::cos(omega);
+    const float alpha = qAsBandWidth ? (tsin * std::sinh(std::log(2.0f) / 2.0f * q * omega / tsin)) : (tsin / (2.0f * q));
 
     Internal::Coefficients coefs {};
-    coefs.b[0] = (1.0 - tcos) / 2.0;
-    coefs.b[1] = 1.0 - tcos;
-    coefs.b[2] = (1.0 - tcos) / 2.0;
-    coefs.a[0] = 1.0 + alpha;
-    coefs.a[1] = -2.0 * tcos;
-    coefs.a[2] = 1.0 - alpha;
+    coefs.b[0] = (1.0f - tcos) / 2.0f;
+    coefs.b[1] = 1.0f - tcos;
+    coefs.b[2] = (1.0f - tcos) / 2.0f;
+    coefs.a[0] = 1.0f + alpha;
+    coefs.a[1] = -2.0f * tcos;
+    coefs.a[2] = 1.0f - alpha;
 
     coefs.b[0] = coefs.b[0] / coefs.a[0];
     coefs.b[1] = coefs.b[1] / coefs.a[0];
@@ -126,12 +126,12 @@ inline Audio::DSP::Biquad::Internal::Coefficients Audio::DSP::Biquad::Internal::
     return coefs;
 }
 
-inline Audio::DSP::Biquad::Internal::Coefficients Audio::DSP::Biquad::Internal::GenerateCoefficientsHighPass(const double sampleRate, const double freq, const double gain, const double q, bool qAsBandWidth) noexcept
+inline Audio::DSP::Biquad::Internal::Coefficients Audio::DSP::Biquad::Internal::GenerateCoefficientsHighPass(const float sampleRate, const float freq, const float q, const bool qAsBandWidth) noexcept
 {
-    const auto omega = 2.0 * M_PI * freq / sampleRate;
-    const auto tsin = std::sin(omega);
-    const auto tcos = std::cos(omega);
-    const double alpha = qAsBandWidth ? (tsin * std::sinh(std::log(2.0) / 2.0 * q * omega / tsin)) : (tsin / (2.0 * q));
+    const float omega = 2.0f * static_cast<float>(M_PI) * freq / sampleRate;
+    const float tsin = std::sin(omega);
+    const float tcos = std::cos(omega);
+    const float alpha = qAsBandWidth ? (tsin * std::sinh(std::log(2.0f) / 2.0f * q * omega / tsin)) : (tsin / (2.0f * q));
 
     Internal::Coefficients coefs {};
     coefs.b[0] = (1 + tcos) / 2;
@@ -150,12 +150,12 @@ inline Audio::DSP::Biquad::Internal::Coefficients Audio::DSP::Biquad::Internal::
     return coefs;
 }
 
-inline Audio::DSP::Biquad::Internal::Coefficients Audio::DSP::Biquad::Internal::GenerateCoefficientsBandPass(const double sampleRate, const double freq, const double gain, const double q, bool qAsBandWidth) noexcept
+inline Audio::DSP::Biquad::Internal::Coefficients Audio::DSP::Biquad::Internal::GenerateCoefficientsBandPass(const float sampleRate, const float freq, const float q, const bool qAsBandWidth) noexcept
 {
-    const auto omega = 2.0 * M_PI * freq / sampleRate;
-    const auto tsin = std::sin(omega);
-    const auto tcos = std::cos(omega);
-    const double alpha = qAsBandWidth ? (tsin * std::sinh(std::log(2.0) / 2.0 * q * omega / tsin)) : (tsin / (2.0 * q));
+    const float omega = 2.0f * static_cast<float>(M_PI) * freq / sampleRate;
+    const float tsin = std::sin(omega);
+    const float tcos = std::cos(omega);
+    const float alpha = qAsBandWidth ? (tsin * std::sinh(std::log(2.0f) / 2.0f * q * omega / tsin)) : (tsin / (2.0f * q));
 
     Internal::Coefficients coefs {};
     coefs.b[0] = alpha;
@@ -174,12 +174,12 @@ inline Audio::DSP::Biquad::Internal::Coefficients Audio::DSP::Biquad::Internal::
     return coefs;
 }
 
-inline Audio::DSP::Biquad::Internal::Coefficients Audio::DSP::Biquad::Internal::GenerateCoefficientsBandStop(const double sampleRate, const double freq, const double gain, const double q, bool qAsBandWidth) noexcept
+inline Audio::DSP::Biquad::Internal::Coefficients Audio::DSP::Biquad::Internal::GenerateCoefficientsBandStop(const float sampleRate, const float freq, const float q, const bool qAsBandWidth) noexcept
 {
-    const auto omega = 2.0 * M_PI * freq / sampleRate;
-    const auto tsin = std::sin(omega);
-    const auto tcos = std::cos(omega);
-    const double alpha = qAsBandWidth ? (tsin * std::sinh(std::log(2.0) / 2.0 * q * omega / tsin)) : (tsin / (2.0 * q));
+    const float omega = 2.0f * static_cast<float>(M_PI) * freq / sampleRate;
+    const float tsin = std::sin(omega);
+    const float tcos = std::cos(omega);
+    const float alpha = qAsBandWidth ? (tsin * std::sinh(std::log(2.0f) / 2.0f * q * omega / tsin)) : (tsin / (2.0f * q));
 
     Internal::Coefficients coefs {};
     coefs.b[0] = 1;
@@ -198,13 +198,13 @@ inline Audio::DSP::Biquad::Internal::Coefficients Audio::DSP::Biquad::Internal::
     return coefs;
 }
 
-inline Audio::DSP::Biquad::Internal::Coefficients Audio::DSP::Biquad::Internal::GenerateCoefficientsPeak(const double sampleRate, const double freq, const double gain, const double q, bool qAsBandWidth) noexcept
+inline Audio::DSP::Biquad::Internal::Coefficients Audio::DSP::Biquad::Internal::GenerateCoefficientsPeak(const float sampleRate, const float freq, const float gain, const float q, const bool qAsBandWidth) noexcept
 {
-    const auto amp = std::pow(10.0, gain / 40.0);
-    const auto omega = 2.0 * M_PI * freq / sampleRate;
-    const auto tsin = std::sin(omega);
-    const auto tcos = std::cos(omega);
-    const double alpha = qAsBandWidth ? (tsin * std::sinh(std::log(2.0) / 2.0 * q * omega / tsin)) : (tsin / (2.0 * q));
+    const float amp = std::pow(10.0f, gain / 40.0f);
+    const float omega = 2.0f * static_cast<float>(M_PI) * freq / sampleRate;
+    const float tsin = std::sin(omega);
+    const float tcos = std::cos(omega);
+    const float alpha = qAsBandWidth ? (tsin * std::sinh(std::log(2.0f) / 2.0f * q * omega / tsin)) : (tsin / (2.0f * q));
 
     Internal::Coefficients coefs {};
     coefs.b[0] = 1 + (alpha * amp);
@@ -223,13 +223,13 @@ inline Audio::DSP::Biquad::Internal::Coefficients Audio::DSP::Biquad::Internal::
     return coefs;
 }
 
-inline Audio::DSP::Biquad::Internal::Coefficients Audio::DSP::Biquad::Internal::GenerateCoefficientsLowShelf(const double sampleRate, const double freq, const double gain, const double q, bool qAsBandWidth) noexcept
+inline Audio::DSP::Biquad::Internal::Coefficients Audio::DSP::Biquad::Internal::GenerateCoefficientsLowShelf(const float sampleRate, const float freq, const float gain, const float q) noexcept
 {
-    const auto amp = std::pow(10.0, gain / 40.0);
-    const auto omega = 2.0 * M_PI * freq / sampleRate;
-    const auto tsin = std::sin(omega);
-    const auto tcos = std::cos(omega);
-    const double beta = std::sqrt(amp) / q;
+    const float amp = std::pow(10.0f, gain / 40.0f);
+    const float omega = 2.0f * static_cast<float>(M_PI) * freq / sampleRate;
+    const float tsin = std::sin(omega);
+    const float tcos = std::cos(omega);
+    const float beta = std::sqrt(amp) / q;
 
     Internal::Coefficients coefs {};
     coefs.b[0] = amp * ((amp + 1) - (amp - 1) * tcos + beta * tsin);
@@ -248,13 +248,13 @@ inline Audio::DSP::Biquad::Internal::Coefficients Audio::DSP::Biquad::Internal::
     return coefs;
 }
 
-inline Audio::DSP::Biquad::Internal::Coefficients Audio::DSP::Biquad::Internal::GenerateCoefficientsHighShelf(const double sampleRate, const double freq, const double gain, const double q, bool qAsBandWidth) noexcept
+inline Audio::DSP::Biquad::Internal::Coefficients Audio::DSP::Biquad::Internal::GenerateCoefficientsHighShelf(const float sampleRate, const float freq, const float gain, const float q) noexcept
 {
-    const auto amp = std::pow(10.0, gain / 40.0);
-    const auto omega = 2.0 * M_PI * freq / sampleRate;
-    const auto tsin = std::sin(omega);
-    const auto tcos = std::cos(omega);
-    const double beta = std::sqrt(amp) / q;
+    const float amp = std::pow(10.0f, gain / 40.0f);
+    const float omega = 2.0f * static_cast<float>(M_PI) * freq / sampleRate;
+    const float tsin = std::sin(omega);
+    const float tcos = std::cos(omega);
+    const float beta = std::sqrt(amp) / q;
 
     Internal::Coefficients coefs {};
     coefs.b[0] = amp * ((amp + 1) + (amp - 1) * tcos + beta * tsin);

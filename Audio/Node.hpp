@@ -63,7 +63,7 @@ public:
 
 
     /** @brief Get the plugin's flags associated to this node */
-    [[nodiscard]] const IPlugin::Flags flags(void) const noexcept { return _flags; }
+    [[nodiscard]] IPlugin::Flags flags(void) const noexcept { return _flags; }
 
 
     /** @brief Get / Set the color associated to this node */

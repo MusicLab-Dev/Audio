@@ -34,7 +34,7 @@ template<Audio::DSP::EnveloppeType Enveloppe>
 class Audio::DSP::EnveloppeBase
 {
 public:
-    using IndexList = std::array<std::size_t, KeyCount>;
+    using IndexList = std::array<std::uint32_t, KeyCount>;
     using GainList = std::array<float, KeyCount>;
 
     /** @brief Reset all trigger indexes */
@@ -44,7 +44,7 @@ public:
     void resetTriggerIndex(const Key key) noexcept { setTriggerIndex(key, 0ul); }
 
     /** @brief Set the internal trigger status */
-    void setTriggerIndex(const Key key, const std::size_t triggerIndex) noexcept { _triggerIndex[key] = triggerIndex; }
+    void setTriggerIndex(const Key key, const std::uint32_t triggerIndex) noexcept { _triggerIndex[key] = triggerIndex; }
 
     /** @brief Reset all internal gains */
     void resetInternalGains(void) noexcept { _lastGain.fill(0ul); }
@@ -54,7 +54,7 @@ public:
 
     template<bool Debug = false>
     [[nodiscard]] float getGain(
-            const Key key, const std::size_t index, const bool isTrigger,
+            const Key key, const std::uint32_t index, const bool isTrigger,
             const float delay, const float attack,
             const float hold, const float decay,
             const float sustain, const float release,
@@ -69,21 +69,21 @@ public:
         return 1.f;
     }
 
-    /** @brief AR oomplementation */
+    /** @brief AR implementation */
     [[nodiscard]] float attackRelease(
-            const Key key, const std::size_t index, const bool isTrigger,
+            const Key key, const std::uint32_t index, const bool isTrigger,
             const float attack, const float release, const SampleRate sampleRate) noexcept
     {
-        const std::size_t attackIdx = attack * static_cast<float>(sampleRate);
-        const std::size_t releaseIdx = release * static_cast<float>(sampleRate);
+        const std::uint32_t attackIdx = static_cast<std::uint32_t>(attack * static_cast<float>(sampleRate));
+        const std::uint32_t releaseIdx = static_cast<std::uint32_t>(release * static_cast<float>(sampleRate));
         if (isTrigger) {
             if (index < attackIdx) {
-                return index / static_cast<float>(attackIdx);
+                return static_cast<float>(index) / static_cast<float>(attackIdx);
             }
             return 1.f;
         } else {
             if (const auto releaseIndex = index - _triggerIndex[key]; releaseIndex < releaseIdx) {
-                return 1 - releaseIndex / static_cast<float>(releaseIdx);
+                return 1.0f - static_cast<float>(releaseIndex) / static_cast<float>(releaseIdx);
             }
             return 0.f;
         }
@@ -92,17 +92,16 @@ public:
 
     /** @brief AD implementation */
     [[nodiscard]] float attackDecay(
-            const Key key, const std::size_t index, const bool isTrigger,
+            const Key key, const std::uint32_t index, const bool isTrigger,
             const float attack, const float decay, const SampleRate sampleRate) noexcept
     {
         if (isTrigger) {
-            const std::size_t attackIdx = attack * static_cast<float>(sampleRate);
+            const std::uint32_t attackIdx = attack * static_cast<float>(sampleRate);
             if (attackIdx >= index) {
-                return index / static_cast<float>(attackIdx);
+                return static_cast<float>(index) / static_cast<float>(attackIdx);
             }
-            if (const std::size_t decayIdx = decay * static_cast<float>(sampleRate);
-                index < decayIdx + attackIdx)
-                return 1.f - (index - attackIdx) / static_cast<float>(decayIdx);
+            if (const std::uint32_t decayIdx = decay * static_cast<float>(sampleRate); index < decayIdx + attackIdx)
+                return 1.f - static_cast<float>(index - attackIdx) / static_cast<float>(decayIdx);
         }
         return 0.f;
     }
@@ -110,7 +109,7 @@ public:
     /** @brief ADSR implementation */
     template<bool Debug = false>
     [[nodiscard]] float adsr(
-            const Key key, const std::size_t index, const bool isTrigger,
+            const Key key, const std::uint32_t index, const bool isTrigger,
             const float attack, const float decay, const float sustain, const float release, const SampleRate sampleRate) noexcept
     {
         const float OneMinusSustain = 1.0f - sustain;
@@ -125,24 +124,23 @@ public:
         }
 
         if (isTrigger) {
-            const std::size_t attackIdx = attack * static_cast<float>(sampleRate);
+            const std::uint32_t attackIdx = static_cast<std::uint32_t>(attack * static_cast<float>(sampleRate));
             // Attack
             if (index < attackIdx) {
                 if constexpr (Debug)
-                    std::cout << "AAAAAA: " << (index / static_cast<float>(attackIdx)) << std::endl;
+                    std::cout << "AAAAAA: " << (static_cast<float>(index) / static_cast<float>(attackIdx)) << std::endl;
                 // Linear
-                outGain = index / static_cast<float>(attackIdx);
+                outGain = static_cast<float>(index) / static_cast<float>(attackIdx);
             }
             // Decay
-            else if (const std::size_t decayIdx = decay * static_cast<float>(sampleRate);
-                index < (decayIdx + attackIdx)) {
+            else if (const std::uint32_t decayIdx = static_cast<std::uint32_t>(decay * static_cast<float>(sampleRate)); index < (decayIdx + attackIdx)) {
                 // Sustain max -> no decay
                 if constexpr (Debug)
                     std::cout << "DDDDDD: " << (1.f - (index - attackIdx) / static_cast<float>(decayIdx)) * OneMinusSustain + OneMinusSustain << std::endl;
                 if (sustain == 1.f)
                     outGain = 1.f;
                 else
-                    outGain = (1.f - (index - attackIdx) / static_cast<float>(decayIdx)) * OneMinusSustain + sustain;
+                    outGain = (1.f - static_cast<float>(index - attackIdx) / static_cast<float>(decayIdx)) * OneMinusSustain + sustain;
             } else {
                 // Sustain
                 if constexpr (Debug)
@@ -151,13 +149,13 @@ public:
             }
         } else {
             // Release
-            // const std::size_t releaseIdx = ((_lastGain[key] < sustain) ? _lastGain[key] : release) * static_cast<float>(sampleRate);
-            const std::size_t releaseIdx = release * static_cast<float>(sampleRate);
-            if (const std::size_t realIndex = index - _triggerIndex[key];
+            // const std::uint32_t releaseIdx = ((_lastGain[key] < sustain) ? _lastGain[key] : release) * static_cast<float>(sampleRate);
+            const std::uint32_t releaseIdx = static_cast<std::uint32_t>(release * static_cast<float>(sampleRate));
+            if (const std::uint32_t realIndex = index - _triggerIndex[key];
                 realIndex < releaseIdx) {
                 if constexpr (Debug)
-                    std::cout << "RRRR: " << (1.f - realIndex / static_cast<float>(releaseIdx)) * sustain << std::endl;
-                outGain = (1.f - realIndex / static_cast<float>(releaseIdx)) * sustain;
+                    std::cout << "RRRR: " << (1.f - static_cast<float>(realIndex) / static_cast<float>(releaseIdx)) * sustain << std::endl;
+                outGain = (1.f - static_cast<float>(realIndex) / static_cast<float>(releaseIdx)) * sustain;
             }
             // End of the enveloppe
             else {

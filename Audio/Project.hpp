@@ -39,7 +39,7 @@ public:
 
     /** @brief Get / Set the tempo */
     [[nodiscard]] Tempo tempo(void) const noexcept { return _bpm / 60.f; }
-    void setTempo(const Tempo tempo) noexcept { _bpm = _bpm * 60.0f; }
+    void setTempo(const Tempo tempo) noexcept { _bpm = tempo * 60.0f; }
 
     /** @brief Get / Set the BPM */
     [[nodiscard]] BPM bpm(void) const noexcept { return _bpm; }

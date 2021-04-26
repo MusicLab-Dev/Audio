@@ -16,7 +16,7 @@
 namespace Audio::Midi
 {
     struct NoteConverter;
-};
+}
 
 struct Audio::Midi::NoteConverter
 {
@@ -41,6 +41,6 @@ struct Audio::Midi::NoteConverter
             key = 0x7F;
         key -= MidiRootKey;
         key /= 12;
-        return std::pow(static_cast<float>(key), 2) * RootFrequency;
+        return static_cast<float>(std::pow(key, 2)) * RootFrequency;
     }
 };

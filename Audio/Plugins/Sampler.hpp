@@ -127,9 +127,9 @@ private:
     Buffer _tmp;
     ExternalPaths _externalPaths;
 
-    float getEnveloppeGain(const Key key, const std::size_t index, const bool isTrigger) noexcept
+    float getEnveloppeGain(const Key key, const std::uint32_t index, const bool isTrigger) noexcept
     {
-        return _noteManager.enveloppe().attackRelease(key, index, isTrigger, enveloppeAttack(), enveloppeRelease(), audioSpecs().sampleRate);
+        return _noteManager.enveloppe().attackRelease(key, index, isTrigger, static_cast<float>(enveloppeAttack()), static_cast<float>(enveloppeRelease()), audioSpecs().sampleRate);
     }
 };
 

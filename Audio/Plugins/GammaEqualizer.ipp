@@ -10,11 +10,12 @@
 
 inline void Audio::GammaEqualizer::onAudioGenerationStarted(const BeatRange &range)
 {
+    UNUSED(range);
     _filter.init(
         DSP::Filter::WindowType::Hanning,
         255ul,
-        static_cast<double>(audioSpecs().sampleRate),
-        128.0
+        static_cast<float>(audioSpecs().sampleRate),
+        128.0f
     );
     // _filter.setGains({
 
@@ -28,8 +29,8 @@ inline void Audio::GammaEqualizer::receiveAudio(BufferView output)
     float *out = output.data<float>();
     output.clear();
     _filter.filter(_cache.data<float>(), audioSpecs().processBlockSize, out, {
-        ConvertDecibelToRatio(frequenyBands_0()),
-        ConvertDecibelToRatio(frequenyBands_1())
+        ConvertDecibelToRatio(static_cast<float>(frequenyBands_0())),
+        ConvertDecibelToRatio(static_cast<float>(frequenyBands_1()))
         // ConvertDecibelToRatio(frequenyBands_2()),
         // ConvertDecibelToRatio(frequenyBands_3()),
         // ConvertDecibelToRatio(frequenyBands_4()),

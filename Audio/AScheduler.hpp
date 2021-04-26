@@ -23,7 +23,7 @@ namespace Audio
 
     using ApplyFunctor = Core::Functor<void(void)>;
     using NotifyFunctor = Core::Functor<void(void)>;
-};
+}
 
 class alignas_cacheline Audio::AScheduler
 {

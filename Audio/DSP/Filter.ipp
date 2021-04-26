@@ -71,12 +71,12 @@ inline void Audio::DSP::Filter::DesignFilterBandPass(float *window, const std::s
 
 inline void Audio::DSP::Filter::DesignFilterBandStop(float *window, const std::size_t size, const float cutoffRateBegin, const float cutoffRateEnd, const float gain, const bool centered) noexcept
 {
-    (void)window;
-    (void)size;
-    (void)cutoffRateBegin;
-    (void)cutoffRateEnd;
-    (void)gain;
-    (void)centered;
+    UNUSED(window);
+    UNUSED(size);
+    UNUSED(cutoffRateBegin);
+    UNUSED(cutoffRateEnd);
+    UNUSED(gain);
+    UNUSED(centered);
 
     // Not sure at all !
     // lowPass(cutoffLow) + highPass(cutoffHigh)

@@ -44,7 +44,7 @@ public:
     virtual void sendAudio(const BufferViews &inputs);
     virtual void receiveAudio(BufferView output);
 
-    virtual void onAudioGenerationStarted(const BeatRange &range) { _cache.clear(); }
+    virtual void onAudioGenerationStarted(const BeatRange &range);
 
 private:
     BufferViews _cache;
