@@ -34,10 +34,15 @@ class Audio::LambdaFilter final : public Audio::IPlugin
         /* Plugin tags */
         TAGS(Filter),
         /* Control list */
+        REGISTER_CONTROL_INPUT_GAIN(
+            inputGain,
+            0.0,
+            CONTROL_DEFAULT_INPUT_GAIN_RANGE()
+        ),
         REGISTER_CONTROL_OUTPUT_VOLUME(
             outputVolume,
             0.0,
-            CONTROL_OUTPUT_VOLUME_RANGE()
+            CONTROL_DEFAULT_OUTPUT_VOLUME_RANGE()
         ),
         REGISTER_CONTROL_FILTER_CUTOFF(
             cutoffFrequencyFrom,

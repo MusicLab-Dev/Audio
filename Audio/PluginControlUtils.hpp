@@ -70,7 +70,8 @@
 /**
  * @brief Helper for volume controls
  */
-#define CONTROL_OUTPUT_VOLUME_RANGE() CONTROL_RANGE(-48.0, 12.0)
+#define CONTROL_DEFAULT_OUTPUT_VOLUME_RANGE() CONTROL_RANGE(-48.0, 12.0)
+#define CONTROL_DEFAULT_INPUT_GAIN_RANGE() CONTROL_RANGE(-48.0, +48.0)
 
 #define REGISTER_CONTROL_OUTPUT_VOLUME(Name, Value, Range) \
     REGISTER_CONTROL( \
@@ -82,6 +83,19 @@
         TR_TABLE( \
             TR(English, "Output volume of the plugin"), \
             TR(French, "Volume de sortie du plugin") \
+        ) \
+    )
+
+#define REGISTER_CONTROL_INPUT_GAIN(Name, Value, Range) \
+    REGISTER_CONTROL( \
+        Floating, Name, Value, Range, \
+        TR_TABLE( \
+            TR(English, "Input gain"), \
+            TR(French, "Gain d'entrée") \
+        ), \
+        TR_TABLE( \
+            TR(English, "Input gain of the plugin"), \
+            TR(French, "Gain d'entrée du plugin") \
         ) \
     )
 
