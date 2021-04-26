@@ -36,9 +36,13 @@ namespace Audio::DSP::FIR
     template<typename Type>
     class BasicFilter;
 
+    /** @brief Filter using a single FIR instance */
+    template<unsigned InstanceCount, typename Type>
+    class ParallelFilter;
+
     /** @brief Filter using multiple FIR instances */
     template<unsigned InstanceCount, typename Type>
-    class MultiFilter;
+    class SerieFilter;
 
 
     template<typename Type>
@@ -137,16 +141,28 @@ private:
 };
 
 template<unsigned InstanceCount, typename Type>
-class Audio::DSP::FIR::MultiFilter
+class Audio::DSP::FIR::ParallelFilter
+{
+public:
+private:
+    /** @brief Internal instance */
+    Internal::Instance<Type> _instance;
+    /** @brief Filter specs */
+    DSP::Filter::FIRSpecs _specs;
+};
+
+template<unsigned InstanceCount, typename Type>
+class Audio::DSP::FIR::SerieFilter
 {
     /** @brief Construct only for 2 or more instances */
     static_assert(InstanceCount > 1, "Audio::DSP::FIR::MultiFilter need at least 2 instances");
+    static_assert(InstanceCount == 10, "Audio::DSP::FIR::MultiFilter only support 10 instances");
 
 public:
     using CutoffArray = std::array<float, InstanceCount - 1ul>;
 
-    MultiFilter(void) = default;
-    MultiFilter(const DSP::Filter::WindowType windowType, const std::uint32_t filterSize, const float sampleRate, const double rootFreq) { init(windowType, filterSize, sampleRate, rootFreq); }
+    SerieFilter(void) = default;
+    SerieFilter(const DSP::Filter::WindowType windowType, const std::uint32_t filterSize, const float sampleRate, const double rootFreq) { init(windowType, filterSize, sampleRate, rootFreq); }
 
     /** @brief Initialize the internal filters specs */
     void init(const DSP::Filter::WindowType windowType, const std::uint32_t filterSize, const float sampleRate, const double rootFreq) noexcept;

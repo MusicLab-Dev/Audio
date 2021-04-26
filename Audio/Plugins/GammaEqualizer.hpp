@@ -19,7 +19,7 @@ namespace Audio
 class Audio::GammaEqualizer final : public Audio::IPlugin
 {
 public:
-    static constexpr auto BandCount = 8ul;
+    static constexpr auto BandCount = 10ul;
 
     REGISTER_PLUGIN(
         TR_TABLE(
@@ -88,7 +88,7 @@ public:
     virtual void onAudioGenerationStarted(const BeatRange &range);
 
 private:
-    DSP::FIR::MultiFilter<BandCount, float> _filter;
+    DSP::FIR::SerieFilter<BandCount, float> _filter;
     Buffer _cache;
 };
 

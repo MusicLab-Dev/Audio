@@ -9,10 +9,9 @@
 
 #include <Audio/PluginControlUtils.hpp>
 #include <Audio/Volume.hpp>
+#include <Audio/Modifier.hpp>
 
 #include "Managers/NoteManager.hpp"
-
-#include <Audio/BufferModifier.hpp>
 
 namespace Audio
 {

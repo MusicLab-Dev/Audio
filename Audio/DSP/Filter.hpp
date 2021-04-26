@@ -5,7 +5,8 @@
 
 #pragma once
 
-#include "Audio/Math.hpp"
+#include <Audio/Math.hpp>
+#include <Audio/Modifier.hpp>
 
 namespace Audio::DSP::Filter
 {
@@ -62,6 +63,8 @@ namespace Audio::DSP::Filter
         }
     };
 
+    using FIRSpecs = Core::TinyVector<FIRSpec>;
+
     /**
      * @brief Generate window
      * @warning Window output is [0:1]
@@ -74,6 +77,7 @@ namespace Audio::DSP::Filter
     void DesignFilter(const FIRSpec specs, float *window, const std::size_t windowSize, const bool centered) noexcept;
     /** @brief Helper to fully generate filter coefficients */
     void GenerateFilter(const FIRSpec specs, float *window, const bool centered = true) noexcept;
+    void GenerateFilter2(const FIRSpec specs, float *window) noexcept;
 
     void DesignFilterLowPass(float *window, const std::size_t size, const float cutoffRate, const float gain, const bool centered) noexcept;
     void DesignFilterHighPass(float *window, const std::size_t size, const float cutoffRate, const float gain, const bool centered) noexcept;
@@ -82,6 +86,30 @@ namespace Audio::DSP::Filter
 
     void Hanning(const std::size_t size, float *window, const bool isSymetric = true) noexcept;
     void Hamming(const std::size_t size, float *window, const bool isSymetric = true) noexcept;
+
+
+
+    constexpr auto  GenerateHanning = [](const std::size_t index, const std::size_t size)
+    {
+        return 0.5f - 0.5f * (std::cos(2.0f * static_cast<float>(M_PI) * static_cast<float>(index) / static_cast<float>(size - 1)));
+    };
+
+    constexpr auto GenerateHamming = [](const std::size_t index, const std::size_t size) -> float
+    {
+        return 0.54f - 0.46f * (std::cos(2.0f * static_cast<float>(M_PI) * static_cast<float>(index) / static_cast<float>(size - 1)));
+    };
+
+    // template<WindowType Window>
+    // constexpr auto GetWindowGenerator(void)
+    // {
+    //     if constexpr (Window == WindowType::Hanning)
+    //         return GenerateHanning;
+    //     else if constexpr (Window == WindowType::Hamming)
+    //         return GenerateHamming;
+    //     else
+    //         return GenerateHanning;
+    // }
+
 }
 
 #include "Filter.ipp"

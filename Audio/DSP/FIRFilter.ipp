@@ -110,7 +110,7 @@ inline bool Audio::DSP::FIR::BasicFilter<Type>::setWindowType(const DSP::Filter:
  */
 template<unsigned InstanceCount, typename Type>
 template<typename GainType, std::uint32_t GainSize>
-typename Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::MultiFilter<InstanceCount, Type>::filter(const Type *input, const std::uint32_t inputSize, Type *output, const GainType(&gains)[GainSize]) noexcept
+typename Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::SerieFilter<InstanceCount, Type>::filter(const Type *input, const std::uint32_t inputSize, Type *output, const GainType(&gains)[GainSize]) noexcept
 {
     static_assert(GainSize <= InstanceCount, "Audio::DSP::FIR::MultiFilter::filter: gains input must not be greater than the internal InstanceCount.");
     for (auto i = 0u; i < GainSize; ++i) {
@@ -123,7 +123,7 @@ typename Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::MultiFilter<InstanceCo
 }
 
 template<unsigned InstanceCount, typename Type>
-inline void Audio::DSP::FIR::MultiFilter<InstanceCount, Type>::init(const DSP::Filter::WindowType windowType, const std::uint32_t filterSize, const float sampleRate, const double rootFreq) noexcept
+inline void Audio::DSP::FIR::SerieFilter<InstanceCount, Type>::init(const DSP::Filter::WindowType windowType, const std::uint32_t filterSize, const float sampleRate, const double rootFreq) noexcept
 {
     _windowType = windowType;
     _filterSize = filterSize;
@@ -136,7 +136,7 @@ inline void Audio::DSP::FIR::MultiFilter<InstanceCount, Type>::init(const DSP::F
 }
 
 template<unsigned InstanceCount, typename Type>
-inline void Audio::DSP::FIR::MultiFilter<InstanceCount, Type>::reloadInstance(const DSP::Filter::FIRSpec &specs, const std::uint32_t instanceIndex) noexcept
+inline void Audio::DSP::FIR::SerieFilter<InstanceCount, Type>::reloadInstance(const DSP::Filter::FIRSpec &specs, const std::uint32_t instanceIndex) noexcept
 {
     _instances.coefficients()[instanceIndex].resize(specs.size);
     _instances.lastInput().resize(specs.size - 1);
@@ -146,7 +146,7 @@ inline void Audio::DSP::FIR::MultiFilter<InstanceCount, Type>::reloadInstance(co
 }
 
 template<unsigned InstanceCount, typename Type>
-inline void Audio::DSP::FIR::MultiFilter<InstanceCount, Type>::reloadInstances(const DSP::Filter::WindowType windowType, const std::uint32_t filterSize, const float sampleRate) noexcept
+inline void Audio::DSP::FIR::SerieFilter<InstanceCount, Type>::reloadInstances(const DSP::Filter::WindowType windowType, const std::uint32_t filterSize, const float sampleRate) noexcept
 {
     // First filter (low-pass)
     reloadInstance(
@@ -189,7 +189,7 @@ inline void Audio::DSP::FIR::MultiFilter<InstanceCount, Type>::reloadInstances(c
 }
 
 template<unsigned InstanceCount, typename Type>
-inline bool Audio::DSP::FIR::MultiFilter<InstanceCount, Type>::setSampleRate(const float sampleRate) noexcept
+inline bool Audio::DSP::FIR::SerieFilter<InstanceCount, Type>::setSampleRate(const float sampleRate) noexcept
 {
     if (_sampleRate == sampleRate)
         return false;
@@ -199,7 +199,7 @@ inline bool Audio::DSP::FIR::MultiFilter<InstanceCount, Type>::setSampleRate(con
 }
 
 template<unsigned InstanceCount, typename Type>
-inline bool Audio::DSP::FIR::MultiFilter<InstanceCount, Type>::setFilterSize(const std::uint32_t filterSize) noexcept
+inline bool Audio::DSP::FIR::SerieFilter<InstanceCount, Type>::setFilterSize(const std::uint32_t filterSize) noexcept
 {
     if (_filterSize == filterSize)
         return false;
@@ -209,7 +209,7 @@ inline bool Audio::DSP::FIR::MultiFilter<InstanceCount, Type>::setFilterSize(con
 }
 
 template<unsigned InstanceCount, typename Type>
-inline bool Audio::DSP::FIR::MultiFilter<InstanceCount, Type>::setWindowType(const DSP::Filter::WindowType windowType) noexcept
+inline bool Audio::DSP::FIR::SerieFilter<InstanceCount, Type>::setWindowType(const DSP::Filter::WindowType windowType) noexcept
 {
     if (_windowType == _windowType)
         return false;
@@ -219,7 +219,7 @@ inline bool Audio::DSP::FIR::MultiFilter<InstanceCount, Type>::setWindowType(con
 }
 
 template<unsigned InstanceCount, typename Type>
-inline bool Audio::DSP::FIR::MultiFilter<InstanceCount, Type>::setCutoffs(const Internal::CutoffList &cutoffs) noexcept
+inline bool Audio::DSP::FIR::SerieFilter<InstanceCount, Type>::setCutoffs(const Internal::CutoffList &cutoffs) noexcept
 {
     for (const auto &x : cutoffs)
         std::cout << x << std::endl;
@@ -227,7 +227,7 @@ inline bool Audio::DSP::FIR::MultiFilter<InstanceCount, Type>::setCutoffs(const 
 }
 
 template<unsigned InstanceCount, typename Type>
-inline bool Audio::DSP::FIR::MultiFilter<InstanceCount, Type>::setGains(const Internal::GainList &gains) noexcept
+inline bool Audio::DSP::FIR::SerieFilter<InstanceCount, Type>::setGains(const Internal::GainList &gains) noexcept
 {
     for (const auto &x : gains)
         std::cout << x << std::endl;

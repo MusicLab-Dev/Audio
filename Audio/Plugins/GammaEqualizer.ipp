@@ -15,7 +15,7 @@ inline void Audio::GammaEqualizer::onAudioGenerationStarted(const BeatRange &ran
         DSP::Filter::WindowType::Hanning,
         255ul,
         static_cast<float>(audioSpecs().sampleRate),
-        128.0f
+        32.0f
     );
     // _filter.setGains({
 
