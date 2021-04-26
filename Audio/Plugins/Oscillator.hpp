@@ -40,7 +40,7 @@ class Audio::Oscillator final : public Audio::IPlugin
         REGISTER_CONTROL_OUTPUT_VOLUME(
             outputVolume,
             DefaultPluginOutputVolume,
-            CONTROL_OUTPUT_VOLUME_RANGE()
+            CONTROL_DEFAULT_OUTPUT_VOLUME_RANGE()
         ),
         /* Enveloppe controls (attack, decay, sustain, release) */
         REGISTER_CONTROL_ENVELOPPE_ADSR(

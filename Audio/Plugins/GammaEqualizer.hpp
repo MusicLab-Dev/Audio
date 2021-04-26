@@ -32,10 +32,15 @@ public:
         ),
         FLAGS(AudioInput, AudioOutput),
         TAGS(EQ),
+        REGISTER_CONTROL_INPUT_GAIN(
+            inputGain,
+            0.0,
+            CONTROL_DEFAULT_INPUT_GAIN_RANGE()
+        ),
         REGISTER_CONTROL_OUTPUT_VOLUME(
             outputVolume,
             0.0,
-            CONTROL_OUTPUT_VOLUME_RANGE()
+            CONTROL_DEFAULT_OUTPUT_VOLUME_RANGE()
         ),
         //(10) 32 - 64 - 128 - 256 - 512 - 1024 - 2048 - 4096 - 8192 - 16384
         // (9) 64 - 128 - 256 - 512 - 1024 - 2048 - 4096 - 8192 - 16384
