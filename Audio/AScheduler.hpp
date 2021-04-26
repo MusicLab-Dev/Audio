@@ -73,10 +73,10 @@ public:
 
 
     /** @brief Get internal process beat size */
-    [[nodiscard]] std::uint32_t processBeatSize(void) const noexcept { return _processBeatSize; }
+    [[nodiscard]] Beat processBeatSize(void) const noexcept { return _processBeatSize; }
 
     /** @brief Get the process block size */
-    [[nodiscard]] std::size_t processBlockSize(void) const noexcept { return _processBlockSize; }
+    [[nodiscard]] BlockSize processBlockSize(void) const noexcept { return _processBlockSize; }
 
 
     /** @brief Get / Set the loop beat range */
@@ -119,7 +119,7 @@ public:
     void setProcessParamByBeatSize(const Beat processBeatSize, const SampleRate sampleRate);
 
     /** @brief Setup processBeatSize & processBlockSize parameters with a desired processBlockSize. Return true if processBlockSize is used */
-    void setProcessParamByBlockSize(const std::size_t processBlockSize, const SampleRate sampleRate);
+    void setProcessParamByBlockSize(const BlockSize processBlockSize, const SampleRate sampleRate);
 
     /** @brief Add apply event to be dispatched */
     template<typename Apply>
@@ -194,14 +194,14 @@ private:
     std::atomic<State> _state { State::Pause };
 
     // Cacheline 2
-    std::size_t _processBlockSize { 0u };
     Audio::BeatRange _loopBeatRange {};
-    bool _isLooping { false };
     Beat _processBeatSize { 0u };
+    BlockSize _processBlockSize { 0u };
+    bool _isLooping { false };
+    std::uint32_t _partitionIndex { 0 };
+    Node *_partitionNode { nullptr };
     double _beatMissCount { 0.0 };
     double _beatMissOffset { 0.0 };
-    Node *_partitionNode { nullptr };
-    std::uint32_t _partitionIndex { 0 };
     std::array<bool, Audio::PlaybackModeCount> _dirtyFlags {};
     // 8 bytes
 
