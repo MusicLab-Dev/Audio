@@ -172,6 +172,10 @@ public:
     void clearAudioQueue(void);
 
 
+    /** @brief Check if the graph is exited */
+    [[nodiscard]] bool hasExitedGraph(void) const noexcept { return _hasExitedGraph; }
+
+
     /** @brief Will consume audio data from the global queue */
     static inline std::size_t ConsumeAudioData(std::uint8_t *data, const std::size_t size)
         { return _AudioQueue.popRange(data, data + size); }
