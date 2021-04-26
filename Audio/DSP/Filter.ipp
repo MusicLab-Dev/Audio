@@ -7,6 +7,12 @@
 #include <math.h>
 #include <cmath>
 
+inline void Audio::DSP::Filter::GenerateFilter2(const FIRSpec specs, float *window) noexcept
+{
+    UNUSED(specs);
+    UNUSED(window);
+}
+
 inline void Audio::DSP::Filter::GenerateFilter(const FIRSpec specs, float *window, const bool centered) noexcept
 {
     GenerateWindow(specs.windowType, specs.size, window, centered);
