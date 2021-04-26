@@ -183,6 +183,12 @@ protected:
     /** @brief Dispatch notify events and clear event list */
     void dispatchNotifyEvents(void);
 
+    /** @brief Function that indicates that the graph is stopped
+     *  This function must be called inside derived class
+     *  A such mechanism is needed on top of Flow::Graph::running because running can be still true while
+     * shutting down, thus an UI event can happen just before it exited and glitch the program */
+    void graphExited(void) { _hasExitedGraph = true; }
+
 private:
     // Cacheline 1
     // Virtual table pointer
@@ -198,6 +204,7 @@ private:
     Beat _processBeatSize { 0u };
     BlockSize _processBlockSize { 0u };
     bool _isLooping { false };
+    bool _hasExitedGraph { true };
     std::uint32_t _partitionIndex { 0 };
     Node *_partitionNode { nullptr };
     double _beatMissCount { 0.0 };
