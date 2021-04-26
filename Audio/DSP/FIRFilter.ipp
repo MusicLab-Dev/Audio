@@ -142,7 +142,7 @@ inline void Audio::DSP::FIR::SerieFilter<InstanceCount, Type>::reloadInstance(co
     _instances.lastInput().resize(specs.size - 1);
     _instances.lastInput().clear();
 
-    Filter::GenerateFilter(specs, _instances.coefficients()[instanceIndex].data());
+    // Filter::GenerateFilter(specs, _instances.coefficients()[instanceIndex].data());
 }
 
 template<unsigned InstanceCount, typename Type>

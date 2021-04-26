@@ -1,6 +1,6 @@
 /**
  * @ Author: Pierre Veysseyre
- * @ Description: Window.ipp
+ * @ Description: Filter.hpp
  */
 
 #pragma once
@@ -16,7 +16,8 @@ namespace Audio::DSP::Filter
     enum class WindowType : std::uint8_t
     {
         Hanning = 0,
-        Hamming
+        Hamming,
+        Default = Hanning
     };
 
     /** @brief Describe type used for basic filter */
@@ -25,7 +26,8 @@ namespace Audio::DSP::Filter
         LowPass = 0,
         BandPass,
         BandStop,
-        HighPass
+        HighPass,
+        Default = LowPass
     };
 
     /** @brief Describe type used for a second-order IIR filter section */
@@ -38,7 +40,8 @@ namespace Audio::DSP::Filter
         BandStop, /* Notch */
         Peak,
         LowShelf,
-        HighShelf
+        HighShelf,
+        Default = LowPass
     };
 
     struct FIRSpec
@@ -65,52 +68,66 @@ namespace Audio::DSP::Filter
 
     using FIRSpecs = Core::TinyVector<FIRSpec>;
 
-    /**
-     * @brief Generate window
-     * @warning Window output is [0:1]
-     */
-    void GenerateWindow(const WindowType type, const std::size_t size, float *window, const bool centered = true) noexcept;
-    /**
-     * @brief Design filter coefficients within a window
-     * @warning Call GenerateWindow before to populate the window for the filter coefficients
-     */
-    void DesignFilter(const FIRSpec specs, float *window, const std::size_t windowSize, const bool centered) noexcept;
-    /** @brief Helper to fully generate filter coefficients */
-    void GenerateFilter(const FIRSpec specs, float *window, const bool centered = true) noexcept;
-    void GenerateFilter2(const FIRSpec specs, float *window) noexcept;
+    /** @brief Generate window with compile-time window type */
+    template<WindowType Window = WindowType::Default>
+    void GenerateWindow(float *window, const std::size_t size, const bool symetric) noexcept;
+    /** @brief Generate window with run-time window type */
+    void GenerateWindow(const WindowType type, const std::size_t size, float *window, const bool symetric = true) noexcept;
 
-    void DesignFilterLowPass(float *window, const std::size_t size, const float cutoffRate, const float gain, const bool centered) noexcept;
-    void DesignFilterHighPass(float *window, const std::size_t size, const float cutoffRate, const float gain, const bool centered) noexcept;
-    void DesignFilterBandPass(float *window, const std::size_t size, const float cutoffRateBegin, const float cutoffRateEnd, const float gain, const bool centered) noexcept;
-    void DesignFilterBandStop(float *window, const std::size_t size, const float cutoffRateBegin, const float cutoffRateEnd, const float gain, const bool centered) noexcept;
-
-    void Hanning(const std::size_t size, float *window, const bool isSymetric = true) noexcept;
-    void Hamming(const std::size_t size, float *window, const bool isSymetric = true) noexcept;
+    /** @brief Design filter coefficients within a window with a run-time filter type */
+    template<BasicType Filter = BasicType::Default>
+    void GenerateFilter(const FIRSpec specs, float *window, const bool symetric = true) noexcept;
+    void GenerateFilter(const FIRSpec specs, float *window, const bool symetric = true) noexcept;
 
 
+    template<bool ProcessWindow = false>
+    void GenerateFilterLowPass(const FIRSpec specs, float *window, const bool symetric) noexcept;
+    template<bool ProcessWindow = false>
+    void GenerateFilterHighPass(const FIRSpec specs, float *window, const bool symetric) noexcept;
+    template<bool ProcessWindow = false>
+    void GenerateFilterBandPass(const FIRSpec specs, float *window, const bool symetric) noexcept;
+    template<bool ProcessWindow = false>
+    void GenerateFilterBandStop(const FIRSpec specs, float *window, const bool symetric) noexcept;
 
-    constexpr auto  GenerateHanning = [](const std::size_t index, const std::size_t size)
+    void GenerateHanning(float *window, const std::size_t size, const bool symetric = true) noexcept;
+    void GenerateHamming(float *window, const std::size_t size, const bool symetric = true) noexcept;
+
+
+    constexpr auto Hanning = [](const std::size_t index, const std::size_t size) -> float
     {
         return 0.5f - 0.5f * (std::cos(2.0f * static_cast<float>(M_PI) * static_cast<float>(index) / static_cast<float>(size - 1)));
     };
 
-    constexpr auto GenerateHamming = [](const std::size_t index, const std::size_t size) -> float
+    constexpr auto Hamming = [](const std::size_t index, const std::size_t size) -> float
     {
         return 0.54f - 0.46f * (std::cos(2.0f * static_cast<float>(M_PI) * static_cast<float>(index) / static_cast<float>(size - 1)));
     };
 
-    // template<WindowType Window>
-    // constexpr auto GetWindowGenerator(void)
-    // {
-    //     if constexpr (Window == WindowType::Hanning)
-    //         return GenerateHanning;
-    //     else if constexpr (Window == WindowType::Hamming)
-    //         return GenerateHamming;
-    //     else
-    //         return GenerateHanning;
-    // }
+    template<WindowType Window>
+    inline float ComputeWindow(const std::size_t index, const std::size_t size) {
+        switch (Window) {
+        case WindowType::Hanning:
+            return Hanning(index, size);
+        case WindowType::Hamming:
+            return Hamming(index, size);
+        default:
+            return Hanning(index, size);
+        }
+    }
+    inline float ComputeWindow(WindowType windowType, const std::size_t index, const std::size_t size)
+    {
+        switch (windowType) {
+        case WindowType::Hanning:
+            return ComputeWindow<WindowType::Hanning>(index, size);
+        case WindowType::Hamming:
+            return ComputeWindow<WindowType::Hamming>(index, size);
+        default:
+            return ComputeWindow<WindowType::Default>(index, size);
+        }
+    }
+
 
 }
 
-#include "Filter.ipp"
 #include "Window.ipp"
+#include "Filter.ipp"

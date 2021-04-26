@@ -50,11 +50,10 @@ inline void Audio::DSP::Resampler<Type>::resampleSemitone(const Type *inputBuffe
         1.0f
     };
 
-    _filterCache.resize(filterSize);
-    Filter::GenerateWindow(filterSpecs.windowType, filterSize, _filterCache.data());
-    Filter::DesignFilter(filterSpecs, _filterCache.data(), filterSize, true);
+    // std::cout << "Resample: " << inputSize << ", " << upScale << std::endl;
 
-    std::cout << "Resample: " << inputSize << ", " << upScale << std::endl;
+    _filterCache.resize(filterSize);
+    Filter::GenerateFilter(filterSpecs, _filterCache.data());
 
     auto trackIdx = 0ul;
     auto outIdx = 0ul;
@@ -78,8 +77,6 @@ inline void Audio::DSP::Resampler<Type>::resampleSemitone(const Type *inputBuffe
         }
         ++operationCount;
     }
-    auto count = 0ul;
-    std::cout << "outIdx: " << outIdx << std::endl;
     const auto end = inputOffset + inputSize;
     for (auto i = inputOffset > ProcessSize ? inputOffset : ProcessSize; i < end; ++i) {
         // const auto inputIdx = i - ProcessSize;
@@ -95,14 +92,10 @@ inline void Audio::DSP::Resampler<Type>::resampleSemitone(const Type *inputBuffe
                 outputBuffer[outIdx] += sample * factorScale;
             else
                 outputBuffer[outIdx] = sample * factorScale;
-            if (!sample)
-                ++count;
             ++outIdx;
             ++trackIdx;
         }
     }
-    std::cout << "_outIdx: " << outIdx << std::endl;
-    std::cout << "__count: " << count << std::endl;
 }
 
 template<typename Type>
@@ -120,11 +113,9 @@ inline void Audio::DSP::Resampler<Type>::resampleOctave(const Type *inputBuffer,
         { static_cast<float>(sampleRate) / 2.0f / static_cast<float>(factor), 0.0f },
         1.0f
     };
-    // std::cout << "cutoff:: " << (sampleRate / 2 / static_cast<float>(factor)) << ", size: " << filterSize << std::endl;
 
     _filterCache.resize(static_cast<std::uint32_t>(filterSize));
-    Filter::GenerateWindow(filterSpecs.windowType, filterSize, _filterCache.data());
-    Filter::DesignFilter(filterSpecs, _filterCache.data(), filterSize, true);
+    Filter::GenerateFilter(filterSpecs, _filterCache.data());
 
     if (nOctave == 0) {
         std::memcpy(outputBuffer, inputBuffer + inputOffset, inputSize * sizeof(Type));

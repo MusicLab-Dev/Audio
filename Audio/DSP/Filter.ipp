@@ -7,90 +7,126 @@
 #include <math.h>
 #include <cmath>
 
-inline void Audio::DSP::Filter::GenerateFilter2(const FIRSpec specs, float *window) noexcept
+
+// template<Audio::DSP::Filter::BasicType Filter, bool ProcessWindow>
+// inline void Audio::DSP::Filter::GenerateFilter(const FIRSpec specs, float *window) noexcept
+// {
+
+// }
+// // compile-time filter & window
+// template<Audio::DSP::Filter::BasicType Filter, bool ProcessWindow>
+// inline void Audio::DSP::Filter::GenerateFilter(const FIRSpec specs, float *window) noexcept
+// {
+//     return GenerateFilter<Window, ProcessWindow>(FIRSpec {
+//         Filter,
+//         specs.windowType,
+//         Window,
+//         specs.sampleRate,
+//         { specs.cutoffs[0], specs.cutoffs[1] },
+//         specs.gain
+//     }, window, true);
+// }
+
+// compile-time filter type
+template<Audio::DSP::Filter::BasicType Filter>
+inline void Audio::DSP::Filter::GenerateFilter(const FIRSpec specs, float *window, const bool symetric) noexcept
 {
-    UNUSED(specs);
-    UNUSED(window);
+    switch (Filter) {
+    case BasicType::LowPass:
+        return GenerateFilterLowPass<true>(specs, window, symetric);
+    case BasicType::HighPass:
+        return GenerateFilterHighPass<true>(specs, window, symetric);
+    case BasicType::BandPass:
+        return GenerateFilterBandPass<true>(specs, window, symetric);
+    case BasicType::BandStop:
+        return GenerateFilterBandStop<true>(specs, window, symetric);
+    default:
+        return GenerateFilterLowPass<true>(specs, window, symetric);
+    }
 }
 
-inline void Audio::DSP::Filter::GenerateFilter(const FIRSpec specs, float *window, const bool centered) noexcept
+// run-time filter type
+inline void Audio::DSP::Filter::GenerateFilter(const FIRSpec specs, float *window, const bool symetric) noexcept
 {
-    GenerateWindow(specs.windowType, specs.size, window, centered);
-    DesignFilter(specs, window, specs.size, centered);
-}
-
-inline void Audio::DSP::Filter::DesignFilter(const FIRSpec specs, float *window, const std::size_t windowSize, const bool centered) noexcept
-{
-    const float cutoffRateBegin = specs.cutoffs[0] / specs.sampleRate;
-    const float cutoffRateEnd = specs.cutoffs[1] / specs.sampleRate;
-
     switch (specs.filterType) {
     case BasicType::LowPass:
-        return DesignFilterLowPass(window, windowSize, cutoffRateBegin, specs.gain, centered);
+        return GenerateFilter<BasicType::LowPass>(specs, window, symetric);
     case BasicType::HighPass:
-        return DesignFilterHighPass(window, windowSize, cutoffRateBegin, specs.gain, centered);
+        return GenerateFilter<BasicType::HighPass>(specs, window, symetric);
     case BasicType::BandPass:
-        return DesignFilterBandPass(window, windowSize, cutoffRateBegin, cutoffRateEnd, specs.gain, centered);
+        return GenerateFilter<BasicType::BandPass>(specs, window, symetric);
     case BasicType::BandStop:
-        return DesignFilterBandStop(window, windowSize, cutoffRateBegin, cutoffRateEnd, specs.gain, centered);
+        return GenerateFilter<BasicType::BandStop>(specs, window, symetric);
     default:
-        return DesignFilterLowPass(window, windowSize, cutoffRateBegin, specs.gain, centered);
+        return GenerateFilter<BasicType::LowPass>(specs, window, symetric);
     }
 }
 
-inline void Audio::DSP::Filter::DesignFilterLowPass(float *window, const std::size_t size, const float cutoffRate, const float gain, const bool centered) noexcept
+template<bool ProcessWindow>
+inline void Audio::DSP::Filter::GenerateFilterLowPass(const FIRSpec specs, float *window, const bool symetric) noexcept
 {
     // cutoffNorm/pi*sinc(x*cutoffNorm/pi)
-    const std::size_t first = centered ? (size / 2) : size - 1;
-    // Normalize to [0:1]
-    const float realRate = 2.0f * cutoffRate;
+    const std::size_t size = specs.size;
+    const float cutoffRateBegin = 2.0f * specs.cutoffs[0] / specs.sampleRate;
+    const std::size_t first = symetric ? (size / 2) : size - 1;
+
     for (auto i = 0ul; i < size; ++i) {
         float idx = static_cast<float>(i - first);
-        *window++ *= (realRate * Utils::sinc<true>(idx * realRate)) * gain;
+        if constexpr (ProcessWindow)
+            *window = ComputeWindow(specs.windowType, i, size);
+        *window++ *= (cutoffRateBegin * Utils::sinc<true>(idx * cutoffRateBegin)) * specs.gain;
     }
 }
 
-inline void Audio::DSP::Filter::DesignFilterHighPass(float *window, const std::size_t size, const float cutoffRate, const float gain, const bool centered) noexcept
+template<bool ProcessWindow>
+inline void Audio::DSP::Filter::GenerateFilterHighPass(const FIRSpec specs, float *window, const bool symetric) noexcept
 {
     // sinc(x) - cutoffNorm/pi*sinc(x*cutoffNorm/pi)
-    const std::size_t first = centered ? (size / 2) : size - 1;
-    // Normalize to [0:1]
-    const float realRate = 2.0f * cutoffRate;
+    const std::size_t size = specs.size;
+    const float cutoffRateBegin = 2.0f * specs.cutoffs[0] / specs.sampleRate;
+    const std::size_t first = symetric ? (size / 2) : size - 1;
+
     for (auto i = 0ul; i < size; ++i) {
         float idx = static_cast<float>(i - first);
-        *window++ *= Utils::sinc<true>(idx) - (realRate * Utils::sinc<true>(idx * realRate)) * gain;
+        if constexpr (ProcessWindow)
+            *window = ComputeWindow(specs.windowType, i, size);
+        *window++ *= Utils::sinc<true>(idx) - (cutoffRateBegin * Utils::sinc<true>(idx * cutoffRateBegin)) * specs.gain;
     }
 }
 
-inline void Audio::DSP::Filter::DesignFilterBandPass(float *window, const std::size_t size, const float cutoffRateBegin, const float cutoffRateEnd, const float gain, const bool centered) noexcept
+template<bool ProcessWindow>
+inline void Audio::DSP::Filter::GenerateFilterBandPass(const FIRSpec specs, float *window, const bool symetric) noexcept
 {
     // cutoffNormHigh/pi*sinc(x*cutoffNormHigh/pi) - cutoffNormLow/pi*sinc(x*cutoffNormLow/pi)
-    const std::size_t first = centered ? (size / 2) : size - 1;
-    // Normalize to [0:1]
-    const float realRateBegin = 2.0f * cutoffRateBegin;
-    const float realRateEnd = 2.0f * cutoffRateEnd;
+    const std::size_t size = specs.size;
+    const float cutoffRateBegin = 2.0f * specs.cutoffs[0] / specs.sampleRate;
+    const float cutoffRateEnd = 2.0f * specs.cutoffs[1] / specs.sampleRate;
+    const std::size_t first = symetric ? (size / 2) : size - 1;
+
     for (auto i = 0ul; i < size; ++i) {
         float idx = static_cast<float>(i - first);
-        *window++ *= (realRateEnd * Utils::sinc<true>(idx * realRateEnd)) - (realRateBegin * Utils::sinc<true>(idx * realRateBegin)) * gain;
+        if constexpr (ProcessWindow)
+            *window = ComputeWindow(specs.windowType, i, size);
+        *window++ *= (cutoffRateEnd * Utils::sinc<true>(idx * cutoffRateEnd)) - (cutoffRateBegin * Utils::sinc<true>(idx * cutoffRateBegin)) * specs.gain;
     }
 }
 
-inline void Audio::DSP::Filter::DesignFilterBandStop(float *window, const std::size_t size, const float cutoffRateBegin, const float cutoffRateEnd, const float gain, const bool centered) noexcept
+template<bool ProcessWindow>
+inline void Audio::DSP::Filter::GenerateFilterBandStop(const FIRSpec specs, float *window, const bool symetric) noexcept
 {
     UNUSED(window);
-    UNUSED(size);
-    UNUSED(cutoffRateBegin);
-    UNUSED(cutoffRateEnd);
-    UNUSED(gain);
-    UNUSED(centered);
+    UNUSED(specs);
+    UNUSED(symetric);
 
     // Not sure at all !
     // lowPass(cutoffLow) + highPass(cutoffHigh)
-    // const std::size_t first = centered ? (size / 2) : size - 1;
-    // const float realRateBegin = 2.0 * cutoffRateBegin;
-    // const float realRateEnd = 2.0 * cutoffRateEnd;
+    // const std::size_t first = symetric ? (size / 2) : size - 1;
+    // const float cutoffRateBegin = 2.0 * cutoffRateBegin;
+    // const float cutoffRateEnd = 2.0 * cutoffRateEnd;
     // for (auto i = 0u; i < size; ++i) {
     //     int idx = i - first;
-    //     *window++ *= (realRateBegin * Utils::sinc<true>(idx * realRateBegin)) - (realRateBegin * Utils::sinc<true>(idx * realRateBegin)) * gain;
+        // if constexpr (ProcessWindow)
+        //     *window =  ComputeWindow(specs.windowType, i, size);//
+        // *window++ *= (cutoffRateBegin * Utils::sinc<true>(idx * cutoffRateBegin)) - (cutoffRateBegin * Utils::sinc<true>(idx * cutoffRateBegin)) * specs.gain;
     // }
 }
