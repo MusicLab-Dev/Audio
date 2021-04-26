@@ -12,6 +12,8 @@
 
 #include "Managers/NoteManager.hpp"
 
+#include <Audio/BufferModifier.hpp>
+
 namespace Audio
 {
     class Oscillator;

@@ -108,7 +108,7 @@ static void FeedAudioTestData(std::vector<AudioTestData> &testData, const Buffer
 
 struct DummyNoteInAudioOut : public IPlugin, public DummyPluginBase
 {
-    _REGISTER_DUMMY_PLUGIN
+    _REGISTER_DUMMY_PLUGIN()
 
     // NoteManager noteManager;
     Buffer buffer;

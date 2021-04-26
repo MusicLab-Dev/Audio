@@ -8,7 +8,7 @@
 #include <Core/Utils.hpp>
 #include <Core/Vector.hpp>
 
-#include <Audio/BaseDevice.hpp>
+#include <Audio/Base.hpp>
 
 #include <iostream>
 

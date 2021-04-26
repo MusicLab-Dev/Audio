@@ -68,14 +68,15 @@ public:
 /** @brief Internal methods */
 public:
     using RangeFunctor = Core::Functor<Type(const std::size_t index)>;
+    // using ModifierFunctor = Core::Functor<void(Type &x)>;
 
     /** @brief Apply a ratio to a input sequence */
-    void applyRatio(Type *input, const std::size_t inputSize, const float ratio) noexcept;
+    void applyVolume(Type *input, const std::size_t inputSize, const DB volume) noexcept;
 
 
     /** @brief Apply a functor to a input sequence. Functor is call like this: functor(i + offset) */
     template<bool Accumulate = false>
-    void assignRangeFunctor(Type *input, const std::size_t inputSize, const std::size_t offset, RangeFunctor &&functor) noexcept;
+    void applyRangeFunctor(Type *input, const std::size_t inputSize, const std::size_t offset, RangeFunctor &&functor) noexcept;
 
 
 /** @brief Internal getters */

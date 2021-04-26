@@ -20,8 +20,8 @@ inline std::size_t Audio::DSP::Resampler<Type>::GetResampleOctaveBufferSize(cons
     if (!nOctave)
         return inputSize;
     if (nOctave > 0)
-        return inputSize / std::pow(2u, nOctave);
-    return inputSize * std::pow(2u, -nOctave);
+        return inputSize / static_cast<std::size_t>(std::pow(2u, nOctave));
+    return inputSize * static_cast<std::size_t>(std::pow(2u, -nOctave));
 }
 
 template<typename Type>

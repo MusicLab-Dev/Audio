@@ -12,32 +12,25 @@ using namespace Audio;
 static constexpr BlockSize Size = 1024u;
 static constexpr SampleRate SR = 48000u;
 
-using EnvAD =   DSP::EnveloppeGenerator<DSP::GeneratorType::AD>;
-using EnvAR =   DSP::EnveloppeGenerator<DSP::GeneratorType::AR>;
-using EnvADSR = DSP::EnveloppeGenerator<DSP::GeneratorType::ADSR>;
+using EnvAD =   DSP::EnveloppeBase<DSP::EnveloppeType::AD>;
+using EnvAR =   DSP::EnveloppeBase<DSP::EnveloppeType::AR>;
+using EnvADSR = DSP::EnveloppeBase<DSP::EnveloppeType::ADSR>;
 
 
 TEST(EnveloppeGenerator, Simple_AttackDecay)
 {
     EnvAD ad;
-
-    ad.triggerOff();
-
-    auto rB = ad.processBlock(SR, Size);
-    auto rS = ad.processSample(SR);
-
-    (void)rB;
-    (void)rS;
+    UNUSED(ad);
 }
 
 TEST(EnveloppeGenerator, Simple_AttackRelease)
 {
     EnvAR ar;
-
+    UNUSED(ar);
 }
 
 TEST(EnveloppeGenerator, Simple_AttackDecayReleaseSustain)
 {
     EnvADSR adsr;
-
+    UNUSED(adsr);
 }

@@ -12,10 +12,10 @@ inline Audio::Internal::AllocationHeader *Audio::Internal::BufferAllocator::Allo
     // std::cout << "AllocateFallback: " << channelByteSize << ", " << usedSize << ", " << capacity << ", " << bucketIndex << std::endl;
     if (const auto data = Core::Utils::AlignedAlloc<Core::CacheLineSize>(capacity + Core::CacheLineSize); data) {
         return new (data) AllocationHeader {
-            /* bucketIndex: */ bucketIndex,
             /* capacity: */ capacity,
-            /* size: */ usedSize,
             /* channelByteSize: */ channelByteSize,
+            /* size: */ usedSize,
+            /* bucketIndex: */ bucketIndex,
             /* sampleRate: */ sampleRate,
             /* channelArrangement: */ channelArrangement,
             /* format: */ format

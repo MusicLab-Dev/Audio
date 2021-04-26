@@ -19,6 +19,7 @@ set(AudioSources
     ${AudioDir}/BaseIndex.cpp
     ${AudioDir}/Math.hpp
     ${AudioDir}/Buffer.hpp
+    ${AudioDir}/BufferModifier.hpp
     ${AudioDir}/BufferOctave.hpp
     ${AudioDir}/Buffer.ipp
     ${AudioDir}/Buffer.cpp

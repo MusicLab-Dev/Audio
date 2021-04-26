@@ -7,12 +7,12 @@
  */
 
 template<typename Type>
-void Audio::Volume<Type>::applyRatio(Type *input, const std::size_t inputSize, const float ratio) noexcept
+void Audio::Volume<Type>::applyVolume(Type *input, const std::size_t inputSize, const DB volume) noexcept
 {
     _peak = 0.0f;
     _rms = 0.0f;
     for (auto i = 0ul; i < inputSize; ++i) {
-        input[i] *= ratio;
+        input[i] *= volume;
         _peak = std::max(std::abs(input[i]), _peak);
         _rms += input[i] * input[i];
     }
@@ -21,7 +21,7 @@ void Audio::Volume<Type>::applyRatio(Type *input, const std::size_t inputSize, c
 
 template<typename Type>
 template<bool Accumulate>
-void Audio::Volume<Type>::assignRangeFunctor(Type *input, const std::size_t inputSize, const std::size_t offset, RangeFunctor &&functor) noexcept
+void Audio::Volume<Type>::applyRangeFunctor(Type *input, const std::size_t inputSize, const std::size_t offset, RangeFunctor &&functor) noexcept
 {
     _peak = 0.0f;
     _rms = 0.0f;

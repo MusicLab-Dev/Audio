@@ -37,6 +37,7 @@ public:
     };
 
     enum class Tags : std::uint32_t {
+        None            = 0,
         Effect          = 1,
         Analyzer        = 1 << 1,
         Delay           = 1 << 2,

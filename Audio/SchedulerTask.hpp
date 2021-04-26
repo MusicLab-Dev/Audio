@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <Flow/Flow/Graph.hpp>
+
 #include "IPlugin.hpp"
 
 namespace Audio

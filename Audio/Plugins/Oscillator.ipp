@@ -27,14 +27,12 @@ inline void Audio::Oscillator::sendNotes(const NoteEvents &notes)
 
 inline void Audio::Oscillator::receiveAudio(BufferView output)
 {
+    using Type = float;
     const DB voiceGain = ConvertDecibelToRatio(static_cast<float>(outputVolume()) + DefaultVoiceGain);
-    const auto outSize = output.size<float>();
-    float *out = reinterpret_cast<float *>(output.byteData());
-
-    output.clear();
+    const auto outSize = output.size<Type>();
+    Type *out = reinterpret_cast<Type *>(output.byteData());
 
     // std::cout << "Oscillator::receiveAudio::sampleSize: " << sampleSize << std::endl;
-    static auto Cpt = 0ull;
 
     const auto activeNote = _noteManager.getActiveNote();
     // std::cout << "Receive <audio>: " << activeNote.size() << std::endl;
@@ -43,32 +41,40 @@ inline void Audio::Oscillator::receiveAudio(BufferView output)
         const auto trigger = _noteManager.trigger(key);
         // Phase index
         const auto phaseIndex = _noteManager.readIndex(key);
-        const float frequency = std::pow(2.f, static_cast<float>(static_cast<int>(key) - RootKey) / KeysPerOctave) * RootKeyFrequency;
+        const Type frequency = std::pow(2.f, static_cast<Type>(static_cast<int>(key) - RootKey) / KeysPerOctave) * RootKeyFrequency;
         // const int nextReadIndex = sampleSize - (baseIndex + audioSpecs().processBlockSize);
         // const auto readSize = nextReadIndex < 0 ? outSize + nextReadIndex : outSize;
 
         // std::cout << "freq: " << frequency << std::endl;
-        generateWaveform(_oscillator, out, outSize, frequency, audioSpecs().sampleRate, phaseIndex, key, trigger, voiceGain);//1.f / static_cast<float>(activeNote.size()));
+        generateWaveform<true>(_oscillator, out, outSize, frequency, audioSpecs().sampleRate, phaseIndex, key, trigger, voiceGain);//1.f / static_cast<Type>(activeNote.size()));
         // const auto g = getEnveloppeGain(key, phaseIndex, trigger);
         _noteManager.incrementReadIndex(key, 0ul, audioSpecs().processBlockSize);
         // std::cout << g << std::endl;
         // std::cout << "  " << phaseIndex << std::endl;
     }
-    // std::cout << "<END>" << std::endl;
-    // auto zeros = std::all_of(out, out + outSize * sizeof(float), [](const auto x) { return x == 0.0f; });
-    // std::cout << "__" << Cpt << ": " << zeros << std::endl;
-    // auto min = 1000.f;
-    // auto max = -1000.f;
-    // for (auto i = 0ul; i < outSize; ++i) {
-    //     min = std::min(out[i], min);
-    //     max = std::max(out[i], max);
-    // }
-    // if (min < -1 || max > 1)
-    //     std::cout << "<<<CLIPING>>>" << std::endl;
-    // else
-    //     std::cout << std::setprecision(4) << "min: " << min << ", max: " << max << std::endl;
 
-    Cpt++;
+    // To benchmark, must be slower
+    Modifier<Type>::ApplyRangeFunctor(out, outSize, 0u, [&, voiceGain](const std::size_t index) -> Type {
+        UNUSED(index);
+        Type sample {};
+        const auto activeNote = _noteManager.getActiveNote();
+        const auto activeNoteSize = activeNote.size();
+        // std::cout << "Receive <audio>: " << activeNote.size() << std::endl;
+        for (auto iKey = 0u; iKey < activeNoteSize; ++iKey) {
+            const auto key = activeNote[iKey];
+            const auto trigger = _noteManager.trigger(key);
+            // Phase index
+            const auto phaseIndex = _noteManager.readIndex(key);
+            const Type frequency = std::pow(2.f, static_cast<Type>(static_cast<int>(key) - RootKey) / KeysPerOctave) * RootKeyFrequency;
+            const float frequencyNorm = 2.f * static_cast<float>(M_PI) * frequency / static_cast<float>(audioSpecs().sampleRate);
+            sample += std::sin(static_cast<float>(index) * frequencyNorm) *
+            getEnveloppeGain(key, static_cast<std::uint32_t>(phaseIndex), trigger);
+        }
+        return sample * voiceGain;
+            // std::sin(static_cast<Type>(index) * frequencyNorm) *
+            // getEnveloppeGain(key, static_cast<std::uint32_t>(index), trigger) * gain;
+    });
+
 }
 
 template<bool Accumulate, typename Type>
@@ -79,15 +85,15 @@ inline void Audio::Oscillator::generateWaveform(
 {
     switch (oscillator.waveform) {
     case Osc::Waveform::Sine:
-        return generateSine<Accumulate, Type>(output, outputSize, frequency, sampleRate, phaseOffset, key, trigger, gain);
+        return generateSine<Accumulate>(output, outputSize, frequency, sampleRate, phaseOffset, key, trigger, gain);
     case Osc::Waveform::Square:
-        return generateSquare<Accumulate, Type>(output, outputSize, frequency, sampleRate, phaseOffset, key, trigger, gain);
+        return generateSquare<Accumulate>(output, outputSize, frequency, sampleRate, phaseOffset, key, trigger, gain);
     case Osc::Waveform::Triangle:
-        return generateTriangle<Accumulate, Type>(output, outputSize, frequency, sampleRate, phaseOffset, key, trigger, gain);
+        return generateTriangle<Accumulate>(output, outputSize, frequency, sampleRate, phaseOffset, key, trigger, gain);
     case Osc::Waveform::Saw:
-        return generateSaw<Accumulate, Type>(output, outputSize, frequency, sampleRate, phaseOffset, key, trigger, gain);
+        return generateSaw<Accumulate>(output, outputSize, frequency, sampleRate, phaseOffset, key, trigger, gain);
     default:
-        return generateSine<Accumulate, Type>(output, outputSize, frequency, sampleRate, phaseOffset, key, trigger, gain);
+        return generateSine<Accumulate>(output, outputSize, frequency, sampleRate, phaseOffset, key, trigger, gain);
     }
 }
 
@@ -110,9 +116,14 @@ inline void Audio::Oscillator::generateSine(
             output[k] = static_cast<Type>(std::sin(static_cast<float>(i) * frequencyNorm) * outGain);
     }
 
-    // _volumeHandler.assignRangeFunctor(output, outputSize, phaseOffset, [this, key, trigger, frequencyNorm, gain](const std::size_t index) {
-    //     return std::sin(index * frequencyNorm) * getEnveloppeGain(key, index, trigger) * gain;
-    // });
+
+    // Functor equivalent
+    Modifier<Type>::ApplyRangeFunctor(output, outputSize, phaseOffset, [&, key, trigger, frequencyNorm, gain](const std::size_t index) -> Type {
+        return static_cast<Type>(
+            std::sin(static_cast<float>(index) * frequencyNorm) *
+            getEnveloppeGain(key, static_cast<std::uint32_t>(index), trigger) * gain
+        );
+    });
 
     // (void)_noteManager.enveloppe().adsr<true>(key, phaseOffset, trigger, enveloppeAttack(), enveloppeDecay(), enveloppeSustain(), enveloppeRelease(), audioSpecs().sampleRate);
 }

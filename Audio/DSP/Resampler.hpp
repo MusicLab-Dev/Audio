@@ -9,6 +9,7 @@
 
 #include <Core/Vector.hpp>
 
+#include <Audio/Base.hpp>
 #include "Filter.hpp"
 
 namespace Audio::DSP
