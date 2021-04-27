@@ -89,10 +89,10 @@ void AScheduler::processLooping(void)
 {
     auto &range = getCurrentBeatRange();
 
-    if ((range.to > _loopBeatRange.to)) {
+    if (range.to > _loopBeatRange.to || range.from < _loopBeatRange.from) {
         range = {
-            0u,
-            _processBeatSize
+            _loopBeatRange.from,
+            _loopBeatRange.from + _processBeatSize
         };
         _beatMissCount = 0.0;
     }
