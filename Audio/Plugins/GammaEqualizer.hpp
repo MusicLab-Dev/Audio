@@ -40,10 +40,13 @@ public:
             outputVolume, 0.0,
             CONTROL_DEFAULT_OUTPUT_VOLUME_RANGE()
         ),
+        REGISTER_CONTROL_EFFECT_BYPASS(
+            byBass
+        ),
         REGISTER_CONTROL_EQUALIZER_BANDS(
             frequenyBands,
             32, // Hz
-            10, // ::BandCount
+            2, // ::BandCount
             CONTROL_EQUALIZER_BAND_DEFAULT_RANGE()
         )
     )
@@ -58,7 +61,7 @@ public:
     virtual void onAudioGenerationStarted(const BeatRange &range);
 
 private:
-    DSP::FIR::BandFilter<BandCount, float> _filter;
+    DSP::FIR::BandFilter<2u, float> _filter;
     Buffer _cache;
 };
 

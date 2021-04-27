@@ -15,7 +15,7 @@ inline void Audio::LambdaFilter::onAudioGenerationStarted(const BeatRange &range
         DSP::Filter::FIRSpec {
             static_cast<DSP::Filter::BasicType>(filterType()),
             DSP::Filter::WindowType::Hanning,
-            255ul,
+            33ul,
             static_cast<float>(audioSpecs().sampleRate),
             { static_cast<float>(cutoffFrequencyFrom()), static_cast<float>(cutoffFrequencyTo()) },
             1.0f
@@ -41,22 +41,30 @@ constexpr auto PrintRangeClip = [](const Audio::BufferView buffer) {
 
 inline void Audio::LambdaFilter::receiveAudio(BufferView output)
 {
+    if (static_cast<bool>(byBass()))
+        return;
+
     const DB outGain = ConvertDecibelToRatio(static_cast<float>(outputVolume()));
     float *out = output.data<float>();
-    output.clear();
-    // Update filter cutoffs
-    _filter.setCutoffs(static_cast<float>(cutoffFrequencyFrom()), static_cast<float>(cutoffFrequencyTo()));
-    // PrintRangeClip(output);
-    // std::cout << "=====" << std::endl;
+
+    _filter.setSpec(
+        DSP::Filter::FIRSpec {
+            DSP::Filter::BasicType::BandPass,
+            DSP::Filter::WindowType::Default,
+            33ul,
+            static_cast<float>(audioSpecs().sampleRate),
+            { static_cast<float>(cutoffFrequencyFrom()), static_cast<float>(cutoffFrequencyTo()) },
+            1.0
+        }
+    );
     _filter.filter(_cache.data<float>(), audioSpecs().processBlockSize, out, outGain);
+
     // PrintRangeClip(output);
-    // std::memcpy(out, _cache.data<float>(), audioSpecs().processBlockSize * GetFormatByteLength(audioSpecs().format));
 }
 
 inline void Audio::LambdaFilter::sendAudio(const BufferViews &inputs)
 {
-    if (inputs.size()) {
-        DSP::Merge<float>(inputs, _cache, true);
-    }
-    // PrintRangeClip(_cache);
+    if (!inputs.size())
+        return;
+    DSP::Merge<float>(inputs, _cache, ConvertDecibelToRatio(static_cast<float>(inputGain() + outputVolume())), true);
 }

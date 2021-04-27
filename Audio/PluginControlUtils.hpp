@@ -102,9 +102,22 @@
 /**
  * @brief Helper for filter/equalizer controls
  */
-#define CONTROL_FILTER_CUTOFF_DEFAULT_RANGE() CONTROL_RANGE(0.0, 1000.0)
+#define CONTROL_FILTER_CUTOFF_DEFAULT_RANGE() CONTROL_RANGE(0.0, 20'000.0)
 #define CONTROL_EQUALIZER_BAND_DEFAULT_RANGE() CONTROL_RANGE(-18.0, 18.0)
 #define CONTROL_EQUALIZER_BAND_DEFAULT_VALUE() 0.0
+
+#define REGISTER_CONTROL_EFFECT_BYPASS(Name) \
+    REGISTER_CONTROL( \
+        Boolean, Name, 0, CONTROL_RANGE(0.0, 1.0), \
+        TR_TABLE( \
+            TR(English, "By-pass the effect"), \
+            TR(French, "Désactive l'effet") \
+        ), \
+        TR_TABLE( \
+            TR(English, "By-pass the effect"), \
+            TR(French, "Désactive l'effet") \
+        ) \
+    )
 
 #define REGISTER_CONTROL_FILTER_CUTOFF(Name, Value, Range) \
     REGISTER_CONTROL( \

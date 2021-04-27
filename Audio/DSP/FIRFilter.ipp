@@ -124,7 +124,7 @@ inline void Audio::DSP::FIR::BandFilter<InstanceCount, Type>::init(const Audio::
     resetLastInputCache();
     // _filterType.resize(InstanceCount);
     // _cutoffs.resize(InstanceCount - 1);
-    if constexpr (InstanceCount == SmallBandFilterSize) {
+    if constexpr (InstanceCount == SmallBandFilterSize || InstanceCount == 2u) {
         reloadAll();
     }
 }

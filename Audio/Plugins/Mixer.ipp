@@ -21,7 +21,7 @@ inline void Audio::Mixer::receiveAudio(BufferView output)
 
     // std::cout << "MIXER SIZE: " << _cache.size() << std::endl;
 
-    DSP::Merge<float>(_cache, output, false);
+    DSP::Merge<float>(_cache, output, ConvertDecibelToRatio(static_cast<float>(masterVolume())), false);
 
     constexpr auto PrintRangeClip = [](const BufferView buffer) {
         const auto size = buffer.size<float>();

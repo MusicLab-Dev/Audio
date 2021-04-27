@@ -47,12 +47,15 @@ class Audio::LambdaFilter final : public Audio::IPlugin
         REGISTER_CONTROL_FILTER_CUTOFF(
             cutoffFrequencyFrom,
             440.0,
-            CONTROL_FILTER_CUTOFF_DEFAULT_RANGE()
+            CONTROL_RANGE(20.0, 5'000)
         ),
         REGISTER_CONTROL_FILTER_CUTOFF(
             cutoffFrequencyTo,
             1000.0,
-            CONTROL_FILTER_CUTOFF_DEFAULT_RANGE()
+            CONTROL_RANGE(6'000, 20'000)
+        ),
+        REGISTER_CONTROL_EFFECT_BYPASS(
+            byBass
         ),
         REGISTER_CONTROL_ENUM(
             /* Control variable / getter / setter name */
@@ -62,19 +65,20 @@ class Audio::LambdaFilter final : public Audio::IPlugin
                 TR_TABLE(
                     TR(English, "Low-pass"),
                     TR(French, "Passe bas")
-                ),
-                TR_TABLE(
-                    TR(English, "High-pass"),
-                    TR(French, "Passe haut")
-                ),
-                TR_TABLE(
-                    TR(English, "Band-pass"),
-                    TR(French, "Passe bande")
-                ),
-                TR_TABLE(
-                    TR(English, "Band-stop"),
-                    TR(French, "Stop bande")
                 )
+                // ,
+                // TR_TABLE(
+                //     TR(English, "High-pass"),
+                //     TR(French, "Passe haut")
+                // ),
+                // TR_TABLE(
+                //     TR(English, "Band-pass"),
+                //     TR(French, "Passe bande")
+                // ),
+                // TR_TABLE(
+                //     TR(English, "Band-stop"),
+                //     TR(French, "Stop bande")
+                // )
             ),
             /* Control name */
             TR_TABLE(
