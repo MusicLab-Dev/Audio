@@ -5,35 +5,6 @@
 
 #include <iostream>
 
-inline Audio::AScheduler::AScheduler(void)
-{
-    for (auto &cache : _graphs) {
-        cache.graph.setRepeatCallback([this](void) -> bool {
-            bool exited = false;
-            if (_overflowCache) {
-                exited = onAudioQueueBusy();
-            } else {
-                getCurrentBeatRange().increment(_processBeatSize);
-                processBeatMiss();
-                if (isLooping())
-                    processLooping();
-                if (produceAudioData(_project->master()->cache())) {
-                    exited = onAudioBlockGenerated();
-                } else {
-                    exited = onAudioQueueBusy();
-                }
-            }
-            if (exited) {
-                std::cout << "Shutting down process graph, clearing cache" << std::endl;
-                clearAudioQueue();
-                clearOverflowCache();
-                return false;
-            } else
-                return true;
-        });
-    }
-}
-
 inline Audio::AScheduler::AScheduler(ProjectPtr &&project)
     : AScheduler()
 {
