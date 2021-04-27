@@ -79,64 +79,66 @@ namespace Audio::DSP::Filter
 
     /** @brief Generate window with compile-time window type */
     template<bool Accumulate = false, WindowType Window = WindowType::Default>
-    void GenerateWindow(float *window, const std::size_t size, const bool symetric) noexcept;
+    void GenerateWindow(float *window, const std::size_t size, const bool symetric = true) noexcept;
     /** @brief Generate window with run-time window type */
     template<bool Accumulate = false>
     void GenerateWindow(const WindowType type, const std::size_t size, float *window, const bool symetric = true) noexcept;
 
     /** @brief Design filter coefficients within a window with a run-time filter type */
     // template<bool Accumulate = false, BasicType Filter = BasicType::Default>
-    // void GenerateFilter(const FIRSpec specs, float *window, const bool symetric = true) noexcept;
+    // void GenerateFilter(const FIRSpec specs, float *window) noexcept;
     template<bool ProcessWindow = false, bool Accumulate = false>
-    void GenerateFilter(const FIRSpec specs, float *window, const bool symetric = true) noexcept;
+    void GenerateFilter(const FIRSpec specs, float *window) noexcept;
 
 
     template<bool ProcessWindow = false, bool Accumulate = false>
-    void GenerateFilterLowPass(const FIRSpec specs, float *window, const bool symetric) noexcept;
+    void GenerateFilterLowPass(const FIRSpec specs, float *window) noexcept;
     template<bool ProcessWindow = false, bool Accumulate = false>
-    void GenerateFilterHighPass(const FIRSpec specs, float *window, const bool symetric) noexcept;
+    void GenerateFilterHighPass(const FIRSpec specs, float *window) noexcept;
     template<bool ProcessWindow = false, bool Accumulate = false>
-    void GenerateFilterBandPass(const FIRSpec specs, float *window, const bool symetric) noexcept;
+    void GenerateFilterBandPass(const FIRSpec specs, float *window) noexcept;
     template<bool ProcessWindow = false, bool Accumulate = false>
-    void GenerateFilterBandStop(const FIRSpec specs, float *window, const bool symetric) noexcept;
+    void GenerateFilterBandStop(const FIRSpec specs, float *window) noexcept;
 
     template<bool Accumulate = false>
-    void GenerateHanning(float *window, const std::size_t size, const bool symetric = true) noexcept;
+    void GenerateHanning(float *window, const std::size_t size, const bool symetric) noexcept;
     template<bool Accumulate = false>
-    void GenerateHamming(float *window, const std::size_t size, const bool symetric = true) noexcept;
+    void GenerateHamming(float *window, const std::size_t size, const bool symetric) noexcept;
 
 
-    constexpr auto Hanning = [](const std::size_t index, const std::size_t size) -> float
+    constexpr auto Hanning = [](const std::size_t index, const std::size_t size, const bool symetric) -> float
     {
+        UNUSED(symetric);
         return 0.5f - 0.5f * (std::cos(2.0f * static_cast<float>(M_PI) * static_cast<float>(index) / static_cast<float>(size - 1)));
     };
 
-    constexpr auto Hamming = [](const std::size_t index, const std::size_t size) -> float
+    constexpr auto Hamming = [](const std::size_t index, const std::size_t size, const bool symetric) -> float
     {
+        UNUSED(symetric);
         return 0.54f - 0.46f * (std::cos(2.0f * static_cast<float>(M_PI) * static_cast<float>(index) / static_cast<float>(size - 1)));
     };
 
     template<WindowType Window, bool Accumulate = false>
-    inline float ComputeWindow(const std::size_t index, const std::size_t size) {
+    inline float ComputeWindow(const std::size_t index, const std::size_t size, const bool symetric) {
         switch (Window) {
         case WindowType::Hanning:
-            return Hanning(index, size);
+            return Hanning(index, size, symetric);
         case WindowType::Hamming:
-            return Hamming(index, size);
+            return Hamming(index, size, symetric);
         default:
-            return Hanning(index, size);
+            return Hanning(index, size, symetric);
         }
     }
     template<bool Accumulate = false>
-    inline float ComputeWindow(WindowType windowType, const std::size_t index, const std::size_t size)
+    inline float ComputeWindow(WindowType windowType, const std::size_t index, const std::size_t size, const bool symetric)
     {
         switch (windowType) {
         case WindowType::Hanning:
-            return ComputeWindow<WindowType::Hanning, Accumulate>(index, size);
+            return ComputeWindow<WindowType::Hanning, Accumulate>(index, size, symetric);
         case WindowType::Hamming:
-            return ComputeWindow<WindowType::Hamming, Accumulate>(index, size);
+            return ComputeWindow<WindowType::Hamming, Accumulate>(index, size, symetric);
         default:
-            return ComputeWindow<WindowType::Default, Accumulate>(index, size);
+            return ComputeWindow<WindowType::Default, Accumulate>(index, size, symetric);
         }
     }
 
