@@ -19,7 +19,7 @@ namespace Audio
 class Audio::GammaEqualizer final : public Audio::IPlugin
 {
 public:
-    static constexpr auto BandCount = 10ul;
+    static constexpr std::uint32_t BandCount = 10;
 
     REGISTER_PLUGIN(
         TR_TABLE(
@@ -33,47 +33,17 @@ public:
         FLAGS(AudioInput, AudioOutput),
         TAGS(EQ),
         REGISTER_CONTROL_INPUT_GAIN(
-            inputGain,
-            0.0,
+            inputGain, 0.0,
             CONTROL_DEFAULT_INPUT_GAIN_RANGE()
         ),
         REGISTER_CONTROL_OUTPUT_VOLUME(
-            outputVolume,
-            0.0,
+            outputVolume, 0.0,
             CONTROL_DEFAULT_OUTPUT_VOLUME_RANGE()
         ),
-        //(10) 32 - 64 - 128 - 256 - 512 - 1024 - 2048 - 4096 - 8192 - 16384
-        // (9) 64 - 128 - 256 - 512 - 1024 - 2048 - 4096 - 8192 - 16384
-        // (8) 128 - 256 - 512 - 1024 - 2048 - 4096 - 8192 - 16384
-        // (8) 71 - 142 - 284 - 569 - 1186 - 2371 - 4743 - 9487
-        // (7) 128 - 256 - 512 - 1024 - 2048 - 4096 - 8192 - 16384
-        // (6) 128 - 256 - 512 - 1024 - 2048 - 4096 - 8192 - 16384
-        // (5) 128 - 256 - 512 - 1024 - 2048 - 4096 - 8192 - 16384
-        // (4) 128 - 256 - 512 - 1024 - 2048 - 4096 - 8192 - 16384
-        // (3) 128 - 256 - 512 - 1024 - 2048 - 4096 - 8192 - 16384
-        // (2) 128 - 256 - 512 - 1024 - 2048 - 4096 - 8192 - 16384
-        // REGISTER_CONTROL_FILTER_CUTOFF(
-        //     cutoffLow,
-        //     CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(),
-        //     CONTROL_EQUALIZER_BAND_DEFAULT_RANGE()
-        // ),
-
-        // REGISTER_CONTROL_FILTER_CUTOFF(
-        //     cutoffHigh,
-        //     CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(),
-        //     CONTROL_EQUALIZER_BAND_DEFAULT_RANGE()
-        // ),
-        // REGISTER_CONTROL_FILTER_CUTOFF_DESCRIPTION(
-        //     cutoff,
-        //     CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(),
-        //     CONTROL_EQUALIZER_BAND_DEFAULT_RANGE(),
-        //     "32Hz"
-        // )
-        // ,
         REGISTER_CONTROL_EQUALIZER_BANDS(
             frequenyBands,
-            128,
-            8,
+            32, // Hz
+            10, // ::BandCount
             CONTROL_EQUALIZER_BAND_DEFAULT_RANGE()
         )
     )
@@ -88,7 +58,7 @@ public:
     virtual void onAudioGenerationStarted(const BeatRange &range);
 
 private:
-    DSP::FIR::SerieFilter<BandCount, float> _filter;
+    DSP::FIR::BandFilter<BandCount, float> _filter;
     Buffer _cache;
 };
 

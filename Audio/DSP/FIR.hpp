@@ -18,6 +18,8 @@ namespace Audio::DSP::FIR
     {
         template<typename Type>
         using Cache = Core::TinyVector<Type>;
+        template<unsigned InstanceCount, typename Type>
+        using CacheList = std::array<Cache<Type>, InstanceCount>;
 
         using CutoffList = std::initializer_list<float>;
         using GainList = std::initializer_list<DB>;
@@ -38,7 +40,7 @@ namespace Audio::DSP::FIR
 
     /** @brief Filter using a single FIR instance */
     template<unsigned InstanceCount, typename Type>
-    class ParallelFilter;
+    class BandFilter;
 
     /** @brief Filter using multiple FIR instances */
     template<unsigned InstanceCount, typename Type>
@@ -79,14 +81,12 @@ template<unsigned InstanceCount, typename Type>
 class Audio::DSP::FIR::Internal::MultiInstance
 {
 public:
-    using CacheList = std::array<Cache<Type>, InstanceCount>;
-
     /** @brief Perform filtering using convolution and gains for each instance */
     VoidType<Type> filter(const Type *input, const std::uint32_t inputSize, Type *output, const GainArray<InstanceCount> &gains) noexcept;
 
     /** @brief Get the internal cache coefficients */
-    [[nodiscard]] const CacheList &coefficients(void) const noexcept { return _coefficients; }
-    [[nodiscard]] CacheList &coefficients(void) noexcept { return _coefficients; }
+    [[nodiscard]] const CacheList<InstanceCount, Type> &coefficients(void) const noexcept { return _coefficients; }
+    [[nodiscard]] CacheList<InstanceCount, Type> &coefficients(void) noexcept { return _coefficients; }
 
     /** @brief Get the internal cache for the last input */
     [[nodiscard]] const Cache<Type> &lastInput(void) const noexcept { return _lastInputCache; }
@@ -96,7 +96,7 @@ private:
     ProcessType<Type> filterImpl(const Type *input, const std::uint32_t size, const Type *coef, const std::uint32_t zeroPad = 0ul) noexcept;
 
     /** @brief Filter cache coefficients */
-    CacheList _coefficients;
+    Internal::CacheList<InstanceCount, Type> _coefficients;
     /** @brief Last input cache used for block processing */
     Cache<Type> _lastInputCache;
 };
@@ -107,13 +107,13 @@ class Audio::DSP::FIR::BasicFilter
 {
 public:
     BasicFilter(void) = default;
-    BasicFilter(const DSP::Filter::FIRSpec specs) { init(specs); }
+    BasicFilter(const DSP::Filter::FIRSpec &spec) { init(spec); }
 
-    /** @brief Initialize the internal filter specs */
-    void init(const DSP::Filter::FIRSpec &specs) noexcept;
+    /** @brief Initialize the internal filter spec */
+    void init(const DSP::Filter::FIRSpec &spec) noexcept;
 
-    /** @brief Set the internal specs. It will recompute the instance coefficients */
-    bool setSpecs(const DSP::Filter::FIRSpec &specs) noexcept;
+    /** @brief Set the internal spec. It will recompute the instance coefficients */
+    bool setSpec(const DSP::Filter::FIRSpec &spec) noexcept;
     /** @brief Set the internal cutoffs */
     bool setCutoffs(const float cutoffFrom, const float cutoffTo = 0.0f) noexcept;
     /** @brief Set the internal sampleRate */
@@ -136,28 +136,64 @@ public:
 private:
     /** @brief Internal instance */
     Internal::Instance<Type> _instance;
-    /** @brief Filter specs */
-    DSP::Filter::FIRSpec _specs;
+    /** @brief Filter spec */
+    DSP::Filter::FIRSpec _spec;
 };
 
 template<unsigned InstanceCount, typename Type>
-class Audio::DSP::FIR::ParallelFilter
+class Audio::DSP::FIR::BandFilter
 {
+    static constexpr auto SmallBandFilterSize = 10u;
+
+    /** @brief Construct only for 2 or more instances */
+    static_assert(InstanceCount > 1, "Audio::DSP::FIR::MultiFilter need at least 2 instances");
+    static_assert(InstanceCount == SmallBandFilterSize, "Audio::DSP::FIR::MultiFilter only support 10 instances");
+
+    static constexpr auto SmallBandFilterRootFrequency = 32.0f;
+
 public:
+    BandFilter(void) = default;
+    BandFilter(const DSP::Filter::WindowType windowType, const float sampleRate, const std::uint32_t size) { init(windowType, sampleRate, size); }
+
+    /** @brief Initialize the internal filter specs */
+    void init(const DSP::Filter::WindowType windowType, const float sampleRate, const std::uint32_t size) noexcept;
+
+    /** @brief Set the internal window type */
+    bool setWindowType(const DSP::Filter::WindowType windowType) noexcept;
+    /** @brief Set the internal sampleRate */
+    bool setSize(const std::uint32_t ize) noexcept;
+    /** @brief Set the internal sampleRate */
+    bool setSampleRate(const float sampleRate) noexcept;
+
+    /** @brief Reset the internal last input cache */
+    void resetLastInputCache(void) noexcept { _instance.lastInput().clear(); }
+    /** @brief Resize the internal last input cache */
+    void resizeLastInputCache(const std::uint32_t size) noexcept { _instance.lastInput().resize(size); }
+
+    /** @brief Call the filter instance */
+    template<typename GainType, std::uint32_t GainSize>
+    VoidType<Type> filter(const Type *input, const std::uint32_t inputSize, Type *output, const GainType(&gains)[GainSize]) noexcept;
+
 private:
     /** @brief Internal instance */
     Internal::Instance<Type> _instance;
     /** @brief Filter specs */
-    DSP::Filter::FIRSpecs _specs;
+    DSP::Filter::WindowType _windowType { DSP::Filter::WindowType::Hanning };
+    float _sampleRate;
+    std::uint32_t _filterSize;
+    Core::TinyVector<float> _gain;
+    Internal::CacheList<InstanceCount, Type> _coefficients;
+
+    void reloadAll(void) noexcept;
+    void mergeToInstance(void) noexcept;
+    void reloadLowPass(const float rootFreq, const float gain) noexcept;
+    void reloadBandPass(const std::uint32_t filterIndex, const float rootFreq, const float gain) noexcept;
+    void reloadHighPass(const float rootFreq, const float gain) noexcept;
 };
 
 template<unsigned InstanceCount, typename Type>
 class Audio::DSP::FIR::SerieFilter
 {
-    /** @brief Construct only for 2 or more instances */
-    static_assert(InstanceCount > 1, "Audio::DSP::FIR::MultiFilter need at least 2 instances");
-    static_assert(InstanceCount == 10, "Audio::DSP::FIR::MultiFilter only support 10 instances");
-
 public:
     using CutoffArray = std::array<float, InstanceCount - 1ul>;
 
@@ -207,7 +243,7 @@ private:
     Internal::GainArray<InstanceCount> _gains;
 
     void reloadInstances(const DSP::Filter::WindowType windowType, const std::uint32_t filterSize, const float sampleRate) noexcept;
-    void reloadInstance(const DSP::Filter::FIRSpec &specs, std::uint32_t instanceIndex) noexcept;
+    void reloadInstance(const DSP::Filter::FIRSpec &spec, std::uint32_t instanceIndex) noexcept;
 };
 
 #include "FIR.ipp"
