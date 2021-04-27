@@ -47,12 +47,12 @@ class Audio::LambdaFilter final : public Audio::IPlugin
         REGISTER_CONTROL_FILTER_CUTOFF(
             cutoffFrequencyFrom,
             440.0,
-            CONTROL_RANGE(20.0, 5'000)
+            CONTROL_RANGE(50.0, 22'000)
         ),
         REGISTER_CONTROL_FILTER_CUTOFF(
             cutoffFrequencyTo,
             1000.0,
-            CONTROL_RANGE(6'000, 20'000)
+            CONTROL_RANGE(50.0, 22'000)
         ),
         REGISTER_CONTROL_EFFECT_BYPASS(
             byBass

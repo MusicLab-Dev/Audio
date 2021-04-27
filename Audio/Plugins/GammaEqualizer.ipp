@@ -25,11 +25,12 @@ inline void Audio::GammaEqualizer::onAudioGenerationStarted(const BeatRange &ran
 inline void Audio::GammaEqualizer::receiveAudio(BufferView output)
 {
     // std::cout << ">> receiveAudio" << std::endl;
-    if (static_cast<bool>(byBass()))
-        return;
-
-    const DB outGain = ConvertDecibelToRatio(static_cast<float>(outputVolume()));
     float *out = output.data<float>();
+    if (static_cast<bool>(byBass())) {
+        std::memcpy(out, _cache.data<float>(), output.size<std::uint8_t>());
+        return;
+    }
+    const DB outGain = ConvertDecibelToRatio(static_cast<float>(outputVolume()));
 
     _filter.filter(_cache.data<float>(), audioSpecs().processBlockSize, out, {
         ConvertDecibelToRatio(static_cast<float>(frequenyBands_0()) + outGain),

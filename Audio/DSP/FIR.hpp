@@ -150,7 +150,7 @@ class Audio::DSP::FIR::BandFilter
     static_assert(InstanceCount >= MinBandFilterSize, "Audio::DSP::FIR::MultiFilter need at least 2 instances");
     // static_assert((InstanceCount == MinBandFilterSize) || (InstanceCount == SmallBandFilterSize), "Audio::DSP::FIR::MultiFilter only support 10 instances");
 
-    static constexpr float MinBandFilterRootFrequency = 44100 / 2 / 3;
+    static constexpr float MinBandFilterRootFrequency = 10'000.0f;
     static constexpr float SmallBandFilterRootFrequency = 32.0f;
 
 public:

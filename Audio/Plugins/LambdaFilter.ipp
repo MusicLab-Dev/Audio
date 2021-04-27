@@ -15,7 +15,7 @@ inline void Audio::LambdaFilter::onAudioGenerationStarted(const BeatRange &range
         DSP::Filter::FIRSpec {
             static_cast<DSP::Filter::BasicType>(filterType()),
             DSP::Filter::WindowType::Hanning,
-            33ul,
+            63ul,
             static_cast<float>(audioSpecs().sampleRate),
             { static_cast<float>(cutoffFrequencyFrom()), static_cast<float>(cutoffFrequencyTo()) },
             1.0f
@@ -41,17 +41,20 @@ constexpr auto PrintRangeClip = [](const Audio::BufferView buffer) {
 
 inline void Audio::LambdaFilter::receiveAudio(BufferView output)
 {
-    if (static_cast<bool>(byBass()))
+    float *out = output.data<float>();
+    if (static_cast<bool>(byBass())) {
+        std::memcpy(out, _cache.data<float>(), output.size<std::uint8_t>());
         return;
+    }
 
     const DB outGain = ConvertDecibelToRatio(static_cast<float>(outputVolume()));
-    float *out = output.data<float>();
 
+    /** @todo Remove this */
     _filter.setSpec(
         DSP::Filter::FIRSpec {
-            DSP::Filter::BasicType::BandPass,
+            DSP::Filter::BasicType::LowPass,
             DSP::Filter::WindowType::Default,
-            33ul,
+            63ul,
             static_cast<float>(audioSpecs().sampleRate),
             { static_cast<float>(cutoffFrequencyFrom()), static_cast<float>(cutoffFrequencyTo()) },
             1.0

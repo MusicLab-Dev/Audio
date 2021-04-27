@@ -179,7 +179,7 @@ inline void Audio::DSP::FIR::BandFilter<InstanceCount, Type>::mergeToInstance(vo
 template<unsigned InstanceCount, typename Type>
 inline void Audio::DSP::FIR::BandFilter<InstanceCount, Type>::reloadAll(void) noexcept
 {
-    auto rootFreq = SmallBandFilterRootFrequency;
+    auto rootFreq = (InstanceCount == 10 ? SmallBandFilterRootFrequency :  MinBandFilterRootFrequency);
     // Low-pass filters
     reloadLowPass(rootFreq, 1.0f);
     // Band-pass filters

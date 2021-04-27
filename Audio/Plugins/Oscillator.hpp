@@ -53,13 +53,15 @@ class Audio::Oscillator final : public Audio::IPlugin
     struct Osc
     {
         enum class Waveform : std::uint8_t {
-            Sine, Square, Triangle, Saw
+            Sine, Square,
+            // Not working !
+            Triangle, Saw,
+            // Not use this, but fun xD
+            Error
         };
 
-        // inline float get
-
         float tunning { 0.f };
-        Waveform waveform { Waveform::Sine };
+        Waveform waveform { Waveform::Saw };
     };
 
 public:
@@ -114,6 +116,10 @@ private:
 
     template<bool Accumulate, typename Type>
     void generateSaw(Type *output, const std::size_t outputSize,
+            const float frequency, const SampleRate sampleRate, const std::uint32_t phaseOffset, const Key key, const bool trigger, const DB gain) noexcept;
+
+    template<bool Accumulate, typename Type>
+    void generateError(Type *output, const std::size_t outputSize,
             const float frequency, const SampleRate sampleRate, const std::uint32_t phaseOffset, const Key key, const bool trigger, const DB gain) noexcept;
 };
 
