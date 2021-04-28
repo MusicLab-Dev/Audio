@@ -7,6 +7,7 @@
  */
 
 template<typename Type>
+template<bool Accumulate>
 typename Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::Internal::Instance<Type>::filter(const Type *input, const std::uint32_t inputSize, Type *output, const Type outGain) noexcept
 {
     const auto filterSize = static_cast<std::uint32_t>(_coefficients.size());
@@ -14,18 +15,19 @@ typename Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::Internal::Instance<Typ
 
     // Begin
     for (auto i = 0u; i < filterSizeMinusOne; ++i) {
-        output[i] = filterImpl(input, filterSize, filterSizeMinusOne - i) * outGain;
+        output[i] = filterImpl<Accumulate>(input, filterSize, filterSizeMinusOne - i) * outGain;
     }
     // Body
     const Type *inputShifted = input - filterSizeMinusOne;
     for (auto i = filterSizeMinusOne; i < inputSize; ++i) {
-        output[i] = filterImpl(inputShifted + i, filterSize) * outGain;
+        output[i] = filterImpl<Accumulate>(inputShifted + i, filterSize) * outGain;
     }
     // Save for last input
     std::memcpy(_lastInputCache.data(), input + inputSize - filterSizeMinusOne, filterSizeMinusOne * sizeof(Type));
 }
 
 template<typename Type>
+template<bool Accumulate>
 typename Audio::DSP::FIR::ProcessType<Type> Audio::DSP::FIR::Internal::Instance<Type>::filterImpl(const Type *input, const std::uint32_t size, const std::uint32_t zeroPad) noexcept
 {
     const std::uint32_t realSize = size - zeroPad;
@@ -42,6 +44,7 @@ typename Audio::DSP::FIR::ProcessType<Type> Audio::DSP::FIR::Internal::Instance<
 }
 
 template<unsigned InstanceCount, typename Type>
+template<bool Accumulate>
 typename Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::Internal::MultiInstance<InstanceCount, Type>::filter(const Type *input, const std::uint32_t inputSize, Type *output, const Internal::GainArray<InstanceCount> &gains) noexcept
 {
     const auto filterSize = static_cast<std::uint32_t>(_coefficients.size());
@@ -52,7 +55,7 @@ typename Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::Internal::MultiInstanc
         auto k = 0u;
         for (const auto gain : gains) {
             std::cout << gain << std::endl;
-            output[i] = filterImpl(input, filterSize, _coefficients[k++].data(), filterSizeMinusOne - i) * gain;
+            output[i] = filterImpl<Accumulate>(input, filterSize, _coefficients[k++].data(), filterSizeMinusOne - i) * gain;
         }
     }
     // Body
@@ -62,7 +65,7 @@ typename Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::Internal::MultiInstanc
         auto k = 0u;
         for (const auto gain : gains) {
             // std::cout << gain << std::endl;
-            output[i] = filterImpl(inputShifted + i, filterSize, _coefficients[k++].data()) * gain;
+            output[i] = filterImpl<Accumulate>(inputShifted + i, filterSize, _coefficients[k++].data()) * gain;
         }
     }
     // Save for last input
@@ -71,6 +74,7 @@ typename Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::Internal::MultiInstanc
 }
 
 template<unsigned InstanceCount, typename Type>
+template<bool Accumulate>
 typename Audio::DSP::FIR::ProcessType<Type> Audio::DSP::FIR::Internal::MultiInstance<InstanceCount, Type>::filterImpl(const Type *input, const std::uint32_t size, const Type *coefs, const std::uint32_t zeroPad) noexcept
 {
     const std::uint32_t realSize = size - zeroPad;

@@ -58,6 +58,7 @@ class Audio::DSP::FIR::Internal::Instance
 {
 public:
     /** @brief Perform filtering using convolution. */
+    template<bool Accumulate>
     VoidType<Type> filter(const Type *input, const std::uint32_t inputSize, Type *output, const Type outGain) noexcept;
 
     /** @brief Get the internal cache coefficients */
@@ -69,6 +70,7 @@ public:
     [[nodiscard]] Cache<Type> &lastInput(void) noexcept { return _lastInputCache; }
 
 private:
+    template<bool Accumulate>
     ProcessType<Type> filterImpl(const Type *input, const std::uint32_t size, const std::uint32_t zeroPad = 0ul) noexcept;
 
     /** @brief Filter cache coefficients */
@@ -82,6 +84,7 @@ class Audio::DSP::FIR::Internal::MultiInstance
 {
 public:
     /** @brief Perform filtering using convolution and gains for each instance */
+    template<bool Accumulate>
     VoidType<Type> filter(const Type *input, const std::uint32_t inputSize, Type *output, const GainArray<InstanceCount> &gains) noexcept;
 
     /** @brief Get the internal cache coefficients */
@@ -93,6 +96,7 @@ public:
     [[nodiscard]] Cache<Type> &lastInput(void) noexcept { return _lastInputCache; }
 
 private:
+    template<bool Accumulate>
     ProcessType<Type> filterImpl(const Type *input, const std::uint32_t size, const Type *coef, const std::uint32_t zeroPad = 0ul) noexcept;
 
     /** @brief Filter cache coefficients */
@@ -131,7 +135,8 @@ public:
     void resizeLastInputCache(const std::uint32_t size) noexcept { _instance.lastInput().resize(size); }
 
     /** @brief Call the filter instance */
-    VoidType<Type> filter(const Type *input, const std::uint32_t inputSize, Type *output, const Type outGain = 1.0) noexcept { _instance.filter(input, inputSize, output, outGain); }
+    template<bool Accumulate = false>
+    VoidType<Type> filter(const Type *input, const std::uint32_t inputSize, Type *output, const Type outGain = 1.0) noexcept { _instance.template filter<Accumulate>(input, inputSize, output, outGain); }
 
 private:
     /** @brief Internal instance */
@@ -173,7 +178,7 @@ public:
     void resizeLastInputCache(const std::uint32_t size) noexcept { _instance.lastInput().resize(size); }
 
     /** @brief Call the filter instance */
-    template<typename GainType, std::uint32_t GainSize>
+    template<bool Accumutale = false, typename GainType, std::uint32_t GainSize>
     VoidType<Type> filter(const Type *input, const std::uint32_t inputSize, Type *output, const GainType(&gains)[GainSize]) noexcept;
 
 private:

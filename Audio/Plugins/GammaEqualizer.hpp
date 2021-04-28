@@ -45,7 +45,7 @@ public:
         ),
         REGISTER_CONTROL_EQUALIZER_BANDS(
             frequenyBands,
-            10000, // Hz
+            4000, // Hz
             2, // ::BandCount
             CONTROL_EQUALIZER_BAND_DEFAULT_RANGE()
         )

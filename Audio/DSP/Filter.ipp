@@ -81,9 +81,9 @@ inline void Audio::DSP::Filter::GenerateFilterHighPass(const FIRSpec specs, floa
         if constexpr (ProcessWindow)
             coef = ComputeWindow<false>(specs.windowType, i, size, true);
         if constexpr (Accumulate)
-            *window++ += coef * (Utils::sinc<true>(idx) - (cutoffRateBegin * Utils::sinc<true>(idx * cutoffRateBegin)) * specs.gain);
+            *window++ += coef * (Utils::sinc<true>(idx) - (cutoffRateBegin * Utils::sinc<true>(idx * cutoffRateBegin))) * specs.gain;
         else
-            *window++ = coef * (Utils::sinc<true>(idx) - (cutoffRateBegin * Utils::sinc<true>(idx * cutoffRateBegin)) * specs.gain);
+            *window++ = coef * (Utils::sinc<true>(idx) - (cutoffRateBegin * Utils::sinc<true>(idx * cutoffRateBegin))) * specs.gain;
     }
 }
 

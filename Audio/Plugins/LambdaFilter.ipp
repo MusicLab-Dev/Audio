@@ -49,7 +49,7 @@ inline void Audio::LambdaFilter::receiveAudio(BufferView output)
 
     const DB outGain = ConvertDecibelToRatio(static_cast<float>(outputVolume()));
 
-    /** @todo Remove this */
+    _filter.setCutoffs(static_cast<float>(cutoffFrequencyFrom()), static_cast<float>(cutoffFrequencyTo()));
     _filter.filter(_cache.data<float>(), audioSpecs().processBlockSize, out, outGain);
 
     // PrintRangeClip(output);
@@ -59,5 +59,8 @@ inline void Audio::LambdaFilter::sendAudio(const BufferViews &inputs)
 {
     if (!inputs.size())
         return;
-    DSP::Merge<float>(inputs, _cache, ConvertDecibelToRatio(static_cast<float>(inputGain() + outputVolume())), true);
+    const DB inGain = ConvertDecibelToRatio(static_cast<float>(
+        static_cast<bool>(byBass()) ? inputGain() + outputVolume() : inputGain()
+    ));
+    DSP::Merge<float>(inputs, _cache, inGain, true);
 }

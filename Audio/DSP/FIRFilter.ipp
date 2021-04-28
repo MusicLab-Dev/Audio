@@ -130,14 +130,16 @@ inline void Audio::DSP::FIR::BandFilter<InstanceCount, Type>::init(const Audio::
 }
 
 template<unsigned InstanceCount, typename Type>
-template<typename GainType, std::uint32_t GainSize>
+template<bool Accumulate, typename GainType, std::uint32_t GainSize>
 typename Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::BandFilter<InstanceCount, Type>::filter(const Type *input, const std::uint32_t inputSize, Type *output, const GainType(&gains)[GainSize]) noexcept
 {
+    // std::cout << "FIlter:::" << std::endl;
     // ASSERT GainSize == InstanceCount
     auto ProcessGainUpdate = [&](const std::uint32_t filterIndex, const auto gain, const auto newGain) -> bool
     {
         if (gain == newGain)
             return false;
+        std::cout << "  update(" << filterIndex << "): " << gain << " -> " << newGain << std::endl;
         _gain[filterIndex] = newGain;
         switch (filterIndex) {
         case 0u:
@@ -155,24 +157,28 @@ typename Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::BandFilter<InstanceCou
 
     bool updated { false };
     for (auto i = 0u; i < GainSize; ++i) {
-        if (ProcessGainUpdate(i, _gain[i], gains[i] && !updated))
+        if (ProcessGainUpdate(i, _gain[i], gains[i]) && !updated)
             updated = true;
     }
     if (updated) {
-        mergeToInstance();
+        // mergeToInstance();
     }
     UNUSED(input);
     UNUSED(inputSize);
     UNUSED(output);
-    _instance.filter(input, inputSize, output, 1.0f);
+    for (auto i = 0u; i < InstanceCount; ++i) {
+
+        _instance.template filter<Accumulate>(input, inputSize, output, 1.0f);
+    }
 }
 
 template<unsigned InstanceCount, typename Type>
 inline void Audio::DSP::FIR::BandFilter<InstanceCount, Type>::mergeToInstance(void) noexcept
 {
     for (auto k = 0u; k < _filterSize; ++k) {
-        _instance.coefficients()[k] = _coefficients[0][k];
+        _instance.coefficients()[k] = _coefficients[0][k] * 2;
     }
+    return;
     for (auto i = 1u; i < InstanceCount; ++i) {
         for (auto k = 0u; k < _filterSize; ++k) {
             _instance.coefficients()[k] += _coefficients[i][k];
@@ -185,7 +191,8 @@ inline void Audio::DSP::FIR::BandFilter<InstanceCount, Type>::reloadAll(void) no
 {
     auto rootFreq = (InstanceCount == 10 ? TenBandFilterRootFrequency :  MinBandFilterRootFrequency);
     // Take the centered frequency
-    rootFreq = rootFreq * 3 / 2;
+    if constexpr (InstanceCount != MinBandFilterSize)
+        rootFreq = rootFreq * 3 / 2;
     // Low-pass filters
     reloadLowPass(rootFreq, 1.0f);
     // Band-pass filters

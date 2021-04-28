@@ -10,7 +10,7 @@
 
 inline void Audio::GammaEqualizer::onAudioGenerationStarted(const BeatRange &range)
 {
-    // std::cout << ">> onAudioGenerationStarted" << std::endl;
+    std::cout << ">> onAudioGenerationStarted" << std::endl;
     UNUSED(range);
     _filter.init(
         DSP::Filter::WindowType::Hanning,
@@ -30,11 +30,10 @@ inline void Audio::GammaEqualizer::receiveAudio(BufferView output)
         std::memcpy(out, _cache.data<float>(), output.size<std::uint8_t>());
         return;
     }
-    const DB outGain = ConvertDecibelToRatio(static_cast<float>(outputVolume()));
 
     _filter.filter(_cache.data<float>(), audioSpecs().processBlockSize, out, {
-        ConvertDecibelToRatio(static_cast<float>(frequenyBands_0()) + outGain),
-        ConvertDecibelToRatio(static_cast<float>(frequenyBands_1()) + outGain)
+        ConvertDecibelToRatio(static_cast<float>(frequenyBands_0() + outputVolume())),
+        ConvertDecibelToRatio(static_cast<float>(frequenyBands_1() + outputVolume()))
         // ConvertDecibelToRatio(frequenyBands_2()),
         // ConvertDecibelToRatio(frequenyBands_3()),
         // ConvertDecibelToRatio(frequenyBands_4()),
@@ -52,5 +51,8 @@ inline void Audio::GammaEqualizer::sendAudio(const BufferViews &inputs)
 {
     if (!inputs.size())
         return;
-    DSP::Merge<float>(inputs, _cache, ConvertDecibelToRatio(static_cast<float>(inputGain() + outputVolume())), true);
+    const DB inGain = ConvertDecibelToRatio(static_cast<float>(
+        static_cast<bool>(byBass()) ? inputGain() + outputVolume() : inputGain()
+    ));
+    DSP::Merge<float>(inputs, _cache, inGain, true);
 }

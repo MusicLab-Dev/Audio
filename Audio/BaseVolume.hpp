@@ -28,9 +28,19 @@ namespace Audio
 
     /** @brief Convert a decibel value to sample unit */
     template<typename Type>
-    [[nodiscard]] inline Type ConvertDecibelToSample(const DB value) noexcept { return static_cast<Type>(std::pow(10.0f, value / 20.0f) * std::numeric_limits<Type>::max()); }
+    [[nodiscard]] inline Type ConvertDecibelToSample(const DB value) noexcept
+    {
+        if (value == 0.0f)
+            return 1.0f;
+        return static_cast<Type>(std::pow(10.0f, value / 20.0f) * std::numeric_limits<Type>::max());
+    }
 
     /** @brief Convert a decibel value to sample unit */
-    [[nodiscard]] inline DB ConvertDecibelToRatio(const DB value) noexcept { return std::pow(10.0f, value / 20.0f); }
+    [[nodiscard]] inline DB ConvertDecibelToRatio(const DB value) noexcept
+    {
+        if (value == 0.0f)
+            return 1.0f;
+        return std::pow(10.0f, value / 20.0f);
+    }
 
 }
