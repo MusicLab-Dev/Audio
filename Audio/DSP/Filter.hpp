@@ -87,17 +87,17 @@ namespace Audio::DSP::Filter
     /** @brief Design filter coefficients within a window with a run-time filter type */
     // template<bool Accumulate = false, BasicType Filter = BasicType::Default>
     // void GenerateFilter(const FIRSpec specs, float *window) noexcept;
-    template<bool ProcessWindow = false, bool Accumulate = false>
+    template<bool ProcessWindow = true, bool Accumulate = false>
     void GenerateFilter(const FIRSpec specs, float *window) noexcept;
 
 
-    template<bool ProcessWindow = false, bool Accumulate = false>
+    template<bool ProcessWindow = true, bool Accumulate = false>
     void GenerateFilterLowPass(const FIRSpec specs, float *window) noexcept;
-    template<bool ProcessWindow = false, bool Accumulate = false>
+    template<bool ProcessWindow = true, bool Accumulate = false>
     void GenerateFilterHighPass(const FIRSpec specs, float *window) noexcept;
-    template<bool ProcessWindow = false, bool Accumulate = false>
+    template<bool ProcessWindow = true, bool Accumulate = false>
     void GenerateFilterBandPass(const FIRSpec specs, float *window) noexcept;
-    template<bool ProcessWindow = false, bool Accumulate = false>
+    template<bool ProcessWindow = true, bool Accumulate = false>
     void GenerateFilterBandStop(const FIRSpec specs, float *window) noexcept;
 
     template<bool Accumulate = false>
