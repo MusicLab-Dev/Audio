@@ -76,7 +76,7 @@ inline void Audio::DSP::Filter::GenerateFilterHighPass(const FIRSpec specs, floa
     const std::size_t first = size / 2;
 
     for (auto i = 0ul; i < size; ++i) {
-        float idx = static_cast<float>(i - first);
+        float idx = static_cast<float>(static_cast<int>(i) - static_cast<int>(first));
         float coef = *window;
         if constexpr (ProcessWindow)
             coef = ComputeWindow<false>(specs.windowType, i, size, true);
@@ -100,7 +100,7 @@ inline void Audio::DSP::Filter::GenerateFilterBandPass(const FIRSpec specs, floa
     const std::size_t first = size / 2;
 
     for (auto i = 0ul; i < size; ++i) {
-        float idx = static_cast<float>(i - first);
+        float idx = static_cast<float>(static_cast<int>(i) - static_cast<int>(first));
         float coef = *window;
         if constexpr (ProcessWindow)
             coef = ComputeWindow<false>(specs.windowType, i, size, true);
@@ -121,7 +121,7 @@ inline void Audio::DSP::Filter::GenerateFilterBandStop(const FIRSpec specs, floa
     const std::size_t first = size / 2;
 
     for (auto i = 0ul; i < size; ++i) {
-        float idx = static_cast<float>(i - first);
+        float idx = static_cast<float>(static_cast<int>(i) - static_cast<int>(first));
         float coef = *window;
         if constexpr (ProcessWindow)
             coef = ComputeWindow<false>(specs.windowType, i, size, true);

@@ -161,15 +161,15 @@ typename Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::BandFilter<InstanceCou
             updated = true;
     }
     if (updated) {
-        // mergeToInstance();
+        mergeToInstance();
     }
     UNUSED(input);
     UNUSED(inputSize);
     UNUSED(output);
-    for (auto i = 0u; i < InstanceCount; ++i) {
-
-        _instance.template filter<Accumulate>(input, inputSize, output, 1.0f);
-    }
+    _instance.template filter<Accumulate>(input, inputSize, output, 1.0f);
+    // for (auto i = 0u; i < InstanceCount; ++i) {
+    //     _instance.template filter<Accumulate>(input, inputSize, output, 1.0f);
+    // }
 }
 
 template<unsigned InstanceCount, typename Type>
