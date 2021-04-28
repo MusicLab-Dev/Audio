@@ -50,16 +50,6 @@ inline void Audio::LambdaFilter::receiveAudio(BufferView output)
     const DB outGain = ConvertDecibelToRatio(static_cast<float>(outputVolume()));
 
     /** @todo Remove this */
-    _filter.setSpec(
-        DSP::Filter::FIRSpec {
-            DSP::Filter::BasicType::LowPass,
-            DSP::Filter::WindowType::Default,
-            63ul,
-            static_cast<float>(audioSpecs().sampleRate),
-            { static_cast<float>(cutoffFrequencyFrom()), static_cast<float>(cutoffFrequencyTo()) },
-            1.0
-        }
-    );
     _filter.filter(_cache.data<float>(), audioSpecs().processBlockSize, out, outGain);
 
     // PrintRangeClip(output);

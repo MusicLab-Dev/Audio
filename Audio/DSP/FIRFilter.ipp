@@ -124,7 +124,7 @@ inline void Audio::DSP::FIR::BandFilter<InstanceCount, Type>::init(const Audio::
     resetLastInputCache();
     // _filterType.resize(InstanceCount);
     // _cutoffs.resize(InstanceCount - 1);
-    if constexpr (InstanceCount == SmallBandFilterSize || InstanceCount == 2u) {
+    if constexpr (InstanceCount == TenBandFilterSize || InstanceCount == 2u) {
         reloadAll();
     }
 }
@@ -134,32 +134,36 @@ template<typename GainType, std::uint32_t GainSize>
 typename Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::BandFilter<InstanceCount, Type>::filter(const Type *input, const std::uint32_t inputSize, Type *output, const GainType(&gains)[GainSize]) noexcept
 {
     // ASSERT GainSize == InstanceCount
-    auto ProcessGainUpdate = [&](const std::uint32_t filterIndex, const auto gain, const auto newGain) -> void
+    auto ProcessGainUpdate = [&](const std::uint32_t filterIndex, const auto gain, const auto newGain) -> bool
     {
         if (gain == newGain)
-            return;
+            return false;
         _gain[filterIndex] = newGain;
         switch (filterIndex) {
         case 0u:
-            return reloadLowPass(SmallBandFilterRootFrequency, newGain);
+            reloadLowPass(TenBandFilterRootFrequency, newGain);
+            break;
         case InstanceCount - 1:
-            return reloadHighPass(static_cast<std::uint32_t>(SmallBandFilterRootFrequency) << (InstanceCount - 1u), newGain);
+            reloadHighPass(static_cast<std::uint32_t>(TenBandFilterRootFrequency) << (InstanceCount - 1u), newGain);
+            break;
         default:
-            return reloadBandPass(filterIndex, static_cast<std::uint32_t>(SmallBandFilterRootFrequency) << (filterIndex - 1u), newGain);
+            reloadBandPass(filterIndex, static_cast<std::uint32_t>(TenBandFilterRootFrequency) << (filterIndex - 1u), newGain);
+            break;
         }
+        return true;
     };
 
     bool updated { false };
     for (auto i = 0u; i < GainSize; ++i) {
-        ProcessGainUpdate(i, _gain[i], gains[i]);
-        updated = true;
+        if (ProcessGainUpdate(i, _gain[i], gains[i] && !updated))
+            updated = true;
     }
     if (updated) {
         mergeToInstance();
     }
-    // (void)input;
-    // (void)inputSize;
-    // (void)output;
+    UNUSED(input);
+    UNUSED(inputSize);
+    UNUSED(output);
     _instance.filter(input, inputSize, output, 1.0f);
 }
 
@@ -179,7 +183,9 @@ inline void Audio::DSP::FIR::BandFilter<InstanceCount, Type>::mergeToInstance(vo
 template<unsigned InstanceCount, typename Type>
 inline void Audio::DSP::FIR::BandFilter<InstanceCount, Type>::reloadAll(void) noexcept
 {
-    auto rootFreq = (InstanceCount == 10 ? SmallBandFilterRootFrequency :  MinBandFilterRootFrequency);
+    auto rootFreq = (InstanceCount == 10 ? TenBandFilterRootFrequency :  MinBandFilterRootFrequency);
+    // Take the centered frequency
+    rootFreq = rootFreq * 3 / 2;
     // Low-pass filters
     reloadLowPass(rootFreq, 1.0f);
     // Band-pass filters
@@ -187,7 +193,8 @@ inline void Audio::DSP::FIR::BandFilter<InstanceCount, Type>::reloadAll(void) no
         reloadBandPass(i, rootFreq, 1.0f);
         rootFreq *= 2.f;
     }
-    rootFreq *= 2.f;
+    if constexpr (InstanceCount != MinBandFilterSize)
+        rootFreq *= 2.f;
     // High-pass filters
     reloadHighPass(rootFreq, 1.0f);
     mergeToInstance();

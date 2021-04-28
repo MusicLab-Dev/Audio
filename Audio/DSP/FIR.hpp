@@ -144,14 +144,14 @@ template<unsigned InstanceCount, typename Type>
 class Audio::DSP::FIR::BandFilter
 {
     static constexpr auto MinBandFilterSize = 2u;
-    static constexpr auto SmallBandFilterSize = 10u;
+    static constexpr auto TenBandFilterSize = 10u;
 
     /** @brief Construct only for 2 or more instances */
     static_assert(InstanceCount >= MinBandFilterSize, "Audio::DSP::FIR::MultiFilter need at least 2 instances");
     // static_assert((InstanceCount == MinBandFilterSize) || (InstanceCount == SmallBandFilterSize), "Audio::DSP::FIR::MultiFilter only support 10 instances");
 
-    static constexpr float MinBandFilterRootFrequency = 10'000.0f;
-    static constexpr float SmallBandFilterRootFrequency = 32.0f;
+    static constexpr float MinBandFilterRootFrequency = 8'000.0f;
+    static constexpr float TenBandFilterRootFrequency = 32.0f;
 
 public:
     BandFilter(void) = default;
