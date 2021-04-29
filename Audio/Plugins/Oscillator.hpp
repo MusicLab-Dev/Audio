@@ -104,7 +104,7 @@ class Audio::Oscillator final : public Audio::IPlugin
         };
 
         float tunning { 0.f };
-        Waveform waveform { Waveform::Saw };
+        Waveform waveform { Waveform::Sine };
     };
 
 public:
@@ -142,7 +142,7 @@ private:
     }
 
     template<bool Accumulate = true, typename Type>
-    void generateWaveform(const Osc &oscillator, Type *output, const std::size_t outputSize,
+    void generateWaveform(const Osc::Waveform waveform, Type *output, const std::size_t outputSize,
             const float frequency, const SampleRate sampleRate, const std::uint32_t phaseOffset, const Key key, const bool trigger, const DB gain) noexcept;
 
     template<bool Accumulate, typename Type>

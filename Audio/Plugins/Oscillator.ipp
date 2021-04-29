@@ -46,7 +46,7 @@ inline void Audio::Oscillator::receiveAudio(BufferView output)
         // const auto readSize = nextReadIndex < 0 ? outSize + nextReadIndex : outSize;
 
         // std::cout << "freq: " << frequency << std::endl;
-        generateWaveform<true>(_oscillator, out, outSize, frequency, audioSpecs().sampleRate, phaseIndex, key, trigger, voiceGain);//1.f / static_cast<Type>(activeNote.size()));
+        generateWaveform<true>(static_cast<Osc::Waveform>(waveform()), out, outSize, frequency, audioSpecs().sampleRate, phaseIndex, key, trigger, voiceGain);//1.f / static_cast<Type>(activeNote.size()));
         // const auto g = getEnveloppeGain(key, phaseIndex, trigger);
         _noteManager.incrementReadIndex(key, 0ul, audioSpecs().processBlockSize);
         // std::cout << g << std::endl;
@@ -79,11 +79,11 @@ inline void Audio::Oscillator::receiveAudio(BufferView output)
 
 template<bool Accumulate, typename Type>
 inline void Audio::Oscillator::generateWaveform(
-        const Osc &oscillator, Type *output, const std::size_t outputSize,
+        const Osc::Waveform waveform, Type *output, const std::size_t outputSize,
         const float frequency, const SampleRate sampleRate, const std::uint32_t phaseOffset,
         const Key key, const bool trigger, const DB gain) noexcept
 {
-    switch (oscillator.waveform) {
+    switch (waveform) {
     case Osc::Waveform::Sine:
         return generateSine<Accumulate>(output, outputSize, frequency, sampleRate, phaseOffset, key, trigger, gain);
     case Osc::Waveform::Square:

@@ -19,7 +19,16 @@ inline void Audio::Mixer::receiveAudio(BufferView output)
     // const auto size = output.size<float>();
     // const float *out = output.data<float>();
 
-    // std::cout << "MIXER SIZE: " << _cache.size() << std::endl;
+    // std::cout << "MIXER receive " << _cache.size() << " buffers" << std::endl;
+
+    // {
+    //     auto i = 0;
+    //     for (auto &v : _cache) {
+    //         if (std::all_of(v.data<float>(), v.data<float>() + audioSpecs().processBlockSize, [](const auto val) { return val == 0.0f; });
+    //             std::cout << "Mixer index " << i << " is a null buffer" << std::endl;
+    //     }
+    //     ++i;
+    // }
 
     DSP::Merge<float>(_cache, output, ConvertDecibelToRatio(static_cast<float>(masterVolume())), false);
 
@@ -33,7 +42,7 @@ inline void Audio::Mixer::receiveAudio(BufferView output)
             max = std::max(out[i], max);
         }
         if (min <= -1 || max >= 1)
-            std::cout << "<<<CLIPING>>>" << std::endl;
+            std::cout << "<<<CLIPING>>> " << min << ", " << max << std::endl;
         // else
         //     std::cout << std::setprecision(4) << "min: " << min << ", max: " << max << std::endl;
     };

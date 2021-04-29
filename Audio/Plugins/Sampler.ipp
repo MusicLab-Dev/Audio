@@ -56,6 +56,7 @@ inline void Audio::Sampler::sendNotes(const NoteEvents &notes)
 
 inline void Audio::Sampler::receiveAudio(BufferView output)
 {
+    const DB outGain = ConvertDecibelToRatio(static_cast<float>(outputVolume()));
     const std::uint32_t outSize = static_cast<std::uint32_t>(output.size<float>());
     float *out = reinterpret_cast<float *>(output.byteData());
 
@@ -89,7 +90,7 @@ inline void Audio::Sampler::receiveAudio(BufferView output)
 
             for (auto i = 0u; i < readSize; ++i) {
                 const auto idx = baseIndex + i;
-                out[i] += sampleBuffer[idx] * getEnveloppeGain(key, idx, _noteManager.trigger(key));
+                out[i] += sampleBuffer[idx] * getEnveloppeGain(key, idx, _noteManager.trigger(key)) * outGain;
             }
             _noteManager.incrementReadIndex(key, sampleSize, readSize);
         }
@@ -107,7 +108,7 @@ inline void Audio::Sampler::receiveAudio(BufferView output)
             // Apply enveloppe
             for (auto i = 0u; i < readSize; ++i) {
                 const auto idx = _noteManager.readIndex(key) + i;
-                out[i] *= getEnveloppeGain(key, idx, _noteManager.trigger(key));
+                out[i] *= getEnveloppeGain(key, idx, _noteManager.trigger(key)) * outGain;
             }
             _noteManager.incrementReadIndex(key, resampleSize, readSize);
         }

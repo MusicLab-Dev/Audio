@@ -14,16 +14,14 @@ void Audio::DSP::Merge(const BufferViews inputs, BufferView output, const DB rat
     if (!inputSize)
         return;
     Type *to = output.data<Type>();
-    for (auto i = 0u; i < 1u; ++i) {
-        const Type *from = inputs[0].data<Type>();
-        for (auto k = 0u; k < outputSize; ++k) {
-            to[k] = from[k];
-        }
+    // Copy first input
+    const Type *from = inputs[0].data<Type>();
+    for (auto k = 0u; k < outputSize; ++k) {
+        to[k] = from[k];
     }
+    // Merge other inputs
     for (auto i = 1u; i < inputSize; ++i) {
-        const Type *from = inputs[0].data<Type>();
-
-        from = inputs[1].data<Type>();
+        const Type *from = inputs[i].data<Type>();
         for (auto k = 0u; k < outputSize; ++k) {
             to[k] += from[k];
         }

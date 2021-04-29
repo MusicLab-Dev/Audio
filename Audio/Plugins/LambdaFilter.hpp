@@ -57,11 +57,11 @@ class Audio::LambdaFilter final : public Audio::IPlugin
         REGISTER_CONTROL_EFFECT_BYPASS(
             byBass
         ),
-        REGISTER_CONTROL_OUTPUT_VOLUME(
-            toto,
-            0.0,
-            CONTROL_RANGE(-12.0, 12.0)
-        ),
+        // REGISTER_CONTROL_OUTPUT_VOLUME(
+        //     toto,
+        //     0.0,
+        //     CONTROL_RANGE(-12.0, 12.0)
+        // ),
         REGISTER_CONTROL_ENUM(
             /* Control variable / getter / setter name */
             filterType,
