@@ -32,8 +32,8 @@ inline void Audio::GammaEqualizer::receiveAudio(BufferView output)
     }
 
     _filter.filter(_cache.data<float>(), audioSpecs().processBlockSize, out, {
-        ConvertDecibelToRatio(static_cast<float>(frequenyBands_0() + outputVolume())),
-        ConvertDecibelToRatio(static_cast<float>(frequenyBands_1() + outputVolume()))
+        ConvertDecibelToRatio(static_cast<float>(frequenyBands_1() + outputVolume())),
+        ConvertDecibelToRatio(static_cast<float>(frequenyBands_0() + outputVolume()))
         // ConvertDecibelToRatio(frequenyBands_2()),
         // ConvertDecibelToRatio(frequenyBands_3()),
         // ConvertDecibelToRatio(frequenyBands_4()),

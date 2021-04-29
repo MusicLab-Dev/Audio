@@ -44,6 +44,21 @@ inline bool Audio::DSP::FIR::BasicFilter<Type>::setCutoffs(const float cutoffFro
 }
 
 template<typename Type>
+inline bool Audio::DSP::FIR::BasicFilter<Type>::_setGain(const DB gain) noexcept
+{
+    return setSpec(
+        Filter::FIRSpec {
+            _spec.filterType,
+            _spec.windowType,
+            _spec.size,
+            _spec.sampleRate,
+            { _spec.cutoffs[0], _spec.cutoffs[1] },
+            gain
+        }
+    );
+}
+
+template<typename Type>
 inline bool Audio::DSP::FIR::BasicFilter<Type>::setSampleRate(const float sampleRate) noexcept
 {
     return setSpec(
@@ -143,13 +158,13 @@ typename Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::BandFilter<InstanceCou
         _gain[filterIndex] = newGain;
         switch (filterIndex) {
         case 0u:
-            reloadLowPass(TenBandFilterRootFrequency, newGain);
+            reloadLowPass(RootFrequency, newGain);
             break;
         case InstanceCount - 1:
-            reloadHighPass(static_cast<std::uint32_t>(TenBandFilterRootFrequency) << (InstanceCount - 1u), newGain);
+            reloadHighPass(static_cast<std::uint32_t>(RootFrequency) << (InstanceCount - 1u), newGain);
             break;
         default:
-            reloadBandPass(filterIndex, static_cast<std::uint32_t>(TenBandFilterRootFrequency) << (filterIndex - 1u), newGain);
+            reloadBandPass(filterIndex, static_cast<std::uint32_t>(RootFrequency) << (filterIndex - 1u), newGain);
             break;
         }
         return true;

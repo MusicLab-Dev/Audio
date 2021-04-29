@@ -78,13 +78,21 @@ class Audio::SigmaFilter final : public Audio::IPlugin
             ),
             /* Control name */
             TR_TABLE(
-                TR(English, "Second cutoff frequency"),
-                TR(French, "Deuxième fréquence de coupure")
+                TR(English, "Filter type"),
+                TR(French, "Type de filtre")
             ),
             /* Control's description */
             TR_TABLE(
-                TR(English, "First cutoff frequency"),
-                TR(French, "Deuxième fréquence de coupure")
+                TR(English, "Filter type"),
+                TR(French, "Type de filtre")
+            ),
+            /* Control's short name */
+            TR_TABLE(
+                TR(English, "Type")
+            ),
+            /* Control's unit */
+            TR_TABLE(
+                TR(English, "hertz")
             )
         )
     )

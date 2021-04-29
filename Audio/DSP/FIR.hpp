@@ -116,6 +116,8 @@ public:
     /** @brief Initialize the internal filter spec */
     void init(const DSP::Filter::FIRSpec &spec) noexcept;
 
+
+    bool _setGain(const DB gain) noexcept;
     /** @brief Set the internal spec. It will recompute the instance coefficients */
     bool setSpec(const DSP::Filter::FIRSpec &spec) noexcept;
     /** @brief Set the internal cutoffs */
@@ -150,13 +152,18 @@ class Audio::DSP::FIR::BandFilter
 {
     static constexpr auto MinBandFilterSize = 2u;
     static constexpr auto TenBandFilterSize = 10u;
+    static constexpr float MinBandFilterRootFrequency = 8'000.0f;
+    static constexpr float TenBandFilterRootFrequency = 32.0f;
+
+    static constexpr auto RootFrequency = (
+        (InstanceCount == MinBandFilterSize) ? MinBandFilterRootFrequency :
+        (InstanceCount == TenBandFilterSize) ? TenBandFilterRootFrequency :
+        MinBandFilterRootFrequency
+    );
 
     /** @brief Construct only for 2 or more instances */
     static_assert(InstanceCount >= MinBandFilterSize, "Audio::DSP::FIR::MultiFilter need at least 2 instances");
     // static_assert((InstanceCount == MinBandFilterSize) || (InstanceCount == SmallBandFilterSize), "Audio::DSP::FIR::MultiFilter only support 10 instances");
-
-    static constexpr float MinBandFilterRootFrequency = 8'000.0f;
-    static constexpr float TenBandFilterRootFrequency = 32.0f;
 
 public:
     BandFilter(void) = default;

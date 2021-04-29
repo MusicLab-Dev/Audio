@@ -43,6 +43,8 @@ inline void Audio::DSP::Filter::GenerateFilter(const FIRSpec specs, float *windo
     }
 }
 
+#include <iostream>
+
 template<bool ProcessWindow, bool Accumulate>
 inline void Audio::DSP::Filter::GenerateFilterLowPass(const FIRSpec specs, float *window) noexcept
 {
@@ -52,6 +54,8 @@ inline void Audio::DSP::Filter::GenerateFilterLowPass(const FIRSpec specs, float
     const std::size_t size = specs.size;
     const float cutoffRateBegin = 2.0f * specs.cutoffs[0] / specs.sampleRate;
     const std::size_t first = size / 2;
+
+    std::cout << "Low-pass gain: " << specs.gain << std::endl;
 
     for (auto i = 0ul; i < size; ++i) {
         float idx = static_cast<float>(static_cast<int>(i) - static_cast<int>(first));
@@ -74,6 +78,8 @@ inline void Audio::DSP::Filter::GenerateFilterHighPass(const FIRSpec specs, floa
     const std::size_t size = specs.size;
     const float cutoffRateBegin = 2.0f * specs.cutoffs[0] / specs.sampleRate;
     const std::size_t first = size / 2;
+
+    std::cout << "High-pass gain: " << specs.gain << std::endl;
 
     for (auto i = 0ul; i < size; ++i) {
         float idx = static_cast<float>(static_cast<int>(i) - static_cast<int>(first));
