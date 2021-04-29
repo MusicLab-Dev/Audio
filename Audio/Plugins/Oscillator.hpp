@@ -47,6 +47,49 @@ class Audio::Oscillator final : public Audio::IPlugin
             enveloppeDecay, 0.2, CONTROL_RANGE(0.0, 10.0),
             enveloppeSustain, 0.8, CONTROL_RANGE(0.0, 1.0),
             enveloppeRelease, 0.2, CONTROL_RANGE(0.0, 10.0)
+        ),
+        REGISTER_CONTROL_ENUM(
+            waveform,
+            CONTROL_ENUM_RANGE(
+                TR_TABLE(
+                    TR(English, "Sine"),
+                    TR(French, "Sinus")
+                ),
+                TR_TABLE(
+                    TR(English, "Square"),
+                    TR(French, "Carré")
+                ),
+                TR_TABLE(
+                    TR(English, "Triangle"),
+                    TR(French, "Triangle")
+                ),
+                TR_TABLE(
+                    TR(English, "Saw"),
+                    TR(French, "Scie")
+                ),
+                TR_TABLE(
+                    TR(English, "Error"),
+                    TR(French, "Error")
+                )
+            ),
+            /* Control name */
+            TR_TABLE(
+                TR(English, "Oscillator waveform"),
+                TR(French, "Type d'onde de l'oscillateur")
+            ),
+            /* Control's description */
+            TR_TABLE(
+                TR(English, "Oscillator waveform"),
+                TR(French, "Type d'onde de l'oscillateur")
+            ),
+            /* Control's short name */
+            TR_TABLE(
+                TR(English, "Wave")
+            ),
+            /* Control's unit */
+            TR_TABLE(
+                TR(English, "pi")
+            )
         )
     )
 
