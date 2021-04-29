@@ -1,9 +1,6 @@
 /**
- * @file PluginControlUtils.hpp
- * @brief Plugin control macros utils
- *
- * @author Pierre V
- * @date 2021-04-23
+ * @ Author: Pierre Veysseyre
+ * @ Description: Plugin control macros utils
  */
 
 #include "PluginUtils.hpp"
@@ -12,8 +9,8 @@
  * @brief Helper for enveloppe generator controls
  */
 #define REGISTER_CONTROL_ENVELOPPE_ATTACK(Name, Value, Range) \
-    REGISTER_CONTROL( \
-        Floating, Name, Value, Range, \
+    REGISTER_CONTROL_FLOATING( \
+        Name, Value, Range, \
         TR_TABLE( \
             TR(English, "Enveloppe attack"), \
             TR(French, "Attaque de l'enveloppe") \
@@ -21,12 +18,18 @@
         TR_TABLE( \
             TR(English, "Attack duration used by the enveloppe to determine volume gain"), \
             TR(French, "Durée pour atteindre le volume maximum") \
+        ), \
+        TR_TABLE( \
+            TR(English, "Atk") \
+        ), \
+        TR_TABLE( \
+            TR(English, "seconds") \
         ) \
     )
 
 #define REGISTER_CONTROL_ENVELOPPE_DECAY(Name, Value, Range) \
-    REGISTER_CONTROL( \
-        Floating, Name, Value, Range, \
+    REGISTER_CONTROL_FLOATING( \
+        Name, Value, Range, \
         TR_TABLE( \
             TR(English, "Enveloppe decay"), \
             TR(French, "Chute de l'enveloppe") \
@@ -34,12 +37,18 @@
         TR_TABLE( \
             TR(English, "Decay duration used by the enveloppe to determine volume gain"), \
             TR(French, "Durée pour atteindre le volume intermédiaire (sustain)") \
+        ), \
+        TR_TABLE( \
+            TR(English, "Dec") \
+        ), \
+        TR_TABLE( \
+            TR(English, "seconds") \
         ) \
     )
 
 #define REGISTER_CONTROL_ENVELOPPE_SUSTAIN(Name, Value, Range) \
-    REGISTER_CONTROL( \
-        Floating, Name, Value, Range, \
+    REGISTER_CONTROL_FLOATING( \
+        Name, Value, Range, \
         TR_TABLE( \
             TR(English, "Enveloppe sustain"), \
             TR(French, "Niveau intermédiaire de l'enveloppe") \
@@ -47,12 +56,18 @@
         TR_TABLE( \
             TR(English, "Sustain duration used by the enveloppe to determine volume gain"), \
             TR(French, "Volume intermédiaire utilisé tant qu'une note est jouée") \
+        ), \
+        TR_TABLE( \
+            TR(English, "Sus") \
+        ), \
+        TR_TABLE( \
+            TR(English, "seconds") \
         ) \
     )
 
 #define REGISTER_CONTROL_ENVELOPPE_RELEASE(Name, Value, Range) \
-    REGISTER_CONTROL( \
-        Floating, Name, Value, Range, \
+    REGISTER_CONTROL_FLOATING( \
+        Name, Value, Range, \
         TR_TABLE( \
             TR(English, "Enveloppe release"), \
             TR(French, "Extinction de l'enveloppe") \
@@ -60,6 +75,12 @@
         TR_TABLE( \
             TR(English, "Release duration used by the enveloppe to determine volume gain"), \
             TR(French, "Durée pour atteindre un volume nul utilisée lorsqu'une note s'arrête de jouer") \
+        ), \
+        TR_TABLE( \
+            TR(English, "Rel") \
+        ), \
+        TR_TABLE( \
+            TR(English, "seconds") \
         ) \
     )
 
@@ -74,8 +95,8 @@
 #define CONTROL_DEFAULT_INPUT_GAIN_RANGE() CONTROL_RANGE_STEP(-48.0, 12.0, 0.1)
 
 #define REGISTER_CONTROL_OUTPUT_VOLUME(Name, Value, Range) \
-    REGISTER_CONTROL( \
-        Floating, Name, Value, Range, \
+    REGISTER_CONTROL_FLOATING( \
+        Name, Value, Range, \
         TR_TABLE( \
             TR(English, "Output volume"), \
             TR(French, "Volume de sortie") \
@@ -83,12 +104,18 @@
         TR_TABLE( \
             TR(English, "Output volume of the plugin"), \
             TR(French, "Volume de sortie du plugin") \
+        ), \
+        TR_TABLE( \
+            TR(English, "Out") \
+        ), \
+        TR_TABLE( \
+            TR(English, "decibels") \
         ) \
     )
 
 #define REGISTER_CONTROL_INPUT_GAIN(Name, Value, Range) \
-    REGISTER_CONTROL( \
-        Floating, Name, Value, Range, \
+    REGISTER_CONTROL_FLOATING( \
+        Name, Value, Range, \
         TR_TABLE( \
             TR(English, "Input gain"), \
             TR(French, "Gain d'entrée") \
@@ -96,6 +123,12 @@
         TR_TABLE( \
             TR(English, "Input gain of the plugin"), \
             TR(French, "Gain d'entrée du plugin") \
+        ), \
+        TR_TABLE( \
+            TR(English, "In") \
+        ), \
+        TR_TABLE( \
+            TR(English, "decibels") \
         ) \
     )
 
@@ -107,8 +140,8 @@
 #define CONTROL_EQUALIZER_BAND_DEFAULT_VALUE() 0.0
 
 #define REGISTER_CONTROL_EFFECT_BYPASS(Name) \
-    REGISTER_CONTROL( \
-        Boolean, Name, 0, CONTROL_RANGE(0.0, 1.0), \
+    REGISTER_CONTROL_BOOLEAN( \
+        Name, 0, \
         TR_TABLE( \
             TR(English, "By-pass the effect"), \
             TR(French, "Désactive l'effet") \
@@ -116,12 +149,16 @@
         TR_TABLE( \
             TR(English, "By-pass the effect"), \
             TR(French, "Désactive l'effet") \
-        ) \
+        ), \
+        TR_TABLE( \
+            TR(English, "Byp") \
+        ), \
+        TR_TABLE() \
     )
 
 #define REGISTER_CONTROL_FILTER_CUTOFF(Name, Value, Range) \
-    REGISTER_CONTROL( \
-        Floating, Name, Value, Range, \
+    REGISTER_CONTROL_FLOATING( \
+        Name, Value, Range, \
         TR_TABLE( \
             TR(English, "Cutoff frequency"), \
             TR(French, "Fréquence de coupure") \
@@ -129,12 +166,18 @@
         TR_TABLE( \
             TR(English, "Cutoff frequency"), \
             TR(French, "Fréquence de coupure") \
+        ), \
+        TR_TABLE( \
+            TR(English, "Cut") \
+        ), \
+        TR_TABLE( \
+            TR(English, "hertz") \
         ) \
     )
 
 #define REGISTER_CONTROL_FILTER_CUTOFF_DESCRIPTION(Name, Value, Range, Description) \
-    REGISTER_CONTROL( \
-        Floating, Name, Value, Range, \
+    REGISTER_CONTROL_FLOATING( \
+        Name, Value, Range, \
         TR_TABLE( \
             TR(English, "Cutoff frequency " Description), \
             TR(French, "Fréquence de coupure " Description) \
@@ -142,28 +185,34 @@
         TR_TABLE( \
             TR(English, "Cutoff frequency " Description), \
             TR(French, "Fréquence de coupure " Description) \
+        ), \
+        TR_TABLE( \
+            TR(English, "Cut") \
+        ), \
+        TR_TABLE( \
+            TR(English, "hertz") \
         ) \
     )
 
-#define FOR_COMMA_RANGE(N, what, Name, StartFrequency, Count, Range)    _FOR_COMMA_RANGE_##N(what, Name, StartFrequency, Count, Range)
-#define _FOR_COMMA_RANGE_0(what)
-#define _FOR_COMMA_RANGE_1(what, Name, StartFrequency, Count, Range)    what(Name##_0, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz")
-#define _FOR_COMMA_RANGE_2(what, Name, StartFrequency, Count, Range)    what(Name##_1, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_COMMA_RANGE_1(what, Name, StartFrequency * 2, Count, Range)
-#define _FOR_COMMA_RANGE_3(what, Name, StartFrequency, Count, Range)    what(Name##_2, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_COMMA_RANGE_2(what, Name, StartFrequency * 2, Count, Range)
-#define _FOR_COMMA_RANGE_4(what, Name, StartFrequency, Count, Range)    what(Name##_3, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_COMMA_RANGE_3(what, Name, StartFrequency * 2, Count, Range)
-#define _FOR_COMMA_RANGE_5(what, Name, StartFrequency, Count, Range)    what(Name##_4, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_COMMA_RANGE_4(what, Name, StartFrequency * 2, Count, Range)
-#define _FOR_COMMA_RANGE_6(what, Name, StartFrequency, Count, Range)    what(Name##_5, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_COMMA_RANGE_5(what, Name, StartFrequency * 2, Count, Range)
-#define _FOR_COMMA_RANGE_7(what, Name, StartFrequency, Count, Range)    what(Name##_6, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_COMMA_RANGE_6(what, Name, StartFrequency * 2, Count, Range)
-#define _FOR_COMMA_RANGE_8(what, Name, StartFrequency, Count, Range)    what(Name##_7, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_COMMA_RANGE_7(what, Name, StartFrequency * 2, Count, Range)
-#define _FOR_COMMA_RANGE_9(what, Name, StartFrequency, Count, Range)    what(Name##_8, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_COMMA_RANGE_8(what, Name, StartFrequency * 2, Count, Range)
-#define _FOR_COMMA_RANGE_10(what, Name, StartFrequency, Count, Range)   what(Name##_9, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_COMMA_RANGE_9(what, Name, StartFrequency * 2, Count, Range)
-#define _FOR_COMMA_RANGE_11(what, Name, StartFrequency, Count, Range)   what(Name##_10, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_COMMA_RANGE_10(what, Name, StartFrequency * 2, Count, Range)
-#define _FOR_COMMA_RANGE_12(what, Name, StartFrequency, Count, Range)   what(Name##_11, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_COMMA_RANGE_11(what, Name, StartFrequency * 2, Count, Range)
-#define _FOR_COMMA_RANGE_13(what, Name, StartFrequency, Count, Range)   what(Name##_12, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_COMMA_RANGE_12(what, Name, StartFrequency * 2, Count, Range)
-#define _FOR_COMMA_RANGE_14(what, Name, StartFrequency, Count, Range)   what(Name##_13, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_COMMA_RANGE_13(what, Name, StartFrequency * 2, Count, Range)
-#define _FOR_COMMA_RANGE_15(what, Name, StartFrequency, Count, Range)   what(Name##_14, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_COMMA_RANGE_14(what, Name, StartFrequency * 2, Count, Range)
-#define _FOR_COMMA_RANGE_16(what, Name, StartFrequency, Count, Range)   what(Name##_15, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_COMMA_RANGE_15(what, Name, StartFrequency * 2, Count, Range)
+#define FOR_EACH_EQUALIZER_BAND(N, what, Name, StartFrequency, Count, Range)    _FOR_EACH_EQUALIZER_BAND_##N(what, Name, StartFrequency, Count, Range)
+#define _FOR_EACH_EQUALIZER_BAND_0(what)
+#define _FOR_EACH_EQUALIZER_BAND_1(what, Name, StartFrequency, Count, Range)    what(Name##_0, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz")
+#define _FOR_EACH_EQUALIZER_BAND_2(what, Name, StartFrequency, Count, Range)    what(Name##_1, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_EACH_EQUALIZER_BAND_1(what, Name, StartFrequency * 2, Count, Range)
+#define _FOR_EACH_EQUALIZER_BAND_3(what, Name, StartFrequency, Count, Range)    what(Name##_2, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_EACH_EQUALIZER_BAND_2(what, Name, StartFrequency * 2, Count, Range)
+#define _FOR_EACH_EQUALIZER_BAND_4(what, Name, StartFrequency, Count, Range)    what(Name##_3, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_EACH_EQUALIZER_BAND_3(what, Name, StartFrequency * 2, Count, Range)
+#define _FOR_EACH_EQUALIZER_BAND_5(what, Name, StartFrequency, Count, Range)    what(Name##_4, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_EACH_EQUALIZER_BAND_4(what, Name, StartFrequency * 2, Count, Range)
+#define _FOR_EACH_EQUALIZER_BAND_6(what, Name, StartFrequency, Count, Range)    what(Name##_5, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_EACH_EQUALIZER_BAND_5(what, Name, StartFrequency * 2, Count, Range)
+#define _FOR_EACH_EQUALIZER_BAND_7(what, Name, StartFrequency, Count, Range)    what(Name##_6, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_EACH_EQUALIZER_BAND_6(what, Name, StartFrequency * 2, Count, Range)
+#define _FOR_EACH_EQUALIZER_BAND_8(what, Name, StartFrequency, Count, Range)    what(Name##_7, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_EACH_EQUALIZER_BAND_7(what, Name, StartFrequency * 2, Count, Range)
+#define _FOR_EACH_EQUALIZER_BAND_9(what, Name, StartFrequency, Count, Range)    what(Name##_8, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_EACH_EQUALIZER_BAND_8(what, Name, StartFrequency * 2, Count, Range)
+#define _FOR_EACH_EQUALIZER_BAND_10(what, Name, StartFrequency, Count, Range)   what(Name##_9, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_EACH_EQUALIZER_BAND_9(what, Name, StartFrequency * 2, Count, Range)
+#define _FOR_EACH_EQUALIZER_BAND_11(what, Name, StartFrequency, Count, Range)   what(Name##_10, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_EACH_EQUALIZER_BAND_10(what, Name, StartFrequency * 2, Count, Range)
+#define _FOR_EACH_EQUALIZER_BAND_12(what, Name, StartFrequency, Count, Range)   what(Name##_11, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_EACH_EQUALIZER_BAND_11(what, Name, StartFrequency * 2, Count, Range)
+#define _FOR_EACH_EQUALIZER_BAND_13(what, Name, StartFrequency, Count, Range)   what(Name##_12, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_EACH_EQUALIZER_BAND_12(what, Name, StartFrequency * 2, Count, Range)
+#define _FOR_EACH_EQUALIZER_BAND_14(what, Name, StartFrequency, Count, Range)   what(Name##_13, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_EACH_EQUALIZER_BAND_13(what, Name, StartFrequency * 2, Count, Range)
+#define _FOR_EACH_EQUALIZER_BAND_15(what, Name, StartFrequency, Count, Range)   what(Name##_14, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_EACH_EQUALIZER_BAND_14(what, Name, StartFrequency * 2, Count, Range)
+#define _FOR_EACH_EQUALIZER_BAND_16(what, Name, StartFrequency, Count, Range)   what(Name##_15, CONTROL_EQUALIZER_BAND_DEFAULT_VALUE(), Range, #StartFrequency "Hz"), _FOR_EACH_EQUALIZER_BAND_15(what, Name, StartFrequency * 2, Count, Range)
 
 
 #define REGISTER_CONTROL_EQUALIZER_BANDS(Name, StartFrequency, Count, Range) \
-    FOR_COMMA_RANGE(Count, REGISTER_CONTROL_FILTER_CUTOFF_DESCRIPTION, Name, StartFrequency, Count, Range)
+    FOR_EACH_EQUALIZER_BAND(Count, REGISTER_CONTROL_FILTER_CUTOFF_DESCRIPTION, Name, StartFrequency, Count, Range)

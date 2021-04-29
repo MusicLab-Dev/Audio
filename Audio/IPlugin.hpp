@@ -85,11 +85,13 @@ namespace Audio
             ParamValue step {};
         };
 
-        TranslationMetaData translations;
-        ParamType type;
-        ParamValue defaultValue;
-        RangeValues rangeValues;
-        RangeNames rangeNames;
+        TranslationMetaData translations {};
+        TranslationTable shortNames {};
+        TranslationTable unitNames {};
+        ParamType type {};
+        ParamValue defaultValue {};
+        RangeValues rangeValues {};
+        RangeNames rangeNames {};
     };
 
     using ControlMetaDataList = Core::TinyVector<ControlMetaData>;
