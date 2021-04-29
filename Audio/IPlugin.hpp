@@ -32,6 +32,14 @@ namespace Audio
 
     using TranslationTable = Core::TinyVector<TranslationPair>;
 
+    /** @brief Try to find a translation */
+    [[nodiscard]] inline std::string_view FindTranslation(const TranslationTable &table, const std::string_view &lang)
+    {
+        if (const auto it = table.find([&lang](const auto &elem) { return elem.lang == lang; }); it != table.end())
+            return it->text;
+        return std::string_view();
+    }
+
     struct TranslationMetaData
     {
         TranslationTable names {};
@@ -40,17 +48,29 @@ namespace Audio
         /** @brief Try to find a name */
         [[nodiscard]] std::string_view getName(const std::string_view &lang) const noexcept
         {
-            if (const auto it = names.find([&lang](const auto &elem) { return elem.lang == lang; }); it != names.end())
-                return it->text;
-            return names.empty() ? std::string_view("Name-Error") : names[0].text;
+            std::string_view str;
+            if (names.empty())
+                str = std::string_view("Name-Error");
+            else {
+                str = FindTranslation(names, lang);
+                if (str.empty())
+                    str = names[0].text;
+            }
+            return str;
         }
 
         /** @brief Try to find a description */
         [[nodiscard]] std::string_view getDescription(const std::string_view &lang) const noexcept
         {
-            if (const auto it = descriptions.find([&lang](const auto &elem) { return elem.lang == lang; }); it != descriptions.end())
-                return it->text;
-            return descriptions.empty() ? std::string_view("Description-Error") : descriptions[0].text;
+            std::string_view str;
+            if (descriptions.empty())
+                str = std::string_view("Description-Error");
+            else {
+                str = FindTranslation(names, lang);
+                if (str.empty())
+                    str = descriptions[0].text;
+            }
+            return str;
         }
     };
 
