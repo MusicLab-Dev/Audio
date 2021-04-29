@@ -22,8 +22,8 @@ TEST(Sampler, MetaData)
     ASSERT_EQ(meta.translations.names[1].text, "Sampleur");
     ASSERT_EQ(meta.controls.size(), Sampler::ControlCount);
 
-    ASSERT_DOUBLE_EQ(cSampler.outputVolume(), DefaultPluginOutputVolume);
-    sampler.outputVolume() = 42.0;
+    ASSERT_DOUBLE_EQ(cSampler.outputVolume(), 0.0);
+    sampler.outputVolume(42.0);
     ASSERT_DOUBLE_EQ(cSampler.outputVolume(), 42.0);
 
     ASSERT_DOUBLE_EQ(cSampler.getControl(0), 42.0);
