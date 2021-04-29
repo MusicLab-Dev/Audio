@@ -13,14 +13,16 @@
 
 using namespace Audio;
 
-Buffer SampleManagerWAV::LoadFile(const std::string &path, SampleSpecs &specs, bool displaySpecs)
+Buffer SampleManagerWAV::LoadFile(const std::string &path, const SampleSpecs &desiredSpecs, SampleSpecs &fileSpecs, bool displaySpecs)
 {
     UNUSED(displaySpecs);
-    SDL_AudioSpec fileSpecs {};
+    UNUSED(desiredSpecs);
+
+    SDL_AudioSpec sdlFileSpecs {};
     std::uint8_t *sdlBuffer { nullptr };
     std::uint32_t sdlBufferByteSize { 0u };
 
-    if (!SDL_LoadWAV(path.c_str(), &fileSpecs, &sdlBuffer, &sdlBufferByteSize)) {
+    if (!SDL_LoadWAV(path.c_str(), &sdlFileSpecs, &sdlBuffer, &sdlBufferByteSize)) {
         std::cout << SDL_GetError() << std::endl;
         throw std::runtime_error("SampleManagerWAV::LoadFile: failed to load wave file: " + std::string(SDL_GetError()));
     }
@@ -40,26 +42,70 @@ Buffer SampleManagerWAV::LoadFile(const std::string &path, SampleSpecs &specs, b
         }
     };
 
-    std::size_t channelByteSize { static_cast<std::size_t>(sdlBufferByteSize) / static_cast<std::size_t>(fileSpecs.channels) };
-    Format format { GetFormatFromSDL(fileSpecs.format) };
-    ChannelArrangement channelArrangement { static_cast<ChannelArrangement>(fileSpecs.channels) };
-    SampleRate sampleRate { static_cast<SampleRate>(fileSpecs.freq) };
+    constexpr auto GetSDLFormat = [](const Format format) -> SDL_AudioFormat {
+        switch (format) {
+        case Format::Unknown:
+            return 0;
+        case Format::Floating32:
+            return AUDIO_F32;
+        case Format::Fixed32:
+            return AUDIO_S32;
+        case Format::Fixed16:
+            return AUDIO_S16;
+        case Format::Fixed8:
+            return AUDIO_S8;
+        default:
+            return AUDIO_F32;
+        }
+    };
+
+    std::size_t channelByteSize { static_cast<std::size_t>(sdlBufferByteSize) / static_cast<std::size_t>(sdlFileSpecs.channels) };
+    Format format { GetFormatFromSDL(sdlFileSpecs.format) };
+    ChannelArrangement channelArrangement { static_cast<ChannelArrangement>(sdlFileSpecs.channels) };
+    SampleRate sampleRate { static_cast<SampleRate>(sdlFileSpecs.freq) };
     Buffer fileBuffer(channelByteSize, sampleRate, channelArrangement, format);
 
-    specs.channelArrangement = channelArrangement;
-    specs.sampleRate = sampleRate;
-    specs.format = format;
-    specs.channelByteSize = channelByteSize;
+    fileSpecs.channelArrangement = channelArrangement;
+    fileSpecs.sampleRate = sampleRate;
+    fileSpecs.format = format;
+    fileSpecs.channelByteSize = channelByteSize;
 
-    std::memcpy(fileBuffer.data<std::uint8_t>(), sdlBuffer, sdlBufferByteSize);
+    // Convert to desired specs !
+    if ((desiredSpecs.sampleRate != fileSpecs.sampleRate) || (desiredSpecs.format != fileSpecs.format) || (desiredSpecs.channelArrangement != fileSpecs.channelArrangement)) {
+        // Setup SDL converter
+        std::cout << "SampleManagerWAV::LoadFile: CONVERTING" << std::endl;
+        SDL_AudioCVT sdlConverter {};
+        if (SDL_BuildAudioCVT(
+            &sdlConverter,
+            sdlFileSpecs.format, sdlFileSpecs.channels, sdlFileSpecs.freq,
+            GetSDLFormat(desiredSpecs.format), static_cast<std::uint8_t>(desiredSpecs.channelArrangement), static_cast<int>(desiredSpecs.sampleRate)
+        ) == -1) {
+            std::cout << SDL_GetError() << std::endl;
+            throw std::runtime_error("SampleManagerWAV::LoadFile: failed to convert audio file with desired specs: " + std::string(SDL_GetError()));
+        }
+        /** @todo Hmm, maybe remove this SDL_assert with a 'real' assertion ! */
+        SDL_assert(sdlConverter.needed);
+        sdlConverter.len = sdlBufferByteSize;
+        sdlConverter.buf = static_cast<std::uint8_t *>(std::malloc(sdlBufferByteSize * sdlConverter.len_mult));
+        std::memcpy(sdlConverter.buf, sdlBuffer, sdlBufferByteSize);
+        // Convert the audio
+        SDL_ConvertAudio(&sdlConverter);
+        fileBuffer.resize(static_cast<std::size_t>(sdlConverter.len_cvt) / static_cast<std::size_t>(desiredSpecs.channelArrangement), desiredSpecs.sampleRate, desiredSpecs.channelArrangement, desiredSpecs.format);
+        std::memcpy(fileBuffer.data<std::uint8_t>(), sdlConverter.buf, desiredSpecs.channelByteSize * static_cast<std::size_t>(desiredSpecs.channelArrangement));
+
+    } else {
+        std::memcpy(fileBuffer.data<std::uint8_t>(), sdlBuffer, sdlBufferByteSize);
+    }
+
     SDL_FreeWAV(sdlBuffer);
     return fileBuffer;
 }
 
-Buffer SampleManagerWAV::LoadFile_old(const std::string &path, SampleSpecs &specs, bool displaySpecs)
+Buffer SampleManagerWAV::LoadFile_old(const std::string &path, const SampleSpecs &desiredSpecs, SampleSpecs &fileSpecs, bool displaySpecs)
 {
     UNUSED(path);
-    UNUSED(specs);
+    UNUSED(desiredSpecs);
+    UNUSED(fileSpecs);
     UNUSED(displaySpecs);
 
     return Buffer();

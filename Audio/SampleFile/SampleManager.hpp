@@ -24,15 +24,15 @@ struct Audio::SampleManager
 {
     static const constexpr std::tuple<
         const char *,
-        Buffer(*)(const std::string &path, SampleSpecs &specs, bool displaySpecs),
+        Buffer(*)(const std::string &path, const SampleSpecs &desiredSpecs, SampleSpecs &fileSpecs, bool displaySpecs),
         bool(*)(const std::string &path, const BufferView &inputBuffer)
     > SupportedExtension[] {
         { SampleManagerWAV::Extension, &SampleManagerWAV::LoadFile, &SampleManagerWAV::WriteFile }
     };
 
-    [[nodiscard]] static Buffer LoadSampleFile(const std::string &path, SampleSpecs &specs, bool displaySpecs = false);
+    [[nodiscard]] static Buffer LoadSampleFile(const std::string &path, const SampleSpecs &desiredSpecs, SampleSpecs &fileSpecs, bool displaySpecs = false);
 
-    [[nodiscard]] static Buffer LoadSampleFileExtension(const std::string &path, const std::string &ext, SampleSpecs &specs, bool displaySpecs);
+    [[nodiscard]] static Buffer LoadSampleFileExtension(const std::string &path, const std::string &ext, const SampleSpecs &desiredSpecs, SampleSpecs &fileSpecs, bool displaySpecs);
 
     [[nodiscard]] static bool WriteSampleFile(const std::string &path, const BufferView &sample);
 

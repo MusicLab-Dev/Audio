@@ -4,21 +4,21 @@
  */
 
 template<typename Type, bool Normalize>
-inline Audio::Buffer Audio::SampleManager<Type, Normalize>::LoadSampleFile(const std::string &path, SampleSpecs &specs, bool displaySpecs)
+inline Audio::Buffer Audio::SampleManager<Type, Normalize>::LoadSampleFile(const std::string &path, const SampleSpecs &desiredSpecs, SampleSpecs &fileSpecs, bool displaySpecs)
 {
     auto ext = std::filesystem::path(path).extension();
     if (ext.empty())
         throw std::logic_error("Audio::SampleManager::LoadSampleFile: Cannot deduce file extension for '" + path + "'. Use 'SampleManager::LoadSampleFileExtension' with a desired extension instead.");
-    return LoadSampleFileExtension(path, ext.string(), specs, displaySpecs);
+    return LoadSampleFileExtension(path, ext.string(), desiredSpecs, fileSpecs, displaySpecs);
 }
 
 template<typename Type, bool Normalize>
-inline Audio::Buffer Audio::SampleManager<Type, Normalize>::LoadSampleFileExtension(const std::string &path, const std::string &ext, SampleSpecs &specs, bool displaySpecs)
+inline Audio::Buffer Audio::SampleManager<Type, Normalize>::LoadSampleFileExtension(const std::string &path, const std::string &ext, const SampleSpecs &desiredSpecs, SampleSpecs &fileSpecs, bool displaySpecs)
 {
     for (auto i = 0u; i < sizeof(SupportedExtension) / sizeof(std::pair<int, int>); ++i) {
         if (std::string(std::get<0>(SupportedExtension[i])) == ext) {
             /** @todo Convert buffer (if needed) into the templated type */
-            return std::get<1>(SupportedExtension[i])(path, specs, displaySpecs);
+            return std::get<1>(SupportedExtension[i])(path, desiredSpecs, fileSpecs, displaySpecs);
         }
     }
     throw std::runtime_error("Audio::SampleManager::LoadSampleFileExtension: Extension file not supported: '" + ext + "'.");

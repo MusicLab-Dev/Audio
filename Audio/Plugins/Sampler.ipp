@@ -11,8 +11,14 @@
 template<typename Type>
 inline void Audio::Sampler::loadSample(const std::string_view &path)
 {
-    SampleSpecs specs;
-    _buffers[OctaveRootKey] = SampleManager<Type>::LoadSampleFile(std::string(path), specs);
+    SampleSpecs fileSpecs {};
+    SampleSpecs desiredSpecs {
+        audioSpecs().sampleRate,
+        audioSpecs().channelArrangement,
+        audioSpecs().format,
+        0u
+    };
+    _buffers[OctaveRootKey] = SampleManager<Type>::LoadSampleFile(std::string(path), desiredSpecs, fileSpecs);
 
     GenerateOctave<Type>(_buffers[OctaveRootKey], _buffers);
 

@@ -65,10 +65,10 @@ struct Audio::SampleManagerWAV
     };
 
     /** @brief Load a audio WAV file into a buffer */
-    [[nodiscard]] static Buffer LoadFile_old(const std::string &path, SampleSpecs &specs, bool displaySpecs);
+    [[nodiscard]] static Buffer LoadFile_old(const std::string &path, const SampleSpecs &desiredSpecs, SampleSpecs &fileSpecs, bool displaySpecs);
     [[nodiscard]] static bool WriteFile(const std::string &path, const BufferView &inputBuffer);
 
-    [[nodiscard]] static Buffer LoadFile(const std::string &path, SampleSpecs &specs, bool displaySpecs);
+    [[nodiscard]] static Buffer LoadFile(const std::string &path, const SampleSpecs &desiredSpecs, SampleSpecs &fileSpecs, bool displaySpecs);
 
 private:
     template<typename Type>
