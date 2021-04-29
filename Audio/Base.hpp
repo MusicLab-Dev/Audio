@@ -96,7 +96,7 @@ namespace Audio
     struct AudioSpecs
     {
         SampleRate sampleRate { 0u };
-        ChannelArrangement channelArrangement { 0u };
+        ChannelArrangement channelArrangement { ChannelArrangement::Mono };
         Format format { Format::Floating32 };
         std::uint32_t processBlockSize { 0u };
 
@@ -105,6 +105,15 @@ namespace Audio
             { return sampleRate == other.sampleRate && channelArrangement == other.channelArrangement &&
                 format == other.format && processBlockSize == other.processBlockSize; }
         [[nodiscard]] bool operator!=(const AudioSpecs &other) const noexcept { return !(*this == other); }
+    };
+
+    /** @brief Decribe the sample specs behavior */
+    struct SampleSpecs
+    {
+        SampleRate sampleRate { 0u };
+        ChannelArrangement channelArrangement { ChannelArrangement::Mono };
+        Format format { Format::Floating32 };
+        std::size_t channelByteSize { 0u };
     };
 
     /** @brief Make a combination of flags out of an enum class */
