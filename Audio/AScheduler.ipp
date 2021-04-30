@@ -190,6 +190,9 @@ inline void Audio::AScheduler::buildGraph(void)
     else
         parent = _project->master().get();
 
+    if (!parent)
+        return;
+
     auto &graph = this->graph<Playback>();
     auto conditional = graph.emplace([this] {
         if (_overflowCache) {
