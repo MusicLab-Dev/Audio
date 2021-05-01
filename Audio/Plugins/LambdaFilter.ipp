@@ -15,7 +15,7 @@ inline void Audio::LambdaFilter::onAudioGenerationStarted(const BeatRange &range
         DSP::Filter::FIRSpec {
             static_cast<DSP::Filter::BasicType>(filterType()),
             DSP::Filter::WindowType::Hanning,
-            63ul,
+            33ul,
             static_cast<float>(audioSpecs().sampleRate),
             { static_cast<float>(cutoffFrequencyFrom()), static_cast<float>(cutoffFrequencyTo()) },
             1.0f
@@ -50,7 +50,16 @@ inline void Audio::LambdaFilter::receiveAudio(BufferView output)
     const DB outGain = ConvertDecibelToRatio(static_cast<float>(outputVolume()));
 
     // _filter._setGain(ConvertDecibelToRatio(static_cast<DB>(toto())));
-    _filter.setCutoffs(static_cast<float>(cutoffFrequencyFrom()), static_cast<float>(cutoffFrequencyTo()));
+    _filter.setSpec(DSP::Filter::FIRSpec {
+        static_cast<DSP::Filter::BasicType>(filterType()),
+        DSP::Filter::WindowType::Default,
+        33ul,
+        static_cast<float>(audioSpecs().sampleRate),
+        { static_cast<float>(cutoffFrequencyFrom()), static_cast<float>(cutoffFrequencyTo()) },
+        1.0f
+    });
+    // _filter.setFilterType(static_cast<DSP::Filter::BasicType>(filterType()));
+    // _filter.setCutoffs(static_cast<float>(cutoffFrequencyFrom()), static_cast<float>(cutoffFrequencyTo()));
     _filter.filter(_cache.data<float>(), audioSpecs().processBlockSize, out, outGain);
 
     // PrintRangeClip(output);

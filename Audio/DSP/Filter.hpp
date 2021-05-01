@@ -24,9 +24,9 @@ namespace Audio::DSP::Filter
     enum class BasicType : std::uint8_t
     {
         LowPass = 0,
+        HighPass,
         BandPass,
         BandStop,
-        HighPass,
         Default = LowPass
     };
 
@@ -48,7 +48,7 @@ namespace Audio::DSP::Filter
     {
         BasicType filterType { BasicType::LowPass };
         WindowType windowType { WindowType::Hanning };
-        std::uint32_t size;
+        std::uint32_t order;
         float sampleRate;
         float cutoffs[2];
         float gain;
@@ -57,7 +57,7 @@ namespace Audio::DSP::Filter
             return (
                 filterType == other.filterType &&
                 windowType == other.windowType &&
-                size == other.size &&
+                order == other.order &&
                 sampleRate == other.sampleRate &&
                 cutoffs[0] == other.cutoffs[0] &&
                 cutoffs[1] == other.cutoffs[1] &&
@@ -70,7 +70,7 @@ namespace Audio::DSP::Filter
     {
         WindowType windowType { WindowType::Hanning };
         float sampleRate;
-        std::uint32_t size;
+        std::uint32_t order;
         std::uint32_t instanceCount;
         Core::TinyVector<BasicType> filterType {};
         Core::TinyVector<float> gain;

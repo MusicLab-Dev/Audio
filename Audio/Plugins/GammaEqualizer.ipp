@@ -15,7 +15,7 @@ inline void Audio::GammaEqualizer::onAudioGenerationStarted(const BeatRange &ran
     _filter.init(
         DSP::Filter::WindowType::Hanning,
         static_cast<float>(audioSpecs().sampleRate),
-        33u
+        32u
     );
     // std::cout << "onAudioGenerationStarted !!" << std::endl;
     _cache.resize(GetFormatByteLength(audioSpecs().format) * audioSpecs().processBlockSize, audioSpecs().sampleRate, audioSpecs().channelArrangement, audioSpecs().format);

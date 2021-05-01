@@ -68,6 +68,10 @@ class Audio::Oscillator final : public Audio::IPlugin
                     TR(French, "Scie")
                 ),
                 TR_TABLE(
+                    TR(English, "Noise"),
+                    TR(French, "Bruit")
+                ),
+                TR_TABLE(
                     TR(English, "Error"),
                     TR(French, "Error")
                 )
@@ -99,6 +103,7 @@ class Audio::Oscillator final : public Audio::IPlugin
             Sine, Square,
             // Not working !
             Triangle, Saw,
+            Noise,
             // Not use this, but fun xD
             Error
         };
@@ -163,6 +168,10 @@ private:
 
     template<bool Accumulate, typename Type>
     void generateError(Type *output, const std::size_t outputSize,
+            const float frequency, const SampleRate sampleRate, const std::uint32_t phaseOffset, const Key key, const bool trigger, const DB gain) noexcept;
+
+    template<bool Accumulate, typename Type>
+    void generateNoise(Type *output, const std::size_t outputSize,
             const float frequency, const SampleRate sampleRate, const std::uint32_t phaseOffset, const Key key, const bool trigger, const DB gain) noexcept;
 };
 

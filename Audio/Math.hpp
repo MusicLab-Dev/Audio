@@ -57,4 +57,19 @@ namespace Utils
     {
         return std::pow(x, M_E);
     }
+
+
+
+    inline std::uint32_t fastRand(void) noexcept
+    {
+        static std::uint32_t randState { 1234567890u };
+        std::uint32_t out { randState };
+
+        out ^= out << 13u;
+        out ^= out >> 17u;
+        out ^= out << 5u;
+        randState = out;
+        return out;
+    }
+
 }

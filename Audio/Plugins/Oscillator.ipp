@@ -45,12 +45,8 @@ inline void Audio::Oscillator::receiveAudio(BufferView output)
         // const int nextReadIndex = sampleSize - (baseIndex + audioSpecs().processBlockSize);
         // const auto readSize = nextReadIndex < 0 ? outSize + nextReadIndex : outSize;
 
-        // std::cout << "freq: " << frequency << std::endl;
         generateWaveform<true>(static_cast<Osc::Waveform>(waveform()), out, outSize, frequency, audioSpecs().sampleRate, phaseIndex, key, trigger, voiceGain);//1.f / static_cast<Type>(activeNote.size()));
-        // const auto g = getEnveloppeGain(key, phaseIndex, trigger);
         _noteManager.incrementReadIndex(key, 0ul, audioSpecs().processBlockSize);
-        // std::cout << g << std::endl;
-        // std::cout << "  " << phaseIndex << std::endl;
     }
 
     // To benchmark, must be slower
@@ -92,6 +88,10 @@ inline void Audio::Oscillator::generateWaveform(
         return generateTriangle<Accumulate>(output, outputSize, frequency, sampleRate, phaseOffset, key, trigger, gain);
     case Osc::Waveform::Saw:
         return generateSaw<Accumulate>(output, outputSize, frequency, sampleRate, phaseOffset, key, trigger, gain);
+    case Osc::Waveform::Noise:
+        return generateNoise<Accumulate>(output, outputSize, frequency, sampleRate, phaseOffset, key, trigger, gain);
+    case Osc::Waveform::Error:
+        return generateError<Accumulate>(output, outputSize, frequency, sampleRate, phaseOffset, key, trigger, gain);
     default:
         return generateSine<Accumulate>(output, outputSize, frequency, sampleRate, phaseOffset, key, trigger, gain);
     }
@@ -208,4 +208,33 @@ inline void Audio::Oscillator::generateError(
         else
             output[k] = -std::atan(Utils::cot(static_cast<float>(i) * frequencyNorm)) * static_cast<float>(M_2_PI) * outGain;
     }
+}
+
+template<bool Accumulate, typename Type>
+inline void Audio::Oscillator::generateNoise(
+        Type *output, const std::size_t outputSize,
+        const float frequency, const SampleRate sampleRate, const std::uint32_t phaseOffset,
+        const Key key, const bool trigger, const DB gain) noexcept
+{
+    UNUSED(frequency);
+    UNUSED(sampleRate);
+    const auto end = outputSize + phaseOffset;
+
+    float outGain = 1.0f;
+    auto k = 0ul;
+    for (auto i = phaseOffset; i < end; ++i, ++k) {
+        outGain = getEnveloppeGain(key, i, trigger) * gain;
+        if constexpr (Accumulate)
+            output[k] += static_cast<Type>(static_cast<int>(Utils::fastRand()) - std::numeric_limits<int>::max()) / static_cast<Type>(std::numeric_limits<int>::max()) * outGain;
+        else
+            output[k] = static_cast<Type>(static_cast<int>(Utils::fastRand()) - std::numeric_limits<int>::max()) / static_cast<Type>(std::numeric_limits<int>::max()) * outGain;
+    }
+    // auto rnd = Utils::fastRand();
+    // auto rnd1 = static_cast<int>(Utils::fastRand());
+    // auto rnd2 = static_cast<Type>(static_cast<int>(Utils::fastRand()) - std::numeric_limits<int>::max());
+    // auto rnd3 = static_cast<Type>(static_cast<int>(Utils::fastRand()) - std::numeric_limits<int>::max()) / static_cast<Type>(std::numeric_limits<int>::max());
+    // UNUSED(rnd);
+    // UNUSED(rnd1);
+    // UNUSED(rnd2);
+    // UNUSED(rnd3);
 }

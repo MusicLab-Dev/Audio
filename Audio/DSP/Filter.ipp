@@ -50,8 +50,9 @@ inline void Audio::DSP::Filter::GenerateFilterLowPass(const FIRSpec specs, float
 {
     // cutoffNorm/pi*sinc(x*cutoffNorm/pi)
     // ONLY use type1 (symetric & odd size) || type2 (symetric & even size)
-    // const std::size_t size = (specs.size & 1u) ? specs.size : specs.size - 1;
-    const std::size_t size = specs.size;
+
+    // Ensure the order is even
+    const std::size_t size = (specs.order & 1u) ? specs.order : specs.order + 1;
     const float cutoffRateBegin = 2.0f * specs.cutoffs[0] / specs.sampleRate;
     const std::size_t first = size / 2;
 
@@ -74,12 +75,13 @@ inline void Audio::DSP::Filter::GenerateFilterHighPass(const FIRSpec specs, floa
 {
     // sinc<pi>(x) - cutoffNorm/pi*sinc(x*cutoffNorm/pi)
     // ONLY use type4 (anti-symetric & even size)
-    // const std::size_t size = (specs.size & 1u) ? specs.size - 1 : specs.size;
-    const std::size_t size = specs.size;
+
+    // Ensure the order is even
+    const std::size_t size = (specs.order & 1u) ? specs.order : specs.order + 1;
     const float cutoffRateBegin = 2.0f * specs.cutoffs[0] / specs.sampleRate;
     const std::size_t first = size / 2;
 
-    std::cout << "High-pass gain: " << specs.gain << std::endl;
+    // std::cout << "High-pass gain: " << specs.gain << std::endl;
 
     for (auto i = 0ul; i < size; ++i) {
         float idx = static_cast<float>(static_cast<int>(i) - static_cast<int>(first));
@@ -99,8 +101,9 @@ inline void Audio::DSP::Filter::GenerateFilterBandPass(const FIRSpec specs, floa
     // cutoffNormHigh/pi*sinc(x*cutoffNormHigh/pi) - cutoffNormLow/pi*sinc(x*cutoffNormLow/pi)
     // ONLY use type3 (anti-symetric & odd size) | type4 (anti-symetric & even size)
     // type4 actually
-    // const std::size_t size = (specs.size & 1u) ? specs.size - 1 : specs.size;
-    const std::size_t size = specs.size;
+
+    // Ensure the order is even
+    const std::size_t size = (specs.order & 1u) ? specs.order : specs.order + 1;
     const float cutoffRateBegin = 2.0f * specs.cutoffs[0] / specs.sampleRate;
     const float cutoffRateEnd = 2.0f * specs.cutoffs[1] / specs.sampleRate;
     const std::size_t first = size / 2;
@@ -121,7 +124,9 @@ template<bool ProcessWindow, bool Accumulate>
 inline void Audio::DSP::Filter::GenerateFilterBandStop(const FIRSpec specs, float *window) noexcept
 {
     // sinc<pi>(x) - (cutoffNormHigh/pi*sinc(x*cutoffNormHigh/pi) - cutoffNormLow/pi*sinc(x*cutoffNormLow/pi))
-    const std::size_t size = specs.size;
+
+    // Ensure the order is even
+    const std::size_t size = (specs.order & 1u) ? specs.order : specs.order + 1;
     const float cutoffRateBegin = 2.0f * specs.cutoffs[0] / specs.sampleRate;
     const float cutoffRateEnd = 2.0f * specs.cutoffs[1] / specs.sampleRate;
     const std::size_t first = size / 2;
