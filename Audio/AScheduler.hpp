@@ -158,6 +158,9 @@ public:
      *  @return true if the current graph has to stop */
     [[nodiscard]] virtual bool onAudioQueueBusy(void) = 0;
 
+    /** @brief Set all dirty flags to true */
+    void setDirtyFlags(void) noexcept;
+
     /** @brief Will wait until the processing graph is completed
      *  Never call this without setting state to 'Pause' during the whole wait call */
     void wait(void) noexcept_ndebug;

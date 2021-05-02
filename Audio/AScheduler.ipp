@@ -92,7 +92,7 @@ template<bool SetDirty>
 inline void Audio::AScheduler::invalidateCurrentGraph(void)
 {
     if constexpr (SetDirty)
-        _dirtyFlags.fill(true);
+        setDirtyFlags();
     switch (playbackMode()) {
     case PlaybackMode::Production:
         return invalidateGraph<PlaybackMode::Production>();
@@ -103,6 +103,11 @@ inline void Audio::AScheduler::invalidateCurrentGraph(void)
     case PlaybackMode::OnTheFly:
         return invalidateGraph<PlaybackMode::OnTheFly>();
     }
+}
+
+inline void Audio::AScheduler::setDirtyFlags(void) noexcept
+{
+    _dirtyFlags.fill(true);
 }
 
 inline void Audio::AScheduler::wait(void) noexcept_ndebug
