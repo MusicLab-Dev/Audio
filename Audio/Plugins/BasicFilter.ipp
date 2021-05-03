@@ -1,6 +1,6 @@
 /**
- * @file LambdaFilter.ipp
- * @brief Lambda filter implementation
+ * @file BasicFilter.ipp
+ * @brief BasicFilter implementation
  *
  * @author Pierre V
  * @date 2021-04-23
@@ -8,7 +8,7 @@
 
 #include <Audio/DSP/Merge.hpp>
 
-inline void Audio::LambdaFilter::onAudioGenerationStarted(const BeatRange &range)
+inline void Audio::BasicFilter::onAudioGenerationStarted(const BeatRange &range)
 {
     UNUSED(range);
     _filter.init(
@@ -17,7 +17,7 @@ inline void Audio::LambdaFilter::onAudioGenerationStarted(const BeatRange &range
             DSP::Filter::WindowType::Hanning,
             33ul,
             static_cast<float>(audioSpecs().sampleRate),
-            { static_cast<float>(cutoffFrequencyFrom()), static_cast<float>(cutoffFrequencyTo()) },
+            { static_cast<float>(cutoffFrequency()), 0.0f },
             1.0f
         }
     );
@@ -25,7 +25,7 @@ inline void Audio::LambdaFilter::onAudioGenerationStarted(const BeatRange &range
     _cache.clear();
 }
 
-inline void Audio::LambdaFilter::receiveAudio(BufferView output)
+inline void Audio::BasicFilter::receiveAudio(BufferView output)
 {
     float *out = output.data<float>();
     if (static_cast<bool>(byBass())) {
@@ -36,19 +36,20 @@ inline void Audio::LambdaFilter::receiveAudio(BufferView output)
     const DB outGain = ConvertDecibelToRatio(static_cast<float>(outputVolume()));
 
     // _filter._setGain(ConvertDecibelToRatio(static_cast<DB>(toto())));
-    _filter.setSpec(DSP::Filter::FIRSpec {
-        static_cast<DSP::Filter::BasicType>(filterType()),
-        DSP::Filter::WindowType::Default,
-        33ul,
-        static_cast<float>(audioSpecs().sampleRate),
-        { static_cast<float>(cutoffFrequencyFrom()), static_cast<float>(cutoffFrequencyTo()) },
-        1.0f
-    });
-
+    _filter.setSpec(
+        DSP::Filter::FIRSpec {
+            static_cast<DSP::Filter::BasicType>(filterType()),
+            DSP::Filter::WindowType::Default,
+            33ul,
+            static_cast<float>(audioSpecs().sampleRate),
+            { static_cast<float>(cutoffFrequency()), 0.0f },
+            1.0f
+        }
+    );
     _filter.filter(_cache.data<float>(), audioSpecs().processBlockSize, out, outGain);
 }
 
-inline void Audio::LambdaFilter::sendAudio(const BufferViews &inputs)
+inline void Audio::BasicFilter::sendAudio(const BufferViews &inputs)
 {
     if (!inputs.size())
         return;
