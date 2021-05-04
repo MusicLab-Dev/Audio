@@ -30,8 +30,13 @@ class Audio::Mixer final : public Audio::IPlugin
         /* Plugin tags */
         TAGS(Mastering),
         /* Control list */
+        REGISTER_CONTROL_INPUT_GAIN(
+            inputGain,
+            0.0,
+            CONTROL_DEFAULT_INPUT_GAIN_RANGE()
+        ),
         REGISTER_CONTROL_OUTPUT_VOLUME(
-            masterVolume,
+            outputVolume,
             0.0,
             CONTROL_DEFAULT_OUTPUT_VOLUME_RANGE()
         )

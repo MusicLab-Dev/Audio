@@ -16,21 +16,7 @@ inline void Audio::Mixer::onAudioGenerationStarted(const BeatRange &range)
 
 inline void Audio::Mixer::receiveAudio(BufferView output)
 {
-    // const auto size = output.size<float>();
-    // const float *out = output.data<float>();
-
-    // std::cout << "MIXER receive " << _cache.size() << " buffers" << std::endl;
-
-    // {
-    //     auto i = 0;
-    //     for (auto &v : _cache) {
-    //         if (std::all_of(v.data<float>(), v.data<float>() + audioSpecs().processBlockSize, [](const auto val) { return val == 0.0f; });
-    //             std::cout << "Mixer index " << i << " is a null buffer" << std::endl;
-    //     }
-    //     ++i;
-    // }
-
-    DSP::Merge<float>(_cache, output, ConvertDecibelToRatio(static_cast<float>(masterVolume())), false);
+    DSP::Merge<float>(_cache, output, ConvertDecibelToRatio(static_cast<float>(inputGain() + outputVolume())), false);
 
     constexpr auto PrintRangeClip = [](const BufferView buffer) {
         const auto size = buffer.size<float>();
