@@ -158,7 +158,7 @@ typename Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::BandFilter<InstanceCou
             reloadLowPass(RootFrequency, newGain);
             break;
         case InstanceCount - 1:
-            reloadHighPass(static_cast<std::uint32_t>(RootFrequency) << (InstanceCount - 1u), newGain);
+            reloadHighPass(static_cast<std::uint32_t>(RootFrequency) << (InstanceCount == MinBandFilterSize ? 0u : (filterIndex - 1u)), newGain);
             break;
         default:
             reloadBandPass(filterIndex, static_cast<std::uint32_t>(RootFrequency) << (filterIndex - 1u), newGain);
