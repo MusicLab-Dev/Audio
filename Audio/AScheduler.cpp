@@ -66,7 +66,7 @@ bool AScheduler::setState(const State state) noexcept
     return true;
 }
 
-void AScheduler::processBeatMiss(void)
+void AScheduler::processBeatMiss(void) noexcept
 {
     auto &range = getCurrentBeatRange();
 
@@ -85,7 +85,7 @@ void AScheduler::processBeatMiss(void)
         };
     }
 }
-void AScheduler::processLooping(void)
+void AScheduler::processLooping(void) noexcept
 {
     auto &range = getCurrentBeatRange();
 
@@ -98,18 +98,13 @@ void AScheduler::processLooping(void)
     }
 }
 
-void AScheduler::setProcessParamByBeatSize(const Beat processBeatSize, const SampleRate sampleRate)
-{
-    UNUSED(processBeatSize);
-    UNUSED(sampleRate);
-}
-
-void AScheduler::setProcessParamByBlockSize(const BlockSize processBlockSize, const SampleRate sampleRate)
+void AScheduler::setProcessParamByBlockSize(const BlockSize processBlockSize, const SampleRate sampleRate) noexcept
 {
     const double beats = static_cast<double>(processBlockSize) / sampleRate * project()->tempo() * Audio::BeatPrecision;
     const double beatsFloor = std::floor(beats);
     const double beatsCeil = std::ceil(beats);
 
+    _sampleRate = sampleRate;
     _processBlockSize = processBlockSize;
     if (auto ceilDt = beatsCeil - beats, floorDt = beats - beatsFloor; ceilDt < floorDt) {
         _beatMissOffset = -ceilDt;
@@ -120,5 +115,24 @@ void AScheduler::setProcessParamByBlockSize(const BlockSize processBlockSize, co
     }
     _beatMissCount = 0.0;
     for (auto &cache : _graphs)
-        cache.currentBeatRange = { 0u, _processBeatSize };
+        cache.currentBeatRange = { cache.currentBeatRange.from, cache.currentBeatRange.from + _processBeatSize };
+}
+
+void AScheduler::setBPM(const BPM bpm) noexcept
+{
+    project()->setBPM(bpm);
+    const double beats = static_cast<double>(_processBlockSize) / _sampleRate * project()->tempo() * Audio::BeatPrecision;
+    const double beatsFloor = std::floor(beats);
+    const double beatsCeil = std::ceil(beats);
+
+    if (auto ceilDt = beatsCeil - beats, floorDt = beats - beatsFloor; ceilDt < floorDt) {
+        _beatMissOffset = -ceilDt;
+        _processBeatSize = static_cast<std::uint32_t>(beatsCeil);
+    } else {
+        _beatMissOffset = floorDt;
+        _processBeatSize = static_cast<std::uint32_t>(beatsFloor);
+    }
+    _beatMissCount = 0.0;
+    for (auto &cache : _graphs)
+        cache.currentBeatRange = { cache.currentBeatRange.from, cache.currentBeatRange.from + _processBeatSize };
 }

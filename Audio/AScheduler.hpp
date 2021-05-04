@@ -64,6 +64,7 @@ public:
 
     /** @brief Get / Set internal project */
     [[nodiscard]] ProjectPtr &project(void) noexcept { return _project; }
+    [[nodiscard]] const ProjectPtr &project(void) const noexcept { return _project; }
     void setProject(ProjectPtr &&project) noexcept { _project = std::move(project); }
 
 
@@ -114,12 +115,12 @@ public:
     [[nodiscard]] std::uint32_t partitionIndex(void) const noexcept { return _partitionIndex; }
     void setPartitionIndex(const std::uint32_t partitionIndex) noexcept { _partitionIndex = partitionIndex; }
 
+    /** @brief Setup processBeatSize & processBlockSize parameters with a desired processBlockSize */
+    void setProcessParamByBlockSize(const BlockSize processBlockSize, const SampleRate sampleRate) noexcept;
 
-    /** @brief Setup processBeatSize & processBlockSize parameters with a desired processBeatSize */
-    void setProcessParamByBeatSize(const Beat processBeatSize, const SampleRate sampleRate);
+    /** @brief Update tempo */
+    void setBPM(const BPM bpm) noexcept;
 
-    /** @brief Setup processBeatSize & processBlockSize parameters with a desired processBlockSize. Return true if processBlockSize is used */
-    void setProcessParamByBlockSize(const BlockSize processBlockSize, const SampleRate sampleRate);
 
     /** @brief Add apply event to be dispatched */
     template<typename Apply>
@@ -209,6 +210,7 @@ private:
     // Cacheline 2
     Audio::BeatRange _loopBeatRange {};
     Beat _processBeatSize { 0u };
+    SampleRate _sampleRate { 0u };
     BlockSize _processBlockSize { 0u };
     bool _isLooping { false };
     bool _hasExitedGraph { true };
@@ -242,10 +244,10 @@ private:
     bool flushOverflowCache(void);
 
     /** @brief Process looping, it modify the currentBeatRange */
-    void processLooping(void);
+    void processLooping(void) noexcept;
 
     /** @brief Process the beat misses, it modify the incrementation of the currentBeatRange */
-    void processBeatMiss(void);
+    void processBeatMiss(void) noexcept;
 
 
     /** @brief Schedule the current graph */
