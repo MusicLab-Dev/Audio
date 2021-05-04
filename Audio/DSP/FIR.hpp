@@ -163,7 +163,7 @@ class Audio::DSP::FIR::BandFilter
 
     /** @brief Construct only for 2 or more instances */
     static_assert(InstanceCount >= MinBandFilterSize, "Audio::DSP::FIR::MultiFilter need at least 2 instances");
-    // static_assert((InstanceCount == MinBandFilterSize) || (InstanceCount == SmallBandFilterSize), "Audio::DSP::FIR::MultiFilter only support 10 instances");
+    // static_assert((InstanceCount == MinBandFilterSize) || (InstanceCount == TenBandFilterSize), "Audio::DSP::FIR::MultiFilter only support 10 instances");
 
 public:
     BandFilter(void) = default;

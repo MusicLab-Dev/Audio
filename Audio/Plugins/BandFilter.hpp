@@ -45,7 +45,12 @@ class Audio::BandFilter final : public Audio::IPlugin
             CONTROL_DEFAULT_OUTPUT_VOLUME_RANGE()
         ),
         REGISTER_CONTROL_FILTER_CUTOFF(
-            cutoffFrequency,
+            cutoffFrequencyFrom,
+            100.0,
+            CONTROL_RANGE_STEP(50.0, 22'000, 1.0)
+        ),
+        REGISTER_CONTROL_FILTER_CUTOFF(
+            cutoffFrequencyTo,
             5'000.0,
             CONTROL_RANGE_STEP(50.0, 22'000, 1.0)
         ),

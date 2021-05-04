@@ -147,30 +147,45 @@ typename Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::BandFilter<InstanceCou
 {
     // std::cout << "FIlter:::" << std::endl;
     // ASSERT GainSize == InstanceCount
-    auto ProcessGainUpdate = [&](const std::uint32_t filterIndex, const auto gain, const auto newGain) -> bool
+    auto ProcessGainUpdate = [&](const std::uint32_t filterIndex, const auto rootFreq, const auto gain, const auto newGain) -> bool
     {
         if (gain == newGain)
             return false;
-        std::cout << "  update(" << filterIndex << "): " << gain << " -> " << newGain << std::endl;
+        // std::cout << "  update(" << filterIndex << "): " << gain << " -> " << newGain << std::endl;
         _gain[filterIndex] = newGain;
         switch (filterIndex) {
         case 0u:
-            reloadLowPass(RootFrequency, newGain);
+            reloadLowPass(rootFreq, newGain);
             break;
         case InstanceCount - 1:
-            reloadHighPass(static_cast<std::uint32_t>(RootFrequency) << (InstanceCount == MinBandFilterSize ? 0u : (filterIndex - 1u)), newGain);
+            reloadHighPass(rootFreq, newGain);
             break;
         default:
-            reloadBandPass(filterIndex, static_cast<std::uint32_t>(RootFrequency) << (filterIndex - 1u), newGain);
+            reloadBandPass(filterIndex, rootFreq, newGain);
             break;
         }
         return true;
     };
 
+    auto rootFreq = RootFrequency;
+    if constexpr (InstanceCount == 3)
+        rootFreq = 3000;
+    if constexpr (InstanceCount == 4)
+        rootFreq = 2000;
+    if constexpr (InstanceCount == 5)
+        rootFreq = 1024;
+
     bool updated { false };
+    if constexpr (InstanceCount != MinBandFilterSize)
+        rootFreq = rootFreq * 3 / 2;
+
     for (auto i = 0u; i < GainSize; ++i) {
-        if (ProcessGainUpdate(i, _gain[i], gains[i]) && !updated)
+        if (ProcessGainUpdate(i, rootFreq, _gain[i], gains[i]) && !updated)
             updated = true;
+        if constexpr (InstanceCount != MinBandFilterSize) {
+            if (i)
+                rootFreq *= 2.0f;
+        }
     }
     if (updated) {
         mergeToInstance();
@@ -187,6 +202,12 @@ typename Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::BandFilter<InstanceCou
 template<unsigned InstanceCount, typename Type>
 inline void Audio::DSP::FIR::BandFilter<InstanceCount, Type>::mergeToInstance(void) noexcept
 {
+    // /** @todo REMOVE THIS */
+    // for (auto k = 0u; k <= _filterOrder; ++k) {
+    //     _instance.coefficients()[k] = _coefficients[1][k];
+    // }
+    // return;
+
     for (auto k = 0u; k <= _filterOrder; ++k) {
         _instance.coefficients()[k] = _coefficients[0][k];
     }
@@ -201,6 +222,12 @@ template<unsigned InstanceCount, typename Type>
 inline void Audio::DSP::FIR::BandFilter<InstanceCount, Type>::reloadAll(void) noexcept
 {
     auto rootFreq = RootFrequency;
+    if constexpr (InstanceCount == 3)
+        rootFreq = 3000;
+    if constexpr (InstanceCount == 4)
+        rootFreq = 2000;
+    if constexpr (InstanceCount == 5)
+        rootFreq = 1024;
     // Take the centered frequency
     if constexpr (InstanceCount != MinBandFilterSize)
         rootFreq = rootFreq * 3 / 2;
@@ -211,7 +238,7 @@ inline void Audio::DSP::FIR::BandFilter<InstanceCount, Type>::reloadAll(void) no
         reloadBandPass(i, rootFreq, 1.0f);
         rootFreq *= 2.f;
     }
-    if constexpr (InstanceCount != MinBandFilterSize)
+    if constexpr (InstanceCount == MinBandFilterSize)
         rootFreq *= 2.f;
     // High-pass filters
     reloadHighPass(rootFreq, 1.0f);
@@ -222,6 +249,7 @@ template<unsigned InstanceCount, typename Type>
 inline void Audio::DSP::FIR::BandFilter<InstanceCount, Type>::reloadLowPass(const float rootFreq, const float gain) noexcept
 {
     std::cout << "Reload low pass " << rootFreq << ", " << gain << std::endl;
+    _gain[0u] = gain;
     Filter::GenerateFilter<true, false>(
         Filter::FIRSpec {
             Filter::BasicType::LowPass,
@@ -238,7 +266,8 @@ inline void Audio::DSP::FIR::BandFilter<InstanceCount, Type>::reloadLowPass(cons
 template<unsigned InstanceCount, typename Type>
 inline void Audio::DSP::FIR::BandFilter<InstanceCount, Type>::reloadBandPass(const std::uint32_t filterIndex, const float rootFreq, const float gain) noexcept
 {
-    std::cout << "Reload band pass " << rootFreq << ", " << gain << std::endl;
+    std::cout << "Reload band pass (" << filterIndex << ") " << rootFreq << ", " << rootFreq * 2.f << ", " << gain << std::endl;
+    _gain[filterIndex] = gain;
     Filter::GenerateFilter<true, false>(
         Filter::FIRSpec {
             Filter::BasicType::BandPass,
@@ -257,6 +286,7 @@ template<unsigned InstanceCount, typename Type>
 inline void Audio::DSP::FIR::BandFilter<InstanceCount, Type>::reloadHighPass(const float rootFreq, const float gain) noexcept
 {
     std::cout << "Reload high pass " << rootFreq << ", " << gain << std::endl;
+    _gain[InstanceCount - 1u] = gain;
     Filter::GenerateFilter<true, false>(
         Filter::FIRSpec {
             Filter::BasicType::HighPass,

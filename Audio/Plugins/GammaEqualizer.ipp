@@ -15,7 +15,7 @@ inline void Audio::GammaEqualizer::onAudioGenerationStarted(const BeatRange &ran
     _filter.init(
         DSP::Filter::WindowType::Hanning,
         static_cast<float>(audioSpecs().sampleRate),
-        32u
+        123u
     );
     // std::cout << "onAudioGenerationStarted !!" << std::endl;
     _cache.resize(GetFormatByteLength(audioSpecs().format) * audioSpecs().processBlockSize, audioSpecs().sampleRate, audioSpecs().channelArrangement, audioSpecs().format);
@@ -32,16 +32,16 @@ inline void Audio::GammaEqualizer::receiveAudio(BufferView output)
     }
 
     _filter.filter(_cache.data<float>(), audioSpecs().processBlockSize, out, {
+        ConvertDecibelToRatio(static_cast<float>(frequenyBands_9() + outputVolume())),
+        ConvertDecibelToRatio(static_cast<float>(frequenyBands_8() + outputVolume())),
+        ConvertDecibelToRatio(static_cast<float>(frequenyBands_7() + outputVolume())),
+        ConvertDecibelToRatio(static_cast<float>(frequenyBands_6() + outputVolume())),
+        ConvertDecibelToRatio(static_cast<float>(frequenyBands_5() + outputVolume())),
+        ConvertDecibelToRatio(static_cast<float>(frequenyBands_4() + outputVolume())),
+        ConvertDecibelToRatio(static_cast<float>(frequenyBands_3() + outputVolume())),
+        ConvertDecibelToRatio(static_cast<float>(frequenyBands_2() + outputVolume())),
         ConvertDecibelToRatio(static_cast<float>(frequenyBands_1() + outputVolume())),
         ConvertDecibelToRatio(static_cast<float>(frequenyBands_0() + outputVolume()))
-        // ConvertDecibelToRatio(frequenyBands_2()),
-        // ConvertDecibelToRatio(frequenyBands_3()),
-        // ConvertDecibelToRatio(frequenyBands_4()),
-        // ConvertDecibelToRatio(frequenyBands_5()),
-        // ConvertDecibelToRatio(frequenyBands_6()),
-        // ConvertDecibelToRatio(frequenyBands_7()),
-        // ConvertDecibelToRatio(frequenyBands_8()),
-        // ConvertDecibelToRatio(frequenyBands_9())
     });
     // std::cout << "receiveAudio !!" << std::endl;
     // std::memcpy(out, _cache.data<float>(), audioSpecs().processBlockSize * GetFormatByteLength(audioSpecs().format));

@@ -17,7 +17,7 @@ inline void Audio::BandFilter::onAudioGenerationStarted(const BeatRange &range)
             DSP::Filter::WindowType::Hanning,
             33ul,
             static_cast<float>(audioSpecs().sampleRate),
-            { static_cast<float>(cutoffFrequency()), 0.0f },
+            { static_cast<float>(cutoffFrequencyFrom()), static_cast<float>(cutoffFrequencyTo()) },
             1.0f
         }
     );
@@ -42,7 +42,7 @@ inline void Audio::BandFilter::receiveAudio(BufferView output)
             DSP::Filter::WindowType::Default,
             33ul,
             static_cast<float>(audioSpecs().sampleRate),
-            { static_cast<float>(cutoffFrequency()), 0.0f },
+            { static_cast<float>(cutoffFrequencyFrom()), static_cast<float>(cutoffFrequencyTo()) },
             1.0f
         }
     );
