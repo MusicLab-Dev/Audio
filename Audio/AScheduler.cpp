@@ -93,7 +93,15 @@ void AScheduler::processLooping(void) noexcept
 {
     auto &range = getCurrentBeatRange();
 
-    if (range.to > _loopBeatRange.to || range.from < _loopBeatRange.from) {
+    if (range.from < _loopBeatRange.to && range.to > _loopBeatRange.to) {
+        _processLoopCrop = _processBlockSize - ComputeSampleSize(
+            _processBeatSize - (range.to - _loopBeatRange.to),
+            project()->tempo(),
+            _sampleRate,
+            _beatMissOffset,
+            _beatMissCount
+        );
+    } else if (range.to > _loopBeatRange.to || range.from < _loopBeatRange.from) {
         range = {
             _loopBeatRange.from,
             _loopBeatRange.from + _processBeatSize

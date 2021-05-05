@@ -154,7 +154,7 @@ inline bool Audio::AScheduler::produceAudioData(const BufferView output)
 {
     const bool ok = _AudioQueue.tryPushRange(
         output.byteData(),
-        output.byteData() + output.size<std::uint8_t>()
+        output.byteData() + output.size<std::uint8_t>() - _processLoopCrop * sizeof(float)
     );
 
     if (!ok) {
@@ -162,6 +162,7 @@ inline bool Audio::AScheduler::produceAudioData(const BufferView output)
         // std::cout << " - produce audio failed\n";
         return false;
     } else {
+       _processLoopCrop = 0u;
         // std::cout << " - produce audio success\n";
         return true;
     }
@@ -169,10 +170,13 @@ inline bool Audio::AScheduler::produceAudioData(const BufferView output)
 
 inline bool Audio::AScheduler::flushOverflowCache(void)
 {
-    return _AudioQueue.tryPushRange(
+    const auto res = _AudioQueue.tryPushRange(
         _overflowCache.byteData(),
-        _overflowCache.byteData() + _overflowCache.size<std::uint8_t>()
+        _overflowCache.byteData() + _overflowCache.size<std::uint8_t>() - _processLoopCrop * sizeof(float)
     );
+    if (res)
+        _processLoopCrop = 0u;
+    return res;
 }
 
 inline void Audio::AScheduler::clearAudioQueue(void)
@@ -269,15 +273,25 @@ inline void Audio::AScheduler::buildNodeTask(const Node *node,
 
 inline Audio::Beat Audio::AScheduler::ComputeBeatSize(const BlockSize blockSize, const Tempo tempo, const SampleRate sampleRate, double &beatMissOffset) noexcept
 {
-    const double beats = static_cast<double>(blockSize) / sampleRate * tempo * Audio::BeatPrecision;
+    const double beats = (static_cast<double>(blockSize) / sampleRate) * tempo * Audio::BeatPrecision;
     const double beatsFloor = std::floor(beats);
     const double beatsCeil = std::ceil(beats);
 
     if (auto ceilDt = beatsCeil - beats, floorDt = beats - beatsFloor; ceilDt < floorDt) {
         beatMissOffset = -ceilDt;
-        return static_cast<std::uint32_t>(beatsCeil);
+        return static_cast<Beat>(beatsCeil);
     } else {
         beatMissOffset = floorDt;
-        return static_cast<std::uint32_t>(beatsFloor);
+        return static_cast<Beat>(beatsFloor);
+    }
+}
+
+inline Audio::BlockSize Audio::AScheduler::ComputeSampleSize(const Beat blockBeatSize, const Tempo tempo, const SampleRate sampleRate, const double beatMissOffset, const double beatMissCount) noexcept
+{
+    // return static_cast<BlockSize>(static_cast<double>(blockBeatSize) / static_cast<double>(getCurrentBeatRange().to - getCurrentBeatRange().from) * static_cast<double>(_audioBlockSize));
+    if (beatMissOffset > 0) {
+        return static_cast<BlockSize>(((static_cast<double>(blockBeatSize) - beatMissOffset + beatMissCount) / (tempo * Audio::BeatPrecision)) * sampleRate);
+    } else {
+        return static_cast<BlockSize>(((static_cast<double>(blockBeatSize) + beatMissOffset - beatMissCount) / (tempo * Audio::BeatPrecision)) * sampleRate);
     }
 }

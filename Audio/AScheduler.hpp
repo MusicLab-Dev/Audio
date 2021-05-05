@@ -224,7 +224,8 @@ private:
     double _beatMissCount { 0.0 };
     double _beatMissOffset { 0.0 };
     std::array<bool, Audio::PlaybackModeCount> _dirtyFlags {};
-    // 8 bytes
+    std::uint32_t _processLoopCrop { 0u };
+    // 4 bytes
 
     // Cacheline 3
     PlaybackGraphs _graphs {};
@@ -264,9 +265,11 @@ private:
     /** @brief Schedule the current graph */
     void scheduleCurrentGraph(void);
 
-    /** @brief Compute a beat size */
-    [[nodiscard]] Beat ComputeBeatSize(const BlockSize blockSize, const Tempo tempo, const SampleRate sampleRate, double &beatMissOffset) noexcept;
+    /** @brief Compute a beat size out of a sample size */
+    [[nodiscard]] static Beat ComputeBeatSize(const BlockSize blockSize, const Tempo tempo, const SampleRate sampleRate, double &beatMissOffset) noexcept;
 
+    /** @brief Compute a sample size out of a beat size */
+    [[nodiscard]] static BlockSize ComputeSampleSize(const Beat blockBeatSize, const Tempo tempo, const SampleRate sampleRate, const double beatMissOffset, const double beatMissCount) noexcept;
 };
 
 static_assert_sizeof(Audio::AScheduler, Core::CacheLineSize * 4);
