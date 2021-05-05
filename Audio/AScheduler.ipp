@@ -152,10 +152,9 @@ inline void Audio::AScheduler::onAudioProcessStarted(const BeatRange &beatRange)
 
 inline bool Audio::AScheduler::produceAudioData(const BufferView output)
 {
-    const auto cacheSize = output.size<std::uint8_t>();
     const bool ok = _AudioQueue.tryPushRange(
         output.byteData(),
-        output.byteData() + cacheSize
+        output.byteData() + output.size<std::uint8_t>()
     );
 
     if (!ok) {
@@ -266,4 +265,19 @@ inline void Audio::AScheduler::buildNodeTask(const Node *node,
         buildNodeTask<Playback>(child.get(), noteTask, audioTask);
     }
     audioTask.first.precede(parentAudioTask.first);
+}
+
+inline Audio::Beat Audio::AScheduler::ComputeBeatSize(const BlockSize blockSize, const Tempo tempo, const SampleRate sampleRate, double &beatMissOffset) noexcept
+{
+    const double beats = static_cast<double>(blockSize) / sampleRate * tempo * Audio::BeatPrecision;
+    const double beatsFloor = std::floor(beats);
+    const double beatsCeil = std::ceil(beats);
+
+    if (auto ceilDt = beatsCeil - beats, floorDt = beats - beatsFloor; ceilDt < floorDt) {
+        beatMissOffset = -ceilDt;
+        return static_cast<std::uint32_t>(beatsCeil);
+    } else {
+        beatMissOffset = floorDt;
+        return static_cast<std::uint32_t>(beatsFloor);
+    }
 }

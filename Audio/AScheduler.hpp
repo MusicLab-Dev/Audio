@@ -121,6 +121,9 @@ public:
     /** @brief Update tempo */
     void setBPM(const BPM bpm) noexcept;
 
+    /** @brief Set the taget audio block size */
+    void setAudioBlockSize(const BlockSize blockSize) noexcept;
+
 
     /** @brief Add apply event to be dispatched */
     template<typename Apply>
@@ -181,8 +184,10 @@ public:
 
 
     /** @brief Will consume audio data from the global queue */
-    static inline std::size_t ConsumeAudioData(std::uint8_t *data, const std::size_t size)
-        { return _AudioQueue.popRange(data, data + size); }
+    bool consumeAudioData(std::uint8_t *data, const std::size_t size);
+
+    /** @brief Get current elapsed beat from the last play */
+    [[nodiscard]] Beat audioElapsedBeat(void) const noexcept { return _audioElapsedBeat.load(); }
 
 protected:
     /** @brief Dispatch apply events without clearing event list */
@@ -224,6 +229,12 @@ private:
     // Cacheline 3
     PlaybackGraphs _graphs {};
 
+    // Cacheline 4 - High frequency atomic read / write
+    std::atomic<Beat> _audioElapsedBeat { 0u }; // Represent elapsed beat since last play
+    std::atomic<Beat> _audioBlockBeatSize { 0u }; // Used by the audio callback to determine how many beat elapsed
+    BlockSize _audioBlockSize { 0u };
+    double _audioBlockBeatMissCount { 0.0 };
+    double _audioBlockBeatMissOffset { 0.0 };
 
     /** @brief Audio callback queue */
     static inline Core::SPSCQueue<std::uint8_t> _AudioQueue { 2048 * 4 * 4 };
@@ -252,9 +263,13 @@ private:
 
     /** @brief Schedule the current graph */
     void scheduleCurrentGraph(void);
+
+    /** @brief Compute a beat size */
+    [[nodiscard]] Beat ComputeBeatSize(const BlockSize blockSize, const Tempo tempo, const SampleRate sampleRate, double &beatMissOffset) noexcept;
+
 };
 
-static_assert_sizeof(Audio::AScheduler, Core::CacheLineSize * 3);
+static_assert_sizeof(Audio::AScheduler, Core::CacheLineSize * 4);
 
 #include "SchedulerTask.ipp"
 #include "AScheduler.ipp"
