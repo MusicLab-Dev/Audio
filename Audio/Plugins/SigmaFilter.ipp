@@ -11,7 +11,7 @@
 inline void Audio::SigmaFilter::onAudioGenerationStarted(const BeatRange &)
 {
     // _filter.init(
-    //     DSP::Filter::FIRSpec {
+    //     DSP::Filter::FIRSpecs {
     //         static_cast<DSP::Filter::BasicType>(filterType()),
     //         DSP::Filter::WindowType::Hanning,
     //         255ul,

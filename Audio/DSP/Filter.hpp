@@ -44,23 +44,39 @@ namespace Audio::DSP::Filter
         Default = LowPass
     };
 
-    struct FIRSpec
+    struct FIRSpecs
     {
         BasicType filterType { BasicType::LowPass };
         WindowType windowType { WindowType::Hanning };
-        std::uint32_t order;
-        float sampleRate;
-        float cutoffs[2];
-        float gain;
+        std::uint32_t order { 0u };
+        std::uint32_t filterSize { 0u };
+        float sampleRate { 0.0f };
+        float cutoffBegin { 0.0f };
+        float cutoffEnd { 0.0f };
+        float gain { 0.0f };
 
-        bool operator==(const FIRSpec &other) {
+        /** @brief Default constructor */
+        FIRSpecs(void) noexcept = default;
+
+        /** @brief Init constructor */
+        FIRSpecs(const BasicType filterType_, const WindowType windowType_, const std::size_t desiredOrder,
+                const float sampleRate_, const float cutoffBegin_, const float cutoffEnd_, const float gain_) noexcept;
+
+        /** @brief Copy constructor */
+        FIRSpecs(const FIRSpecs &other) noexcept = default;
+
+        /** @brief Destructor */
+        ~FIRSpecs(void) noexcept = default;
+
+        /** @brief Comparison operator */
+        [[nodiscard]] bool operator==(const FIRSpecs &other) {
             return (
                 filterType == other.filterType &&
                 windowType == other.windowType &&
                 order == other.order &&
                 sampleRate == other.sampleRate &&
-                cutoffs[0] == other.cutoffs[0] &&
-                cutoffs[1] == other.cutoffs[1] &&
+                cutoffBegin == other.cutoffBegin &&
+                cutoffEnd == other.cutoffEnd &&
                 gain == other.gain
             );
         }
@@ -77,6 +93,10 @@ namespace Audio::DSP::Filter
         Core::TinyVector<float> cutoffs;
     };
 
+    /** @brief Get filter order */
+    template<unsigned ProcessSize>
+    [[nodiscard]] static std::uint32_t GetFilterOrder(const float factor);
+
     /** @brief Generate window with compile-time window type */
     template<bool Accumulate = false, WindowType Window = WindowType::Default>
     void GenerateWindow(float *window, const std::size_t size, const bool symetric = true) noexcept;
@@ -86,19 +106,19 @@ namespace Audio::DSP::Filter
 
     /** @brief Design filter coefficients within a window with a run-time filter type */
     // template<bool Accumulate = false, BasicType Filter = BasicType::Default>
-    // void GenerateFilter(const FIRSpec specs, float *window) noexcept;
+    // void GenerateFilter(const FIRSpecs specs, float *window) noexcept;
     template<bool ProcessWindow = true, bool Accumulate = false>
-    void GenerateFilter(const FIRSpec specs, float *window) noexcept;
+    void GenerateFilter(const FIRSpecs specs, float *window) noexcept;
 
 
     template<bool ProcessWindow = true, bool Accumulate = false>
-    void GenerateFilterLowPass(const FIRSpec specs, float *window) noexcept;
+    void GenerateFilterLowPass(const FIRSpecs specs, float *window) noexcept;
     template<bool ProcessWindow = true, bool Accumulate = false>
-    void GenerateFilterHighPass(const FIRSpec specs, float *window) noexcept;
+    void GenerateFilterHighPass(const FIRSpecs specs, float *window) noexcept;
     template<bool ProcessWindow = true, bool Accumulate = false>
-    void GenerateFilterBandPass(const FIRSpec specs, float *window) noexcept;
+    void GenerateFilterBandPass(const FIRSpecs specs, float *window) noexcept;
     template<bool ProcessWindow = true, bool Accumulate = false>
-    void GenerateFilterBandStop(const FIRSpec specs, float *window) noexcept;
+    void GenerateFilterBandStop(const FIRSpecs specs, float *window) noexcept;
 
     template<bool Accumulate = false>
     void GenerateHanning(float *window, const std::size_t size, const bool symetric) noexcept;

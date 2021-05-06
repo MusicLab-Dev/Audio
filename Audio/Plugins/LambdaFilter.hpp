@@ -109,6 +109,9 @@ public:
     /** @brief Plugin constructor */
     LambdaFilter(const IPluginFactory *factory) noexcept : IPlugin(factory) {}
 
+    /** @brief Destructor */
+    virtual ~LambdaFilter(void) = default;
+
     virtual void sendAudio(const BufferViews &inputs);
     virtual void receiveAudio(BufferView output);
 

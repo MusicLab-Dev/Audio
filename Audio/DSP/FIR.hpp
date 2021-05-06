@@ -110,18 +110,20 @@ template<typename Type>
 class Audio::DSP::FIR::BasicFilter
 {
 public:
-    BasicFilter(void) = default;
-    BasicFilter(const DSP::Filter::FIRSpec &spec) { init(spec); }
+    BasicFilter(void) noexcept = default;
+    BasicFilter(const DSP::Filter::FIRSpecs &specs) noexcept { init(specs); }
 
-    /** @brief Initialize the internal filter spec */
-    void init(const DSP::Filter::FIRSpec &spec) noexcept;
+    ~BasicFilter(void) noexcept = default;
+
+    /** @brief Initialize the internal filter specs */
+    void init(const DSP::Filter::FIRSpecs &specs) noexcept;
 
 
     bool _setGain(const DB gain) noexcept;
-    /** @brief Set the internal spec. It will recompute the instance coefficients */
-    bool setSpec(const DSP::Filter::FIRSpec &spec) noexcept;
+    /** @brief Set the internal specs. It will recompute the instance coefficients */
+    bool setSpecs(const DSP::Filter::FIRSpecs &specs) noexcept;
     /** @brief Set the internal cutoffs */
-    bool setCutoffs(const float cutoffFrom, const float cutoffTo = 0.0f) noexcept;
+    bool setCutoffs(const float cutoffBegin, const float cutoffEnd = 0.0f) noexcept;
     /** @brief Set the internal sampleRate */
     bool setSampleRate(const float sampleRate) noexcept;
     /** @brief Set the internal sampleRate */
@@ -143,8 +145,11 @@ public:
 private:
     /** @brief Internal instance */
     Internal::Instance<Type> _instance;
-    /** @brief Filter spec */
-    DSP::Filter::FIRSpec _spec;
+    /** @brief Filter specs */
+    DSP::Filter::FIRSpecs _specs;
+
+    /** @brief Compute cache when specs changed */
+    void onSpecChanged(void) noexcept;
 };
 
 template<unsigned InstanceCount, typename Type>
@@ -204,7 +209,6 @@ private:
 
     /** @brief Resize the internal last input cache */
     void resizeLastInputCache(const std::uint32_t size) noexcept { _instance.lastInput().resize(size); }
-
 };
 
 // template<unsigned InstanceCount, typename Type>
@@ -259,7 +263,7 @@ private:
 //     Internal::GainArray<InstanceCount> _gains;
 
 //     void reloadInstances(const DSP::Filter::WindowType windowType, const std::uint32_t filterSize, const float sampleRate) noexcept;
-//     void reloadInstance(const DSP::Filter::FIRSpec &spec, std::uint32_t instanceIndex) noexcept;
+//     void reloadInstance(const DSP::Filter::FIRSpecs &specs, std::uint32_t instanceIndex) noexcept;
 // };
 
 #include "FIR.ipp"

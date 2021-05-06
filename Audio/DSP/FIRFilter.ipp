@@ -10,115 +10,93 @@
  * @brief BasicFilter implementation
  */
 template<typename Type>
-inline void Audio::DSP::FIR::BasicFilter<Type>::init(const DSP::Filter::FIRSpec &spec) noexcept
+inline void Audio::DSP::FIR::BasicFilter<Type>::init(const DSP::Filter::FIRSpecs &specs) noexcept
 {
-    setSpec(spec);
-    resizeLastInputCache(_spec.order);
+    setSpecs(specs);
+    resizeLastInputCache(_specs.filterSize - 1u);
     resetLastInputCache();
 }
 
 template<typename Type>
-inline bool Audio::DSP::FIR::BasicFilter<Type>::setSpec(const DSP::Filter::FIRSpec &spec) noexcept
+inline bool Audio::DSP::FIR::BasicFilter<Type>::setSpecs(const DSP::Filter::FIRSpecs &specs) noexcept
 {
-    if (_spec == spec)
+    if (_specs == specs)
         return false;
-    _spec = spec;
-    _instance.coefficients().resize(spec.order + 1u);
-    std::cout << "SET SPECS: " << spec.cutoffs[0] << " -> " << spec.cutoffs[1] << std::endl;
-    Filter::GenerateFilter<true>(spec, _instance.coefficients().data());
+    _specs = specs;
+    onSpecChanged();
     return true;
 }
 
 template<typename Type>
-inline bool Audio::DSP::FIR::BasicFilter<Type>::setCutoffs(const float cutoffFrom, const float cutoffTo) noexcept
+inline bool Audio::DSP::FIR::BasicFilter<Type>::setCutoffs(const float cutoffBegin, const float cutoffEnd) noexcept
 {
-    return setSpec(
-        Filter::FIRSpec {
-            _spec.filterType,
-            _spec.windowType,
-            _spec.order,
-            _spec.sampleRate,
-            { cutoffFrom, cutoffTo },
-            _spec.gain
-        }
-    );
+    if (cutoffBegin == _specs.cutoffBegin && cutoffEnd == _specs.cutoffEnd)
+        return false;
+    _specs.cutoffBegin = cutoffBegin;
+    _specs.cutoffBegin = cutoffBegin;
+    onSpecChanged();
+    return true;
 }
 
 template<typename Type>
 inline bool Audio::DSP::FIR::BasicFilter<Type>::_setGain(const DB gain) noexcept
 {
-    return setSpec(
-        Filter::FIRSpec {
-            _spec.filterType,
-            _spec.windowType,
-            _spec.order,
-            _spec.sampleRate,
-            { _spec.cutoffs[0], _spec.cutoffs[1] },
-            gain
-        }
-    );
+    if (_specs.gain == gain)
+        return false;
+    _specs.gain = gain;
+    onSpecChanged();
+    return true;
 }
 
 template<typename Type>
 inline bool Audio::DSP::FIR::BasicFilter<Type>::setSampleRate(const float sampleRate) noexcept
 {
-    return setSpec(
-        Filter::FIRSpec {
-            _spec.filterType,
-            _spec.windowType,
-            _spec.order,
-            sampleRate,
-            { _spec.cutoffs[0], _spec.cutoffs[1] },
-            _spec.gain
-        }
-    );
+    if (_specs.sampleRate == sampleRate)
+        return false;
+    _specs.sampleRate = sampleRate;
+    onSpecChanged();
+    return true;
 }
 
 template<typename Type>
 inline bool Audio::DSP::FIR::BasicFilter<Type>::setOrder(const std::uint32_t order) noexcept
 {
-    resizeLastInputCache(order);
+    if (order == _specs.order)
+        return false;
+    _specs.order = order + (order & 1u);
+    _specs.filterSize = _specs.order + 1u;
+    // We don't need the last coefficient to process the first filter frame
+    resizeLastInputCache(_specs.filterSize - 1u);
     resetLastInputCache();
-    return setSpec(
-        Filter::FIRSpec {
-            _spec.filterType,
-            _spec.windowType,
-            order,
-            _spec.sampleRate,
-            { _spec.cutoffs[0], _spec.cutoffs[1] },
-            _spec.gain
-        }
-    );
+    onSpecChanged();
+    return true;
 }
 
 template<typename Type>
 inline bool Audio::DSP::FIR::BasicFilter<Type>::setFilterType(const DSP::Filter::BasicType filterType) noexcept
 {
-    return setSpec(
-        Filter::FIRSpec {
-            filterType,
-            _spec.windowType,
-            _spec.order,
-            _spec.sampleRate,
-            { _spec.cutoffs[0], _spec.cutoffs[1] },
-            _spec.gain
-        }
-    );
+    if (_specs.filterType == filterType)
+        return false;
+    _specs.filterType = filterType;
+    onSpecChanged();
+    return true;
 }
 
 template<typename Type>
 inline bool Audio::DSP::FIR::BasicFilter<Type>::setWindowType(const DSP::Filter::WindowType windowType) noexcept
 {
-    return setSpec(
-        Filter::FIRSpec {
-            _spec.filterType,
-            windowType,
-            _spec.order,
-            _spec.sampleRate,
-            { _spec.cutoffs[0], _spec.cutoffs[1] },
-            _spec.gain
-        }
-    );
+    if (_specs.windowType == windowType)
+        return false;
+    _specs.windowType = windowType;
+    onSpecChanged();
+    return true;
+}
+
+template<typename Type>
+inline void Audio::DSP::FIR::BasicFilter<Type>::onSpecChanged(void) noexcept
+{
+    _instance.coefficients().resize(_specs.filterSize);
+    Filter::GenerateFilter<true>(_specs, _instance.coefficients().data());
 }
 
 
@@ -143,7 +121,7 @@ inline void Audio::DSP::FIR::BandFilter<InstanceCount, Type>::init(const Audio::
 
 template<unsigned InstanceCount, typename Type>
 template<bool Accumulate, typename GainType, std::uint32_t GainSize>
-typename Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::BandFilter<InstanceCount, Type>::filter(const Type *input, const std::uint32_t inputSize, Type *output, const GainType(&gains)[GainSize]) noexcept
+inline typename Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::BandFilter<InstanceCount, Type>::filter(const Type *input, const std::uint32_t inputSize, Type *output, const GainType(&gains)[GainSize]) noexcept
 {
     // std::cout << "FIlter:::" << std::endl;
     // ASSERT GainSize == InstanceCount
@@ -251,14 +229,15 @@ inline void Audio::DSP::FIR::BandFilter<InstanceCount, Type>::reloadLowPass(cons
     std::cout << "Reload low pass " << rootFreq << ", " << gain << std::endl;
     _gain[0u] = gain;
     Filter::GenerateFilter<true, false>(
-        Filter::FIRSpec {
+        Filter::FIRSpecs(
             Filter::BasicType::LowPass,
             Filter::WindowType::Default,
             _filterOrder,
             _sampleRate,
-            { rootFreq, 0.0f },
+            rootFreq,
+            0.0f,
             gain
-        },
+        ),
         _coefficients[0].data()
     );
 }
@@ -269,14 +248,15 @@ inline void Audio::DSP::FIR::BandFilter<InstanceCount, Type>::reloadBandPass(con
     std::cout << "Reload band pass (" << filterIndex << ") " << rootFreq << ", " << rootFreq * 2.f << ", " << gain << std::endl;
     _gain[filterIndex] = gain;
     Filter::GenerateFilter<true, false>(
-        Filter::FIRSpec {
+        Filter::FIRSpecs(
             Filter::BasicType::BandPass,
             Filter::WindowType::Default,
             _filterOrder,
             _sampleRate,
-            { rootFreq, rootFreq * 2.f },
+            rootFreq,
+            rootFreq * 2.f,
             gain
-        },
+        ),
         _coefficients[filterIndex].data()
     );
 
@@ -288,14 +268,15 @@ inline void Audio::DSP::FIR::BandFilter<InstanceCount, Type>::reloadHighPass(con
     std::cout << "Reload high pass " << rootFreq << ", " << gain << std::endl;
     _gain[InstanceCount - 1u] = gain;
     Filter::GenerateFilter<true, false>(
-        Filter::FIRSpec {
+        Filter::FIRSpecs(
             Filter::BasicType::HighPass,
             Filter::WindowType::Default,
             _filterOrder,
             _sampleRate,
-            { rootFreq, 0.0f },
+            rootFreq,
+            0.0f,
             gain
-        },
+        ),
         _coefficients[InstanceCount - 1u].data()
     );
 }
@@ -325,7 +306,7 @@ inline bool Audio::DSP::FIR::BandFilter<InstanceCount, Type>::setOrder(const std
 // template<unsigned InstanceCount, typename Type>
 // inline bool Audio::DSP::FIR::BandFilter<InstanceCount, Type>::setFilterType(const std::size_t filterIndex, const DSP::Filter::BasicType filterType) noexcept
 // {
-//     return setSpec(filterIndex, filterType, _gain[filterIndex], _cutoffs[filterIndex], _cutoffs[filterIndex * 2]);
+//     return setSpecs(filterIndex, filterType, _gain[filterIndex], _cutoffs[filterIndex], _cutoffs[filterIndex * 2]);
 // }
 
 template<unsigned InstanceCount, typename Type>
@@ -343,7 +324,7 @@ inline bool Audio::DSP::FIR::BandFilter<InstanceCount, Type>::setWindowType(cons
  */
 // template<unsigned InstanceCount, typename Type>
 // template<typename GainType, std::uint32_t GainSize>
-// typename Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::SerieFilter<InstanceCount, Type>::filter(const Type *input, const std::uint32_t inputSize, Type *output, const GainType(&gains)[GainSize]) noexcept
+// inline typename Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::SerieFilter<InstanceCount, Type>::filter(const Type *input, const std::uint32_t inputSize, Type *output, const GainType(&gains)[GainSize]) noexcept
 // {
 //     static_assert(GainSize <= InstanceCount, "Audio::DSP::FIR::SerieFilter::filter: gains input must not be greater than the internal InstanceCount.");
 //     for (auto i = 0u; i < GainSize; ++i) {
@@ -369,13 +350,13 @@ inline bool Audio::DSP::FIR::BandFilter<InstanceCount, Type>::setWindowType(cons
 // }
 
 // template<unsigned InstanceCount, typename Type>
-// inline void Audio::DSP::FIR::SerieFilter<InstanceCount, Type>::reloadInstance(const DSP::Filter::FIRSpec &spec, const std::uint32_t instanceIndex) noexcept
+// inline void Audio::DSP::FIR::SerieFilter<InstanceCount, Type>::reloadInstance(const DSP::Filter::FIRSpecs &specs, const std::uint32_t instanceIndex) noexcept
 // {
-//     _instances.coefficients()[instanceIndex].resize(spec.order + 1u);
-//     _instances.lastInput().resize(spec.order);
+//     _instances.coefficients()[instanceIndex].resize(specs.order + 1u);
+//     _instances.lastInput().resize(specs.order);
 //     _instances.lastInput().clear();
 
-//     // Filter::GenerateFilter(spec, _instances.coefficients()[instanceIndex].data());
+//     // Filter::GenerateFilter(specs, _instances.coefficients()[instanceIndex].data());
 // }
 
 // template<unsigned InstanceCount, typename Type>
@@ -383,7 +364,7 @@ inline bool Audio::DSP::FIR::BandFilter<InstanceCount, Type>::setWindowType(cons
 // {
 //     // First filter (low-pass)
 //     reloadInstance(
-//         Filter::FIRSpec {
+//         Filter::FIRSpecs {
 //             Filter::BasicType::LowPass,
 //             windowType,
 //             filterOrder,
@@ -396,7 +377,7 @@ inline bool Audio::DSP::FIR::BandFilter<InstanceCount, Type>::setWindowType(cons
 //     // Middle filters (band-pass)
 //     for (auto i = 1u; i < InstanceCount - 1ul; ++i) {
 //         reloadInstance(
-//             Filter::FIRSpec {
+//             Filter::FIRSpecs {
 //                 Filter::BasicType::BandPass,
 //                 windowType,
 //                 filterOrder,
@@ -409,7 +390,7 @@ inline bool Audio::DSP::FIR::BandFilter<InstanceCount, Type>::setWindowType(cons
 //     }
 //     // Last filter (low-pass)
 //     reloadInstance(
-//         Filter::FIRSpec {
+//         Filter::FIRSpecs {
 //             Filter::BasicType::HighPass,
 //             windowType,
 //             filterOrder,
