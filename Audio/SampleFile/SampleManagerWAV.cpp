@@ -91,8 +91,7 @@ Buffer SampleManagerWAV::LoadFile(const std::string &path, const SampleSpecs &de
         // Convert the audio
         SDL_ConvertAudio(&sdlConverter);
         fileBuffer.resize(static_cast<std::size_t>(sdlConverter.len_cvt) / static_cast<std::size_t>(desiredSpecs.channelArrangement), desiredSpecs.sampleRate, desiredSpecs.channelArrangement, desiredSpecs.format);
-        std::memcpy(fileBuffer.data<std::uint8_t>(), sdlConverter.buf, desiredSpecs.channelByteSize * static_cast<std::size_t>(desiredSpecs.channelArrangement));
-
+        std::memcpy(fileBuffer.data<std::uint8_t>(), sdlConverter.buf, sdlConverter.len_cvt);
     } else {
         std::memcpy(fileBuffer.data<std::uint8_t>(), sdlBuffer, sdlBufferByteSize);
     }
