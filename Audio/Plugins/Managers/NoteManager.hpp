@@ -60,15 +60,18 @@ public:
     static_assert_alignof_double_cacheline(Cache);
 
 
-    std::uint32_t getAllActiveNoteSize(void) const noexcept { return getActiveNoteSize() + getActiveNoteBlockSize(); }
-    std::uint32_t getActiveNoteSize(void) const noexcept { return _cache.actives.size(); }
-    std::uint32_t getActiveNoteBlockSize(void) const noexcept { return _cache.activesBlock.size(); }
+    [[nodiscard]] std::uint32_t getAllActiveNoteSize(void) const noexcept { return getActiveNoteSize() + getActiveNoteBlockSize(); }
+    [[nodiscard]] std::uint32_t getActiveNoteSize(void) const noexcept { return _cache.actives.size(); }
+    [[nodiscard]] std::uint32_t getActiveNoteBlockSize(void) const noexcept { return _cache.activesBlock.size(); }
 
-    KeyList &getActiveNote(void) noexcept { return _cache.actives; }
-    KeyList &getActiveNoteBlock(void) noexcept { return _cache.activesBlock; }
+    [[nodiscard]] KeyList &getActiveNote(void) noexcept { return _cache.actives; }
+    [[nodiscard]] KeyList &getActiveNoteBlock(void) noexcept { return _cache.activesBlock; }
 
-    const KeyList &getActiveNote(void) const noexcept { return _cache.actives; }
-    const KeyList &getActiveNoteBlock(void) const noexcept { return _cache.activesBlock; }
+    [[nodiscard]] const KeyList &getActiveNote(void) const noexcept { return _cache.actives; }
+    [[nodiscard]] const KeyList &getActiveNoteBlock(void) const noexcept { return _cache.activesBlock; }
+
+    template<typename Functor>
+    void processNotes(Functor &&functor, const std::uint32_t processBlockSize) noexcept;
 
 
     /** @brief Process a list of notes and update the internal cache */
@@ -106,7 +109,7 @@ public:
     void resetTriggers(void) noexcept;
 
     /** @brief Get a trigger state by Key */
-    bool trigger(const Key key) const noexcept { return _cache.triggers[key]; }
+    [[nodiscard]] bool trigger(const Key key) const noexcept { return _cache.triggers[key]; }
 
     /** @brief Set a trigger state by Key. Return true if the trigger state changed */
     bool setTrigger(const Key key, const bool state) noexcept;
@@ -121,7 +124,7 @@ public:
 
     void setReadIndex(const Key key, const std::uint32_t index) noexcept { _cache.readIndexes[key] = key; }
 
-    float getEnveloppeGain(
+    [[nodiscard]] float getEnveloppeGain(
             const Key key, const std::uint32_t index, const bool trigger,
             const float delay, const float attack,
             const float hold, const float decay,

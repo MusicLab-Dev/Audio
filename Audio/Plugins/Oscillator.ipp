@@ -27,32 +27,23 @@ inline void Audio::Oscillator::sendNotes(const NoteEvents &notes)
 
 inline void Audio::Oscillator::receiveAudio(BufferView output)
 {
-    using Type = float;
-    const DB voiceGain = ConvertDecibelToRatio(static_cast<float>(outputVolume()) + DefaultVoiceGain);
-    const auto outSize = output.size<Type>();
-    Type *out = reinterpret_cast<Type *>(output.byteData());
+    const DB outGain = ConvertDecibelToRatio(static_cast<float>(outputVolume()) + DefaultVoiceGain);
+    const auto outSize = output.size<float>();
+    float *out = reinterpret_cast<float *>(output.byteData());
 
-    // std::cout << "Oscillator::receiveAudio::sampleSize: " << sampleSize << std::endl;
-
-    const auto activeNote = _noteManager.getActiveNote();
-    // std::cout << "Receive <audio>: " << activeNote.size() << std::endl;
-    for (auto iKey = 0u; iKey < activeNote.size(); ++iKey) {
-        const auto key = activeNote[iKey];
-        const auto trigger = _noteManager.trigger(key);
-        // Phase index
-        const auto phaseIndex = _noteManager.readIndex(key);
-        const Type frequency = std::pow(2.f, static_cast<Type>(static_cast<int>(key) - RootKey) / KeysPerOctave) * RootKeyFrequency;
-        // const int nextReadIndex = sampleSize - (baseIndex + audioSpecs().processBlockSize);
-        // const auto readSize = nextReadIndex < 0 ? outSize + nextReadIndex : outSize;
-
-        generateWaveform<true>(static_cast<Osc::Waveform>(waveform()), out, outSize, frequency, audioSpecs().sampleRate, phaseIndex, key, trigger, voiceGain);//1.f / static_cast<Type>(activeNote.size()));
-        _noteManager.incrementReadIndex(key, 0ul, audioSpecs().processBlockSize);
-    }
+    _noteManager.processNotes(
+        [this, outGain, outSize, out](const Key key, const bool trigger, const std::uint32_t readIndex) {
+            const float frequency = std::pow(2.f, static_cast<float>(static_cast<int>(key) - RootKey) / KeysPerOctave) * RootKeyFrequency;
+            generateWaveform<true>(static_cast<Osc::Waveform>(waveform()), out, outSize, frequency, audioSpecs().sampleRate, readIndex, key, trigger, outGain);
+            return 0u;
+        },
+        audioSpecs().processBlockSize
+    );
 
     // To benchmark, must be slower
-    // Modifier<Type>::ApplyIndexFunctor(out, outSize, 0u, [&, voiceGain](const std::size_t index) -> Type {
+    // Modifier<float>::ApplyIndexFunctor(out, outSize, 0u, [&, outGain](const std::size_t index) -> float {
     //     UNUSED(index);
-    //     Type sample {};
+    //     float sample {};
     //     const auto activeNote = _noteManager.getActiveNote();
     //     const auto activeNoteSize = activeNote.size();
     //     // std::cout << "Receive <audio>: " << activeNote.size() << std::endl;
@@ -61,13 +52,13 @@ inline void Audio::Oscillator::receiveAudio(BufferView output)
     //         const auto trigger = _noteManager.trigger(key);
     //         // Phase index
     //         const auto phaseIndex = _noteManager.readIndex(key);
-    //         const Type frequency = std::pow(2.f, static_cast<Type>(static_cast<int>(key) - RootKey) / KeysPerOctave) * RootKeyFrequency;
+    //         const float frequency = std::pow(2.f, static_cast<float>(static_cast<int>(key) - RootKey) / KeysPerOctave) * RootKeyFrequency;
     //         const float frequencyNorm = 2.f * static_cast<float>(M_PI) * frequency / static_cast<float>(audioSpecs().sampleRate);
     //         sample += std::sin(static_cast<float>(index) * frequencyNorm) *
     //         getEnveloppeGain(key, static_cast<std::uint32_t>(phaseIndex), trigger);
     //     }
-    //     return sample * voiceGain;
-    //         // std::sin(static_cast<Type>(index) * frequencyNorm) *
+    //     return sample * outGain;
+    //         // std::sin(static_cast<float>(index) * frequencyNorm) *
     //         // getEnveloppeGain(key, static_cast<std::uint32_t>(index), trigger) * gain;
     // });
 

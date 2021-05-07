@@ -81,14 +81,11 @@ set(AudioPluginsSources
 
 set(AudioPluginManagerDir ${AudioPluginsDir}/Managers)
 
-set(AudioPluginManagersSources
-    ${AudioPluginManagerDir}/NoteManager.hpp
-    ${AudioPluginManagerDir}/NoteManager.ipp
-)
-
 set(AudioSampleFileDir ${AudioDir}/SampleFile)
 
 set(AudioPluginManagersSources
+    ${AudioPluginManagerDir}/NoteManager.hpp
+    ${AudioPluginManagerDir}/NoteManager.ipp
     ${AudioSampleFileDir}/SampleManager.hpp
     ${AudioSampleFileDir}/SampleManager.ipp
     ${AudioSampleFileDir}/SampleManager.cpp

@@ -66,59 +66,54 @@ inline void Audio::Sampler::receiveAudio(BufferView output)
     const std::uint32_t outSize = static_cast<std::uint32_t>(output.size<float>());
     float *out = reinterpret_cast<float *>(output.byteData());
 
-    float *sampleBuffer = nullptr;
-    std::uint32_t sampleSize = 0u;
+    _noteManager.processNotes(
+        [this, outGain, outSize, out](const Key key, const bool trigger, const std::uint32_t readIndex) -> std::uint32_t {
+            std::uint32_t sampleSize = 0u;
+            const std::int32_t realKeyIdx = static_cast<std::int32_t>(key) % KeysPerOctave;
+            const std::int32_t realOctave = static_cast<std::int32_t>(key) / KeysPerOctave;
+            std::int32_t bufferKeyIdx = realKeyIdx - OctaveRootKey + 1;
+            std::int32_t bufferOctave;
 
-    // std::cout << "Receive audio" << std::endl;
-    const auto activeNote = _noteManager.getActiveNote();
-    for (auto iKey = 0u; iKey < activeNote.size(); ++iKey) {
-        const auto key = activeNote[iKey];
-        // if (!_noteManager.trigger(key))
-        //     continue;
-        const std::int32_t realKeyIdx = static_cast<std::int32_t>(key) % KeysPerOctave;
-        const std::int32_t realOctave = static_cast<std::int32_t>(key) / KeysPerOctave;
-        std::int32_t bufferKeyIdx = realKeyIdx - OctaveRootKey + 1;
-        std::int32_t bufferOctave;
+            // Get key idx in buffer
+            if (bufferKeyIdx < 0) {
+                bufferOctave = realOctave - RootOctave - 1;
+                bufferKeyIdx += KeysPerOctave;
+            } else
+                bufferOctave = realOctave - RootOctave;
 
-        if (bufferKeyIdx < 0) {
-            bufferOctave = realOctave - RootOctave - 1;
-            bufferKeyIdx += KeysPerOctave;
-        } else
-            bufferOctave = realOctave - RootOctave;
-
-        sampleBuffer = _buffers[bufferKeyIdx].data<float>();
-        sampleSize = static_cast<std::uint32_t>(_buffers[bufferKeyIdx].size<float>());
-
-        if (!bufferOctave) {
-            const std::uint32_t baseIndex = _noteManager.readIndex(key);
-            const int nextReadIndex = static_cast<int>(sampleSize - (baseIndex + audioSpecs().processBlockSize));
-            const auto readSize = nextReadIndex < 0 ? outSize - static_cast<std::uint32_t>(-nextReadIndex) : outSize;
-
-            for (auto i = 0u; i < readSize; ++i) {
-                const auto idx = baseIndex + i;
-                out[i] += sampleBuffer[idx] * getEnveloppeGain(key, idx, _noteManager.trigger(key)) * outGain;
-            }
-            _noteManager.incrementReadIndex(key, sampleSize, readSize);
-        }
-        else {
-            sampleBuffer = _buffers[bufferKeyIdx].data<float>();
+            auto *sampleBuffer = _buffers[bufferKeyIdx].data<float>();
             sampleSize = static_cast<std::uint32_t>(_buffers[bufferKeyIdx].size<float>());
-            const std::uint32_t resampleSize = static_cast<std::uint32_t>(static_cast<float>(sampleSize) * std::pow(2, -bufferOctave));
-            const std::uint32_t resampleOffset = static_cast<std::uint32_t>(static_cast<float>(_noteManager.readIndex(key)) * std::pow(2, bufferOctave));
-            const int nextReadIndex = static_cast<int>(resampleSize - (_noteManager.readIndex(key) + audioSpecs().processBlockSize));
-            const auto readSize = nextReadIndex < 0 ? outSize + nextReadIndex : outSize;
-            const std::uint32_t resampleReadSize = static_cast<std::uint32_t>(static_cast<float>(readSize) * std::pow(2, bufferOctave));
 
-            DSP::Resampler<float>().resampleOctave<true, 8u>(sampleBuffer, out, resampleReadSize, audioSpecs().sampleRate, bufferOctave, resampleOffset);
+            // The key is already cached
+            if (!bufferOctave) {
+                const int nextReadIndex = static_cast<int>(sampleSize - (readIndex + audioSpecs().processBlockSize));
+                const auto readSize = nextReadIndex < 0 ? outSize - static_cast<std::uint32_t>(-nextReadIndex) : outSize;
 
-            // Apply enveloppe
-            for (auto i = 0u; i < readSize; ++i) {
-                const auto idx = _noteManager.readIndex(key) + i;
-                out[i] *= getEnveloppeGain(key, idx, _noteManager.trigger(key)) * outGain;
+                // Apply enveloppe
+                for (auto i = 0u; i < readSize; ++i) {
+                    const auto idx = readIndex + i;
+                    out[i] += sampleBuffer[idx] * getEnveloppeGain(key, idx, trigger) * outGain;
+                }
+            // The key need an octave shift
+            } else {
+                sampleSize = static_cast<std::uint32_t>(_buffers[bufferKeyIdx].size<float>());
+                const std::uint32_t resampleSize = static_cast<std::uint32_t>(static_cast<float>(sampleSize) * std::pow(2, -bufferOctave));
+                const std::uint32_t resampleOffset = static_cast<std::uint32_t>(static_cast<float>(_noteManager.readIndex(key)) * std::pow(2, bufferOctave));
+                const int nextReadIndex = static_cast<int>(resampleSize - (_noteManager.readIndex(key) + audioSpecs().processBlockSize));
+                const auto readSize = nextReadIndex < 0 ? outSize + nextReadIndex : outSize;
+                const std::uint32_t resampleReadSize = static_cast<std::uint32_t>(static_cast<float>(readSize) * std::pow(2, bufferOctave));
+
+                DSP::Resampler<float>().resampleOctave<true, 8u>(sampleBuffer, out, resampleReadSize, audioSpecs().sampleRate, bufferOctave, resampleOffset);
+
+                // Apply enveloppe
+                for (auto i = 0u; i < readSize; ++i) {
+                    out[i] *= getEnveloppeGain(key, readIndex + i, trigger) * outGain;
+                }
             }
-            _noteManager.incrementReadIndex(key, resampleSize, readSize);
-        }
-    }
+            return sampleSize;
+        },
+        audioSpecs().processBlockSize
+    );
 }
 
 inline void Audio::Sampler::onAudioGenerationStarted(const BeatRange &)
