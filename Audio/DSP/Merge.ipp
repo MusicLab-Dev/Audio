@@ -7,11 +7,11 @@
 template<typename Type>
 void Audio::DSP::Merge(const BufferViews inputs, BufferView output, const DB ratio, const bool normalize) noexcept
 {
+    UNUSED(normalize);
     const auto inputSize = inputs.size();
     const std::size_t outputSize = output.size<Type>();
 
-    UNUSED(normalize);
-    if (!inputSize)
+    if (!inputSize || !outputSize)
         return;
     Type *to = output.data<Type>();
     // Copy first input
@@ -28,6 +28,24 @@ void Audio::DSP::Merge(const BufferViews inputs, BufferView output, const DB rat
     }
     for (auto k = 0u; k < outputSize; ++k) {
         to[k] *= ratio;
+    }
+}
+
+template<typename Type>
+void Audio::DSP::Merge(const BufferView input, BufferView output, const DB ratio, const bool normalize) noexcept
+{
+    UNUSED(normalize);
+    const std::size_t inputSize = static_cast<std::size_t>(input.size<Type>());
+    const std::size_t outputSize = output.size<Type>();
+
+    if (!inputSize || !outputSize)
+        return;
+    const auto realSize = std::min(inputSize, outputSize);
+
+    const Type *in = input.data<Type>();
+    Type *out = output.data<Type>();
+    for (auto i = 0u; i < realSize; ++i) {
+        out[i] = in[i] * ratio;
     }
 }
 

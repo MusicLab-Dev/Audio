@@ -120,6 +120,8 @@ set(AudioDSPSources
     ${AudioDSPDir}/Filter.ipp
     ${AudioDSPDir}/Window.ipp
     ${AudioDSPDir}/Filter.hpp
+    ${AudioDSPDir}/Delay.hpp
+    ${AudioDSPDir}/Delay.ipp
 )
 
 add_library(${PROJECT_NAME}

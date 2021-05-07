@@ -17,6 +17,9 @@ namespace Audio::DSP
     template<typename Type>
     void Merge(const BufferViews inputs, BufferView output, const DB ratio, const bool normalize = false) noexcept;
 
+    template<typename Type>
+    void Merge(const BufferView input, BufferView output, const DB ratio, const bool normalize = false) noexcept;
+
     template<typename Unit, std::size_t BufferSize, typename ...Args>
     void Merge(Unit * const output, Args &&...args) noexcept;
 
