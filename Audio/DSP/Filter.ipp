@@ -7,7 +7,7 @@
 #include <math.h>
 #include <cmath>
 
-inline Audio::DSP::Filter::FIRSpecs::FIRSpecs(const BasicType filterType_, const WindowType windowType_, const std::size_t desiredOrder,
+inline Audio::DSP::Filter::FIRSpecs::FIRSpecs(const BasicType filterType_, const WindowType windowType_, const std::uint32_t desiredOrder,
         const float sampleRate_, const float cutoffBegin_, const float cutoffEnd_, const float gain_) noexcept
     : filterType(filterType_), windowType(windowType_), order(desiredOrder + (desiredOrder & 1u)), filterSize(order + 1), sampleRate(sampleRate_),
       cutoffBegin(cutoffBegin_), cutoffEnd(cutoffEnd_), gain(gain_)

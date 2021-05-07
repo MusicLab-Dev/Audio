@@ -36,14 +36,14 @@ template<typename Type>
 template<bool Accumulate, unsigned ProcessSize>
 inline void Audio::DSP::Resampler<Type>::resampleSemitone(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const SampleRate sampleRate, const bool upScale, const std::size_t inputOffset) noexcept
 {
-    const auto iFactor = upScale ? Resampler::InterpolationSemitoneFactor : Resampler::DecimationSemitoneFactor;
-    const auto dFactor = upScale ? Resampler::DecimationSemitoneFactor : Resampler::InterpolationSemitoneFactor;
-    const auto factor = std::max(iFactor, dFactor);
+    const std::uint32_t iFactor = upScale ? Resampler::InterpolationSemitoneFactor : Resampler::DecimationSemitoneFactor;
+    const std::uint32_t dFactor = upScale ? Resampler::DecimationSemitoneFactor : Resampler::InterpolationSemitoneFactor;
+    const std::uint32_t factor = std::max(iFactor, dFactor);
     const auto factorScale = static_cast<float>(iFactor);
     const Filter::FIRSpecs filterSpecs(
         Filter::BasicType::LowPass,
         Filter::WindowType::Hanning,
-        static_cast<std::uint32_t>(factor * static_cast<float>(ProcessSize)),
+        static_cast<std::uint32_t>(factor * ProcessSize),
         static_cast<float>(sampleRate),
         static_cast<float>(sampleRate) / 2.0f / static_cast<float>(factor),
         0.0f,
@@ -102,12 +102,12 @@ template<typename Type>
 template<bool Accumulate, unsigned ProcessSize>
 inline void Audio::DSP::Resampler<Type>::resampleOctave(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const SampleRate sampleRate, const int nOctave, const std::size_t inputOffset) noexcept
 {
-    const std::size_t factor = static_cast<std::size_t>(std::pow(2, std::abs(nOctave)));
+    const std::uint32_t factor = static_cast<std::uint32_t>(std::pow(2, std::abs(nOctave)));
     const auto factorScale = static_cast<float>(nOctave > 0 ? 1 : factor);
     const Filter::FIRSpecs filterSpecs(
         Filter::BasicType::LowPass,
         Filter::WindowType::Hanning,
-        static_cast<std::uint32_t>(factor * static_cast<float>(ProcessSize)),
+        static_cast<std::uint32_t>(factor * ProcessSize),
         static_cast<float>(sampleRate),
         static_cast<float>(sampleRate) / 2.0f / static_cast<float>(factor),
         0.0f,

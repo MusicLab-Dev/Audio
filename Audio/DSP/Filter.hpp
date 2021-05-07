@@ -59,7 +59,7 @@ namespace Audio::DSP::Filter
         FIRSpecs(void) noexcept = default;
 
         /** @brief Init constructor */
-        FIRSpecs(const BasicType filterType_, const WindowType windowType_, const std::size_t desiredOrder,
+        FIRSpecs(const BasicType filterType_, const WindowType windowType_, const std::uint32_t desiredOrder,
                 const float sampleRate_, const float cutoffBegin_, const float cutoffEnd_, const float gain_) noexcept;
 
         /** @brief Copy constructor */
