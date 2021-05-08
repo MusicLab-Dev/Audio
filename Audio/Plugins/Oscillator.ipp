@@ -28,11 +28,11 @@ inline void Audio::Oscillator::sendNotes(const NoteEvents &notes)
 inline void Audio::Oscillator::receiveAudio(BufferView output)
 {
     const DB outGain = ConvertDecibelToRatio(static_cast<float>(outputVolume()) + DefaultVoiceGain);
-    const auto outSize = output.size<float>();
+    const auto outSize = static_cast<std::uint32_t>(output.size<float>());
     float *out = reinterpret_cast<float *>(output.byteData());
 
     _noteManager.processNotes(
-        [this, outGain, outSize, out](const Key key, const bool trigger, const std::uint32_t readIndex, const NoteModifiers &modifiers) {
+        [this, outGain, outSize, out](const Key key, const bool trigger, const std::uint32_t readIndex, const NoteModifiers &modifiers) -> std::pair<std::uint32_t, std::uint32_t> {
             const float frequency = std::pow(2.f, static_cast<float>(static_cast<int>(key) - RootKey) / KeysPerOctave) * RootKeyFrequency;
             auto realOut = out;
             auto realOutSize = outSize;
@@ -42,9 +42,8 @@ inline void Audio::Oscillator::receiveAudio(BufferView output)
             } else
                 realOutSize = modifiers.sampleOffset;
             generateWaveform<true>(static_cast<Osc::Waveform>(waveform()), realOut, realOutSize, frequency, audioSpecs().sampleRate, readIndex, key, trigger, outGain);
-            return 0u;
-        },
-        audioSpecs().processBlockSize
+            return std::make_pair(realOutSize, 0u);
+        }
     );
 
     // To benchmark, must be slower

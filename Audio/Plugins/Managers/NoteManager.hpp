@@ -7,6 +7,7 @@
 
 #include <array>
 #include <memory>
+#include <utility>
 
 #include <Audio/Notes.hpp>
 #include <Audio/DSP/EnveloppeGenerator.hpp>
@@ -74,7 +75,7 @@ public:
     [[nodiscard]] const KeyList &getActiveNoteBlock(void) const noexcept { return _cache.activesBlock; }
 
     template<typename Functor>
-    void processNotes(Functor &&functor, const std::uint32_t processBlockSize) noexcept;
+    void processNotes(Functor &&functor) noexcept;
 
 
     /** @brief Process a list of notes and update the internal cache */

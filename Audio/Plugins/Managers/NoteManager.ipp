@@ -140,23 +140,23 @@ inline bool Audio::NoteManager<Enveloppe>::setTrigger(const Key key, const bool 
 
 template<Audio::DSP::EnveloppeType Enveloppe>
 template<typename Functor>
-void Audio::NoteManager<Enveloppe>::processNotes(Functor &&functor, const std::uint32_t processBlockSize) noexcept
+void Audio::NoteManager<Enveloppe>::processNotes(Functor &&functor) noexcept
 {
     for (const auto key : _cache.actives) {
         const auto keyTrigger = trigger(key);
         const auto idx = readIndex(key);
         auto &modifiers = _cache.modifiers[key].noteModifiers;
-        const auto maxIdx = functor(key, keyTrigger, idx, modifiers);
+        const auto pair = functor(key, keyTrigger, idx, modifiers);
         modifiers.sampleOffset = 0u;
-        incrementReadIndex(key, maxIdx, processBlockSize);
+        incrementReadIndex(key, pair.second, pair.first);
     }
     for (const auto key : _cache.activesBlock) {
         auto &keyTrigger = _cache.triggers[key];
         const auto idx = readIndex(key);
         auto &modifiers = _cache.modifiers[key].noteModifiers;
-        const auto maxIdx = functor(key, keyTrigger, idx, modifiers);
+        const auto pair = functor(key, keyTrigger, idx, modifiers);
         modifiers.sampleOffset = 0u;
-        incrementReadIndex(key, maxIdx, processBlockSize);
+        incrementReadIndex(key, pair.second, pair.first);
         // Reset the note
         keyTrigger = false;
         enveloppe().setTriggerIndex(key, _cache.readIndexes[key]);
