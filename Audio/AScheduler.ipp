@@ -288,8 +288,7 @@ inline Audio::Beat Audio::AScheduler::ComputeBeatSize(const BlockSize blockSize,
 
 inline Audio::BlockSize Audio::AScheduler::ComputeSampleSize(const Beat blockBeatSize, const Tempo tempo, const SampleRate sampleRate, const double beatMissOffset, const double beatMissCount) noexcept
 {
-    // return static_cast<BlockSize>(static_cast<double>(blockBeatSize) / static_cast<double>(getCurrentBeatRange().to - getCurrentBeatRange().from) * static_cast<double>(_audioBlockSize));
-    if (beatMissOffset > 0) {
+    if (beatMissOffset > 0.0) {
         return static_cast<BlockSize>(((static_cast<double>(blockBeatSize) - beatMissOffset + beatMissCount) / (tempo * Audio::BeatPrecision)) * sampleRate);
     } else {
         return static_cast<BlockSize>(((static_cast<double>(blockBeatSize) + beatMissOffset - beatMissCount) / (tempo * Audio::BeatPrecision)) * sampleRate);

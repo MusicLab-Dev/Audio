@@ -76,7 +76,7 @@ private:
     [[nodiscard]] bool collectPartitions(const BeatRange &beatRange) noexcept;
 
     /** @brief Collect every notes within the current offset */
-    void collectPartition(const Partition &partition, const BeatRange &beatRange, const BeatRange &offset = BeatRange()) noexcept;
+    void collectPartition(const Partition &partition, const BeatRange &beatRange, const double beatToSampleRatio, const double beatMissOffset, const BeatRange &offset = BeatRange()) noexcept;
 
     /** @brief Collect every cached children buffer of the current frame */
     bool collectBuffers(void) noexcept;

@@ -197,6 +197,17 @@ public:
     /** @brief Get current elapsed beat from the last play */
     [[nodiscard]] Beat audioElapsedBeat(void) const noexcept { return _audioElapsedBeat.load(); }
 
+
+    /** @brief Get the current beat miss offset / count */
+    [[nodiscard]] double beatMissOffset(void) const noexcept { return _beatMissOffset; }
+    [[nodiscard]] double beatMissCount(void) const noexcept { return _beatMissCount; }
+
+    /** @brief Compute a beat size out of a sample size */
+    [[nodiscard]] static Beat ComputeBeatSize(const BlockSize blockSize, const Tempo tempo, const SampleRate sampleRate, double &beatMissOffset) noexcept;
+
+    /** @brief Compute a sample size out of a beat size */
+    [[nodiscard]] static BlockSize ComputeSampleSize(const Beat blockBeatSize, const Tempo tempo, const SampleRate sampleRate, const double beatMissOffset, const double beatMissCount) noexcept;
+
 protected:
     /** @brief Dispatch apply events without clearing event list */
     void dispatchApplyEvents(void);
@@ -272,12 +283,6 @@ private:
 
     /** @brief Schedule the current graph */
     void scheduleCurrentGraph(void);
-
-    /** @brief Compute a beat size out of a sample size */
-    [[nodiscard]] static Beat ComputeBeatSize(const BlockSize blockSize, const Tempo tempo, const SampleRate sampleRate, double &beatMissOffset) noexcept;
-
-    /** @brief Compute a sample size out of a beat size */
-    [[nodiscard]] static BlockSize ComputeSampleSize(const Beat blockBeatSize, const Tempo tempo, const SampleRate sampleRate, const double beatMissOffset, const double beatMissCount) noexcept;
 };
 
 static_assert_sizeof(Audio::AScheduler, Core::CacheLineSize * 4);

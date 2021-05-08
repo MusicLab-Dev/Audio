@@ -156,7 +156,8 @@ inline void Audio::DSP::Resampler<Type>::resampleOctave(const Type *inputBuffer,
         const auto filterMinusOne = filterSpecs.filterSize - 1;
         std::uint32_t zeroPads = filterMinusOne;
         auto outIdx = 0ul;
-        for (auto i = inputOffset; i < filterSpecs.filterSize; i += factor) {
+        auto i = inputOffset;
+        for (; i < filterSpecs.filterSize; i += factor) {
             const auto count = filterSpecs.filterSize - zeroPads;
             Type sample {};
             std::uint32_t k = zeroPads;
@@ -170,7 +171,7 @@ inline void Audio::DSP::Resampler<Type>::resampleOctave(const Type *inputBuffer,
             ++outIdx;
         }
         const auto end = inputOffset + inputSize;
-        for (auto i = inputOffset ? inputOffset : filterSpecs.filterSize; i < end; i += factor) {
+        for (; i < end; i += factor) {
             const auto iMinusFilterMinusOne = i - filterMinusOne;
             Type sample {};
             for (auto j = 0u; j < filterSpecs.filterSize; ++j)

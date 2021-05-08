@@ -39,8 +39,13 @@ inline void Audio::Oscillator::receiveAudio(BufferView output)
             if (trigger) {
                 realOut += modifiers.sampleOffset;
                 realOutSize -= modifiers.sampleOffset;
-            } else
+                if (realOutSize > audioSpecs().processBlockSize)
+                    std::cout << "ON - " << modifiers.sampleOffset << " - " << realOutSize << std::endl;
+            } else {
                 realOutSize = modifiers.sampleOffset;
+                if (realOutSize > audioSpecs().processBlockSize)
+                    std::cout << "OFF - " << modifiers.sampleOffset << " - " << realOutSize << std::endl;
+            }
             generateWaveform<true>(static_cast<Osc::Waveform>(waveform()), realOut, realOutSize, frequency, audioSpecs().sampleRate, readIndex, key, trigger, outGain);
             return std::make_pair(realOutSize, 0u);
         }
@@ -101,11 +106,10 @@ inline void Audio::Oscillator::generateSine(
         const Key key, const bool trigger, const DB gain) noexcept
 {
     const float frequencyNorm = 2.f * static_cast<float>(M_PI) * frequency / static_cast<float>(sampleRate);
-    const auto end = outputSize + phaseOffset;
 
     float outGain = 1.f;
     auto k = 0ul;
-    for (auto i = phaseOffset; i < end; ++i, ++k) {
+    for (auto i = phaseOffset; k < outputSize; ++i, ++k) {
         outGain = getEnveloppeGain(key, i, trigger) * gain;
         if constexpr (Accumulate)
             output[k] += static_cast<Type>(std::sin(static_cast<float>(i) * frequencyNorm) * outGain);
@@ -132,11 +136,10 @@ inline void Audio::Oscillator::generateSquare(
         const Key key, const bool trigger, const DB gain) noexcept
 {
     const float frequencyNorm = 2.f * static_cast<float>(M_PI) * frequency / static_cast<float>(sampleRate);
-    const auto end = outputSize + phaseOffset;
 
-    float outGain = 1.0f;
+    float outGain = 1.f;
     auto k = 0ul;
-    for (auto i = phaseOffset; i < end; ++i, ++k) {
+    for (auto i = phaseOffset; k < outputSize; ++i, ++k) {
         outGain = getEnveloppeGain(key, i, trigger) * gain;
         if constexpr (Accumulate)
             output[k] += std::sin(static_cast<float>(i) * frequencyNorm) > 0.f ? outGain : -outGain;
@@ -152,11 +155,10 @@ inline void Audio::Oscillator::generateTriangle(
         const Key key, const bool trigger, const DB gain) noexcept
 {
     const float frequencyNorm = 2.f * static_cast<float>(M_PI) / frequency / static_cast<float>(sampleRate);
-    const auto end = outputSize + phaseOffset;
 
-    float outGain = 1.0f;
+    float outGain = 1.f;
     auto k = 0ul;
-    for (auto i = phaseOffset; i < end; ++i, ++k) {
+    for (auto i = phaseOffset; k < outputSize; ++i, ++k) {
         outGain = getEnveloppeGain(key, i, trigger) * gain;
         if constexpr (Accumulate)
             output[k] += static_cast<Type>(std::asin(std::sin(static_cast<float>(i) * frequencyNorm)) * M_2_PI * outGain);
@@ -173,11 +175,10 @@ inline void Audio::Oscillator::generateSaw(
 {
     // UNUSED(sampleRate);
     const float frequencyNorm = static_cast<float>(M_PI) * frequency / static_cast<float>(sampleRate);
-    const auto end = outputSize + phaseOffset;
 
-    float outGain = 1.0f;
+    float outGain = 1.f;
     auto k = 0ul;
-    for (auto i = phaseOffset; i < end; ++i, ++k) {
+    for (auto i = phaseOffset; k < outputSize; ++i, ++k) {
         outGain = getEnveloppeGain(key, i, trigger) * gain;
         if constexpr (Accumulate)
             output[k] += -std::atan(Utils::cot(static_cast<float>(i) * frequencyNorm)) * static_cast<float>(M_2_PI) * outGain;
@@ -194,11 +195,10 @@ inline void Audio::Oscillator::generateError(
 {
     UNUSED(sampleRate);
     const float frequencyNorm = static_cast<float>(M_PI) * frequency;// / static_cast<float>(sampleRate);
-    const auto end = outputSize + phaseOffset;
 
-    float outGain = 1.0f;
+    float outGain = 1.f;
     auto k = 0ul;
-    for (auto i = phaseOffset; i < end; ++i, ++k) {
+    for (auto i = phaseOffset; k < outputSize; ++i, ++k) {
         outGain = getEnveloppeGain(key, i, trigger) * gain;
         if constexpr (Accumulate)
             output[k] += -std::atan(Utils::cot(static_cast<float>(i) * frequencyNorm)) * static_cast<float>(M_2_PI) * outGain;
@@ -215,11 +215,10 @@ inline void Audio::Oscillator::generateNoise(
 {
     UNUSED(frequency);
     UNUSED(sampleRate);
-    const auto end = outputSize + phaseOffset;
 
-    float outGain = 1.0f;
+    float outGain = 1.f;
     auto k = 0ul;
-    for (auto i = phaseOffset; i < end; ++i, ++k) {
+    for (auto i = phaseOffset; k < outputSize; ++i, ++k) {
         outGain = getEnveloppeGain(key, i, trigger) * gain;
         if constexpr (Accumulate)
             output[k] += static_cast<Type>(static_cast<int>(Utils::fastRand()) - std::numeric_limits<int>::max()) / static_cast<Type>(std::numeric_limits<int>::max()) * outGain;
