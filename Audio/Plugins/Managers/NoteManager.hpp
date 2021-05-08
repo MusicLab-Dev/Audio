@@ -18,6 +18,14 @@ namespace Audio
 
     template<DSP::EnveloppeType Enveloppe>
     using NoteManagerPtr = std::unique_ptr<NoteManager<Enveloppe>>;
+
+    /** @brief Modifiers of a note */
+    struct alignas_eighth_cacheline NoteModifiers
+    {
+        Velocity velocity { 0u };
+        Tuning tuning { 0u };
+        BlockSize sampleOffset { 0u };
+    };
 }
 
 /** @brief Note manager store states of each note */
@@ -29,21 +37,16 @@ public:
     using IndexList = std::array<std::uint32_t, KeyCount>;
     using TriggerList = std::array<bool, KeyCount>;
 
-    /** @brief Modifiers of a note */
-    struct NoteModifiers
-    {
-        Velocity velocity { 0u };
-        Tuning tuning { 0u };
-    };
+    static_assert_fit_eighth_cacheline(NoteModifiers);
 
     /** @brief Store the cache of a note */
-    struct alignas_eighth_cacheline NoteCache
+    struct alignas_quarter_cacheline NoteCache
     {
         NoteModifiers noteModifiers {};
         NoteModifiers polyPressureModifiers {};
     };
 
-    static_assert_fit_eighth_cacheline(NoteCache);
+    static_assert_fit_quarter_cacheline(NoteCache);
 
     using ModifiersList = std::array<NoteCache, KeyCount>;
 

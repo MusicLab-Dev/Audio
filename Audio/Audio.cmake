@@ -5,30 +5,22 @@ find_package(SDL2 REQUIRED)
 
 get_filename_component(AudioDir ${CMAKE_CURRENT_LIST_FILE} PATH)
 
-set(AudioSources
+set(AudioPrecompiledHeaders
     ${AudioDir}/AScheduler.hpp
-    ${AudioDir}/AScheduler.ipp
-    ${AudioDir}/AScheduler.cpp
     ${AudioDir}/SchedulerTask.hpp
-    ${AudioDir}/SchedulerTask.ipp
     ${AudioDir}/Automation.hpp
     ${AudioDir}/Base.hpp
     ${AudioDir}/BaseVolume.hpp
     ${AudioDir}/BaseDevice.hpp
     ${AudioDir}/BaseIndex.hpp
-    ${AudioDir}/BaseIndex.cpp
     ${AudioDir}/Math.hpp
     ${AudioDir}/Buffer.hpp
     ${AudioDir}/Modifier.hpp
     ${AudioDir}/BufferOctave.hpp
-    ${AudioDir}/Buffer.ipp
-    ${AudioDir}/Buffer.cpp
     ${AudioDir}/Connection.hpp
     ${AudioDir}/Control.hpp
     ${AudioDir}/Controls.hpp
     ${AudioDir}/ParameterTable.hpp
-    ${AudioDir}/ParameterTable.cpp
-    ${AudioDir}/Device.cpp
     ${AudioDir}/Device.hpp
     ${AudioDir}/ExternalFactory.hpp
     ${AudioDir}/FlatNode.hpp
@@ -37,23 +29,35 @@ set(AudioSources
     ${AudioDir}/IPlugin.hpp
     ${AudioDir}/IPluginFactory.hpp
     ${AudioDir}/Node.hpp
-    ${AudioDir}/Node.ipp
     ${AudioDir}/Note.hpp
     ${AudioDir}/Partitions.hpp
-    ${AudioDir}/Note.cpp
-    ${AudioDir}/Note.ipp
     ${AudioDir}/Partition.hpp
     ${AudioDir}/PluginPtr.hpp
-    ${AudioDir}/PluginPtr.ipp
-    ${AudioDir}/PluginTable.cpp
     ${AudioDir}/PluginTable.hpp
-    ${AudioDir}/PluginTable.ipp
     ${AudioDir}/PluginUtils.hpp
     ${AudioDir}/PluginControlUtils.hpp
     ${AudioDir}/Project.hpp
-    ${AudioDir}/Project.ipp
     ${AudioDir}/UtilsMidi.hpp
     ${AudioDir}/Volume.hpp
+)
+
+set(AudioSources
+    ${AudioPrecompiledHeaders}
+    ${AudioDir}/AScheduler.ipp
+    ${AudioDir}/AScheduler.cpp
+    ${AudioDir}/SchedulerTask.ipp
+    ${AudioDir}/BaseIndex.cpp
+    ${AudioDir}/Buffer.ipp
+    ${AudioDir}/Buffer.cpp
+    ${AudioDir}/ParameterTable.cpp
+    ${AudioDir}/Device.cpp
+    ${AudioDir}/Node.ipp
+    ${AudioDir}/Note.cpp
+    ${AudioDir}/Note.ipp
+    ${AudioDir}/PluginPtr.ipp
+    ${AudioDir}/PluginTable.cpp
+    ${AudioDir}/PluginTable.ipp
+    ${AudioDir}/Project.ipp
     ${AudioDir}/Volume.ipp
 )
 
@@ -127,6 +131,8 @@ add_library(${PROJECT_NAME}
     ${AudioPluginManagersSources}
     ${AudioDSPSources}
 )
+
+target_precompile_headers(${PROJECT_NAME} PUBLIC ${AudioPrecompiledHeaders})
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${AudioDir}/..)
 

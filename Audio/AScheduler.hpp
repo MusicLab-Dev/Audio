@@ -115,14 +115,22 @@ public:
     [[nodiscard]] std::uint32_t partitionIndex(void) const noexcept { return _partitionIndex; }
     void setPartitionIndex(const std::uint32_t partitionIndex) noexcept { _partitionIndex = partitionIndex; }
 
+    /** @brief Get the sample rate */
+    [[nodiscard]] SampleRate sampleRate(void) const noexcept { return _sampleRate; }
+
     /** @brief Setup processBeatSize & processBlockSize parameters with a desired processBlockSize */
     void setProcessParamByBlockSize(const BlockSize processBlockSize, const SampleRate sampleRate) noexcept;
 
-    /** @brief Update tempo */
-    void setBPM(const BPM bpm) noexcept;
-
     /** @brief Set the taget audio block size */
     void setAudioBlockSize(const BlockSize blockSize) noexcept;
+
+
+    /** @brief Get the BPM / tempo */
+    [[nodiscard]] BPM bpm(void) const noexcept { return _bpm; }
+    [[nodiscard]] Tempo tempo(void) const noexcept { return _bpm / 60.0f; }
+
+    /** @brief Update bpm */
+    void setBPM(const BPM bpm) noexcept;
 
 
     /** @brief Add apply event to be dispatched */
@@ -225,7 +233,7 @@ private:
     double _beatMissOffset { 0.0 };
     std::array<bool, Audio::PlaybackModeCount> _dirtyFlags {};
     std::uint32_t _processLoopCrop { 0u };
-    // 4 bytes
+    BPM _bpm { 120.0f };
 
     // Cacheline 3
     PlaybackGraphs _graphs {};

@@ -23,6 +23,7 @@ inline void Audio::NoteManager<Enveloppe>::feedNotes(const NoteEvents &notes) no
             enveloppe().resetGain(note.key);
             target.noteModifiers.velocity = note.velocity;
             target.noteModifiers.tuning = note.tuning;
+            target.noteModifiers.sampleOffset = note.sampleOffset;
             break;
         }
         case NoteEvent::EventType::Off:
@@ -32,6 +33,7 @@ inline void Audio::NoteManager<Enveloppe>::feedNotes(const NoteEvents &notes) no
                 // Reset
                 _cache.triggers[note.key] = false;
                 enveloppe().setTriggerIndex(note.key, _cache.readIndexes[note.key]);
+                target.noteModifiers.sampleOffset = note.sampleOffset;
             }
         } break;
         case NoteEvent::EventType::OnOff:
@@ -41,10 +43,12 @@ inline void Audio::NoteManager<Enveloppe>::feedNotes(const NoteEvents &notes) no
             enveloppe().resetGain(note.key);
             target.noteModifiers.velocity = note.velocity;
             target.noteModifiers.tuning = note.tuning;
+            target.noteModifiers.sampleOffset = note.sampleOffset;
             break;
         case NoteEvent::EventType::PolyPressure:
             target.polyPressureModifiers.velocity = note.velocity;
             target.polyPressureModifiers.tuning = note.tuning;
+            target.noteModifiers.sampleOffset = note.sampleOffset;
             break;
         default:
             break;
@@ -141,13 +145,17 @@ void Audio::NoteManager<Enveloppe>::processNotes(Functor &&functor, const std::u
     for (const auto key : _cache.actives) {
         const auto keyTrigger = trigger(key);
         const auto idx = readIndex(key);
-        const auto maxIdx = functor(key, keyTrigger, idx);
+        auto &modifiers = _cache.modifiers[key].noteModifiers;
+        const auto maxIdx = functor(key, keyTrigger, idx, modifiers);
+        modifiers.sampleOffset = 0u;
         incrementReadIndex(key, maxIdx, processBlockSize);
     }
     for (const auto key : _cache.activesBlock) {
         auto &keyTrigger = _cache.triggers[key];
         const auto idx = readIndex(key);
-        const auto maxIdx = functor(key, keyTrigger, idx);
+        auto &modifiers = _cache.modifiers[key].noteModifiers;
+        const auto maxIdx = functor(key, keyTrigger, idx, modifiers);
+        modifiers.sampleOffset = 0u;
         incrementReadIndex(key, maxIdx, processBlockSize);
         // Reset the note
         keyTrigger = false;

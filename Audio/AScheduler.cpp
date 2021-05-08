@@ -96,7 +96,7 @@ void AScheduler::processLooping(void) noexcept
     if (range.from < _loopBeatRange.to && range.to > _loopBeatRange.to) {
         _processLoopCrop = _processBlockSize - ComputeSampleSize(
             _processBeatSize - (range.to - _loopBeatRange.to),
-            project()->tempo(),
+            tempo(),
             _sampleRate,
             _beatMissOffset,
             _beatMissCount
@@ -133,29 +133,30 @@ bool AScheduler::consumeAudioData(std::uint8_t *data, const std::size_t size)
 
 void AScheduler::setProcessParamByBlockSize(const BlockSize processBlockSize, const SampleRate sampleRate) noexcept
 {
-    const auto tempo = project()->tempo();
+    const auto newTempo = tempo();
 
     _sampleRate = sampleRate;
     _processBlockSize = processBlockSize;
-    _processBeatSize = ComputeBeatSize(processBlockSize, tempo, _sampleRate, _beatMissOffset);
-    _audioBlockBeatSize = ComputeBeatSize(_audioBlockSize, tempo, _sampleRate, _audioBlockBeatMissOffset);
+    _processBeatSize = ComputeBeatSize(processBlockSize, newTempo, _sampleRate, _beatMissOffset);
+    _audioBlockBeatSize = ComputeBeatSize(_audioBlockSize, newTempo, _sampleRate, _audioBlockBeatMissOffset);
     for (auto &cache : _graphs)
         cache.currentBeatRange = { cache.currentBeatRange.from, cache.currentBeatRange.from + _processBeatSize };
 }
 
 void AScheduler::setBPM(const BPM bpm) noexcept
 {
-    project()->setBPM(bpm);
-    const auto tempo = project()->tempo();
-    _processBeatSize = ComputeBeatSize(_processBlockSize, tempo, _sampleRate, _beatMissOffset);
-    _audioBlockBeatSize = ComputeBeatSize(_audioBlockSize, tempo, _sampleRate, _audioBlockBeatMissOffset);
+    if (_bpm == bpm)
+        return;
+    _bpm = bpm;
+    const auto newTempo = tempo();
+    _processBeatSize = ComputeBeatSize(_processBlockSize, newTempo, _sampleRate, _beatMissOffset);
+    _audioBlockBeatSize = ComputeBeatSize(_audioBlockSize, newTempo, _sampleRate, _audioBlockBeatMissOffset);
     for (auto &cache : _graphs)
         cache.currentBeatRange = { cache.currentBeatRange.from, cache.currentBeatRange.from + _processBeatSize };
 }
 
 void AScheduler::setAudioBlockSize(const BlockSize blockSize) noexcept
 {
-    const auto tempo = project()->tempo();
     _audioBlockSize = blockSize;
-    _audioBlockBeatSize = ComputeBeatSize(_audioBlockSize, tempo, _sampleRate, _audioBlockBeatMissOffset);
+    _audioBlockBeatSize = ComputeBeatSize(_audioBlockSize, tempo(), _sampleRate, _audioBlockBeatMissOffset);
 }

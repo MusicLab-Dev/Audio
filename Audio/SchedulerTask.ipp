@@ -162,32 +162,38 @@ inline bool Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, P
 template<Audio::IPlugin::Flags Flags, bool ProcessNotesAndControls, bool ProcessAudio, Audio::PlaybackMode Playback>
 inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, Playback>::collectPartition(const Partition &partition, const BeatRange &beatRange, const BeatRange &offset) noexcept
 {
+    const double beatToSampleRatio = static_cast<double>(_scheduler->sampleRate())
+            / (static_cast<double>(_scheduler->tempo()) * static_cast<double>(Audio::BeatPrecision));
+
     for (const auto &note : partition.notes()) {
         const auto noteFrom = offset.from + note.range.from;
         const auto noteTo = offset.from + note.range.to;
         if (noteTo <= beatRange.from || noteFrom >= beatRange.to)
             continue;
         if (noteFrom >= beatRange.from && noteTo <= beatRange.to) {
-            _noteStack->push(NoteEvent({
+            _noteStack->push(NoteEvent {
                 NoteEvent::EventType::OnOff,
                 note.key,
                 note.velocity,
-                note.tuning
-            }));
+                note.tuning,
+                static_cast<BlockSize>(static_cast<double>(noteFrom - beatRange.from) * beatToSampleRatio)
+            });
         } else if (noteFrom >= beatRange.from) {
-            _noteStack->push(NoteEvent({
+            _noteStack->push(NoteEvent {
                 NoteEvent::EventType::On,
                 note.key,
                 note.velocity,
-                note.tuning
-            }));
+                note.tuning,
+                static_cast<BlockSize>(static_cast<double>(noteFrom - beatRange.from) * beatToSampleRatio)
+            });
         } else if (noteTo <= beatRange.to) {
-            _noteStack->push(NoteEvent({
+            _noteStack->push(NoteEvent {
                 NoteEvent::EventType::Off,
                 note.key,
                 note.velocity,
-                note.tuning
-            }));
+                note.tuning,
+                static_cast<BlockSize>(static_cast<double>(beatRange.to - noteFrom) * beatToSampleRatio)
+            });
         }
     }
 }

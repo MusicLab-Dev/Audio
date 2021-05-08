@@ -29,6 +29,7 @@ struct alignas_eighth_cacheline Audio::NoteEvent
     Key         key { 0u };
     Velocity    velocity { 0u };
     Tuning      tuning { 0u };
+    BlockSize   sampleOffset { 0u };
 };
 
 static_assert_fit_eighth_cacheline(Audio::NoteEvent);

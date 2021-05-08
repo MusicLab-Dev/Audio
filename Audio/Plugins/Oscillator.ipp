@@ -32,9 +32,16 @@ inline void Audio::Oscillator::receiveAudio(BufferView output)
     float *out = reinterpret_cast<float *>(output.byteData());
 
     _noteManager.processNotes(
-        [this, outGain, outSize, out](const Key key, const bool trigger, const std::uint32_t readIndex) {
+        [this, outGain, outSize, out](const Key key, const bool trigger, const std::uint32_t readIndex, const NoteModifiers &modifiers) {
             const float frequency = std::pow(2.f, static_cast<float>(static_cast<int>(key) - RootKey) / KeysPerOctave) * RootKeyFrequency;
-            generateWaveform<true>(static_cast<Osc::Waveform>(waveform()), out, outSize, frequency, audioSpecs().sampleRate, readIndex, key, trigger, outGain);
+            auto realOut = out;
+            auto realOutSize = outSize;
+            if (trigger) {
+                realOut += modifiers.sampleOffset;
+                realOutSize -= modifiers.sampleOffset;
+            } else
+                realOutSize = modifiers.sampleOffset;
+            generateWaveform<true>(static_cast<Osc::Waveform>(waveform()), realOut, realOutSize, frequency, audioSpecs().sampleRate, readIndex, key, trigger, outGain);
             return 0u;
         },
         audioSpecs().processBlockSize
