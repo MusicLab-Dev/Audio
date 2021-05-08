@@ -192,7 +192,7 @@ inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, P
                 note.key,
                 note.velocity,
                 note.tuning,
-                static_cast<BlockSize>(static_cast<double>(beatRange.to - noteFrom) * beatToSampleRatio)
+                static_cast<BlockSize>(static_cast<double>(noteTo - beatRange.from) * beatToSampleRatio)
             });
         }
     }
