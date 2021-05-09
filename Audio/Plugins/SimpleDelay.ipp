@@ -13,7 +13,7 @@ inline void Audio::SimpleDelay::onAudioGenerationStarted(const BeatRange &range)
     UNUSED(range);
     _delay.reset(static_cast<float>(audioSpecs().sampleRate), static_cast<std::size_t>(audioSpecs().processBlockSize), 10.0f, static_cast<float>(delayTime()));
     _inputCache.resize(GetFormatByteLength(audioSpecs().format) * audioSpecs().processBlockSize, audioSpecs().sampleRate, audioSpecs().channelArrangement, audioSpecs().format);
-    // _inputCache.clear();
+    _inputCache.clear();
 }
 
 inline void Audio::SimpleDelay::receiveAudio(BufferView output)
