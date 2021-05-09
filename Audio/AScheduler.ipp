@@ -93,15 +93,17 @@ inline void Audio::AScheduler::invalidateCurrentGraph(void)
 {
     if constexpr (SetDirty)
         setDirtyFlags();
-    switch (playbackMode()) {
-    case PlaybackMode::Production:
-        return invalidateGraph<PlaybackMode::Production>();
-    case PlaybackMode::Live:
-        return invalidateGraph<PlaybackMode::Live>();
-    case PlaybackMode::Partition:
-        return invalidateGraph<PlaybackMode::Partition>();
-    case PlaybackMode::OnTheFly:
-        return invalidateGraph<PlaybackMode::OnTheFly>();
+    else {
+        switch (playbackMode()) {
+        case PlaybackMode::Production:
+            return invalidateGraph<PlaybackMode::Production>();
+        case PlaybackMode::Live:
+            return invalidateGraph<PlaybackMode::Live>();
+        case PlaybackMode::Partition:
+            return invalidateGraph<PlaybackMode::Partition>();
+        case PlaybackMode::OnTheFly:
+            return invalidateGraph<PlaybackMode::OnTheFly>();
+        }
     }
 }
 
