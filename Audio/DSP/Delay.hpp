@@ -44,13 +44,11 @@ public:
         const int delta = static_cast<int>(newDelayTime) - static_cast<int>(_delayTime);
         const int newReadIndex = static_cast<int>(_readIndex) + delta;
         // Overflow
-        std::cout << "readIndex: " << _readIndex;
         if (newReadIndex < 0) {
             _readIndex = static_cast<Index>(_delayCache.size()) + static_cast<Index>(-newReadIndex);
         } else {
             _readIndex = static_cast<Index>(newReadIndex);
         }
-        std::cout << "new readIndex: " << _readIndex;
     }
 
     // Buffer &inputCache(void) noexcept { return _inputCache; }
