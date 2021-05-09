@@ -81,6 +81,8 @@ set(AudioPluginsSources
     ${AudioPluginsDir}/SigmaFilter.ipp
     ${AudioPluginsDir}/GammaEqualizer.hpp
     ${AudioPluginsDir}/GammaEqualizer.ipp
+    ${AudioPluginsDir}/SimpleDelay.hpp
+    ${AudioPluginsDir}/SimpleDelay.ipp
 )
 
 set(AudioPluginManagerDir ${AudioPluginsDir}/Managers)

@@ -25,22 +25,49 @@ public:
     using Index = std::size_t;
 
     BasicDelay(void) = default;
-    BasicDelay(const float sampleRate, const std::size_t blockSize, const float delaySize) { reset(sampleRate, blockSize, delaySize); }
+    BasicDelay(const float sampleRate, const std::size_t blockSize, const float maxDelaySize, const float delaySize) { reset(sampleRate, blockSize, delaySize); }
 
     // void setMaxDelaySize(const SampleRate sampleRate, const float maxDelay) noexcept;
     // void setDelaySize(const SampleRate sampleRate, const float delay) noexcept;
     void sendData(const Type *input, const std::size_t inputSize, const float feedbackRate) noexcept;
     void receiveData(Type *output, const std::size_t outputSize, const float mixRate) noexcept;
 
-    void reset(const float sampleRate, const std::size_t blockSize, const float delaySize) noexcept;
+    /** @brief Reset internal cache and indexes */
+    void reset(const float sampleRate, const std::size_t blockSize, const float maxDelaySize, const float delaySize) noexcept;
+
+    void setDelayTime(const float sampleRate, const float delayTime) noexcept
+    {
+        const Index newDelayTime = static_cast<Index>(sampleRate * delayTime);
+        if (_delayTime == newDelayTime)
+            return;
+        _delayTime = newDelayTime;
+        const int delta = static_cast<int>(newDelayTime) - static_cast<int>(_delayTime);
+        const int newReadIndex = static_cast<int>(_readIndex) + delta;
+        // Overflow
+        std::cout << "readIndex: " << _readIndex;
+        if (newReadIndex < 0) {
+            _readIndex = static_cast<Index>(_delayCache.size()) + static_cast<Index>(-newReadIndex);
+        } else {
+            _readIndex = static_cast<Index>(newReadIndex);
+        }
+        std::cout << "new readIndex: " << _readIndex;
+    }
+
     // Buffer &inputCache(void) noexcept { return _inputCache; }
     // const Buffer &inputCache(void) const noexcept { return _inputCache; }
 
 private:
+    // Internal delay cache
     Cache _delayCache;
+    // Delay time in samples
     Index _delayTime { 0u };
+    // Read index in samples
     Index _readIndex { 0u };
+    // Write index in samples
     Index _writeIndex { 0u };
+
+    /** @todo REMOVE THIS MEMBER ! */
+    std::size_t _blockSize { 0u };
 
     Index getNextReadIndex(void) noexcept;
     Index getNextWriteIndex(void) noexcept;
