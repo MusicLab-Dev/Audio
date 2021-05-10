@@ -154,16 +154,16 @@ inline void Audio::Oscillator::generateTriangle(
         const float frequency, const SampleRate sampleRate, const std::uint32_t phaseOffset,
         const Key key, const bool trigger, const DB gain) noexcept
 {
-    const float frequencyNorm = 2.f * static_cast<float>(M_PI) / frequency / static_cast<float>(sampleRate);
+    const float frequencyNorm = static_cast<float>(M_PI) * frequency / static_cast<float>(sampleRate);
 
     float outGain = 1.f;
     auto k = 0ul;
     for (auto i = phaseOffset; k < outputSize; ++i, ++k) {
         outGain = getEnveloppeGain(key, i, trigger) * gain;
         if constexpr (Accumulate)
-            output[k] += static_cast<Type>(std::asin(std::sin(static_cast<float>(i) * frequencyNorm)) * M_2_PI * outGain);
+            output[k] += (1.0f - std::acos(std::cos(2.0f * static_cast<float>(i) * frequencyNorm)) * static_cast<float>(M_2_PI)) * outGain;
         else
-            output[k] = static_cast<Type>(std::asin(std::sin(static_cast<float>(i) * frequencyNorm)) * M_2_PI * outGain);
+            output[k] = (1.0f - std::acos(std::cos(2.0f * static_cast<float>(i) * frequencyNorm)) * static_cast<float>(M_2_PI)) * outGain;
     }
 }
 
@@ -173,7 +173,6 @@ inline void Audio::Oscillator::generateSaw(
         const float frequency, const SampleRate sampleRate, const std::uint32_t phaseOffset,
         const Key key, const bool trigger, const DB gain) noexcept
 {
-    // UNUSED(sampleRate);
     const float frequencyNorm = static_cast<float>(M_PI) * frequency / static_cast<float>(sampleRate);
 
     float outGain = 1.f;
