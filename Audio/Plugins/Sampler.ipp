@@ -117,6 +117,8 @@ inline void Audio::Sampler::receiveAudio(BufferView output)
                 const std::uint32_t sampleReadSize = static_cast<std::uint32_t>(static_cast<float>(realOutSize) * bufferOctaveReverseShift);
                 // Create resampled version of the base octave
                 DSP::Resampler<float>().resampleOctave<true, 8u>(sampleBuffer, realOut, sampleReadSize, audioSpecs().sampleRate, bufferOctave, sampleOffset);
+
+                /** @warning FIX PROBLEMS */
                 // Apply enveloppe
                 for (auto i = 0u, j = readIndex; i < realOutSize; ++i, ++j) {
                     realOut[i] *= getEnveloppeGain(key, j, trigger) * outGain;

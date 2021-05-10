@@ -18,7 +18,7 @@ inline void Audio::NoteManager<Enveloppe>::feedNotes(const NoteEvents &notes) no
                 _cache.actives.push(note.key);
             _cache.readIndexes[note.key] = 0u;
             _cache.triggers[note.key] = true;
-            enveloppe().setTriggerIndex(note.key, 0u);
+            enveloppe().resetTriggerIndex(note.key);
             enveloppe().resetGain(note.key);
             target.noteModifiers.velocity = note.velocity;
             target.noteModifiers.tuning = note.tuning;
@@ -39,7 +39,7 @@ inline void Audio::NoteManager<Enveloppe>::feedNotes(const NoteEvents &notes) no
             _cache.activesBlock.push(note.key);
             _cache.triggers[note.key] = true;
             _cache.readIndexes[note.key] = 0u;
-            enveloppe().setTriggerIndex(note.key, 0u);
+            enveloppe().resetTriggerIndex(note.key);
             enveloppe().resetGain(note.key);
             target.noteModifiers.velocity = note.velocity;
             target.noteModifiers.tuning = note.tuning;
@@ -118,6 +118,7 @@ inline bool Audio::NoteManager<Enveloppe>::incrementReadIndex(const Key key, con
     if (maxIndex && readIndex >= maxIndex) {
         readIndex = 0u;
         trigger = false;
+        enveloppe().resetTriggerIndex(key);
         return true;
     } else
         return false;

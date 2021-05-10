@@ -31,6 +31,12 @@ inline void Audio::SimpleDelay::receiveAudio(BufferView output)
     _delay.setDelayTime(static_cast<float>(audioSpecs().sampleRate), static_cast<float>(delayTime()));
     _delay.receiveData(out, outSize, static_cast<float>(mixRate()));
 
+
+    // 0 -> 1
+    // 0 -> wet (version delay)
+    // 1 -> dry (version original)
+    // 0.5 -> 1 + 1
+    // 0.25 -> 1 + 0.5
     // Mix input & delay output
     /** @todo Change theses rates ! */
     const auto dry = static_cast<float>(mixRate());

@@ -21,7 +21,7 @@ class Audio::BandFilter final : public Audio::IPlugin
     REGISTER_PLUGIN(
         /* Plugin's name */
         TR_TABLE(
-            TR(English, "Band Filter"),
+            TR(English, "BandFilter"),
             TR(French, "Filtre basique")
         ),
         /* Plugin description */

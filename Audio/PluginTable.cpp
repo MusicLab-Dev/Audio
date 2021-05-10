@@ -59,10 +59,10 @@ Audio::PluginTable::PluginTable(void)
     registerFactory<Audio::Mixer>();
     registerFactory<Audio::Sampler>();
     registerFactory<Audio::Oscillator>();
-    registerFactory<Audio::LambdaFilter>();
-    registerFactory<Audio::BasicFilter>();
     registerFactory<Audio::BandFilter>();
-    registerFactory<Audio::SigmaFilter>();
-    registerFactory<Audio::GammaEqualizer>();
+    registerFactory<Audio::BasicFilter>();
     registerFactory<Audio::SimpleDelay>();
+    registerFactory<Audio::GammaEqualizer>();
+    // registerFactory<Audio::LambdaFilter>();
+    // registerFactory<Audio::SigmaFilter>();
 }

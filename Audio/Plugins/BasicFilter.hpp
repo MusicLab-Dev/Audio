@@ -21,7 +21,7 @@ class Audio::BasicFilter final : public Audio::IPlugin
     REGISTER_PLUGIN(
         /* Plugin's name */
         TR_TABLE(
-            TR(English, "Basic Filter"),
+            TR(English, "BasicFilter"),
             TR(French, "Filtre basique")
         ),
         /* Plugin description */

@@ -18,7 +18,7 @@ class Audio::SimpleDelay final : public Audio::IPlugin
     REGISTER_PLUGIN(
         /* Plugin's name */
         TR_TABLE(
-            TR(English, "SimpleDelay"),
+            TR(English, "Delay"),
             TR(French, "Mixeur")
         ),
         /* Plugin description */

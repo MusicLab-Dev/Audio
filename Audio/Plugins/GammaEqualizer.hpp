@@ -23,12 +23,12 @@ public:
 
     REGISTER_PLUGIN(
         TR_TABLE(
-            TR(English, "GammaEqualizer"),
-            TR(French, "Equaliseur Gamma")
+            TR(English, "Equalizer"),
+            TR(French, "Equaliseur")
         ),
         TR_TABLE(
-            TR(English, "Gamma equalizer allow to filter frequencies bands of an audio signal"),
-            TR(French, "L'équaliseur Gamma permet de filtrer des plages de fréquences de l'audio")
+            TR(English, "Equalizer allow to filter frequencies bands of an audio signal"),
+            TR(French, "L'équaliseur permet de filtrer des plages de fréquences de l'audio")
         ),
         FLAGS(AudioInput, AudioOutput),
         TAGS(EQ),
