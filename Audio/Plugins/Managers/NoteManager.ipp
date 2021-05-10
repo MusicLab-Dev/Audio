@@ -14,10 +14,9 @@ inline void Audio::NoteManager<Enveloppe>::feedNotes(const NoteEvents &notes) no
         case NoteEvent::EventType::On:
         {
             const auto it = _cache.actives.find(note.key);
-            if (it != _cache.actives.end()) // Reset trigger
-                _cache.readIndexes[note.key] = 0u;
-            else
+            if (it == _cache.actives.end())
                 _cache.actives.push(note.key);
+            _cache.readIndexes[note.key] = 0u;
             _cache.triggers[note.key] = true;
             enveloppe().setTriggerIndex(note.key, 0u);
             enveloppe().resetGain(note.key);
@@ -39,6 +38,7 @@ inline void Audio::NoteManager<Enveloppe>::feedNotes(const NoteEvents &notes) no
         case NoteEvent::EventType::OnOff:
             _cache.activesBlock.push(note.key);
             _cache.triggers[note.key] = true;
+            _cache.readIndexes[note.key] = 0u;
             enveloppe().setTriggerIndex(note.key, 0u);
             enveloppe().resetGain(note.key);
             target.noteModifiers.velocity = note.velocity;
