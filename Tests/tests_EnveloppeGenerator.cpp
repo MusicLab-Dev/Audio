@@ -43,13 +43,14 @@ TEST(EnveloppeGenerator, Simple_AttackDecayReleaseSustain)
     auto i = 0u;
     for (; i < 30u; ++i) {
         auto gain = env.adsr(key, i, trigger, atk, dec, sus, rel, 100u);
-        std::cout << "i: " << i << " -> " << gain << std::endl;
+        UNUSED(gain);
+        // std::cout << "i: " << i << " -> " << gain << std::endl;
     }
     trigger = false;
     env.setTriggerIndex(key, i);
     for (; i < 40u; ++i) {
         auto gain = env.adsr(key, i, trigger, atk, dec, sus, rel, 100u);
-        std::cout << "i: " << i << " -> " << gain << std::endl;
+        // std::cout << "i: " << i << " -> " << gain << std::endl;
         UNUSED(gain);
     }
     UNUSED(env);
