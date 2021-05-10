@@ -50,5 +50,6 @@ inline void Audio::SimpleDelay::sendAudio(const BufferViews &inputs)
     ));
     DSP::Merge<float>(inputs, _inputCache, inGain, true);
     if (!static_cast<bool>(byBass()))
-        _delay.sendData(_inputCache.data<float>(), _inputCache.size<float>(), static_cast<float>(feedbackRate()));
+        // _delay.sendData(_inputCache.data<float>(), _inputCache.size<float>(), static_cast<float>(feedbackRate()));
+        _delay.sendData(_inputCache.data<float>(), _inputCache.size<float>(), 0.0f);
 }

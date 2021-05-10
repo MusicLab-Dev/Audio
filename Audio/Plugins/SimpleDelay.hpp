@@ -63,25 +63,25 @@ class Audio::SimpleDelay final : public Audio::IPlugin
                 TR(English, "seconds")
             )
         ),
-        REGISTER_CONTROL_FLOATING(
-            feedbackRate,
-            0.0,
-            CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
-            TR_TABLE(
-                TR(English, "Delay feedback"),
-                TR(French, "Feed-back du delay")
-            ),
-            TR_TABLE(
-                TR(English, "Delay feedback"),
-                TR(French, "Feed-back du delay")
-            ),
-            TR_TABLE(
-                TR(English, "FB")
-            ),
-            TR_TABLE(
-                TR(English, "%")
-            )
-        ),
+        // REGISTER_CONTROL_FLOATING(
+        //     feedbackRate,
+        //     0.0,
+        //     CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
+        //     TR_TABLE(
+        //         TR(English, "Delay feedback"),
+        //         TR(French, "Feed-back du delay")
+        //     ),
+        //     TR_TABLE(
+        //         TR(English, "Delay feedback"),
+        //         TR(French, "Feed-back du delay")
+        //     ),
+        //     TR_TABLE(
+        //         TR(English, "FB")
+        //     ),
+        //     TR_TABLE(
+        //         TR(English, "%")
+        //     )
+        // ),
         REGISTER_CONTROL_FLOATING(
             mixRate,
             0.5,
