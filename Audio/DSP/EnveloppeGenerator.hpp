@@ -37,6 +37,10 @@ public:
     using IndexList = std::array<std::uint32_t, KeyCount>;
     using GainList = std::array<float, KeyCount>;
 
+    /** @brief Reset all */
+    void reset(void) noexcept { resetTriggerIndexes(); resetInternalGains(); }
+
+
     /** @brief Reset all trigger indexes */
     void resetTriggerIndexes(void) noexcept { _triggerIndex.fill(0ul); }
 
@@ -46,13 +50,16 @@ public:
     /** @brief Set the internal trigger status */
     void setTriggerIndex(const Key key, const std::uint32_t triggerIndex) noexcept { _triggerIndex[key] = triggerIndex; }
 
+
     /** @brief Reset all internal gains */
     void resetInternalGains(void) noexcept { _lastGain.fill(0ul); }
 
     /** @brief Reset a specific gain */
     void resetGain(const Key key) noexcept { _lastGain[key] = 0ul; }
 
-    template<bool Debug = false>
+    /** @brief Get the last gain */
+    [[nodiscard]] float lastGain(const Key key) noexcept { return _lastGain[key]; }
+
     [[nodiscard]] float getGain(
             const Key key, const std::uint32_t index, const bool isTrigger,
             const float delay, const float attack,
@@ -107,7 +114,6 @@ public:
     }
 
     /** @brief ADSR implementation */
-    template<bool Debug = false>
     [[nodiscard]] float adsr(
             const Key key, const std::uint32_t index, const bool isTrigger,
             const float attack, const float decay, const float sustain, const float release, const SampleRate sampleRate) noexcept
@@ -115,36 +121,22 @@ public:
         const float OneMinusSustain = 1.0f - sustain;
         float outGain { 1.f };
 
-        if constexpr (Debug) {
-            const auto a = attack * static_cast<float>(sampleRate);
-            const auto d = decay * static_cast<float>(sampleRate);
-            // const auto a = attack * static_cast<float>(sampleRate);
-            // const auto a = attack * static_cast<float>(sampleRate);
-            std::cout << "index: " << index << "(" << isTrigger << "), atk: " << a << ", dc: " << d << ", a+d: " << a + d << std::endl;
-        }
-
         if (isTrigger) {
             const std::uint32_t attackIdx = static_cast<std::uint32_t>(attack * static_cast<float>(sampleRate));
             // Attack
             if (index < attackIdx) {
-                if constexpr (Debug)
-                    std::cout << "AAAAAA: " << (static_cast<float>(index) / static_cast<float>(attackIdx)) << std::endl;
                 // Linear
                 outGain = static_cast<float>(index) / static_cast<float>(attackIdx);
             }
             // Decay
             else if (const std::uint32_t decayIdx = static_cast<std::uint32_t>(decay * static_cast<float>(sampleRate)); index < (decayIdx + attackIdx)) {
                 // Sustain max -> no decay
-                if constexpr (Debug)
-                    std::cout << "DDDDDD: " << (1.f - (index - attackIdx) / static_cast<float>(decayIdx)) * OneMinusSustain + OneMinusSustain << std::endl;
                 if (sustain == 1.f)
                     outGain = 1.f;
                 else
                     outGain = (1.f - static_cast<float>(index - attackIdx) / static_cast<float>(decayIdx)) * OneMinusSustain + sustain;
             } else {
                 // Sustain
-                if constexpr (Debug)
-                    std::cout << "SSSSSS: " << sustain << std::endl;
                 outGain = sustain;
             }
         } else {
@@ -153,13 +145,10 @@ public:
             const std::uint32_t releaseIdx = static_cast<std::uint32_t>(release * static_cast<float>(sampleRate));
             if (const std::uint32_t realIndex = index - _triggerIndex[key];
                 realIndex < releaseIdx) {
-                if constexpr (Debug)
-                    std::cout << "RRRR: " << (1.f - static_cast<float>(realIndex) / static_cast<float>(releaseIdx)) * sustain << std::endl;
                 outGain = (1.f - static_cast<float>(realIndex) / static_cast<float>(releaseIdx)) * sustain;
             }
             // End of the enveloppe
             else {
-                // std::cout << "______" << std::endl;
                 outGain = 0.f;
             }
         }
@@ -180,6 +169,7 @@ public:
         // } else {
         //     _lastGain[key] = outGain;
         // }
+
         _lastGain[key] = outGain;
         return _lastGain[key];
     }

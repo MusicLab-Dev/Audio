@@ -66,15 +66,16 @@ class Audio::Oscillator final : public Audio::IPlugin
                 TR_TABLE(
                     TR(English, "Saw"),
                     TR(French, "Scie")
-                ),
-                TR_TABLE(
-                    TR(English, "Noise"),
-                    TR(French, "Bruit")
-                ),
-                TR_TABLE(
-                    TR(English, "Error"),
-                    TR(French, "Error")
                 )
+                // ,
+                // TR_TABLE(
+                //     TR(English, "Noise"),
+                //     TR(French, "Bruit")
+                // ),
+                // TR_TABLE(
+                //     TR(English, "Error"),
+                //     TR(French, "Error")
+                // )
             ),
             /* Control name */
             TR_TABLE(
@@ -143,7 +144,6 @@ private:
     float getEnveloppeGain(const Key key, const std::uint32_t index, const bool isTrigger) noexcept
     {
         return _noteManager.enveloppe().adsr(key, index, isTrigger, static_cast<float>(enveloppeAttack()), static_cast<float>(enveloppeDecay()), static_cast<float>(enveloppeSustain()), static_cast<float>(enveloppeRelease()), audioSpecs().sampleRate);
-        // return _noteManager.getEnveloppeGain(key, index, isTrigger, 0ul, enveloppeAttack(), 0ul, enveloppeDecay(), enveloppeSustain(), enveloppeRelease(), audioSpecs().sampleRate);
     }
 
     template<bool Accumulate = true, typename Type>

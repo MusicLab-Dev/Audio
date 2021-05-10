@@ -30,22 +30,22 @@ inline void Audio::Oscillator::receiveAudio(BufferView output)
     const DB outGain = ConvertDecibelToRatio(static_cast<float>(outputVolume()) + DefaultVoiceGain);
     const auto outSize = static_cast<std::uint32_t>(output.size<float>());
     float *out = reinterpret_cast<float *>(output.byteData());
+    const bool noRelease = !enveloppeRelease();
 
     _noteManager.processNotes(
-        [this, outGain, outSize, out](const Key key, const bool trigger, const std::uint32_t readIndex, const NoteModifiers &modifiers) -> std::pair<std::uint32_t, std::uint32_t> {
+        [this, outGain, outSize, out, noRelease](const Key key, const bool trigger, const std::uint32_t readIndex, const NoteModifiers &modifiers) -> std::pair<std::uint32_t, std::uint32_t> {
             const float frequency = std::pow(2.f, static_cast<float>(static_cast<int>(key) - RootKey) / KeysPerOctave) * RootKeyFrequency;
             auto realOut = out;
             auto realOutSize = outSize;
-            if (trigger) {
-                realOut += modifiers.sampleOffset;
-                realOutSize -= modifiers.sampleOffset;
-                if (realOutSize > audioSpecs().processBlockSize)
-                    std::cout << "ON - " << modifiers.sampleOffset << " - " << realOutSize << std::endl;
-            } else {
-                realOutSize = modifiers.sampleOffset;
-                if (realOutSize > audioSpecs().processBlockSize)
-                    std::cout << "OFF - " << modifiers.sampleOffset << " - " << realOutSize << std::endl;
+            if (modifiers.sampleOffset) {
+                if (trigger) {
+                    realOut += modifiers.sampleOffset;
+                    realOutSize -= modifiers.sampleOffset;
+                } else if (noRelease) {
+                    realOutSize = modifiers.sampleOffset;
+                }
             }
+            UNUSED(modifiers);
             generateWaveform<true>(static_cast<Osc::Waveform>(waveform()), realOut, realOutSize, frequency, audioSpecs().sampleRate, readIndex, key, trigger, outGain);
             return std::make_pair(realOutSize, 0u);
         }

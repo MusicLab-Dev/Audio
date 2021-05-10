@@ -116,8 +116,10 @@ inline void Audio::NoteManager<Enveloppe>::incrementReadIndex(const Key key, con
 
     readIndex += amount;
     if (maxIndex && readIndex >= maxIndex) {
-        if (const auto it = _cache.actives.find(key); it != _cache.actives.end())
+        if (const auto it = _cache.actives.find(key); it != _cache.actives.end()) {
+            std::cout << "Erase note: " << key << " -> " << readIndex << std::endl;
             _cache.actives.erase(it);
+        }
         readIndex = 0u;
         trigger = false;
     }
@@ -142,24 +144,45 @@ template<Audio::DSP::EnveloppeType Enveloppe>
 template<typename Functor>
 void Audio::NoteManager<Enveloppe>::processNotes(Functor &&functor) noexcept
 {
-    for (const auto key : _cache.actives) {
-        const auto keyTrigger = trigger(key);
-        const auto idx = readIndex(key);
-        auto &modifiers = _cache.modifiers[key].noteModifiers;
-        const auto pair = functor(key, keyTrigger, idx, modifiers);
-        modifiers.sampleOffset = 0u;
-        incrementReadIndex(key, pair.second, pair.first);
-    }
-    for (const auto key : _cache.activesBlock) {
-        auto &keyTrigger = _cache.triggers[key];
-        const auto idx = readIndex(key);
-        auto &modifiers = _cache.modifiers[key].noteModifiers;
-        const auto pair = functor(key, keyTrigger, idx, modifiers);
-        modifiers.sampleOffset = 0u;
-        incrementReadIndex(key, pair.second, pair.first);
-        // Reset the note
-        keyTrigger = false;
-        enveloppe().setTriggerIndex(key, _cache.readIndexes[key]);
-    }
-    _cache.activesBlock.clear();
+    // Process the active notes
+    auto itActive = std::remove_if(_cache.actives.begin(), _cache.actives.end(),
+        [this, &functor](const auto key) {
+            const auto keyTrigger = trigger(key);
+            const auto idx = readIndex(key);
+            auto &modifiers = _cache.modifiers[key].noteModifiers;
+            const auto pair = functor(key, keyTrigger, idx, modifiers);
+            modifiers.sampleOffset = 0u;
+            incrementReadIndex(key, pair.second, pair.first);
+
+            // Erase the note if it's an oscillator (pair.second == 0u) & the enveloppe gain is null
+            // std::cout << "ITER" << std::endl;
+            return (!pair.second && !enveloppe().lastGain(key));
+        }
+    );
+    // Actually delete the concerned notes
+    if (itActive != _cache.actives.end())
+        _cache.actives.erase(itActive, _cache.actives.end());
+
+    // Process the active block notes
+    auto itActiveBlock = std::remove_if(_cache.activesBlock.begin(), _cache.activesBlock.end(),
+        [this, &functor](const auto key) {
+            auto &keyTrigger = _cache.triggers[key];
+            const auto idx = readIndex(key);
+            auto &modifiers = _cache.modifiers[key].noteModifiers;
+            const auto pair = functor(key, keyTrigger, idx, modifiers);
+            modifiers.sampleOffset = 0u;
+            incrementReadIndex(key, pair.second, pair.first);
+
+            // Reset the note
+            keyTrigger = false;
+            enveloppe().setTriggerIndex(key, _cache.readIndexes[key]);
+
+            // std::cout << "ITER" << std::endl;
+            // Erase the note if it's an oscillator (pair.second == 0u) & the enveloppe gain is null
+            return (!pair.second && !enveloppe().lastGain(key));
+        }
+    );
+    // Actually delete the concerned notes
+    if (itActiveBlock != _cache.activesBlock.end())
+        _cache.activesBlock.erase(itActiveBlock, _cache.activesBlock.end());
 }

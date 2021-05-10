@@ -65,9 +65,10 @@ inline void Audio::Sampler::receiveAudio(BufferView output)
     const DB outGain = ConvertDecibelToRatio(static_cast<float>(outputVolume()));
     const std::uint32_t outSize = static_cast<std::uint32_t>(output.size<float>());
     float * const out = reinterpret_cast<float *>(output.byteData());
+    const bool noRelease = !enveloppeRelease();
 
     _noteManager.processNotes(
-        [this, outGain, outSize, out](const Key key, const bool trigger, const std::uint32_t readIndex, const NoteModifiers &modifiers) -> std::pair<std::uint32_t, std::uint32_t> {
+        [this, outGain, outSize, out, noRelease](const Key key, const bool trigger, const std::uint32_t readIndex, const NoteModifiers &modifiers) -> std::pair<std::uint32_t, std::uint32_t> {
             const std::int32_t realKeyIdx = static_cast<std::int32_t>(key) % KeysPerOctave;
             const std::int32_t realOctave = static_cast<std::int32_t>(key) / KeysPerOctave;
             std::int32_t bufferKeyIdx = realKeyIdx - OctaveRootKey + 1;
@@ -86,12 +87,14 @@ inline void Audio::Sampler::receiveAudio(BufferView output)
             auto realOut = out;
 
             // Handle note end
-            if (trigger) {
-                realOut += modifiers.sampleOffset;
-                realOutSize -= modifiers.sampleOffset;
-            } else
-                realOutSize = modifiers.sampleOffset;
-
+            if (modifiers.sampleOffset) {
+                if (trigger) {
+                    realOut += modifiers.sampleOffset;
+                    realOutSize -= modifiers.sampleOffset;
+                } else if (noRelease) {
+                    realOutSize = modifiers.sampleOffset;
+                }
+            }
             // The key is already cached
             if (!bufferOctave) {
                 // Handle sample end

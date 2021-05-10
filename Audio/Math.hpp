@@ -9,11 +9,13 @@
 #include <math.h>
 #include <cmath>
 
+#include <atomic>
+
 namespace Utils
 {
     /** @brief Return the sinus cardinal of x */
     template<bool NormalizePi = false, typename Type>
-    std::enable_if_t<std::is_floating_point_v<Type>, Type>
+    [[nodiscard]] std::enable_if_t<std::is_floating_point_v<Type>, Type>
         sinc(Type x) noexcept
     {
         if (!x)
@@ -25,7 +27,7 @@ namespace Utils
 
     /** @brief Return the cotangent of x */
     template<bool NormalizePi = false, typename Type>
-    std::enable_if_t<std::is_floating_point_v<Type>, Type>
+    [[nodiscard]] std::enable_if_t<std::is_floating_point_v<Type>, Type>
         cot(Type x) noexcept
     {
         if constexpr (NormalizePi)
@@ -39,7 +41,7 @@ namespace Utils
      * @warning Only efficient on positive values !
      */
     template<typename Type>
-    std::enable_if_t<std::is_floating_point_v<Type>, Type>
+    [[nodiscard]] std::enable_if_t<std::is_floating_point_v<Type>, Type>
         expInterpUnsafe(Type from, Type to, Type x) noexcept
     {
         const auto range = to - from;
@@ -52,17 +54,15 @@ namespace Utils
      * @brief Exponential interpolation from 0 to 1
      */
     template<typename Type>
-    std::enable_if_t<std::is_floating_point_v<Type>, Type>
+    [[nodiscard]] std::enable_if_t<std::is_floating_point_v<Type>, Type>
         expInterpSafe(Type x) noexcept
     {
         return std::pow(x, M_E);
     }
 
-
-
-    inline std::uint32_t fastRand(void) noexcept
+    [[nodiscard]] inline std::uint32_t fastRand(void) noexcept
     {
-        static std::uint32_t randState { 1234567890u };
+        static std::atomic<std::uint32_t> randState { 1234567890u };
         std::uint32_t out { randState };
 
         out ^= out << 13u;
@@ -71,5 +71,4 @@ namespace Utils
         randState = out;
         return out;
     }
-
 }
