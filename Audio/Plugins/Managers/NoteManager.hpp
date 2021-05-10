@@ -122,7 +122,7 @@ public:
     void resetReadIndexes(void) noexcept;
 
     /** @brief Increment the read index of given key */
-    void incrementReadIndex(const Key key, const std::uint32_t maxIndex, std::uint32_t amount = 1u) noexcept;
+    [[nodiscard]] bool incrementReadIndex(const Key key, const std::uint32_t maxIndex, std::uint32_t amount = 1u) noexcept;
 
     [[nodiscard]] std::uint32_t readIndex(const Key key) const noexcept { return _cache.readIndexes[key]; }
 
