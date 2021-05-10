@@ -34,7 +34,7 @@ template<Audio::DSP::EnveloppeType Enveloppe>
 class alignas_double_cacheline Audio::NoteManager
 {
 public:
-    using KeyList = Core::TinyVector<Key>;
+    using KeyList = Core::TinySmallVector<Key, Core::CacheLineQuarterSize>;
     using IndexList = std::array<std::uint32_t, KeyCount>;
     using TriggerList = std::array<bool, KeyCount>;
 
@@ -54,8 +54,8 @@ public:
     /** @brief Describe the internal cache */
     struct alignas_double_cacheline Cache
     {
-        alignas_quarter_cacheline KeyList actives {};
-        alignas_quarter_cacheline KeyList activesBlock {};
+        KeyList actives {};
+        KeyList activesBlock {};
         ModifiersList modifiers;
         IndexList readIndexes;
         TriggerList triggers;
