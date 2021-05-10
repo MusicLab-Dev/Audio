@@ -117,7 +117,7 @@ inline void Audio::NoteManager<Enveloppe>::incrementReadIndex(const Key key, con
     readIndex += amount;
     if (maxIndex && readIndex >= maxIndex) {
         if (const auto it = _cache.actives.find(key); it != _cache.actives.end()) {
-            std::cout << "Erase note: " << key << " -> " << readIndex << std::endl;
+            // std::cout << "Erase note: " << key << " -> " << readIndex << std::endl;
             _cache.actives.erase(it);
         }
         readIndex = 0u;
