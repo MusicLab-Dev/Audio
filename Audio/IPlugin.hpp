@@ -66,7 +66,7 @@ namespace Audio
             if (descriptions.empty())
                 str = std::string_view("Description-Error");
             else {
-                str = FindTranslation(names, lang);
+                str = FindTranslation(descriptions, lang);
                 if (str.empty())
                     str = descriptions[0].text;
             }
