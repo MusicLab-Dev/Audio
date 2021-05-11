@@ -140,27 +140,13 @@ public:
      }
 
     /** @brief Get the enveloppe gain of given key */
-    template<bool ResetIndex>
-    [[nodiscard]] float getEnveloppeGain(
+    [[nodiscard]] inline float getEnveloppeGain(
             const Key key, const std::uint32_t index, const bool trigger,
             const float delay, const float attack,
             const float hold, const float decay,
             const float sustain, const float release,
             const SampleRate sampleRate) noexcept
-    {
-        const auto gain = _enveloppe.getGain(key, index, trigger, delay, attack, hold, decay, sustain, release, sampleRate);
-        // std::cout << "attack:::: " << attack << std::endl;
-        // std::cout << "samplerate:::: " << sampleRate << std::endl;
-        if constexpr (ResetIndex) {
-            if (!gain) {
-                // eraseActiveNote(key);
-                // std::cout << "  - RESET GAIN: " << static_cast<std::size_t>(key) << std::endl;
-                resetReadIndex(key);
-                _enveloppe.resetTriggerIndex(key);
-            }
-        }
-        return gain;
-    }
+    { return _enveloppe.getGain(key, index, trigger, delay, attack, hold, decay, sustain, release, sampleRate); }
 
     [[nodiscard]] const DSP::EnveloppeBase<Enveloppe> &enveloppe(void) const noexcept { return _enveloppe; }
     [[nodiscard]] DSP::EnveloppeBase<Enveloppe> &enveloppe(void) noexcept { return _enveloppe; }

@@ -143,7 +143,7 @@ private:
 
     float getEnveloppeGain(const Key key, const std::uint32_t index, const bool isTrigger) noexcept
     {
-        return _noteManager.getEnveloppeGain<false>(key, index, isTrigger,
+        return _noteManager.getEnveloppeGain(key, index, isTrigger,
                 0.0f,
                 static_cast<float>(enveloppeAttack()),
                 0.0f,
