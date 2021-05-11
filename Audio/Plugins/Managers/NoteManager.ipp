@@ -126,7 +126,7 @@ inline bool Audio::NoteManager<Enveloppe>::incrementReadIndex(const Key key, con
     auto &readIndex = _cache.readIndexes[key];
 
     readIndex += amount;
-    if (maxIndex && readIndex >= maxIndex) {
+    if ((maxIndex && readIndex >= maxIndex) || !enveloppe().lastGain(key)) {
         readIndex = 0u;
         trigger = false;
         enveloppe().resetTriggerIndex(key);
@@ -162,12 +162,7 @@ void Audio::NoteManager<Enveloppe>::processNotes(Functor &&functor) noexcept
             auto &modifiers = _cache.modifiers[key].noteModifiers;
             const auto pair = functor(key, keyTrigger, idx, modifiers);
             modifiers.sampleOffset = 0u;
-            const bool ended = incrementReadIndex(key, pair.second, pair.first);
-
-            // Erase the note if it's an oscillator (pair.second == 0u) & the enveloppe gain is null
-            // std::cout << "ITER" << std::endl;
-            return ended || !enveloppe().lastGain(key);
-            // return ended || (!pair.second && !enveloppe().lastGain(key));
+            return incrementReadIndex(key, pair.second, pair.first);
         }
     );
     // Actually delete the concerned notes
@@ -185,13 +180,11 @@ void Audio::NoteManager<Enveloppe>::processNotes(Functor &&functor) noexcept
             const bool ended = incrementReadIndex(key, pair.second, pair.first);
 
             // Reset the note
-            keyTrigger = false;
-            enveloppe().setTriggerIndex(key, _cache.readIndexes[key]);
-
-            // std::cout << "ITER" << std::endl;
-            // Erase the note if it's an oscillator (pair.second == 0u) & the enveloppe gain is null
-            return ended || !enveloppe().lastGain(key);
-            // return ended || (!pair.second && !enveloppe().lastGain(key));
+            if (!ended) {
+                keyTrigger = false;
+                enveloppe().setTriggerIndex(key, _cache.readIndexes[key]);
+            }
+            return ended;
         }
     );
     // Actually delete the concerned notes
