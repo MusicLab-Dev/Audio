@@ -9,7 +9,7 @@
 #pragma once
 
 #include <Core/Vector.hpp>
-#include <Audio/Base.hpp>
+#include <Audio/Buffer.hpp>
 
 namespace Audio::DSP
 {
@@ -33,7 +33,7 @@ public:
     void receiveData(Type *output, const std::size_t outputSize, const float mixRate) noexcept;
 
     /** @brief Reset internal cache and indexes */
-    void reset(const float sampleRate, const std::size_t blockSize, const float maxDelaySize, const float delaySize) noexcept;
+    void reset(const AudioSpecs &audioSpecs, const float maxDelaySize, const float delaySize) noexcept;
 
     void setDelayTime(const float sampleRate, const float delayTime) noexcept
     {
@@ -57,6 +57,8 @@ public:
 private:
     // Internal delay cache
     Cache _delayCache;
+    Buffer _lastIn;
+    Buffer _lastOut;
     // Delay time in samples
     Index _delayTime { 0u };
     // Read index in samples
