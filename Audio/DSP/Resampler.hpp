@@ -49,8 +49,8 @@ public:
     void resampleOctave(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const SampleRate sampleRate, const int nOctave, const std::size_t inputOffset = 0u) noexcept;
 
     /** @brief Resample the inputBuffer into outputBuffer, outputBuffer size must fit the outSampleRate, call GetResamplingSize to get the outputBuffer size */
-    template<unsigned ProcessSize>
-    void resampleSampleRate(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const SampleRate inSampleRate, const SampleRate outSampleRate) noexcept;
+    template<bool Accumulate, unsigned ProcessSize>
+    void resampleSampleRate(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const SampleRate inSampleRate, const SampleRate outSampleRate, const std::size_t inputOffset = 0u) noexcept;
 
 private:
     Core::TinyVector<Type> _filterCache;

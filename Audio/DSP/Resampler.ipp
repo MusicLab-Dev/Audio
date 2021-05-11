@@ -187,18 +187,68 @@ inline void Audio::DSP::Resampler<Type>::resampleOctave(const Type *inputBuffer,
 
 
 template<typename Type>
-template<unsigned ProcessSize>
-inline void Audio::DSP::Resampler<Type>::resampleSampleRate(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const SampleRate inSampleRate, const SampleRate outSampleRate) noexcept
+template<bool Accumulate, unsigned ProcessSize>
+inline void Audio::DSP::Resampler<Type>::resampleSampleRate(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const SampleRate inSampleRate, const SampleRate outSampleRate, const std::size_t inputOffset) noexcept
 {
-    UNUSED(inputBuffer);
-    UNUSED(outputBuffer);
-    UNUSED(inputSize);
-    UNUSED(inputBuffer);
-    UNUSED(inSampleRate);
-    UNUSED(outSampleRate);
-    // const auto gcd = std::gcd(inSampleRate, outSampleRate);
-    // // const auto realInput
+    const auto gcd = std::gcd(inSampleRate, outSampleRate);
+    const std::uint32_t iFactor = inSampleRate / gcd;
+    const std::uint32_t dFactor = outSampleRate / gcd;
+    const std::uint32_t factor = std::max(iFactor, dFactor);
+    const auto factorScale = static_cast<float>(iFactor);
+    const Filter::FIRSpecs filterSpecs(
+        Filter::BasicType::LowPass,
+        Filter::WindowType::Hanning,
+        static_cast<std::uint32_t>(factor * ProcessSize),
+        static_cast<float>(inSampleRate),
+        static_cast<float>(inSampleRate) / 2.0f / static_cast<float>(factor),
+        0.0f,
+        1.0f
+    );
 
-    // return (inputSize * (outSampleRate / gcd)) / (inSampleRate / gcd);
+    // std::cout << "Resample: " << inputSize << ", " << upScale << std::endl;
 
+    _filterCache.resize(filterSpecs.filterSize);
+    Filter::GenerateFilter(filterSpecs, _filterCache.data());
+
+    auto trackIdx = 0ul;
+    auto outIdx = 0ul;
+    auto operationCount = 1ul;
+    for (auto i = inputOffset; i < ProcessSize ; ++i) {
+        for (auto j = 0ul; j < iFactor; ++j) {
+            if (trackIdx % dFactor) {
+                ++trackIdx;
+                continue;
+            }
+            Type sample {};
+            for (auto k = 0ul; k < operationCount; ++k) {
+                sample += inputBuffer[i - k] * _filterCache[static_cast<std::uint32_t>(j + k * iFactor)];
+            }
+            if constexpr (Accumulate)
+                outputBuffer[outIdx] += sample * factorScale;
+            else
+                outputBuffer[outIdx] = sample * factorScale;
+            ++outIdx;
+            ++trackIdx;
+        }
+        ++operationCount;
+    }
+    const auto end = inputOffset + inputSize;
+    for (auto i = inputOffset > ProcessSize ? inputOffset : ProcessSize; i < end; ++i) {
+        // const auto inputIdx = i - ProcessSize;
+        for (auto j = 0ul; j < iFactor; ++j) {
+            if (trackIdx % dFactor) {
+                ++trackIdx;
+                continue;
+            }
+            Type sample {};
+            for (auto k = 0ul; k < ProcessSize; ++k)
+                sample += inputBuffer[i - k] * _filterCache[static_cast<std::uint32_t>(j + k * iFactor)];
+            if constexpr (Accumulate)
+                outputBuffer[outIdx] += sample * factorScale;
+            else
+                outputBuffer[outIdx] = sample * factorScale;
+            ++outIdx;
+            ++trackIdx;
+        }
+    }
 }
