@@ -54,7 +54,6 @@ typename Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::Internal::MultiInstanc
     for (auto i = 0u; i < filterSizeMinusOne; ++i) {
         auto k = 0u;
         for (const auto gain : gains) {
-            std::cout << gain << std::endl;
             output[i] = filterImpl<Accumulate>(input, filterSize, _coefficients[k++].data(), filterSizeMinusOne - i) * gain;
         }
     }
@@ -64,13 +63,11 @@ typename Audio::DSP::FIR::VoidType<Type> Audio::DSP::FIR::Internal::MultiInstanc
         // Apply all instance
         auto k = 0u;
         for (const auto gain : gains) {
-            // std::cout << gain << std::endl;
             output[i] = filterImpl<Accumulate>(inputShifted + i, filterSize, _coefficients[k++].data()) * gain;
         }
     }
     // Save for last input
     std::memcpy(_lastInputCache.data(), input + inputSize - filterSizeMinusOne, filterSizeMinusOne * sizeof(Type));
-    std::cout << std::endl;
 }
 
 template<unsigned InstanceCount, typename Type>

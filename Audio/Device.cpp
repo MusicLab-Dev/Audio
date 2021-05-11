@@ -90,6 +90,21 @@ void Device::reloadDevice(void)
             return AUDIO_F32;
         }
     };
+    constexpr auto ReverseFormat = [](const SDL_AudioFormat format) -> Format {
+        switch (format) {
+        case AUDIO_F32:
+            return Format::Floating32;
+        case AUDIO_S32:
+            return Format::Fixed32;
+        case AUDIO_S16:
+            return Format::Fixed16;
+        case AUDIO_S8:
+            return Format::Fixed8;
+        default:
+            return Format::Floating32;
+        }
+    };
+
     SDL_AudioSpec desiredSpec {};
     desiredSpec.freq = static_cast<std::size_t>(_descriptor.sampleRate);
     desiredSpec.format = GetFormat(_descriptor.format);
@@ -99,8 +114,17 @@ void Device::reloadDevice(void)
     desiredSpec.channels = static_cast<std::size_t>(_descriptor.channelArrangement);
     SDL_AudioSpec acquiredSpec;
 
-    if (!(_deviceID = SDL_OpenAudioDevice(_descriptor.name.empty() ? NULL : _descriptor.name.c_str(), _descriptor.isInput, &desiredSpec, &acquiredSpec, 1)))
-        throw std::runtime_error(std::string("Couldn't open audio: ") + SDL_GetError());
+    if (!(_deviceID = SDL_OpenAudioDevice(_descriptor.name.empty() || _descriptor.name == DefaultDeviceName ? nullptr : _descriptor.name.c_str(), _descriptor.isInput, &desiredSpec, &acquiredSpec, 1))) {
+        if (!(_deviceID = SDL_OpenAudioDevice(nullptr, _descriptor.isInput, &desiredSpec, &acquiredSpec, 1)))
+            throw std::runtime_error(std::string("Couldn't open any audio device: ") + SDL_GetError());
+    }
+
+    if (_descriptor.name.empty())
+        _descriptor.name = DefaultDeviceName;
+    _descriptor.blockSize = acquiredSpec.samples;
+    _descriptor.sampleRate = static_cast<SampleRate>(acquiredSpec.freq);
+    _descriptor.format = ReverseFormat(acquiredSpec.format);
+    _descriptor.channelArrangement = static_cast<ChannelArrangement>(acquiredSpec.channels);
 }
 
 void Device::DebugPhysicalDescriptors(void)
@@ -134,30 +158,35 @@ Device::DriverDescriptors Device::GetDriverDescriptors(void)
     return drivers;
 }
 
-Device::PhysicalDescriptors Device::GetPhysicalDescriptors(void)
+Device::PhysicalDescriptors Device::GetPhysicalDescriptors(const bool recordInputs, const bool recordOutputs)
 {
     PhysicalDescriptors devices;
+
+    if (recordInputs) {
     const auto nDeviceInput { SDL_GetNumAudioDevices(true) };
-    for (auto i = 0; i < nDeviceInput; ++i) {
-        devices.push_back(PhysicalDescriptor {
-            Core::TinyString(SDL_GetAudioDeviceName(i, true)),
-            true,
-            false
-        });
-    }
-    const auto nDeviceOutput { SDL_GetNumAudioDevices(false) };
-    for (auto i = 0; i < nDeviceOutput; ++i) {
-        if (auto it = std::find_if(devices.begin(), devices.end(), [i](const PhysicalDescriptor &desc) -> bool {
-            return desc.name == SDL_GetAudioDeviceName(i, false);
-        }); it != devices.end()) {
-            it->hasOutput = true;
-            continue;
+        for (auto i = 0; i < nDeviceInput; ++i) {
+            devices.push_back(PhysicalDescriptor {
+                Core::TinyString(SDL_GetAudioDeviceName(i, true)),
+                true,
+                false
+            });
         }
-        devices.push_back(PhysicalDescriptor {
-            Core::TinyString(SDL_GetAudioDeviceName(i, false)),
-            false,
-            true
-        });
+    }
+    if (recordOutputs) {
+        const auto nDeviceOutput { SDL_GetNumAudioDevices(false) };
+        for (auto i = 0; i < nDeviceOutput; ++i) {
+            if (auto it = std::find_if(devices.begin(), devices.end(), [i](const PhysicalDescriptor &desc) -> bool {
+                return desc.name == SDL_GetAudioDeviceName(i, false);
+            }); it != devices.end()) {
+                it->hasOutput = true;
+                continue;
+            }
+            devices.push_back(PhysicalDescriptor {
+                Core::TinyString(SDL_GetAudioDeviceName(i, false)),
+                false,
+                true
+            });
+        }
     }
     return devices;
 }

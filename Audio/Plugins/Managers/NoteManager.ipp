@@ -8,19 +8,11 @@
 template<Audio::DSP::EnveloppeType Enveloppe>
 inline void Audio::NoteManager<Enveloppe>::feedNotes(const NoteEvents &notes) noexcept
 {
-    if (notes.size()) {
-        std::cout << std::endl;
-        std::cout << _cache.actives.size() << std::endl;
-        std::cout << std::endl;
-    }
     for (const auto &note : notes) {
         auto &target = _cache.modifiers[note.key];
         switch (note.type) {
         case NoteEvent::EventType::On:
         {
-            std::cout << "_ON " << static_cast<std::size_t>(note.key) << std::endl;
-            std::cout << "__ " << readIndex(note.key) << std::endl;
-            std::cout << "__ " << enveloppe().lastGain(note.key) << std::endl;
             const auto it = _cache.actives.find(note.key);
             if (it == _cache.actives.end())
                 _cache.actives.push(note.key);
@@ -35,7 +27,6 @@ inline void Audio::NoteManager<Enveloppe>::feedNotes(const NoteEvents &notes) no
         }
         case NoteEvent::EventType::Off:
         {
-            std::cout << "_OFF " << static_cast<std::size_t>(note.key) << std::endl;
             const auto it = _cache.actives.find(note.key);
             if (it != _cache.actives.end()) {
                 // Reset
@@ -46,7 +37,6 @@ inline void Audio::NoteManager<Enveloppe>::feedNotes(const NoteEvents &notes) no
             }
         } break;
         case NoteEvent::EventType::OnOff:
-            std::cout << "_ON&OFF " << static_cast<std::size_t>(note.key) << std::endl;
             _cache.activesBlock.push(note.key);
             _cache.triggers[note.key] = true;
             _cache.readIndexes[note.key] = 0u;

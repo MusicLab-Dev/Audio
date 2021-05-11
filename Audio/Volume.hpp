@@ -27,14 +27,6 @@ struct Audio::Volume
 {
 /** @brief Global methods */
 public:
-    static constexpr auto PrintGain = [](const float outGain) {
-        const std::size_t gainNorm = outGain * 100.f;
-        std::cout << "<";
-        for (auto i = 0ul; i < 100ul; ++i) {
-            std::cout << (i < gainNorm ? "=" : " ");
-        }
-        std::cout << ">" << std::endl;
-    };
     static constexpr auto ApplyRatio = [](BufferView buffer, const float ratio) {
         const auto size = buffer.size<float>();
         float *data = buffer.data<float>();

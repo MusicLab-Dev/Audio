@@ -29,6 +29,9 @@ namespace Audio
 class alignas_double_cacheline Audio::Device
 {
 public:
+    /** @brief Default device name */
+    static inline const char *DefaultDeviceName = "Default";
+
     /** @brief Helper used to init and release the driver instance */
     class DriverInstance
     {
@@ -119,7 +122,7 @@ public:
     static void DebugDriverDescriptors(void);
 
     /** @brief Get all device descriptors */
-    static PhysicalDescriptors GetPhysicalDescriptors(void);
+    static PhysicalDescriptors GetPhysicalDescriptors(const bool recordInputs = true, const bool recordOutputs = true);
     static void DebugPhysicalDescriptors(void);
 
     /** @brief Reload the device interface according to the internal descriptor */
