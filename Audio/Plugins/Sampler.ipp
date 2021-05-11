@@ -102,6 +102,7 @@ inline void Audio::Sampler::receiveAudio(BufferView output)
                 realOutSize = std::min(samplesLeft, realOutSize);
                 // Apply enveloppe
                 for (auto i = 0u, j = readIndex; i < realOutSize; ++i, ++j) {
+                    // realOut[i] += sampleBuffer[j] * outGain;
                     realOut[i] += sampleBuffer[j] * getEnveloppeGain(key, j, trigger) * outGain;
                 }
                 return std::make_pair(realOutSize, sampleSize);

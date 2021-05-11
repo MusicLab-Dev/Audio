@@ -67,12 +67,18 @@ public:
             const float sustain, const float release,
             const SampleRate sampleRate) noexcept
     {
+        UNUSED(delay);
+        UNUSED(attack);
+        UNUSED(hold);
+        UNUSED(decay);
+        UNUSED(sustain);
+        UNUSED(release);
         if constexpr (Enveloppe == EnveloppeType::AR)
             return attackRelease(key, index, isTrigger, attack, release, sampleRate);
         else if constexpr (Enveloppe == EnveloppeType::AD)
             return attackDecay(key, index, isTrigger, attack, decay, sampleRate);
         else if constexpr (Enveloppe == EnveloppeType::ADSR)
-            return adsr<true>(key, index, isTrigger, attack, decay, release, sustain, sampleRate);
+            return adsr(key, index, isTrigger, attack, decay, release, sustain, sampleRate);
         return 1.f;
     }
 
@@ -83,18 +89,23 @@ public:
     {
         const std::uint32_t attackIdx = static_cast<std::uint32_t>(attack * static_cast<float>(sampleRate));
         const std::uint32_t releaseIdx = static_cast<std::uint32_t>(release * static_cast<float>(sampleRate));
+        float outGain { 1.f };
+
         if (isTrigger) {
             if (index < attackIdx) {
-                return static_cast<float>(index) / static_cast<float>(attackIdx);
+                outGain = static_cast<float>(index) / static_cast<float>(attackIdx);
+            } else {
+                outGain = 1.f;
             }
-            return 1.f;
         } else {
             if (const auto releaseIndex = index - _triggerIndex[key]; releaseIndex < releaseIdx) {
-                return 1.0f - static_cast<float>(releaseIndex) / static_cast<float>(releaseIdx);
+                outGain = 1.0f - static_cast<float>(releaseIndex) / static_cast<float>(releaseIdx);
+            } else {
+                outGain = 0.f;
             }
-            return 0.f;
         }
-        return 1.f;
+        _lastGain[key] = outGain;
+        return _lastGain[key];
     }
 
     /** @brief AD implementation */

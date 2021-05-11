@@ -124,10 +124,23 @@ public:
     /** @brief Increment the read index of given key */
     [[nodiscard]] bool incrementReadIndex(const Key key, const std::uint32_t maxIndex, std::uint32_t amount = 1u) noexcept;
 
+
+    /** @brief Get the read index of given key */
     [[nodiscard]] std::uint32_t readIndex(const Key key) const noexcept { return _cache.readIndexes[key]; }
 
+    /** @brief Set the read index of given key */
     void setReadIndex(const Key key, const std::uint32_t index) noexcept { _cache.readIndexes[key] = key; }
 
+    /** @brief Reset the read index of given key */
+    void resetReadIndex(const Key key) noexcept { _cache.readIndexes[key] = 0u; }
+
+    void eraseActiveNote(const Key key) noexcept {
+        if (const auto it = _cache.actives.find(key); it != _cache.actives.end())
+            _cache.activesBlock.erase(it);
+     }
+
+    /** @brief Get the enveloppe gain of given key */
+    template<bool ResetIndex>
     [[nodiscard]] float getEnveloppeGain(
             const Key key, const std::uint32_t index, const bool trigger,
             const float delay, const float attack,
@@ -138,9 +151,13 @@ public:
         const auto gain = _enveloppe.getGain(key, index, trigger, delay, attack, hold, decay, sustain, release, sampleRate);
         // std::cout << "attack:::: " << attack << std::endl;
         // std::cout << "samplerate:::: " << sampleRate << std::endl;
-        if (!gain) {
-            setReadIndex(key, 0u);
-            _enveloppe.resetTriggerIndexes();
+        if constexpr (ResetIndex) {
+            if (!gain) {
+                // eraseActiveNote(key);
+                // std::cout << "  - RESET GAIN: " << static_cast<std::size_t>(key) << std::endl;
+                resetReadIndex(key);
+                _enveloppe.resetTriggerIndex(key);
+            }
         }
         return gain;
     }

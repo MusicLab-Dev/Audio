@@ -8,11 +8,19 @@
 template<Audio::DSP::EnveloppeType Enveloppe>
 inline void Audio::NoteManager<Enveloppe>::feedNotes(const NoteEvents &notes) noexcept
 {
+    if (notes.size()) {
+        std::cout << std::endl;
+        std::cout << _cache.actives.size() << std::endl;
+        std::cout << std::endl;
+    }
     for (const auto &note : notes) {
         auto &target = _cache.modifiers[note.key];
         switch (note.type) {
         case NoteEvent::EventType::On:
         {
+            std::cout << "_ON " << static_cast<std::size_t>(note.key) << std::endl;
+            std::cout << "__ " << readIndex(note.key) << std::endl;
+            std::cout << "__ " << enveloppe().lastGain(note.key) << std::endl;
             const auto it = _cache.actives.find(note.key);
             if (it == _cache.actives.end())
                 _cache.actives.push(note.key);
@@ -27,15 +35,18 @@ inline void Audio::NoteManager<Enveloppe>::feedNotes(const NoteEvents &notes) no
         }
         case NoteEvent::EventType::Off:
         {
+            std::cout << "_OFF " << static_cast<std::size_t>(note.key) << std::endl;
             const auto it = _cache.actives.find(note.key);
             if (it != _cache.actives.end()) {
                 // Reset
+                // _cache.readIndexes[note.key] = 0u;
                 _cache.triggers[note.key] = false;
                 enveloppe().setTriggerIndex(note.key, _cache.readIndexes[note.key]);
                 target.noteModifiers.sampleOffset = note.sampleOffset;
             }
         } break;
         case NoteEvent::EventType::OnOff:
+            std::cout << "_ON&OFF " << static_cast<std::size_t>(note.key) << std::endl;
             _cache.activesBlock.push(note.key);
             _cache.triggers[note.key] = true;
             _cache.readIndexes[note.key] = 0u;
@@ -155,7 +166,8 @@ void Audio::NoteManager<Enveloppe>::processNotes(Functor &&functor) noexcept
 
             // Erase the note if it's an oscillator (pair.second == 0u) & the enveloppe gain is null
             // std::cout << "ITER" << std::endl;
-            return ended || (!pair.second && !enveloppe().lastGain(key));
+            return ended || !enveloppe().lastGain(key);
+            // return ended || (!pair.second && !enveloppe().lastGain(key));
         }
     );
     // Actually delete the concerned notes
@@ -178,7 +190,8 @@ void Audio::NoteManager<Enveloppe>::processNotes(Functor &&functor) noexcept
 
             // std::cout << "ITER" << std::endl;
             // Erase the note if it's an oscillator (pair.second == 0u) & the enveloppe gain is null
-            return ended || (!pair.second && !enveloppe().lastGain(key));
+            return ended || !enveloppe().lastGain(key);
+            // return ended || (!pair.second && !enveloppe().lastGain(key));
         }
     );
     // Actually delete the concerned notes

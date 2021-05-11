@@ -143,7 +143,14 @@ private:
 
     float getEnveloppeGain(const Key key, const std::uint32_t index, const bool isTrigger) noexcept
     {
-        return _noteManager.enveloppe().adsr(key, index, isTrigger, static_cast<float>(enveloppeAttack()), static_cast<float>(enveloppeDecay()), static_cast<float>(enveloppeSustain()), static_cast<float>(enveloppeRelease()), audioSpecs().sampleRate);
+        return _noteManager.getEnveloppeGain<false>(key, index, isTrigger,
+                0.0f,
+                static_cast<float>(enveloppeAttack()),
+                0.0f,
+                static_cast<float>(enveloppeDecay()),
+                static_cast<float>(enveloppeSustain()),
+                static_cast<float>(enveloppeRelease()),
+        audioSpecs().sampleRate);
     }
 
     template<bool Accumulate = true, typename Type>
