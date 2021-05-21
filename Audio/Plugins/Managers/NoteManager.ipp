@@ -18,8 +18,7 @@ inline void Audio::NoteManager<Enveloppe>::feedNotes(const NoteEvents &notes) no
                 _cache.actives.push(note.key);
             _cache.readIndexes[note.key] = 0u;
             _cache.triggers[note.key] = true;
-            enveloppe().resetTriggerIndex(note.key);
-            enveloppe().resetGain(note.key);
+            enveloppe().resetKey(note.key);
             target.noteModifiers.velocity = note.velocity;
             target.noteModifiers.tuning = note.tuning;
             target.noteModifiers.sampleOffset = note.sampleOffset;
@@ -32,7 +31,8 @@ inline void Audio::NoteManager<Enveloppe>::feedNotes(const NoteEvents &notes) no
                 // Reset
                 // _cache.readIndexes[note.key] = 0u;
                 _cache.triggers[note.key] = false;
-                enveloppe().setTriggerIndex(note.key, _cache.readIndexes[note.key]);
+                enveloppe().setTriggerIndex(note.key, _cache.readIndexes[note.key] + note.sampleOffset);
+                // enveloppe().setTriggerIndex(note.key, _cache.readIndexes[note.key]);
                 target.noteModifiers.sampleOffset = note.sampleOffset;
             }
         } break;
@@ -41,7 +41,7 @@ inline void Audio::NoteManager<Enveloppe>::feedNotes(const NoteEvents &notes) no
             _cache.triggers[note.key] = true;
             _cache.readIndexes[note.key] = 0u;
             enveloppe().resetTriggerIndex(note.key);
-            enveloppe().resetGain(note.key);
+            enveloppe().resetInternalGain(note.key);
             target.noteModifiers.velocity = note.velocity;
             target.noteModifiers.tuning = note.tuning;
             target.noteModifiers.sampleOffset = note.sampleOffset;
@@ -119,7 +119,7 @@ inline bool Audio::NoteManager<Enveloppe>::incrementReadIndex(const Key key, con
     if ((maxIndex && readIndex >= maxIndex) || !enveloppe().lastGain(key)) {
         readIndex = 0u;
         trigger = false;
-        enveloppe().resetTriggerIndex(key);
+        enveloppe().resetKey(key);
         return true;
     } else
         return false;

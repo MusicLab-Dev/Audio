@@ -22,7 +22,9 @@ inline void Audio::Oscillator::setExternalPaths(const ExternalPaths &paths)
 
 inline void Audio::Oscillator::sendNotes(const NoteEvents &notes)
 {
-    _noteManager.feedNotes(notes);
+    if (notes.size()) {
+        _noteManager.feedNotes(notes);
+    }
 }
 
 inline void Audio::Oscillator::receiveAudio(BufferView output)
@@ -50,6 +52,10 @@ inline void Audio::Oscillator::receiveAudio(BufferView output)
             return std::make_pair(realOutSize, 0u);
         }
     );
+
+    // std::cout << std::endl;
+    // std::cout << _noteManager.getActiveNoteSize() << std::endl;
+    // std::cout << _noteManager.getActiveNoteBlockSize() << std::endl;
 
     // To benchmark, must be slower
     // Modifier<float>::ApplyIndexFunctor(out, outSize, 0u, [&, outGain](const std::size_t index) -> float {

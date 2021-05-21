@@ -36,9 +36,13 @@ class Audio::DSP::EnveloppeBase
 public:
     using IndexList = std::array<std::uint32_t, KeyCount>;
     using GainList = std::array<float, KeyCount>;
+    using SustainList = std::array<float, KeyCount>;
 
     /** @brief Reset all */
-    void reset(void) noexcept { resetTriggerIndexes(); resetInternalGains(); }
+    void reset(void) noexcept { resetTriggerIndexes(); resetInternalGains(); resetInternalSustains(); }
+
+    /** @brief Reset a key */
+    void resetKey(const Key key) noexcept { resetTriggerIndex(key); resetInternalGain(key); resetInternalSustain(key); }
 
 
     /** @brief Reset all trigger indexes */
@@ -52,10 +56,17 @@ public:
 
 
     /** @brief Reset all internal gains */
-    void resetInternalGains(void) noexcept { _lastGain.fill(0ul); }
+    void resetInternalGains(void) noexcept { _lastGain.fill(0.0f); }
 
     /** @brief Reset a specific gain */
-    void resetGain(const Key key) noexcept { _lastGain[key] = 0ul; }
+    void resetInternalGain(const Key key) noexcept { _lastGain[key] = 0.0f; }
+
+    /** @brief Reset all internal sustains */
+    void resetInternalSustains(void) noexcept { _sustains.fill(0.0f); }
+
+    /** @brief Reset a specific sustain */
+    void resetInternalSustain(const Key key) noexcept { _sustains[key] = 0.0f; }
+
 
     /** @brief Get the last gain */
     [[nodiscard]] float lastGain(const Key key) noexcept { return _lastGain[key]; }
@@ -78,7 +89,7 @@ public:
         else if constexpr (Enveloppe == EnveloppeType::AD)
             return attackDecay(key, index, isTrigger, attack, decay, sampleRate);
         else if constexpr (Enveloppe == EnveloppeType::ADSR)
-            return adsr(key, index, isTrigger, attack, decay, release, sustain, sampleRate);
+            return adsr(key, index, isTrigger, attack, decay, sustain, release, sampleRate);
         return 1.f;
     }
 
@@ -126,6 +137,59 @@ public:
 
     /** @brief ADSR implementation */
     [[nodiscard]] float adsr(
+            const Key key, const std::uint32_t index, const bool isTrigger,
+            const float attack, const float decay, const float sustain, const float release, const SampleRate sampleRate) noexcept
+    {
+        const float OneMinusSustain = 1.0f - sustain;
+        float outGain { 1.f };
+        const auto triggerIndex = _triggerIndex[key];
+
+        UNUSED(isTrigger);
+        if (!triggerIndex || (index < triggerIndex)) {
+            const std::uint32_t attackIdx = static_cast<std::uint32_t>(attack * static_cast<float>(sampleRate));
+            // Attack
+            if (index < attackIdx) {
+                // Linear
+                outGain = static_cast<float>(index) / static_cast<float>(attackIdx);
+            }
+            // Decay
+            else if (const std::uint32_t decayIdx = static_cast<std::uint32_t>(decay * static_cast<float>(sampleRate)); index < (decayIdx + attackIdx)) {
+                // Sustain max -> no decay
+                if (sustain == 1.f)
+                    outGain = 1.f;
+                else
+                    outGain = (1.f - static_cast<float>(index - attackIdx) / static_cast<float>(decayIdx)) * OneMinusSustain + sustain;
+            } else {
+                std::cout << triggerIndex << std::endl;
+                // Sustain
+                outGain = sustain;
+            }
+        } else {
+            // std::cout << index << " - " << triggerIndex << std::endl;
+            // Release
+            // const std::uint32_t releaseIdx = ((_lastGain[key] < sustain) ? _lastGain[key] : release) * static_cast<float>(sampleRate);
+            const std::uint32_t releaseIdx = static_cast<std::uint32_t>(release * static_cast<float>(sampleRate));
+            if (const std::uint32_t realIndex = index - _triggerIndex[key];
+                realIndex < releaseIdx) {
+                // if (sustain != _lastGain[key]) {
+                //     std::cout << _lastGain[key] << " != " << sustain << std::endl;
+                // }
+                if (!_sustains[key]) {
+                    _sustains[key] = _lastGain[key];
+                }
+                // outGain = (1.f - static_cast<float>(realIndex) / static_cast<float>(releaseIdx)) * sustain;
+                outGain = (1.f - static_cast<float>(realIndex) / static_cast<float>(releaseIdx)) * _sustains[key];
+            }
+            // End of the enveloppe
+            else {
+                outGain = 0.f;
+            }
+        }
+        _lastGain[key] = outGain;
+        return _lastGain[key];
+    }
+
+    [[nodiscard]] float adsrOld(
             const Key key, const std::uint32_t index, const bool isTrigger,
             const float attack, const float decay, const float sustain, const float release, const SampleRate sampleRate) noexcept
     {
@@ -188,6 +252,7 @@ public:
 private:
     IndexList _triggerIndex;
     GainList _lastGain;
+    SustainList _sustains;
 };
 
 #include "EnveloppeGenerator.ipp"
