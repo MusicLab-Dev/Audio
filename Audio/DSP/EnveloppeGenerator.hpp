@@ -38,6 +38,8 @@ public:
     using GainList = std::array<float, KeyCount>;
     using SustainList = std::array<float, KeyCount>;
 
+    EnveloppeBase(void) { reset(); }
+
     /** @brief Reset all */
     void reset(void) noexcept { resetTriggerIndexes(); resetInternalGains(); resetInternalSustains(); }
 
@@ -49,10 +51,10 @@ public:
     void resetTriggerIndexes(void) noexcept { _triggerIndex.fill(0ul); }
 
     /** @brief Reset a specific trigger index */
-    void resetTriggerIndex(const Key key) noexcept { setTriggerIndex(key, 0ul); }
+    void resetTriggerIndex(const Key key) noexcept { _triggerIndex[key] = 0ul; }
 
     /** @brief Set the internal trigger status */
-    void setTriggerIndex(const Key key, const std::uint32_t triggerIndex) noexcept { _triggerIndex[key] = triggerIndex; }
+    void setTriggerIndex(const Key key, const std::uint32_t triggerIndex) noexcept { _triggerIndex[key] = triggerIndex ? triggerIndex : 1u; }
 
 
     /** @brief Reset all internal gains */
@@ -160,7 +162,7 @@ public:
                 else
                     outGain = (1.f - static_cast<float>(index - attackIdx) / static_cast<float>(decayIdx)) * OneMinusSustain + sustain;
             } else {
-                std::cout << triggerIndex << std::endl;
+                // std::cout << triggerIndex << std::endl;
                 // Sustain
                 outGain = sustain;
             }
