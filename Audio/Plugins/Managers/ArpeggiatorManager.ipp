@@ -135,12 +135,12 @@ inline bool Audio::ArpeggiatorManager::updateOffNotes(NoteIndex &realNoteCount) 
         auto itOffs = std::remove_if(_cache.offs.begin(), _cache.offs.end(),
             [this, &realNoteCount](const auto key) {
                 if (auto it = _cache.actives.find(key); it != _cache.actives.end()) {
-                    std::cout << " -- removeActive " << static_cast<std::size_t>(key) << std::endl;
+                    // std::cout << " -- removeActive " << static_cast<std::size_t>(key) << std::endl;
                     --realNoteCount;
                     _cache.actives.erase(it);
                     return true;
                 } else if (auto it = _cache.pending.find(key); it != _cache.pending.end()) {
-                    std::cout << " -- removePending " << static_cast<std::size_t>(key) << std::endl;
+                    // std::cout << " -- removePending " << static_cast<std::size_t>(key) << std::endl;
                     _cache.pending.erase(it);
                     return true;
                 }
@@ -148,16 +148,16 @@ inline bool Audio::ArpeggiatorManager::updateOffNotes(NoteIndex &realNoteCount) 
             }
         );
         if (itOffs != _cache.offs.end()) {
-            std::cout << " \\__removedOffs " << static_cast<std::uint32_t>(std::distance(itOffs, _cache.offs.end())) << std::endl;
+            // std::cout << " \\__removedOffs " << static_cast<std::uint32_t>(std::distance(itOffs, _cache.offs.end())) << std::endl;
             _cache.offs.erase(itOffs, _cache.offs.end());
         }
 
-        std::cout << " realNoteCount " << static_cast<std::size_t>(realNoteCount) << std::endl;
+        // std::cout << " realNoteCount " << static_cast<std::size_t>(realNoteCount) << std::endl;
         if (const auto noteAddedCount = updateActivesNotes(_cache.noteCount - realNoteCount); noteAddedCount) {
             realNoteCount += noteAddedCount;
-            std::cout << " \\__update " << static_cast<std::size_t>(noteAddedCount) << std::endl;
+            // std::cout << " \\__update " << static_cast<std::size_t>(noteAddedCount) << std::endl;
         }
-        std::cout << " \\__update2 " << static_cast<std::size_t>(_cache.actives.size()) << ":" << static_cast<std::size_t>(_cache.pending.size()) << ":" << static_cast<std::size_t>(_cache.offs.size()) << std::endl;
+        // std::cout << " \\__update2 " << static_cast<std::size_t>(_cache.actives.size()) << ":" << static_cast<std::size_t>(_cache.pending.size()) << ":" << static_cast<std::size_t>(_cache.offs.size()) << std::endl;
         return true;
     } else
         return false;
