@@ -161,7 +161,7 @@ public:
     virtual void receiveAudio(BufferView output) { UNUSED(output); throw std::runtime_error("IPlugin::receiveAudio: Not implemented"); }
 
     /** @brief  */
-    virtual void sendNotes(const NoteEvents &notes) { UNUSED(notes); throw std::runtime_error("IPlugin::sendNotes: Not implemented"); }
+    virtual void sendNotes(const NoteEvents &notes, const BeatRange &range) { UNUSED(notes); UNUSED(range); throw std::runtime_error("IPlugin::sendNotes: Not implemented"); }
 
     /** @brief  */
     virtual void receiveNotes(NoteEvents &notes) { UNUSED(notes); throw std::runtime_error("IPlugin::receiveNotes: Not implemented"); }

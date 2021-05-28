@@ -91,7 +91,7 @@ static void FeedAudioTestData(std::vector<AudioTestData> &testData, const Buffer
 //         noteManager.resetBlockCache();
 //     }
 
-//     virtual void sendNotes(const NoteEvents &notes) noexcept
+//     virtual void sendNotes(const NoteEvents &notes, const BeatRange &range) noexcept
 //     {
 //         FeedNoteTestData(noteData, notes, TestDataBase::Dir::In);
 //     }
@@ -132,7 +132,7 @@ struct DummyNoteInAudioOut : public IPlugin, public DummyPluginBase
         // noteManager.resetBlockCache();
     }
 
-    virtual void sendNotes(const NoteEvents &notes) noexcept
+    virtual void sendNotes(const NoteEvents &notes, const BeatRange &range) noexcept
     {
         FeedNoteTestData(noteData, notes, TestDataBase::Dir::In);
         std::cout << "send notes: " << noteData.size() << std::endl;
@@ -159,7 +159,7 @@ struct DummyAudioIO : public IPlugin, public DummyPluginBase
             static_cast<std::size_t>(Flags::ControlInput)
         );
     }
-    virtual void sendNotes(const NoteEvents &notes) noexcept {}
+    virtual void sendNotes(const NoteEvents &notes, const BeatRange &range) noexcept {}
     virtual void receiveNotes(NoteEvents &notes) noexcept {}
 
     virtual void sendAudio(const BufferViews &inputs) noexcept
@@ -195,7 +195,7 @@ struct DummyAudioIO : public IPlugin, public DummyPluginBase
 //     virtual void receiveAudio(BufferView output) noexcept {}
 
 
-//     virtual void sendNotes(const NoteEvents &notes) noexcept
+//     virtual void sendNotes(const NoteEvents &notes, const BeatRange &range) noexcept
 //     {
 //         FeedNoteTestData(noteData, notes, TestDataBase::Dir::In);
 //     }

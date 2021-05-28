@@ -53,7 +53,7 @@ public:
 
     virtual void receiveAudio(BufferView output);
 
-    virtual void sendNotes(const NoteEvents &notes);
+    virtual void sendNotes(const NoteEvents &notes, const BeatRange &range);
 
     virtual const ExternalPaths &getExternalPaths(void) const { return _externalPaths; }
     virtual void setExternalPaths(const ExternalPaths &paths);

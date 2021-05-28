@@ -60,7 +60,8 @@ public:
         Piano           = 1 << 20,
         Sampler         = 1 << 21,
         Synth           = 1 << 22,
-        External        = 1 << 23
+        External        = 1 << 23,
+        Sequencer       = 1 << 24
     };
 
     static constexpr std::string_view DefaultLang = "EN";

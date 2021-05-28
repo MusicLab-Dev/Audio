@@ -103,7 +103,7 @@ private:
         Audio::TranslationMetaData { Name, Description }, \
         ShortName, \
         UnitName, \
-        Audio::ParamType::Integer \
+        Audio::ParamType::Integer, \
         Value, \
         Range, \
         {} \

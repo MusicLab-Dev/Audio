@@ -53,10 +53,12 @@ void Audio::PluginTable::decrementRefCount(IPlugin *plugin) noexcept_ndebug
 #include <Audio/Plugins/SigmaFilter.hpp>
 #include <Audio/Plugins/GammaEqualizer.hpp>
 #include <Audio/Plugins/SimpleDelay.hpp>
+#include <Audio/Plugins/Arpeggiator.hpp>
 
 Audio::PluginTable::PluginTable(void)
 {
     registerFactory<Audio::Mixer>();
+    registerFactory<Audio::Arpeggiator>();
     registerFactory<Audio::Sampler>();
     registerFactory<Audio::Oscillator>();
     registerFactory<Audio::BandFilter>();

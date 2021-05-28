@@ -93,7 +93,7 @@ class Audio::Oscillator final : public Audio::IPlugin
             ),
             /* Control's unit */
             TR_TABLE(
-                TR(English, "pi")
+                TR(English, "")
             )
         )
     )
@@ -123,7 +123,7 @@ public:
 
     virtual void receiveAudio(BufferView output);
 
-    virtual void sendNotes(const NoteEvents &notes);
+    virtual void sendNotes(const NoteEvents &notes, const BeatRange &range);
 
     virtual void setExternalPaths(const ExternalPaths &paths);
 

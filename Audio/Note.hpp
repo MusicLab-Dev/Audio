@@ -16,6 +16,16 @@ namespace Audio
 {
     struct NoteEvent;
     struct Note;
+
+    /** @brief Modifiers of a note */
+    struct alignas_eighth_cacheline NoteModifiers
+    {
+        Velocity velocity { 0u };
+        Tuning tuning { 0u };
+        BlockSize sampleOffset { 0u };
+    };
+
+    static_assert_fit_eighth_cacheline(NoteModifiers);
 }
 
 /** @brief Default Note event */

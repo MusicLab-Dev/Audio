@@ -3,6 +3,8 @@
  * @ Description: Scheduler Task
  */
 
+#include <Audio/DSP/Merge.hpp>
+
 template<Audio::PlaybackMode Playback, bool ProcessNotesAndControls, bool ProcessAudio, Audio::IPlugin::Flags Deduced, Audio::IPlugin::Flags Begin, Audio::IPlugin::Flags End>
 inline std::pair<Flow::Task, const Audio::NoteEvents *> Audio::MakeSchedulerTask(Flow::Graph &graph, const IPlugin::Flags flags,
         const AScheduler *scheduler, Node *node, const NoteEvents * const parentNoteStack)
@@ -52,7 +54,7 @@ inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, P
         }
         if (collectPartitions(beatRange) || _noteStack) {
             if constexpr (HasNoteInput) {
-                plugin.sendNotes(*_noteStack);
+                plugin.sendNotes(*_noteStack, beatRange);
                 _noteStack->clear();
             }
         }
@@ -69,8 +71,10 @@ inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, P
             node().cache().clear();
             plugin.receiveAudio(node().cache());
         } else {
-            std::cout << "Forget to merge lol" << std::endl;
             // Merge audio
+            node().cache().clear();
+            DSP::Merge<float>(_bufferStack, node().cache(), 1.0f, false);
+            _bufferStack.clear();
         }
     }
 }
@@ -160,6 +164,29 @@ inline bool Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, P
         if (&node() == _scheduler->partitionNode())
             collectPartition(partitions[_scheduler->partitionIndex()], beatRange, beatToSampleRatio, beatMissOffset);
     }
+    // TEST
+    // auto itNote = std::remove_if(_noteStack->begin(), _noteStack->end(),
+    //     [this](const NoteEvent evtOff) {
+    //         if (evtOff.type != NoteEvent::EventType::Off)
+    //             return false;
+    //         auto it = std::find_if(_noteStack->begin(), _noteStack->end(),
+    //             [evtOff](const NoteEvent evtOn) {
+    //                 if (
+    //                     evtOn.type == NoteEvent::EventType::On &&
+    //                     evtOn.key == evtOff.key &&
+    //                     evtOn.sampleOffset == evtOff.sampleOffset
+    //                 )
+    //                     return true;
+    //                 return false;
+
+    //             }
+    //         );
+    //         return it != _noteStack->end();
+
+    //     }
+    // );
+    // if (itNote != _noteStack->end())
+        // _noteStack->erase(itNote, _noteStack->end());
     return *_noteStack;
 }
 

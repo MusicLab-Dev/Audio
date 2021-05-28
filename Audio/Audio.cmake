@@ -83,6 +83,8 @@ set(AudioPluginsSources
     ${AudioPluginsDir}/GammaEqualizer.ipp
     ${AudioPluginsDir}/SimpleDelay.hpp
     ${AudioPluginsDir}/SimpleDelay.ipp
+    ${AudioPluginsDir}/Arpeggiator.hpp
+    ${AudioPluginsDir}/Arpeggiator.ipp
 )
 
 set(AudioPluginManagerDir ${AudioPluginsDir}/Managers)
@@ -92,6 +94,8 @@ set(AudioSampleFileDir ${AudioDir}/SampleFile)
 set(AudioPluginManagersSources
     ${AudioPluginManagerDir}/NoteManager.hpp
     ${AudioPluginManagerDir}/NoteManager.ipp
+    ${AudioPluginManagerDir}/ArpeggiatorManager.hpp
+    ${AudioPluginManagerDir}/ArpeggiatorManager.ipp
     ${AudioSampleFileDir}/SampleManager.hpp
     ${AudioSampleFileDir}/SampleManager.ipp
     ${AudioSampleFileDir}/SampleManager.cpp

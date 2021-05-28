@@ -54,8 +54,9 @@ inline void Audio::Sampler::setExternalPaths(const ExternalPaths &paths)
     }
 }
 
-inline void Audio::Sampler::sendNotes(const NoteEvents &notes)
+inline void Audio::Sampler::sendNotes(const NoteEvents &notes, const BeatRange &range)
 {
+    UNUSED(range);
     if (notes.size()) {
         std::cout << std::endl;
         std::cout << _noteManager.getActiveNoteSize() << std::endl;

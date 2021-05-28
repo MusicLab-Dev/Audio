@@ -20,9 +20,11 @@ inline void Audio::Oscillator::setExternalPaths(const ExternalPaths &paths)
     UNUSED(paths);
 }
 
-inline void Audio::Oscillator::sendNotes(const NoteEvents &notes)
+inline void Audio::Oscillator::sendNotes(const NoteEvents &notes, const BeatRange &range)
 {
+    UNUSED(range);
     if (notes.size()) {
+        // std::cout << range << std::endl;
         _noteManager.feedNotes(notes);
     }
 }

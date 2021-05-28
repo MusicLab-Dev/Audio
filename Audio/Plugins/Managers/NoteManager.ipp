@@ -8,7 +8,10 @@
 template<Audio::DSP::EnveloppeType Enveloppe>
 inline void Audio::NoteManager<Enveloppe>::feedNotes(const NoteEvents &notes) noexcept
 {
+    // std::cout << "NOTES> SEND NOTES " << notes.size() << std::endl;
+
     for (const auto &note : notes) {
+        // std::cout << "##" << static_cast<std::size_t>(note.key) << ": " << static_cast<std::size_t>(note.type) << " - " << note.sampleOffset << std::endl;
         auto &target = _cache.modifiers[note.key];
         switch (note.type) {
         case NoteEvent::EventType::On:
@@ -27,9 +30,8 @@ inline void Audio::NoteManager<Enveloppe>::feedNotes(const NoteEvents &notes) no
         case NoteEvent::EventType::Off:
         {
             const auto it = _cache.actives.find(note.key);
-            if (it != _cache.actives.end()) {
+            if (it != _cache.actives.end() && _cache.triggers[note.key]) {
                 // Reset
-                // _cache.readIndexes[note.key] = 0u;
                 _cache.triggers[note.key] = false;
                 enveloppe().setTriggerIndex(note.key, _cache.readIndexes[note.key] + note.sampleOffset);
                 // enveloppe().setTriggerIndex(note.key, _cache.readIndexes[note.key]);

@@ -56,8 +56,8 @@ bool AScheduler::setState(const State state) noexcept
             if (expected == State::Play)
                 return false;
         }
-        _beatMissCount = 0.0;
-        _audioBlockBeatMissCount = 0.0;
+        _beatMissCount = _beatMissOffset;
+        _audioBlockBeatMissCount = _beatMissOffset;
         _audioElapsedBeat = 0u;
         if (!getCurrentGraph().running()) {
             if (_dirtyFlags[static_cast<std::size_t>(playbackMode())])
@@ -106,7 +106,7 @@ void AScheduler::processLooping(void) noexcept
             _loopBeatRange.from,
             _loopBeatRange.from + _processBeatSize
         };
-        _beatMissCount = 0.0;
+        _beatMissCount = _beatMissOffset;
     }
 }
 

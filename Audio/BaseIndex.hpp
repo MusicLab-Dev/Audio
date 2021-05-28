@@ -25,8 +25,22 @@ namespace Audio
     /** @brief Max beat index */
     static constexpr auto BeatIndexMax = std::numeric_limits<Beat>::max() / BeatPrecision;
 
+    enum class NoteType : Audio::Beat {
+        WholeNote = 1,                  // Ronde
+        HalfNote = 2,                   // Blanche
+        QuarterNote = 4,                // Noire
+        EighthNote = 8,                 // Croche
+        SixteenthNote = 16,             // Double croche
+        ThirtySecondNote = 32,          // Triple croche
+        SixtyFourthNote = 64,           // Quadruple croche
+        HundredTwentyEighthNote = 128   // Quintuple croche
+    };
+
     struct BeatRange;
     struct TimeRange;
+
+    [[nodiscard]] Beat MakeBeat(const std::uint32_t unitCount, const NoteType beatType) noexcept;
+    [[nodiscard]] BeatRange MakeBeatRange(const std::uint32_t from, const std::uint32_t to, const NoteType beatType) noexcept;
 }
 
 /** @brief Beat range */
