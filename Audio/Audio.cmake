@@ -85,6 +85,8 @@ set(AudioPluginsSources
     ${AudioPluginsDir}/SimpleDelay.ipp
     ${AudioPluginsDir}/Arpeggiator.hpp
     ${AudioPluginsDir}/Arpeggiator.ipp
+    ${AudioPluginsDir}/Chords.hpp
+    ${AudioPluginsDir}/Chords.ipp
 )
 
 set(AudioPluginManagerDir ${AudioPluginsDir}/Managers)
@@ -96,6 +98,8 @@ set(AudioPluginManagersSources
     ${AudioPluginManagerDir}/NoteManager.ipp
     ${AudioPluginManagerDir}/ArpeggiatorManager.hpp
     ${AudioPluginManagerDir}/ArpeggiatorManager.ipp
+    ${AudioPluginManagerDir}/ChordsManager.hpp
+    ${AudioPluginManagerDir}/ChordsManager.ipp
     ${AudioSampleFileDir}/SampleManager.hpp
     ${AudioSampleFileDir}/SampleManager.ipp
     ${AudioSampleFileDir}/SampleManager.cpp
