@@ -272,9 +272,6 @@ public:
 
 private:
     CacheList _cache;
-    // IndexList _triggerIndex;
-    // GainList _lastGain;
-    // SustainList _sustains;
 };
 
 #include "EnvelopeGenerator.ipp"
