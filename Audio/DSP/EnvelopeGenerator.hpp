@@ -1,6 +1,6 @@
 /**
  * @ Author: Pierre Veysseyre
- * @ Description: EnveloppeGenerator
+ * @ Description: EnvelopeGenerator
  */
 
 #pragma once
@@ -14,7 +14,7 @@
 
 namespace Audio::DSP
 {
-    enum class EnveloppeType : std::uint8_t {
+    enum class EnvelopeType : std::uint8_t {
         AR, AD, ADSR//, DADSR, DAHDSR
     };
 
@@ -22,23 +22,28 @@ namespace Audio::DSP
         Linear, Exp, InverseExp
     };
 
-    template<EnveloppeType Enveloppe>
-    class EnveloppeBase;
+    template<EnvelopeType Envelope>
+    class EnvelopeBase;
 
     class AttackRelease;
     class AttackDecayReleaseSustain;
 }
 
 
-template<Audio::DSP::EnveloppeType Enveloppe>
-class Audio::DSP::EnveloppeBase
+template<Audio::DSP::EnvelopeType Envelope>
+class Audio::DSP::EnvelopeBase
 {
 public:
-    using IndexList = std::array<std::uint32_t, KeyCount>;
-    using GainList = std::array<float, KeyCount>;
-    using SustainList = std::array<float, KeyCount>;
+    struct alignas_half_cacheline KeyCache {
+        std::uint32_t triggerIndex;
+        float gain;
+        float sustain;
+    };
+    static_assert_alignof_half_cacheline(KeyCache);
 
-    EnveloppeBase(void) { reset(); }
+    using CacheList = std::array<KeyCache, KeyCount>;
+
+    EnvelopeBase(void) { reset(); }
 
     /** @brief Reset all */
     void reset(void) noexcept { resetTriggerIndexes(); resetInternalGains(); resetInternalSustains(); }
@@ -48,30 +53,42 @@ public:
 
 
     /** @brief Reset all trigger indexes */
-    void resetTriggerIndexes(void) noexcept { _triggerIndex.fill(0ul); }
+    void resetTriggerIndexes(void) noexcept
+    {
+        for (auto i = 0u; i < KeyCount; ++i)
+            _cache[i].triggerIndex = 0ul;
+    }
 
     /** @brief Reset a specific trigger index */
-    void resetTriggerIndex(const Key key) noexcept { _triggerIndex[key] = 0ul; }
+    void resetTriggerIndex(const Key key) noexcept { _cache[key].triggerIndex = 0ul; }
 
     /** @brief Set the internal trigger status */
-    void setTriggerIndex(const Key key, const std::uint32_t triggerIndex) noexcept { _triggerIndex[key] = triggerIndex ? triggerIndex : 1u; }
+    void setTriggerIndex(const Key key, const std::uint32_t triggerIndex) noexcept { _cache[key].triggerIndex = triggerIndex ? triggerIndex : 1u; }
 
 
     /** @brief Reset all internal gains */
-    void resetInternalGains(void) noexcept { _lastGain.fill(0.0f); }
+    void resetInternalGains(void) noexcept
+    {
+        for (auto i = 0u; i < KeyCount; ++i)
+            _cache[i].gain = 0.0f;
+    }
 
     /** @brief Reset a specific gain */
-    void resetInternalGain(const Key key) noexcept { _lastGain[key] = 0.0f; }
+    void resetInternalGain(const Key key) noexcept { _cache[key].gain = 0.0f; }
 
     /** @brief Reset all internal sustains */
-    void resetInternalSustains(void) noexcept { _sustains.fill(0.0f); }
+    void resetInternalSustains(void) noexcept
+    {
+        for (auto i = 0u; i < KeyCount; ++i)
+            _cache[i].sustain = 0.0f;
+    }
 
     /** @brief Reset a specific sustain */
-    void resetInternalSustain(const Key key) noexcept { _sustains[key] = 0.0f; }
+    void resetInternalSustain(const Key key) noexcept { _cache[key].sustain = 0.0f; }
 
 
     /** @brief Get the last gain */
-    [[nodiscard]] float lastGain(const Key key) noexcept { return _lastGain[key]; }
+    [[nodiscard]] float lastGain(const Key key) noexcept { return _cache[key].gain; }
 
     [[nodiscard]] float getGain(
             const Key key, const std::uint32_t index, const bool isTrigger,
@@ -86,11 +103,11 @@ public:
         UNUSED(decay);
         UNUSED(sustain);
         UNUSED(release);
-        if constexpr (Enveloppe == EnveloppeType::AR)
+        if constexpr (Envelope == EnvelopeType::AR)
             return attackRelease(key, index, isTrigger, attack, release, sampleRate);
-        else if constexpr (Enveloppe == EnveloppeType::AD)
+        else if constexpr (Envelope == EnvelopeType::AD)
             return attackDecay(key, index, isTrigger, attack, decay, sampleRate);
-        else if constexpr (Enveloppe == EnveloppeType::ADSR)
+        else if constexpr (Envelope == EnvelopeType::ADSR)
             return adsr(key, index, isTrigger, attack, decay, sustain, release, sampleRate);
         return 1.f;
     }
@@ -103,6 +120,7 @@ public:
         const std::uint32_t attackIdx = static_cast<std::uint32_t>(attack * static_cast<float>(sampleRate));
         const std::uint32_t releaseIdx = static_cast<std::uint32_t>(release * static_cast<float>(sampleRate));
         float outGain { 1.f };
+        auto &keyCache = _cache[key];
 
         if (isTrigger) {
             if (index < attackIdx) {
@@ -111,14 +129,14 @@ public:
                 outGain = 1.f;
             }
         } else {
-            if (const auto releaseIndex = index - _triggerIndex[key]; releaseIndex < releaseIdx) {
+            if (const auto releaseIndex = index - keyCache.triggerIndex; releaseIndex < releaseIdx) {
                 outGain = 1.0f - static_cast<float>(releaseIndex) / static_cast<float>(releaseIdx);
             } else {
                 outGain = 0.f;
             }
         }
-        _lastGain[key] = outGain;
-        return _lastGain[key];
+        keyCache.gain = outGain;
+        return outGain;
     }
 
     /** @brief AD implementation */
@@ -144,10 +162,10 @@ public:
     {
         const float OneMinusSustain = 1.0f - sustain;
         float outGain { 1.f };
-        const auto triggerIndex = _triggerIndex[key];
+        auto &keyCache = _cache[key];
 
         UNUSED(isTrigger);
-        if (!triggerIndex || (index < triggerIndex)) {
+        if (!keyCache.triggerIndex || (index < keyCache.triggerIndex)) {
             const std::uint32_t attackIdx = static_cast<std::uint32_t>(attack * static_cast<float>(sampleRate));
             // Attack
             if (index < attackIdx) {
@@ -162,33 +180,33 @@ public:
                 else
                     outGain = (1.f - static_cast<float>(index - attackIdx) / static_cast<float>(decayIdx)) * OneMinusSustain + sustain;
             } else {
-                // std::cout << triggerIndex << std::endl;
+                // std::cout << keyCache.triggerIndex << std::endl;
                 // Sustain
                 outGain = sustain;
             }
         } else {
-            // std::cout << index << " - " << triggerIndex << std::endl;
+            // std::cout << index << " - " << keyCache.triggerIndex << std::endl;
             // Release
-            // const std::uint32_t releaseIdx = ((_lastGain[key] < sustain) ? _lastGain[key] : release) * static_cast<float>(sampleRate);
+            // const std::uint32_t releaseIdx = ((keyCache.gain < sustain) ? keyCache.gain : release) * static_cast<float>(sampleRate);
             const std::uint32_t releaseIdx = static_cast<std::uint32_t>(release * static_cast<float>(sampleRate));
-            if (const std::uint32_t realIndex = index - _triggerIndex[key];
+            if (const std::uint32_t realIndex = index - keyCache.triggerIndex;
                 realIndex < releaseIdx) {
-                // if (sustain != _lastGain[key]) {
-                //     std::cout << _lastGain[key] << " != " << sustain << std::endl;
+                // if (sustain != keyCache.gain) {
+                //     std::cout << keyCache.gain << " != " << sustain << std::endl;
                 // }
-                if (!_sustains[key]) {
-                    _sustains[key] = _lastGain[key];
+                if (!keyCache.sustain) {
+                    keyCache.sustain = keyCache.gain;
                 }
                 // outGain = (1.f - static_cast<float>(realIndex) / static_cast<float>(releaseIdx)) * sustain;
-                outGain = (1.f - static_cast<float>(realIndex) / static_cast<float>(releaseIdx)) * _sustains[key];
+                outGain = (1.f - static_cast<float>(realIndex) / static_cast<float>(releaseIdx)) * keyCache.sustain;
             }
             // End of the enveloppe
             else {
                 outGain = 0.f;
             }
         }
-        _lastGain[key] = outGain;
-        return _lastGain[key];
+        keyCache.gain = outGain;
+        return outGain;
     }
 
     [[nodiscard]] float adsrOld(
@@ -197,6 +215,7 @@ public:
     {
         const float OneMinusSustain = 1.0f - sustain;
         float outGain { 1.f };
+        auto &keyCache = _cache[key];
 
         if (isTrigger) {
             const std::uint32_t attackIdx = static_cast<std::uint32_t>(attack * static_cast<float>(sampleRate));
@@ -218,9 +237,9 @@ public:
             }
         } else {
             // Release
-            // const std::uint32_t releaseIdx = ((_lastGain[key] < sustain) ? _lastGain[key] : release) * static_cast<float>(sampleRate);
+            // const std::uint32_t releaseIdx = ((keyCache.gain < sustain) ? keyCache.gain : release) * static_cast<float>(sampleRate);
             const std::uint32_t releaseIdx = static_cast<std::uint32_t>(release * static_cast<float>(sampleRate));
-            if (const std::uint32_t realIndex = index - _triggerIndex[key];
+            if (const std::uint32_t realIndex = index - keyCache.triggerIndex;
                 realIndex < releaseIdx) {
                 outGain = (1.f - static_cast<float>(realIndex) / static_cast<float>(releaseIdx)) * sustain;
             }
@@ -232,29 +251,30 @@ public:
 
         // Smooth gain when sudden changes
         // static constexpr auto SmoothLimit = 0.5f;
-        // if (const float dt = std::abs(outGain - _lastGain[key]); dt > SmoothLimit) {
-        //     _lastGain[key] = (outGain + _lastGain[key]) / 2.f;
+        // if (const float dt = std::abs(outGain - keyCache.gain); dt > SmoothLimit) {
+        //     keyCache.gain = (outGain + keyCache.gain) / 2.f;
         // } else {
-        //     _lastGain[key] = outGain;
+        //     keyCache.gain = outGain;
         // }
-        // if (const float dt = outGain - _lastGain[key]; dt > SmoothLimit) {
-        //     _lastGain[key] = outGain - SmoothLimit;
-        //     // _lastGain[key] = _lastGain[key] + SmoothLimit;
+        // if (const float dt = outGain - keyCache.gain; dt > SmoothLimit) {
+        //     keyCache.gain = outGain - SmoothLimit;
+        //     // keyCache.gain = keyCache.gain + SmoothLimit;
         // } else if (dt < -SmoothLimit) {
-        //     _lastGain[key] = outGain + SmoothLimit;
-        //     // _lastGain[key] = _lastGain[key] - SmoothLimit;
+        //     keyCache.gain = outGain + SmoothLimit;
+        //     // keyCache.gain = keyCache.gain - SmoothLimit;
         // } else {
-        //     _lastGain[key] = outGain;
+        //     keyCache.gain = outGain;
         // }
 
-        _lastGain[key] = outGain;
-        return _lastGain[key];
+        keyCache.gain = outGain;
+        return outGain;
     }
 
 private:
-    IndexList _triggerIndex;
-    GainList _lastGain;
-    SustainList _sustains;
+    CacheList _cache;
+    // IndexList _triggerIndex;
+    // GainList _lastGain;
+    // SustainList _sustains;
 };
 
-#include "EnveloppeGenerator.ipp"
+#include "EnvelopeGenerator.ipp"
