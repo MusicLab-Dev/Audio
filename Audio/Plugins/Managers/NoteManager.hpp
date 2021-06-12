@@ -10,19 +10,19 @@
 #include <utility>
 
 #include <Audio/Notes.hpp>
-#include <Audio/DSP/EnveloppeGenerator.hpp>
+#include <Audio/DSP/EnvelopeGenerator.hpp>
 
 namespace Audio
 {
-    template<DSP::EnveloppeType Enveloppe>
+    template<DSP::EnvelopeType Envelope>
     class NoteManager;
 
-    template<DSP::EnveloppeType Enveloppe>
-    using NoteManagerPtr = std::unique_ptr<NoteManager<Enveloppe>>;
+    template<DSP::EnvelopeType Envelope>
+    using NoteManagerPtr = std::unique_ptr<NoteManager<Envelope>>;
 }
 
 /** @brief Note manager store states of each note */
-template<Audio::DSP::EnveloppeType Enveloppe>
+template<Audio::DSP::EnvelopeType Envelope>
 class alignas_double_cacheline Audio::NoteManager
 {
 public:
@@ -130,7 +130,7 @@ public:
      }
 
     /** @brief Get the enveloppe gain of given key */
-    [[nodiscard]] inline float getEnveloppeGain(
+    [[nodiscard]] inline float getEnvelopeGain(
             const Key key, const std::uint32_t index, const bool trigger,
             const float delay, const float attack,
             const float hold, const float decay,
@@ -138,12 +138,12 @@ public:
             const SampleRate sampleRate) noexcept
     { return _enveloppe.getGain(key, index, trigger, delay, attack, hold, decay, sustain, release, sampleRate); }
 
-    [[nodiscard]] const DSP::EnveloppeBase<Enveloppe> &enveloppe(void) const noexcept { return _enveloppe; }
-    [[nodiscard]] DSP::EnveloppeBase<Enveloppe> &enveloppe(void) noexcept { return _enveloppe; }
+    [[nodiscard]] const DSP::EnvelopeBase<Envelope> &enveloppe(void) const noexcept { return _enveloppe; }
+    [[nodiscard]] DSP::EnvelopeBase<Envelope> &enveloppe(void) noexcept { return _enveloppe; }
 
 private:
     Cache   _cache;
-    DSP::EnveloppeBase<Enveloppe> _enveloppe;
+    DSP::EnvelopeBase<Envelope> _enveloppe;
 };
 
 // static_assert_alignof_double_cacheline(Audio::NoteManager);

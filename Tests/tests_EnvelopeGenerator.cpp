@@ -1,37 +1,37 @@
 /**
  * @ Author: Pierre Veysseyre
- * @ Description: Unit tests of Enveloppe Generator class
+ * @ Description: Unit tests of Envelope Generator class
  */
 
 #include <gtest/gtest.h>
 
-#include <Audio/DSP/EnveloppeGenerator.hpp>
+#include <Audio/DSP/EnvelopeGenerator.hpp>
 
 using namespace Audio;
 
 static constexpr BlockSize Size = 1024u;
 static constexpr SampleRate SR = 48000u;
 
-using EnvAD =   DSP::EnveloppeBase<DSP::EnveloppeType::AD>;
-using EnvAR =   DSP::EnveloppeBase<DSP::EnveloppeType::AR>;
-using EnvADSR = DSP::EnveloppeBase<DSP::EnveloppeType::ADSR>;
+using EnvAD =   DSP::EnvelopeBase<DSP::EnvelopeType::AD>;
+using EnvAR =   DSP::EnvelopeBase<DSP::EnvelopeType::AR>;
+using EnvADSR = DSP::EnvelopeBase<DSP::EnvelopeType::ADSR>;
 
 
-TEST(EnveloppeGenerator, Simple_AttackDecay)
+TEST(EnvelopeGenerator, Simple_AttackDecay)
 {
     EnvAD ad;
     UNUSED(ad);
 }
 
-TEST(EnveloppeGenerator, Simple_AttackRelease)
+TEST(EnvelopeGenerator, Simple_AttackRelease)
 {
     EnvAR ar;
     UNUSED(ar);
 }
 
-TEST(EnveloppeGenerator, Simple_AttackDecayReleaseSustain)
+TEST(EnvelopeGenerator, Simple_AttackDecayReleaseSustain)
 {
-    DSP::EnveloppeBase<DSP::EnveloppeType::ADSR> env;
+    DSP::EnvelopeBase<DSP::EnvelopeType::ADSR> env;
 
     Key key { 69u };
     const float atk { 0.1f };

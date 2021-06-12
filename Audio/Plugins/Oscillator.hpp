@@ -41,7 +41,7 @@ class Audio::Oscillator final : public Audio::IPlugin
             DefaultPluginOutputVolume,
             CONTROL_DEFAULT_OUTPUT_VOLUME_RANGE()
         ),
-        /* Enveloppe controls (attack, decay, sustain, release) */
+        /* Envelope controls (attack, decay, sustain, release) */
         REGISTER_CONTROL_ENVELOPPE_ADSR(
             enveloppeAttack, 0.1, CONTROL_RANGE(0.0, 10.0),
             enveloppeDecay, 0.2, CONTROL_RANGE(0.0, 10.0),
@@ -114,10 +114,6 @@ class Audio::Oscillator final : public Audio::IPlugin
     };
 
 public:
-    /** @brief Default gain for each voice */
-    // static constexpr DB DefaultVoiceGain = 0;
-    static constexpr DB DefaultVoiceGain = -DBUMax;
-
     /** @brief Plugin constructor */
     Oscillator(const IPluginFactory *factory) noexcept : IPlugin(factory) {}
 
@@ -137,13 +133,13 @@ public:
 
 public:
 private:
-    NoteManager<DSP::EnveloppeType::ADSR> _noteManager {};
+    NoteManager<DSP::EnvelopeType::ADSR> _noteManager {};
     Osc _oscillator;
     Volume<float> _volumeHandler;
 
-    float getEnveloppeGain(const Key key, const std::uint32_t index, const bool isTrigger) noexcept
+    float getEnvelopeGain(const Key key, const std::uint32_t index, const bool isTrigger) noexcept
     {
-        return _noteManager.getEnveloppeGain(key, index, isTrigger,
+        return _noteManager.getEnvelopeGain(key, index, isTrigger,
                 0.0f,
                 static_cast<float>(enveloppeAttack()),
                 0.0f,

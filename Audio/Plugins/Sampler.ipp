@@ -109,7 +109,7 @@ inline void Audio::Sampler::receiveAudio(BufferView output)
                 // Apply enveloppe
                 for (auto i = 0u, j = readIndex; i < realOutSize; ++i, ++j) {
                     // realOut[i] += sampleBuffer[j] * outGain;
-                    realOut[i] += sampleBuffer[j] * getEnveloppeGain(key, j, trigger) * outGain;
+                    realOut[i] += sampleBuffer[j] * getEnvelopeGain(key, j, trigger) * outGain;
                 }
                 return std::make_pair(realOutSize, sampleSize);
             // The key need an octave shift
@@ -128,7 +128,7 @@ inline void Audio::Sampler::receiveAudio(BufferView output)
                 /** @warning FIX PROBLEMS */
                 // Apply enveloppe
                 for (auto i = 0u, j = readIndex; i < realOutSize; ++i, ++j) {
-                    realOut[i] *= getEnveloppeGain(key, j, trigger) * outGain;
+                    realOut[i] *= getEnvelopeGain(key, j, trigger) * outGain;
                 }
                 return std::make_pair(realOutSize, resampleSize);
             }

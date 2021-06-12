@@ -12,7 +12,7 @@ using namespace Audio;
 
 TEST(NoteManager, Initialization)
 {
-    NoteManager<DSP::EnveloppeType::ADSR> manager;
+    NoteManager<DSP::EnvelopeType::ADSR> manager;
 
     Notes input {
         Note({ 0, 1 }, 0, 10, 0),

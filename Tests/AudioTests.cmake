@@ -19,7 +19,7 @@ set(AudioTestsSources
     ${AudioTestsDir}/tests_Merge.cpp
     ${AudioTestsDir}/tests_Resampler.cpp
     ${AudioTestsDir}/tests_Biquad.cpp
-    ${AudioTestsDir}/tests_EnveloppeGenerator.cpp
+    ${AudioTestsDir}/tests_EnvelopeGenerator.cpp
     ${AudioTestsDir}/tests_Project.cpp
 
     # ${AudioTestsDir}/tests_SchedulerTask.cpp

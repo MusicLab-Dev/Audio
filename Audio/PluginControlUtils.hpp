@@ -12,7 +12,7 @@
     REGISTER_CONTROL_FLOATING( \
         Name, Value, Range, \
         TR_TABLE( \
-            TR(English, "Enveloppe attack"), \
+            TR(English, "Envelope attack"), \
             TR(French, "Attaque de l'enveloppe") \
         ), \
         TR_TABLE( \
@@ -31,7 +31,7 @@
     REGISTER_CONTROL_FLOATING( \
         Name, Value, Range, \
         TR_TABLE( \
-            TR(English, "Enveloppe decay"), \
+            TR(English, "Envelope decay"), \
             TR(French, "Chute de l'enveloppe") \
         ), \
         TR_TABLE( \
@@ -50,7 +50,7 @@
     REGISTER_CONTROL_FLOATING( \
         Name, Value, Range, \
         TR_TABLE( \
-            TR(English, "Enveloppe sustain"), \
+            TR(English, "Envelope sustain"), \
             TR(French, "Niveau intermédiaire de l'enveloppe") \
         ), \
         TR_TABLE( \
@@ -69,7 +69,7 @@
     REGISTER_CONTROL_FLOATING( \
         Name, Value, Range, \
         TR_TABLE( \
-            TR(English, "Enveloppe release"), \
+            TR(English, "Envelope release"), \
             TR(French, "Extinction de l'enveloppe") \
         ), \
         TR_TABLE( \
@@ -87,6 +87,104 @@
 #define REGISTER_CONTROL_ENVELOPPE_ADSR(NameA, ValueA, RangeA, NameD, ValueD, RangeD, Name, ValueS, RangeS, NameR, ValueR, RangeR) REGISTER_CONTROL_ENVELOPPE_ATTACK(NameA, ValueA, RangeA), REGISTER_CONTROL_ENVELOPPE_DECAY(NameD, ValueD, RangeD), REGISTER_CONTROL_ENVELOPPE_SUSTAIN(Name, ValueS, RangeS), REGISTER_CONTROL_ENVELOPPE_RELEASE(NameR, ValueR, RangeR)
 #define REGISTER_CONTROL_ENVELOPPE_AD(NameA, ValueA, RangeA, NameD, ValueD, RangeD) REGISTER_CONTROL_ENVELOPPE_ATTACK(NameA, ValueA, RangeA), REGISTER_CONTROL_ENVELOPPE_DECAY(NameD, ValueD, RangeD)
 #define REGISTER_CONTROL_ENVELOPPE_AR(NameA, ValueA, RangeA, NameR, ValueR, RangeR) REGISTER_CONTROL_ENVELOPPE_ATTACK(NameA, ValueA, RangeA), REGISTER_CONTROL_ENVELOPPE_RELEASE(NameR, ValueR, RangeR)
+
+/**
+ * @brief Helper for FM controls
+ */
+#define REGISTER_CONTROL_FM_OPERATOR(BaseName) \
+    _REGISTER_CONTROL_FM_OUTPUT_VOLUME(BaseName##volume, 0.0, CONTROL_FM_OPERATOR_OUTPUT_VOLUME_RANGE()), \
+    REGISTER_CONTROL_ENVELOPPE_ADSR( \
+        BaseName##attack, 0.1, CONTROL_RANGE(0.0, 10.0), \
+        BaseName##decay, 0.2, CONTROL_RANGE(0.0, 10.0), \
+        BaseName##sustain, 0.8, CONTROL_RANGE(0.0, 1.0), \
+        BaseName##release, 0.2, CONTROL_RANGE(0.0, 10.0) \
+    ), \
+    _REGISTER_CONTROL_FM_RATIO(BaseName##ratio, CONTROL_FM_RATIO_DEFAULT_VALUE(), CONTROL_FM_RATIO_DEFAULT_RANGE()), \
+    _REGISTER_CONTROL_FM_DETUNE(BaseName##detune, CONTROL_FM_DETUNE_DEFAULT_VALUE(), CONTROL_FM_DETUNE_DEFAULT_RANGE()), \
+    _REGISTER_CONTROL_FM_FEEDBACK(BaseName##feedback, 0.0, CONTROL_FM_OPERATOR_FEEDBACK_RANGE())
+
+
+#define CONTROL_FM_OPERATOR_FEEDBACK_RANGE() CONTROL_RANGE_STEP(0.0, 8.0, 1.0)
+#define _REGISTER_CONTROL_FM_FEEDBACK(Name, Value, Range) \
+    REGISTER_CONTROL_INTEGER( \
+        Name, Value, Range, \
+        TR_TABLE( \
+            TR(English, #Name " feedback"), \
+            TR(French, "Intensité de feedback de l'opérateur") \
+        ), \
+        TR_TABLE( \
+            TR(English, #Name " feedback"), \
+            TR(French, "Intensité de feedback de l'opérateur") \
+        ), \
+        TR_TABLE( \
+            TR(English, "Fdbk") \
+        ), \
+        TR_TABLE( \
+            TR(English, "") \
+        ) \
+    )
+
+#define CONTROL_FM_OPERATOR_OUTPUT_VOLUME_RANGE() CONTROL_RANGE_STEP(0.0, 1.0, 0.01)
+#define _REGISTER_CONTROL_FM_OUTPUT_VOLUME(Name, Value, Range) \
+    REGISTER_CONTROL_FLOATING( \
+        Name, Value, Range, \
+        TR_TABLE( \
+            TR(English, "Operator volume"), \
+            TR(French, "Volume de l'opérateur") \
+        ), \
+        TR_TABLE( \
+            TR(English, "Operator volume"), \
+            TR(French, "Volume de l'opérateur") \
+        ), \
+        TR_TABLE( \
+            TR(English, "Vol") \
+        ), \
+        TR_TABLE( \
+            TR(English, "%") \
+        ) \
+    )
+
+#define CONTROL_FM_RATIO_DEFAULT_RANGE() CONTROL_RANGE_STEP(1.0, 15.0, 0.1)
+#define CONTROL_FM_RATIO_DEFAULT_VALUE() 1.0
+#define _REGISTER_CONTROL_FM_RATIO(Name, Value, Range) \
+    REGISTER_CONTROL_FLOATING( \
+        Name, Value, Range, \
+        TR_TABLE( \
+            TR(English, "ratio"), \
+            TR(French, "ratio") \
+        ), \
+        TR_TABLE( \
+            TR(English, "ratio"), \
+            TR(French, "ratio") \
+        ), \
+        TR_TABLE( \
+            TR(English, "Rate") \
+        ), \
+        TR_TABLE( \
+            TR(English, "") \
+        ) \
+    )
+
+#define CONTROL_FM_DETUNE_DEFAULT_RANGE() CONTROL_RANGE_STEP(-11.0, 11.0, 1)
+#define CONTROL_FM_DETUNE_DEFAULT_VALUE() 0.0
+#define _REGISTER_CONTROL_FM_DETUNE(Name, Value, Range) \
+    REGISTER_CONTROL_FLOATING(Name, Value, Range, \
+        TR_TABLE( \
+            TR(English, "Detune"), \
+            TR(French, "Detune") \
+        ), \
+        TR_TABLE( \
+            TR(English, "Detune"), \
+            TR(French, "Detune") \
+        ), \
+        TR_TABLE( \
+            TR(English, "Det") \
+        ), \
+        TR_TABLE( \
+            TR(English, "semitone") \
+        ) \
+    )
+
 
 /**
  * @brief Helper for volume controls

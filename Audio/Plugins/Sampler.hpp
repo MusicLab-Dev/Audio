@@ -40,7 +40,7 @@ class Audio::Sampler final : public Audio::IPlugin
             DefaultPluginOutputVolume,
             CONTROL_DEFAULT_OUTPUT_VOLUME_RANGE()
         ),
-        /* Enveloppe controls (attack, release) */
+        /* Envelope controls (attack, release) */
         REGISTER_CONTROL_ENVELOPPE_AR(
             enveloppeAttack, 0.001, CONTROL_RANGE(0.0, 10.0),
             enveloppeRelease, 0.001, CONTROL_RANGE(0.0, 10.0)
@@ -77,14 +77,14 @@ private:
     // Cacheline 1 & 2
     BufferOctave _buffers {};
     // Cacheline 3 & 4
-    NoteManager<DSP::EnveloppeType::AR> _noteManager {};
+    NoteManager<DSP::EnvelopeType::AR> _noteManager {};
 
     Buffer _tmp;
     ExternalPaths _externalPaths;
 
-    float getEnveloppeGain(const Key key, const std::uint32_t index, const bool isTrigger) noexcept
+    float getEnvelopeGain(const Key key, const std::uint32_t index, const bool isTrigger) noexcept
     {
-        return _noteManager.getEnveloppeGain(key, index, isTrigger,
+        return _noteManager.getEnvelopeGain(key, index, isTrigger,
                 0.0f,
                 static_cast<float>(enveloppeAttack()),
                 0.0f,

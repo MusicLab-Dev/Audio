@@ -74,11 +74,11 @@ inline void Audio::Oscillator::receiveAudio(BufferView output)
     //         const float frequency = std::pow(2.f, static_cast<float>(static_cast<int>(key) - RootKey) / KeysPerOctave) * RootKeyFrequency;
     //         const float frequencyNorm = 2.f * static_cast<float>(M_PI) * frequency / static_cast<float>(audioSpecs().sampleRate);
     //         sample += std::sin(static_cast<float>(index) * frequencyNorm) *
-    //         getEnveloppeGain(key, static_cast<std::uint32_t>(phaseIndex), trigger);
+    //         getEnvelopeGain(key, static_cast<std::uint32_t>(phaseIndex), trigger);
     //     }
     //     return sample * outGain;
     //         // std::sin(static_cast<float>(index) * frequencyNorm) *
-    //         // getEnveloppeGain(key, static_cast<std::uint32_t>(index), trigger) * gain;
+    //         // getEnvelopeGain(key, static_cast<std::uint32_t>(index), trigger) * gain;
     // });
 
 }
@@ -118,7 +118,7 @@ inline void Audio::Oscillator::generateSine(
     float outGain = 1.f;
     auto k = 0ul;
     for (auto i = phaseOffset; k < outputSize; ++i, ++k) {
-        outGain = getEnveloppeGain(key, i, trigger) * gain;
+        outGain = getEnvelopeGain(key, i, trigger) * gain;
         if constexpr (Accumulate)
             output[k] += static_cast<Type>(std::sin(static_cast<float>(i) * frequencyNorm) * outGain);
         else
@@ -130,7 +130,7 @@ inline void Audio::Oscillator::generateSine(
     // Modifier<Type>::ApplyIndexFunctor(output, outputSize, phaseOffset, [&, key, trigger, frequencyNorm, gain](const std::size_t index) -> Type {
     //     return static_cast<Type>(
     //         std::sin(static_cast<float>(index) * frequencyNorm) *
-    //         getEnveloppeGain(key, static_cast<std::uint32_t>(index), trigger) * gain
+    //         getEnvelopeGain(key, static_cast<std::uint32_t>(index), trigger) * gain
     //     );
     // });
 
@@ -148,7 +148,7 @@ inline void Audio::Oscillator::generateSquare(
     float outGain = 1.f;
     auto k = 0ul;
     for (auto i = phaseOffset; k < outputSize; ++i, ++k) {
-        outGain = getEnveloppeGain(key, i, trigger) * gain;
+        outGain = getEnvelopeGain(key, i, trigger) * gain;
         if constexpr (Accumulate)
             output[k] += std::sin(static_cast<float>(i) * frequencyNorm) > 0.f ? outGain : -outGain;
         else
@@ -167,7 +167,7 @@ inline void Audio::Oscillator::generateTriangle(
     float outGain = 1.f;
     auto k = 0ul;
     for (auto i = phaseOffset; k < outputSize; ++i, ++k) {
-        outGain = getEnveloppeGain(key, i, trigger) * gain;
+        outGain = getEnvelopeGain(key, i, trigger) * gain;
         if constexpr (Accumulate)
             output[k] += (1.0f - std::acos(std::cos(2.0f * static_cast<float>(i) * frequencyNorm)) * static_cast<float>(M_2_PI)) * outGain;
         else
@@ -186,7 +186,7 @@ inline void Audio::Oscillator::generateSaw(
     float outGain = 1.f;
     auto k = 0ul;
     for (auto i = phaseOffset; k < outputSize; ++i, ++k) {
-        outGain = getEnveloppeGain(key, i, trigger) * gain;
+        outGain = getEnvelopeGain(key, i, trigger) * gain;
         if constexpr (Accumulate)
             output[k] += -std::atan(Utils::cot(static_cast<float>(i) * frequencyNorm)) * static_cast<float>(M_2_PI) * outGain;
         else
@@ -206,7 +206,7 @@ inline void Audio::Oscillator::generateError(
     float outGain = 1.f;
     auto k = 0ul;
     for (auto i = phaseOffset; k < outputSize; ++i, ++k) {
-        outGain = getEnveloppeGain(key, i, trigger) * gain;
+        outGain = getEnvelopeGain(key, i, trigger) * gain;
         if constexpr (Accumulate)
             output[k] += -std::atan(Utils::cot(static_cast<float>(i) * frequencyNorm)) * static_cast<float>(M_2_PI) * outGain;
         else
@@ -226,7 +226,7 @@ inline void Audio::Oscillator::generateNoise(
     float outGain = 1.f;
     auto k = 0ul;
     for (auto i = phaseOffset; k < outputSize; ++i, ++k) {
-        outGain = getEnveloppeGain(key, i, trigger) * gain;
+        outGain = getEnvelopeGain(key, i, trigger) * gain;
         if constexpr (Accumulate)
             output[k] += static_cast<Type>(static_cast<int>(Utils::fastRand()) - std::numeric_limits<int>::max()) / static_cast<Type>(std::numeric_limits<int>::max()) * outGain;
         else

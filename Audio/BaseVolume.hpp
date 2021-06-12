@@ -19,6 +19,10 @@ namespace Audio
     /** @brief Analog decibel max (dBu) */
     static constexpr DB DBUMax = 12.0f;
 
+    /** @brief Default gain for each voice */
+    static constexpr DB DefaultVoiceGain = -DBUMax;
+
+
     /** @brief Default plugin output volume */
     static constexpr DB DefaultPluginOutputVolume = -3.0;
 
