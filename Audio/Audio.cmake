@@ -122,8 +122,8 @@ set(AudioDSPSources
     ${AudioDSPDir}/Biquad.hpp
     ${AudioDSPDir}/Biquad.ipp
     ${AudioDSPDir}/Biquad.cpp
-    ${AudioDSPDir}/EnveloppeGenerator.hpp
-    ${AudioDSPDir}/EnveloppeGenerator.ipp
+    ${AudioDSPDir}/EnvelopeGenerator.hpp
+    ${AudioDSPDir}/EnvelopeGenerator.ipp
     ${AudioDSPDir}/FIR.hpp
     ${AudioDSPDir}/FIR.ipp
     ${AudioDSPDir}/FIRFilter.ipp
