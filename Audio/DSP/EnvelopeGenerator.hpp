@@ -109,7 +109,7 @@ public:
     /** @brief Get the enveloppe gain */
     template<unsigned Index = 0u>
     [[nodiscard]] float getGain(
-            const Key key, const std::uint32_t index, const bool isTrigger,
+            const Key key, const std::uint32_t index,
             const float delay, const float attack,
             const float hold, const float decay,
             const float sustain, const float release,
@@ -118,23 +118,25 @@ public:
     /** @brief AR implementation */
     template<unsigned Index = 0u>
     [[nodiscard]] float attackRelease(
-            const Key key, const std::uint32_t index, const bool isTrigger,
+            const Key key, const std::uint32_t index,
             const float attack, const float release, const SampleRate sampleRate) noexcept;
 
     /** @brief AD implementation */
     template<unsigned Index = 0u>
     [[nodiscard]] float attackDecay(
-            const Key key, const std::uint32_t index, const bool isTrigger,
+            const Key key, const std::uint32_t index,
             const float attack, const float decay, const SampleRate sampleRate) noexcept;
 
     /** @brief ADSR implementation */
     template<unsigned Index = 0u>
     [[nodiscard]] float adsr(
-            const Key key, const std::uint32_t index, const bool isTrigger,
+            const Key key, const std::uint32_t index,
             const float attack, const float decay, const float sustain, const float release, const SampleRate sampleRate) noexcept;
 
 private:
     CacheList _cache;
+
+    [[nodiscard]] float smoothGain(KeyCache &keyCache, const float nextGain, const SampleRate sampleRate) noexcept;
 };
 
 #include "EnvelopeGenerator.ipp"

@@ -34,7 +34,7 @@ inline void Audio::DSP::Resampler::Internal::DecimateOctave(const Type *inputBuf
 template<typename Type>
 inline void Audio::DSP::Resampler::Decimate(const Type *inputBuffer, Type *outputBuffer, const std::size_t inputSize, const std::size_t decimationRatio)
 {
-    std::cout << "Decimate(" << decimationRatio << ")::inputSize: " << inputSize << std::endl;
+    // std::cout << "Decimate(" << decimationRatio << ")::inputSize: " << inputSize << std::endl;
 
     coreAssert(decimationRatio > 1,
         throw std::logic_error("DSP::Resampler::Interpolate: decimationRatio must be greater than 1"));

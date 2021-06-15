@@ -20,7 +20,6 @@ inline void Audio::NoteManager<Envelope>::feedNotes(const NoteEvents &notes) noe
             if (it == _cache.actives.end())
                 _cache.actives.push(note.key);
             _cache.readIndexes[note.key] = 0u;
-            _cache.triggers[note.key] = true;
             enveloppe().resetKey(note.key);
             target.noteModifiers.velocity = note.velocity;
             target.noteModifiers.tuning = note.tuning;
@@ -30,9 +29,8 @@ inline void Audio::NoteManager<Envelope>::feedNotes(const NoteEvents &notes) noe
         case NoteEvent::EventType::Off:
         {
             const auto it = _cache.actives.find(note.key);
-            if (it != _cache.actives.end() && _cache.triggers[note.key]) {
+            if (it != _cache.actives.end()) {
                 // Reset
-                _cache.triggers[note.key] = false;
                 enveloppe().setTriggerIndex(note.key, _cache.readIndexes[note.key] + note.sampleOffset);
                 // enveloppe().setTriggerIndex(note.key, _cache.readIndexes[note.key]);
                 target.noteModifiers.sampleOffset = note.sampleOffset;
@@ -40,7 +38,6 @@ inline void Audio::NoteManager<Envelope>::feedNotes(const NoteEvents &notes) noe
         } break;
         case NoteEvent::EventType::OnOff:
             _cache.activesBlock.push(note.key);
-            _cache.triggers[note.key] = true;
             _cache.readIndexes[note.key] = 0u;
             enveloppe().resetTriggerIndex(note.key);
             enveloppe().resetInternalGain(note.key);
@@ -114,33 +111,17 @@ inline void Audio::NoteManager<Envelope>::resetAllModifiers(void) noexcept
 template<Audio::DSP::EnvelopeType Envelope>
 inline bool Audio::NoteManager<Envelope>::incrementReadIndex(const Key key, const std::uint32_t maxIndex, std::uint32_t amount) noexcept
 {
-    auto &trigger = _cache.triggers[key];
     auto &readIndex = _cache.readIndexes[key];
 
     readIndex += amount;
     if ((maxIndex && readIndex >= maxIndex) || !enveloppe().lastGain(key)) {
         readIndex = 0u;
-        trigger = false;
         enveloppe().resetKey(key);
         return true;
     } else
         return false;
 }
 
-template<Audio::DSP::EnvelopeType Envelope>
-inline void Audio::NoteManager<Envelope>::resetTriggers(void) noexcept
-{
-    _cache.triggers.fill(false);
-}
-
-template<Audio::DSP::EnvelopeType Envelope>
-inline bool Audio::NoteManager<Envelope>::setTrigger(const Key key, const bool state) noexcept
-{
-    if (state == _cache.triggers[key])
-        return false;
-    _cache.triggers[key] = state;
-    return true;
-}
 
 template<Audio::DSP::EnvelopeType Envelope>
 template<typename Functor>
@@ -149,10 +130,9 @@ void Audio::NoteManager<Envelope>::processNotes(Functor &&functor) noexcept
     // Process the active notes
     auto itActive = std::remove_if(_cache.actives.begin(), _cache.actives.end(),
         [this, &functor](const auto key) {
-            const auto keyTrigger = trigger(key);
             const auto idx = readIndex(key);
             auto &modifiers = _cache.modifiers[key].noteModifiers;
-            const auto pair = functor(key, keyTrigger, idx, modifiers);
+            const auto pair = functor(key, idx, modifiers);
             modifiers.sampleOffset = 0u;
             return incrementReadIndex(key, pair.second, pair.first);
         }
@@ -164,16 +144,14 @@ void Audio::NoteManager<Envelope>::processNotes(Functor &&functor) noexcept
     // Process the active block notes
     auto itActiveBlock = std::remove_if(_cache.activesBlock.begin(), _cache.activesBlock.end(),
         [this, &functor](const auto key) {
-            auto &keyTrigger = _cache.triggers[key];
             const auto idx = readIndex(key);
             auto &modifiers = _cache.modifiers[key].noteModifiers;
-            const auto pair = functor(key, keyTrigger, idx, modifiers);
+            const auto pair = functor(key, idx, modifiers);
             modifiers.sampleOffset = 0u;
             const bool ended = incrementReadIndex(key, pair.second, pair.first);
 
             // Reset the note
             if (!ended) {
-                keyTrigger = false;
                 enveloppe().setTriggerIndex(key, _cache.readIndexes[key]);
             }
             return ended;

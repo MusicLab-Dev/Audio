@@ -83,9 +83,9 @@ private:
     Buffer _tmp;
     ExternalPaths _externalPaths;
 
-    float getEnvelopeGain(const Key key, const std::uint32_t index, const bool isTrigger) noexcept
+    float getEnvelopeGain(const Key key, const std::uint32_t index) noexcept
     {
-        return _noteManager.getEnvelopeGain(key, index, isTrigger,
+        return _noteManager.getEnvelopeGain(key, index,
                 0.0f,
                 static_cast<float>(enveloppeAttack()),
                 0.0f,

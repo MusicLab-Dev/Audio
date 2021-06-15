@@ -22,6 +22,8 @@ namespace Audio
     /** @brief Default gain for each voice */
     static constexpr DB DefaultVoiceGain = -DBUMax;
 
+    static constexpr float EnvelopeMinTimeStepUp { 0.005f };
+    static constexpr float EnvelopeMinTimeStepDown { EnvelopeMinTimeStepUp * 2.0f };
 
     /** @brief Default plugin output volume */
     static constexpr DB DefaultPluginOutputVolume = -3.0;

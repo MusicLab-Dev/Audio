@@ -48,7 +48,6 @@ public:
         KeyList activesBlock {};
         ModifiersList modifiers;
         IndexList readIndexes;
-        TriggerList triggers;
     };
 
     static_assert_alignof_double_cacheline(Cache);
@@ -76,7 +75,6 @@ public:
     {
         resetCache();
         resetAllModifiers();
-        resetTriggers();
         resetReadIndexes();
         _enveloppe.resetKeys();
     }
@@ -98,14 +96,14 @@ public:
     void resetAllModifiers(void) noexcept;
 
 
-    /** @brief Reset the internal triggers */
-    void resetTriggers(void) noexcept;
+    // /** @brief Reset the internal triggers */
+    // void resetTriggers(void) noexcept;
 
-    /** @brief Get a trigger state by Key */
-    [[nodiscard]] bool trigger(const Key key) const noexcept { return _cache.triggers[key]; }
+    // /** @brief Get a trigger state by Key */
+    // [[nodiscard]] bool trigger(const Key key) const noexcept { return _cache.triggers[key]; }
 
-    /** @brief Set a trigger state by Key. Return true if the trigger state changed */
-    bool setTrigger(const Key key, const bool state) noexcept;
+    // /** @brief Set a trigger state by Key. Return true if the trigger state changed */
+    // bool setTrigger(const Key key, const bool state) noexcept;
 
     /** @brief Reset all read indexes */
     void resetReadIndexes(void) noexcept;
@@ -125,13 +123,13 @@ public:
 
     /** @brief Get the enveloppe gain of given key */
     [[nodiscard]] inline float getEnvelopeGain(
-            const Key key, const std::uint32_t index, const bool trigger,
+            const Key key, const std::uint32_t index,
             const float delay, const float attack,
             const float hold, const float decay,
             const float sustain, const float release,
             const SampleRate sampleRate) noexcept
     {
-        return _enveloppe.template getGain<0u>(key, index, trigger, delay, attack, hold, decay, sustain, release, sampleRate);
+        return _enveloppe.template getGain<0u>(key, index, delay, attack, hold, decay, sustain, release, sampleRate);
     }
 
     [[nodiscard]] const DSP::EnvelopeBase<Envelope> &enveloppe(void) const noexcept { return _enveloppe; }

@@ -57,12 +57,6 @@ inline void Audio::Sampler::setExternalPaths(const ExternalPaths &paths)
 inline void Audio::Sampler::sendNotes(const NoteEvents &notes, const BeatRange &range)
 {
     UNUSED(range);
-    if (notes.size()) {
-        std::cout << std::endl;
-        std::cout << _noteManager.getActiveNoteSize() << std::endl;
-        std::cout << _noteManager.getActiveNoteBlockSize() << std::endl;
-    }
-    // std::cout << "\t - " << "_NOTES " << notes.size() << std::endl;
     _noteManager.feedNotes(notes);
 }
 
@@ -71,10 +65,9 @@ inline void Audio::Sampler::receiveAudio(BufferView output)
     const DB outGain = ConvertDecibelToRatio(static_cast<float>(outputVolume()));
     const std::uint32_t outSize = static_cast<std::uint32_t>(output.size<float>());
     float * const out = reinterpret_cast<float *>(output.byteData());
-    const bool noRelease = !enveloppeRelease();
 
     _noteManager.processNotes(
-        [this, outGain, outSize, out, noRelease](const Key key, const bool trigger, const std::uint32_t readIndex, const NoteModifiers &modifiers) -> std::pair<std::uint32_t, std::uint32_t> {
+        [this, outGain, outSize, out](const Key key, const std::uint32_t readIndex, const NoteModifiers &modifiers) -> std::pair<std::uint32_t, std::uint32_t> {
             const std::int32_t realKeyIdx = static_cast<std::int32_t>(key) % KeysPerOctave;
             const std::int32_t realOctave = static_cast<std::int32_t>(key) / KeysPerOctave;
             std::int32_t bufferKeyIdx = realKeyIdx - OctaveRootKey + 1;
@@ -93,13 +86,9 @@ inline void Audio::Sampler::receiveAudio(BufferView output)
             auto realOut = out;
 
             // Handle note end
-            if (modifiers.sampleOffset) {
-                if (trigger) {
-                    realOut += modifiers.sampleOffset;
-                    realOutSize -= modifiers.sampleOffset;
-                } else if (noRelease) {
-                    realOutSize = modifiers.sampleOffset;
-                }
+            if (modifiers.sampleOffset && !readIndex) {
+                realOut += modifiers.sampleOffset;
+                realOutSize -= modifiers.sampleOffset;
             }
             // The key is already cached
             if (!bufferOctave) {
@@ -109,7 +98,7 @@ inline void Audio::Sampler::receiveAudio(BufferView output)
                 // Apply enveloppe
                 for (auto i = 0u, j = readIndex; i < realOutSize; ++i, ++j) {
                     // realOut[i] += sampleBuffer[j] * outGain;
-                    realOut[i] += sampleBuffer[j] * getEnvelopeGain(key, j, trigger) * outGain;
+                    realOut[i] += sampleBuffer[j] * getEnvelopeGain(key, j) * outGain;
                 }
                 return std::make_pair(realOutSize, sampleSize);
             // The key need an octave shift
@@ -128,7 +117,7 @@ inline void Audio::Sampler::receiveAudio(BufferView output)
                 /** @warning FIX PROBLEMS */
                 // Apply enveloppe
                 for (auto i = 0u, j = readIndex; i < realOutSize; ++i, ++j) {
-                    realOut[i] *= getEnvelopeGain(key, j, trigger) * outGain;
+                    realOut[i] *= getEnvelopeGain(key, j) * outGain;
                 }
                 return std::make_pair(realOutSize, resampleSize);
             }

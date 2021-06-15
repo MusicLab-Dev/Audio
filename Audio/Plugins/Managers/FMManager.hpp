@@ -130,12 +130,12 @@ public:
 
     /** @brief Get the enveloppe gain of given key */
     [[nodiscard]] inline float getEnvelopeGain(
-            const Key key, const std::uint32_t index, const bool trigger,
+            const Key key, const std::uint32_t index,
             const float delay, const float attack,
             const float hold, const float decay,
             const float sustain, const float release,
             const SampleRate sampleRate) noexcept
-    { return _enveloppe.getGain(key, index, trigger, delay, attack, hold, decay, sustain, release, sampleRate); }
+    { return _enveloppe.getGain(key, index, delay, attack, hold, decay, sustain, release, sampleRate); }
 
     [[nodiscard]] const DSP::EnvelopeBase<Envelope> &enveloppe(void) const noexcept { return _enveloppe; }
     [[nodiscard]] DSP::EnvelopeBase<Envelope> &enveloppe(void) noexcept { return _enveloppe; }

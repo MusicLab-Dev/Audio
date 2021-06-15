@@ -84,7 +84,7 @@ public:
 
         for (auto i = 0u; i < processSize; ++i) {
             const auto index = i + phaseIndex;
-            const auto realOutGain = outGain * _envelopes.template adsr<OperatorIndex>(key, index, false, op.attack, op.decay, op.sustain, op.release, _sampleRate);
+            const auto realOutGain = outGain * _envelopes.template getGain<OperatorIndex>(key, index, 0.0f, op.attack, 0.0f, op.decay, op.sustain, op.release, _sampleRate);
             const auto freq = 2.0f * static_cast<float>(M_PI) * (static_cast<float>(index)) * frequencyNorm;
 
             if constexpr (Modulate) {

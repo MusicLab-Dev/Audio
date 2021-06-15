@@ -57,6 +57,10 @@ class Audio::Oscillator final : public Audio::IPlugin
                     TR(French, "Sinus")
                 ),
                 TR_TABLE(
+                    TR(English, "Cosine"),
+                    TR(French, "Cosinus")
+                ),
+                TR_TABLE(
                     TR(English, "Square"),
                     TR(French, "Carré")
                 ),
@@ -102,7 +106,7 @@ class Audio::Oscillator final : public Audio::IPlugin
     struct Osc
     {
         enum class Waveform : std::uint8_t {
-            Sine, Square,
+            Sine, Cosine, Square,
             // Not working !
             Triangle, Saw,
             Noise,
@@ -138,9 +142,9 @@ private:
     Osc _oscillator;
     Volume<float> _volumeHandler;
 
-    float getEnvelopeGain(const Key key, const std::uint32_t index, const bool isTrigger) noexcept
+    float getEnvelopeGain(const Key key, const std::uint32_t index) noexcept
     {
-        return _noteManager.getEnvelopeGain(key, index, isTrigger,
+        return _noteManager.getEnvelopeGain(key, index,
                 0.0f,
                 static_cast<float>(enveloppeAttack()),
                 0.0f,
@@ -152,31 +156,35 @@ private:
 
     template<bool Accumulate = true, typename Type>
     void generateWaveform(const Osc::Waveform waveform, Type *output, const std::size_t outputSize,
-            const float frequency, const SampleRate sampleRate, const std::uint32_t phaseOffset, const Key key, const bool trigger, const DB gain) noexcept;
+            const float frequency, const SampleRate sampleRate, const std::uint32_t phaseOffset, const Key key, const DB gain) noexcept;
 
     template<bool Accumulate, typename Type>
     void generateSine(Type *output, const std::size_t outputSize,
-            const float frequency, const SampleRate sampleRate, const std::uint32_t phaseOffset, const Key key, const bool trigger, const DB gain) noexcept;
+            const float frequency, const SampleRate sampleRate, const std::uint32_t phaseOffset, const Key key, const DB gain) noexcept;
+
+    template<bool Accumulate, typename Type>
+    void generateCosine(Type *output, const std::size_t outputSize,
+            const float frequency, const SampleRate sampleRate, const std::uint32_t phaseOffset, const Key key, const DB gain) noexcept;
 
     template<bool Accumulate, typename Type>
     void generateSquare(Type *output, const std::size_t outputSize,
-            const float frequency, const SampleRate sampleRate, const std::uint32_t phaseOffset, const Key key, const bool trigger, const DB gain) noexcept;
+            const float frequency, const SampleRate sampleRate, const std::uint32_t phaseOffset, const Key key, const DB gain) noexcept;
 
     template<bool Accumulate, typename Type>
     void generateTriangle(Type *output, const std::size_t outputSize,
-            const float frequency, const SampleRate sampleRate, const std::uint32_t phaseOffset, const Key key, const bool trigger, const DB gain) noexcept;
+            const float frequency, const SampleRate sampleRate, const std::uint32_t phaseOffset, const Key key, const DB gain) noexcept;
 
     template<bool Accumulate, typename Type>
     void generateSaw(Type *output, const std::size_t outputSize,
-            const float frequency, const SampleRate sampleRate, const std::uint32_t phaseOffset, const Key key, const bool trigger, const DB gain) noexcept;
+            const float frequency, const SampleRate sampleRate, const std::uint32_t phaseOffset, const Key key, const DB gain) noexcept;
 
     template<bool Accumulate, typename Type>
     void generateError(Type *output, const std::size_t outputSize,
-            const float frequency, const SampleRate sampleRate, const std::uint32_t phaseOffset, const Key key, const bool trigger, const DB gain) noexcept;
+            const float frequency, const SampleRate sampleRate, const std::uint32_t phaseOffset, const Key key, const DB gain) noexcept;
 
     template<bool Accumulate, typename Type>
     void generateNoise(Type *output, const std::size_t outputSize,
-            const float frequency, const SampleRate sampleRate, const std::uint32_t phaseOffset, const Key key, const bool trigger, const DB gain) noexcept;
+            const float frequency, const SampleRate sampleRate, const std::uint32_t phaseOffset, const Key key, const DB gain) noexcept;
 };
 
 #include "Oscillator.ipp"

@@ -170,29 +170,6 @@ inline bool Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, P
         if (&node() == _scheduler->partitionNode())
             collectPartition(partitions[_scheduler->partitionIndex()], beatRange, beatToSampleRatio, beatMissOffset);
     }
-    // TEST
-    // auto itNote = std::remove_if(_noteStack->begin(), _noteStack->end(),
-    //     [this](const NoteEvent evtOff) {
-    //         if (evtOff.type != NoteEvent::EventType::Off)
-    //             return false;
-    //         auto it = std::find_if(_noteStack->begin(), _noteStack->end(),
-    //             [evtOff](const NoteEvent evtOn) {
-    //                 if (
-    //                     evtOn.type == NoteEvent::EventType::On &&
-    //                     evtOn.key == evtOff.key &&
-    //                     evtOn.sampleOffset == evtOff.sampleOffset
-    //                 )
-    //                     return true;
-    //                 return false;
-
-    //             }
-    //         );
-    //         return it != _noteStack->end();
-
-    //     }
-    // );
-    // if (itNote != _noteStack->end())
-        // _noteStack->erase(itNote, _noteStack->end());
     return *_noteStack;
 }
 
