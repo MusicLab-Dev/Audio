@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <Audio/PluginControlUtils.hpp>
+#include <Audio/PluginUtilsControlsVolume.hpp>
 
 namespace Audio
 {

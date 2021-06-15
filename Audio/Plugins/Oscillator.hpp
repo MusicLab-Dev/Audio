@@ -7,7 +7,8 @@
 
 #include <Core/FlatVector.hpp>
 
-#include <Audio/PluginControlUtils.hpp>
+#include <Audio/PluginUtilsControlsVolume.hpp>
+#include <Audio/PluginUtilsControlsEnvelope.hpp>
 #include <Audio/Volume.hpp>
 #include <Audio/Modifier.hpp>
 
@@ -43,10 +44,10 @@ class Audio::Oscillator final : public Audio::IPlugin
         ),
         /* Envelope controls (attack, decay, sustain, release) */
         REGISTER_CONTROL_ENVELOPPE_ADSR(
-            enveloppeAttack, 0.1, CONTROL_RANGE(0.0, 10.0),
-            enveloppeDecay, 0.2, CONTROL_RANGE(0.0, 10.0),
-            enveloppeSustain, 0.8, CONTROL_RANGE(0.0, 1.0),
-            enveloppeRelease, 0.2, CONTROL_RANGE(0.0, 10.0)
+            enveloppeAttack, 0.1, CONTROL_RANGE_STEP(0.0, 5.0, 0.001),
+            enveloppeDecay, 0.2, CONTROL_RANGE_STEP(0.0, 5.0, 0.001),
+            enveloppeSustain, 0.8, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
+            enveloppeRelease, 0.2, CONTROL_RANGE_STEP(0.0, 5.0, 0.001)
         ),
         REGISTER_CONTROL_ENUM(
             waveform,

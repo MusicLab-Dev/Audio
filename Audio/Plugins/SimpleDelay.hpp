@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <Audio/PluginControlUtils.hpp>
+#include <Audio/PluginUtils.hpp>
 #include <Audio/DSP/Delay.hpp>
 
 namespace Audio
@@ -46,8 +46,8 @@ class Audio::SimpleDelay final : public Audio::IPlugin
         ),
         REGISTER_CONTROL_FLOATING(
             delayTime,
-            5.1,
-            CONTROL_RANGE(0.1, 10.0),
+            0.2,
+            CONTROL_RANGE_STEP(0.1, 10.0, 0.001),
             TR_TABLE(
                 TR(English, "Delay time"),
                 TR(French, "Durée du delay")
@@ -62,6 +62,9 @@ class Audio::SimpleDelay final : public Audio::IPlugin
             TR_TABLE(
                 TR(English, "seconds")
             )
+        ),
+        REGISTER_CONTROL_EFFECT_SYNC_TEMPO(
+            sync
         ),
         REGISTER_CONTROL_FLOATING(
             feedbackRate,

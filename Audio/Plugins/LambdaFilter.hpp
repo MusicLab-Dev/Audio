@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <Audio/PluginUtils.hpp>
+#include <Audio/PluginUtilsControlsFilter.hpp>
 #include <Audio/DSP/FIR.hpp>
 
 namespace Audio

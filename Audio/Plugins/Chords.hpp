@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <Audio/PluginControlUtils.hpp>
+#include <Audio/PluginUtils.hpp>
 #include <Audio/Plugins/Managers/ChordsManager.hpp>
 
 namespace Audio

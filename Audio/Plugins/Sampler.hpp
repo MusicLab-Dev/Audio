@@ -7,7 +7,8 @@
 
 #include <Core/FlatVector.hpp>
 
-#include <Audio/PluginControlUtils.hpp>
+#include <Audio/PluginUtilsControlsVolume.hpp>
+#include <Audio/PluginUtilsControlsEnvelope.hpp>
 #include <Audio/BufferOctave.hpp>
 #include "Managers/NoteManager.hpp"
 #include <Audio/DSP/FIR.hpp>
@@ -42,8 +43,8 @@ class Audio::Sampler final : public Audio::IPlugin
         ),
         /* Envelope controls (attack, release) */
         REGISTER_CONTROL_ENVELOPPE_AR(
-            enveloppeAttack, 0.001, CONTROL_RANGE(0.0, 10.0),
-            enveloppeRelease, 0.001, CONTROL_RANGE(0.0, 10.0)
+            enveloppeAttack, 0.001, CONTROL_RANGE_STEP(0.0, 2.0, 0.001),
+            enveloppeRelease, 0.001, CONTROL_RANGE_STEP(0.0, 2.0, 0.001)
         )
     )
 

@@ -40,8 +40,12 @@ namespace Audio
     /** @brief Middle key */
     static constexpr Key RootKey = 69u;
 
-    /** @brief Middle key */
+    /** @brief Middle key (A4) */
     static constexpr float RootKeyFrequency = 440.f;
+
+    /** @brief Semitone delta */
+    static constexpr double SemitoneUpDelta = 1.05946309436;
+    static constexpr double SemitoneDownDelta = 0.943874312682;
 
     /** @brief Semitone */
     using Semitone = std::int8_t;

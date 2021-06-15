@@ -55,10 +55,12 @@ void Audio::PluginTable::decrementRefCount(IPlugin *plugin) noexcept_ndebug
 #include <Audio/Plugins/SimpleDelay.hpp>
 #include <Audio/Plugins/Arpeggiator.hpp>
 #include <Audio/Plugins/Chords.hpp>
+#include <Audio/Plugins/FMSynth.hpp>
 
 Audio::PluginTable::PluginTable(void)
 {
     registerFactory<Audio::Mixer>();
+    registerFactory<Audio::FMX>();
     registerFactory<Audio::Arpeggiator>();
     registerFactory<Audio::Chords>();
     registerFactory<Audio::Sampler>();

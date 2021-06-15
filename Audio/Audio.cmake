@@ -35,7 +35,6 @@ set(AudioPrecompiledHeaders
     ${AudioDir}/PluginPtr.hpp
     ${AudioDir}/PluginTable.hpp
     ${AudioDir}/PluginUtils.hpp
-    ${AudioDir}/PluginControlUtils.hpp
     ${AudioDir}/Project.hpp
     ${AudioDir}/UtilsMidi.hpp
     ${AudioDir}/Volume.hpp
@@ -43,6 +42,12 @@ set(AudioPrecompiledHeaders
 
 set(AudioSources
     ${AudioPrecompiledHeaders}
+    ${AudioDir}/PluginUtilsControls.hpp
+    ${AudioDir}/PluginUtilsControlsEnvelope.hpp
+    ${AudioDir}/PluginUtilsControlsEqualizer.hpp
+    ${AudioDir}/PluginUtilsControlsFilter.hpp
+    ${AudioDir}/PluginUtilsControlsFM.hpp
+    ${AudioDir}/PluginUtilsControlsVolume.hpp
     ${AudioDir}/AScheduler.ipp
     ${AudioDir}/AScheduler.cpp
     ${AudioDir}/SchedulerTask.ipp
@@ -69,6 +74,8 @@ set(AudioPluginsSources
     ${AudioPluginsDir}/Sampler.ipp
     ${AudioPluginsDir}/Oscillator.hpp
     ${AudioPluginsDir}/Oscillator.ipp
+    ${AudioPluginsDir}/FMSynth.hpp
+    ${AudioPluginsDir}/FMSynth.ipp
     ${AudioPluginsDir}/Mixer.hpp
     ${AudioPluginsDir}/Mixer.ipp
     ${AudioPluginsDir}/LambdaFilter.hpp
@@ -96,6 +103,8 @@ set(AudioSampleFileDir ${AudioDir}/SampleFile)
 set(AudioPluginManagersSources
     ${AudioPluginManagerDir}/NoteManager.hpp
     ${AudioPluginManagerDir}/NoteManager.ipp
+    ${AudioPluginManagerDir}/FMManager.hpp
+    ${AudioPluginManagerDir}/FMManager.ipp
     ${AudioPluginManagerDir}/ArpeggiatorManager.hpp
     ${AudioPluginManagerDir}/ArpeggiatorManager.ipp
     ${AudioPluginManagerDir}/ChordsManager.hpp
@@ -125,6 +134,10 @@ set(AudioDSPSources
     ${AudioDSPDir}/EnvelopeGenerator.hpp
     ${AudioDSPDir}/EnvelopeGenerator.ipp
     ${AudioDSPDir}/FIR.hpp
+    ${AudioDSPDir}/FM.hpp
+    ${AudioDSPDir}/FMGenerator.hpp
+    ${AudioDSPDir}/FMGenerator.cpp
+    ${AudioDSPDir}/FM.ipp
     ${AudioDSPDir}/FIR.ipp
     ${AudioDSPDir}/FIRFilter.ipp
     ${AudioDSPDir}/Filter.hpp
