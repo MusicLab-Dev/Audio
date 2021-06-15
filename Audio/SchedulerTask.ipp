@@ -4,6 +4,7 @@
  */
 
 #include <Audio/DSP/Merge.hpp>
+#include <iostream>
 
 template<Audio::PlaybackMode Playback, bool ProcessNotesAndControls, bool ProcessAudio, Audio::IPlugin::Flags Deduced, Audio::IPlugin::Flags Begin, Audio::IPlugin::Flags End>
 inline std::pair<Flow::Task, const Audio::NoteEvents *> Audio::MakeSchedulerTask(Flow::Graph &graph, const IPlugin::Flags flags,
@@ -48,13 +49,18 @@ inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, P
     const auto beatRange = scheduler().template currentBeatRange<Playback>();
     auto &plugin = *node().plugin();
     if constexpr (ProcessNotesAndControls) {
-        if (collectControls(beatRange)) {
+        auto realBeatRange = beatRange;
+        if (scheduler().isLooping()) {
+            if (const auto max = scheduler().loopBeatRange().to; realBeatRange.to > max)
+                realBeatRange.to = max;
+        }
+        if (collectControls(realBeatRange)) {
             plugin.sendControls(_controlStack);
             _controlStack.clear();
         }
-        if (collectPartitions(beatRange) || _noteStack) {
+        if (collectPartitions(realBeatRange) || _noteStack) {
             if constexpr (HasNoteInput) {
-                plugin.sendNotes(*_noteStack, beatRange);
+                plugin.sendNotes(*_noteStack, realBeatRange);
                 _noteStack->clear();
             }
         }
