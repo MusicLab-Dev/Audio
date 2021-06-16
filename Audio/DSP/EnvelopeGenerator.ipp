@@ -266,7 +266,7 @@ inline float Audio::DSP::EnvelopeBase<Envelope, Count>::adsr(
         // const std::uint32_t releaseIdx = ((keyCache.gain < sustain) ? keyCache.gain : release) * static_cast<float>(sampleRate);
         const std::uint32_t releaseIdx = static_cast<std::uint32_t>(release * static_cast<float>(sampleRate));
         if (const std::uint32_t realIndex = index - keyCache.triggerIndex; realIndex < releaseIdx) {
-            if (keyCache.sustain != sustain) {
+            if (!keyCache.sustain) {
                 keyCache.sustain = keyCache.gain;
             }
             outGain = (1.0f - static_cast<float>(realIndex) / static_cast<float>(releaseIdx)) * keyCache.sustain;
