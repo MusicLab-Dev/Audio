@@ -62,6 +62,9 @@ inline void Audio::Sampler::sendNotes(const NoteEvents &notes, const BeatRange &
 
 inline void Audio::Sampler::receiveAudio(BufferView output)
 {
+    if (_externalPaths.empty())
+        return;
+
     const DB outGain = ConvertDecibelToRatio(static_cast<float>(outputVolume()));
     const std::uint32_t outSize = static_cast<std::uint32_t>(output.size<float>());
     float * const out = reinterpret_cast<float *>(output.byteData());

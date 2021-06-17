@@ -80,7 +80,6 @@ private:
     // Cacheline 3 & 4
     NoteManager<DSP::EnvelopeType::AR> _noteManager {};
 
-    Buffer _tmp;
     ExternalPaths _externalPaths;
 
     float getEnvelopeGain(const Key key, const std::uint32_t index) noexcept

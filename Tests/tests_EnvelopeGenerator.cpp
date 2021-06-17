@@ -38,18 +38,16 @@ TEST(EnvelopeGenerator, Simple_AttackDecayReleaseSustain)
     const float dec { 0.1f };
     const float sus { 0.5f };
     const float rel { 0.1f };
-    bool trigger { true };
 
     auto i = 0u;
     for (; i < 30u; ++i) {
-        auto gain = env.adsr(key, i, trigger, atk, dec, sus, rel, 100u);
+        auto gain = env.adsr(key, i, atk, dec, sus, rel, 100u);
         UNUSED(gain);
         // std::cout << "i: " << i << " -> " << gain << std::endl;
     }
-    trigger = false;
     env.setTriggerIndex(key, i);
     for (; i < 40u; ++i) {
-        auto gain = env.adsr(key, i, trigger, atk, dec, sus, rel, 100u);
+        auto gain = env.adsr(key, i, atk, dec, sus, rel, 100u);
         // std::cout << "i: " << i << " -> " << gain << std::endl;
         UNUSED(gain);
     }

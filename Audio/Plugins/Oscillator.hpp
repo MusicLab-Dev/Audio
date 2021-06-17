@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <Audio/DSP/Converter.hpp>
+
 #include <Core/FlatVector.hpp>
 
 #include <Audio/PluginUtilsControlsVolume.hpp>

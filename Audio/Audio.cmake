@@ -124,6 +124,10 @@ set(AudioDSPDir ${AudioDir}/DSP)
 set(AudioDSPSources
     ${AudioDSPDir}/Merge.hpp
     ${AudioDSPDir}/Merge.ipp
+    ${AudioDSPDir}/Converter.hpp
+    ${AudioDSPDir}/Converter.ipp
+    ${AudioDSPDir}/Reformater.hpp
+    ${AudioDSPDir}/Reformater.ipp
     ${AudioDSPDir}/Resampler.hpp
     ${AudioDSPDir}/Resampler.ipp
     ${AudioDSPDir}/Interpolation.ipp
