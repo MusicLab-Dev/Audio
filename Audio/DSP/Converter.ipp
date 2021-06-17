@@ -15,7 +15,7 @@ inline void Audio::DSP::Converter<InType, OutType>::resample(const InType *input
 template<typename InType, typename OutType>
 inline void Audio::DSP::Converter<InType, OutType>::reformat(const InType *input, OutType *output, const std::size_t inputSize) noexcept
 {
-
+    Reformater::Reformat<InType, OutType>(input, output, inputSize);
 }
 
 template<typename InType, typename OutType>
