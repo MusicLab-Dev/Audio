@@ -100,8 +100,10 @@ inline bool Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, P
     if constexpr (Playback == PlaybackMode::Production) {
         ParamID paramID = 0u;
         for (const auto &automation : automations) {
-            if (!automation.isSafe() || automation.headerCustomType().muted)
+            if (!automation.isSafe() || automation.headerCustomType().muted) {
+                ++paramID;
                 continue;
+            }
             const Point *last = nullptr;
             for (const auto &point : automation) {
                 if (point.beat < beatRange.to)
@@ -116,7 +118,6 @@ inline bool Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, P
     }
     return _controlStack;
 }
-
 
 template<Audio::IPlugin::Flags Flags, bool ProcessNotesAndControls, bool ProcessAudio, Audio::PlaybackMode Playback>
 inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, Playback>::collectInterpolatedPoint(

@@ -28,9 +28,13 @@ namespace Audio
 class  Audio::Node
 {
 public:
+    /** @brief Number of partitions reserved at node creation */
+    static constexpr std::uint32_t PartitionReservedCount =
+            (Core::CacheLineSize - sizeof(Partitions) - sizeof(Partitions::Header)) / sizeof(Partition);
+
     /** @brief Default constructor */
     Node(Node * const parent) noexcept
-        : _parent(parent) {}
+        : _parent(parent) { _partitions.reserve(PartitionReservedCount); }
 
     /** @brief Construct a node using an explicit plugin */
     Node(Node * const parent, PluginPtr &&plugin) noexcept : Node(parent) { setPlugin(std::move(plugin)); }
@@ -40,6 +44,7 @@ public:
 
     /** @brief Move assignment */
     Node &operator=(Node &&other) noexcept = default;
+
 
     /** @brief Get the internal plugin */
     [[nodiscard]] IPlugin *plugin(void) { return _plugin.get(); }
