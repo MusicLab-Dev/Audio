@@ -26,6 +26,9 @@ namespace Audio
     };
 
     static_assert_fit_eighth_cacheline(NoteModifiers);
+
+    /** @brief A list of NoteEvent */
+    using NoteEvents = Core::TinyVector<NoteEvent>;
 }
 
 /** @brief Default Note event */

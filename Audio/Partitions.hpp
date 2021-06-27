@@ -9,9 +9,31 @@
 
 namespace Audio
 {
-    /** @brief A list of NoteEvent that are generated temporarily */
-    using NotesOnTheFly = Core::TinySmallVector<NoteEvent, (Core::CacheLineSize - sizeof(NoteEvents) / sizeof(NoteEvent))>;
+    /** @brief Instance of a partition */
+    struct alignas_quarter_cacheline PartitionInstance
+    {
+        std::uint32_t partitionIndex { 0u };
+        Beat offset { 0u };
+        BeatRange range {};
 
-    /** @brief A flat vector that contains partitions and has a cache of notes on the fly in its header */
-    using Partitions = Core::TinyFlatVector<Partition, NotesOnTheFly>;
+        /** @brief Comparison operator for Sorted vector */
+        [[nodiscard]] bool operator<(const PartitionInstance &other)
+            { return other.range.from < other.range.from; }
+    };
+
+    /** @brief Header of the Partitions flat vector */
+    struct PartitionsHeader
+    {
+        /** @brief A list containing all notes passed 'on the fly' */
+        using NotesOnTheFly = Core::TinyVector<NoteEvent>;
+
+        /** @brief A list containing all instances of all partitions */
+        using Instances = Core::TinyVector<PartitionInstance>;
+
+        NotesOnTheFly notesOnTheFly;
+        Instances instances;
+    };
+
+    /** @brief Contains all the data related to partitions */
+    using Partitions = Core::TinyFlatVector<Partition, PartitionsHeader>;
 }

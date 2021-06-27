@@ -9,7 +9,7 @@
 #pragma once
 
 #include <Core/FlatVector.hpp>
-#include <Audio/Notes.hpp>
+#include <Audio/Note.hpp>
 
 namespace Audio
 {

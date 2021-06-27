@@ -9,7 +9,7 @@
 #pragma once
 
 #include <Core/SortedSmallVector.hpp>
-#include <Audio/Notes.hpp>
+#include <Audio/Note.hpp>
 
 namespace Audio
 {

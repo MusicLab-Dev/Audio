@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "PluginTable.hpp"
-#include "Controls.hpp"
+#include "Automations.hpp"
 #include "Partitions.hpp"
 #include "Connection.hpp"
 #include "Buffer.hpp"
@@ -81,9 +81,9 @@ public:
     [[nodiscard]] const Partitions &partitions(void) const noexcept { return _partitions; }
 
 
-    /** @brief Get a reference to the node controls */
-    [[nodiscard]] Controls &controls(void) noexcept { return _controls; }
-    [[nodiscard]] const Controls &controls(void) const noexcept { return _controls; }
+    /** @brief Get a reference to the node automations */
+    [[nodiscard]] Automations &automations(void) noexcept { return _automations; }
+    [[nodiscard]] const Automations &automations(void) const noexcept { return _automations; }
 
 
     /** @brief Get a reference to the node childrens */
@@ -109,7 +109,7 @@ private:
     Nodes               _children {}; // 8
     Partitions          _partitions {}; // 8
     Buffer              _cache; // 8
-    Controls            _controls {}; // 8
+    Automations         _automations {}; // 8
     bool                _muted { false }; // 1
     bool                _dirty { false }; // 1
     IPlugin::Flags      _flags {}; // 2

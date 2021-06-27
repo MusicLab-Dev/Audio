@@ -5,6 +5,7 @@
 
 #include <gtest/gtest.h>
 
+#include <Audio/Partition.hpp>
 #include <Audio/Plugins/Managers/NoteManager.hpp>
 #include <Audio/AScheduler.hpp>
 
@@ -14,7 +15,7 @@ TEST(NoteManager, Initialization)
 {
     NoteManager<DSP::EnvelopeType::ADSR> manager;
 
-    Notes input {
+    Partition input {
         Note({ 0, 1 }, 0, 10, 0),
         Note({ 1, 2 }, 1, 20, 1),
         Note({ 2, 3 }, 2, 30, 2),

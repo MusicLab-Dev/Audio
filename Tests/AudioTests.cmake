@@ -9,11 +9,10 @@ set(AudioTestsSources
     ${AudioTestsDir}/tests_Buffer.cpp
     ${AudioTestsDir}/tests_Point.cpp
     ${AudioTestsDir}/tests_Automation.cpp
-    ${AudioTestsDir}/tests_Control.cpp
+    ${AudioTestsDir}/tests_Automations.cpp
     ${AudioTestsDir}/tests_ParameterTable.cpp
     ${AudioTestsDir}/tests_PluginTable.cpp
     ${AudioTestsDir}/tests_Sampler.cpp
-    ${AudioTestsDir}/tests_Note.cpp
     ${AudioTestsDir}/tests_Partition.cpp
     ${AudioTestsDir}/tests_NoteManager.cpp
     ${AudioTestsDir}/tests_Merge.cpp

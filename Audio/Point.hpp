@@ -20,16 +20,8 @@ struct alignas_quarter_cacheline Audio::Point
         Linear, Fast, Slow
     };
 
+    /** @brief Curve rate of a point */
     using CurveRate = std::int16_t;
-
-    // /** @brief POD semantics */
-    // Point(void) noexcept = default;
-    // Point(const ParamValue value_) noexcept : value(value_) {}
-    // Point(const Beat beat_, const ParamValue value_) noexcept : beat(beat_), value(value_) {}
-    // Point(const Point &other) noexcept = default;
-    // Point(Point &&other) noexcept = default;
-    // Point &operator=(const Point &other) noexcept = default;
-    // Point &operator=(Point &&other) noexcept = default;
 
     /** @brief Equality operators */
     [[nodiscard]] bool operator==(const Point &other) const noexcept
@@ -47,3 +39,5 @@ struct alignas_quarter_cacheline Audio::Point
     CurveRate               curveRate {}; // We may change this to unsigned 24bits for better precision
     ParamValue              value {};
 };
+
+static_assert_fit_quarter_cacheline(Audio::Point);

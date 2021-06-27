@@ -9,7 +9,7 @@
 #include <memory>
 #include <utility>
 
-#include <Audio/Notes.hpp>
+#include <Audio/Note.hpp>
 #include <Audio/DSP/EnvelopeGenerator.hpp>
 
 namespace Audio

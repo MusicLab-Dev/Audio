@@ -9,8 +9,8 @@
 #include <Core/FlatVector.hpp>
 
 #include "Buffer.hpp"
-#include "Controls.hpp"
-#include "Notes.hpp"
+#include "ControlEvent.hpp"
+#include "Note.hpp"
 #include "IPluginFactory.hpp"
 
 namespace Audio
