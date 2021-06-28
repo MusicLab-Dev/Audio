@@ -10,5 +10,5 @@
 namespace Audio
 {
     /** @brief Store all notes of a partition */
-    using Partition = Core::TinyFlatVector<Note>;
+    using Partition = Core::SortedTinyFlatVector<Note>;
 }

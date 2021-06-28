@@ -29,8 +29,10 @@ class  Audio::Node
 {
 public:
     /** @brief Number of partitions reserved at node creation */
-    static constexpr std::uint32_t PartitionReservedCount =
-            (Core::CacheLineSize - sizeof(Partitions) - sizeof(Partitions::Header)) / sizeof(Partition);
+    static constexpr std::uint32_t PartitionReservedCount = [] {
+        std::uint32_t count = ((sizeof(Partitions) + sizeof(Partitions::Header)) % Core::CacheLineSize) / sizeof(Partition);
+        return count ? count : Core::CacheLineSize / sizeof(Partition);
+    }();
 
     /** @brief Default constructor */
     Node(Node * const parent) noexcept

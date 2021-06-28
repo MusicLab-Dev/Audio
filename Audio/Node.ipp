@@ -9,7 +9,7 @@ inline void Audio::Node::setPlugin(PluginPtr &&plugin)
     _plugin = std::move(plugin);
     _flags = _plugin->getFlags();
     _automations.clear();
-    _automations.resize(plugin->getMetaData().controls.size());
+    _automations.resize(_plugin->getMetaData().controls.size());
 }
 
 inline void Audio::Node::prepareCache(const AudioSpecs &specs)
