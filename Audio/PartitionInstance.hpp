@@ -18,9 +18,19 @@ namespace Audio
         Beat offset { 0u };
         BeatRange range {};
 
-        /** @brief Comparison operator for Sorted vector */
-        [[nodiscard]] bool operator<(const PartitionInstance &other) const noexcept
-            { return other.range.from < other.range.from; }
+        /** @brief Comparison operators */
+        [[nodiscard]] inline bool operator==(const PartitionInstance &other) const noexcept
+            { return partitionIndex == other.partitionIndex && offset == other.offset && range == other.range; }
+        [[nodiscard]] inline bool operator!=(const PartitionInstance &other) const noexcept
+            { return !operator==(other); }
+        [[nodiscard]] inline bool operator>(const PartitionInstance &other) const noexcept
+            { return range > other.range; }
+        [[nodiscard]] inline bool operator>=(const PartitionInstance &other) const noexcept
+            { return range >= other.range; }
+        [[nodiscard]] inline bool operator<(const PartitionInstance &other) const noexcept
+            { return range < other.range; }
+        [[nodiscard]] inline bool operator<=(const PartitionInstance &other) const noexcept
+            { return range <= other.range; }
     };
 
     /** @brief A list containing all instances of all partitions */

@@ -49,18 +49,29 @@ struct alignas_eighth_cacheline Audio::BeatRange
     Beat from {};
     Beat to {};
 
-    [[nodiscard]] inline bool operator==(const BeatRange &other) const noexcept { return (from == other.from) && (to == other.to); }
-    [[nodiscard]] inline bool operator!=(const BeatRange &other) const noexcept { return !(operator==(other)); }
+    /** @brief Comparison operators */
+    [[nodiscard]] inline bool operator==(const BeatRange &other) const noexcept
+        { return from == other.from && to == other.to; }
+    [[nodiscard]] inline bool operator!=(const BeatRange &other) const noexcept
+        { return !operator==(other); }
+    [[nodiscard]] inline bool operator>(const BeatRange &other) const noexcept
+        { return from > other.from; }
+    [[nodiscard]] inline bool operator>=(const BeatRange &other) const noexcept
+        { return from >= other.from; }
+    [[nodiscard]] inline bool operator<(const BeatRange &other) const noexcept
+        { return from < other.from; }
+    [[nodiscard]] inline bool operator<=(const BeatRange &other) const noexcept
+        { return from <= other.from; }
 
-    [[nodiscard]] inline bool operator>(const BeatRange &other) const noexcept { return (from > other.from && to > other.to); }
-    [[nodiscard]] inline bool operator<(const BeatRange &other) const noexcept { return (from < other.to && to < other.to); }
-    [[nodiscard]] inline bool operator<=(const BeatRange &other) const noexcept { return !(*this > other) || (from <= other.from && to <= other.to); }
-    [[nodiscard]] inline bool operator>=(const BeatRange &other) const noexcept { return !(operator<(other)); }
-
-    inline BeatRange operator+(const Beat size) noexcept { return BeatRange({ from + size, to + size }); }
-    inline BeatRange &operator+=(const Beat size) noexcept { from += size; to += size; return *this; }
-    inline BeatRange operator-(const Beat size) noexcept { return BeatRange({ from - size, to - size }); }
-    inline BeatRange &operator-=(const Beat size) noexcept { from -= size; to -= size; return *this; }
+    /** @brief Addition operators */
+    inline BeatRange operator+(const Beat size) const noexcept
+        { return BeatRange({ from + size, to + size }); }
+    inline BeatRange &operator+=(const Beat size) noexcept
+        { from += size; to += size; return *this; }
+    inline BeatRange operator-(const Beat size) const noexcept
+        { return BeatRange({ from - size, to - size }); }
+    inline BeatRange &operator-=(const Beat size) noexcept
+        { from -= size; to -= size; return *this; }
 
     inline void increment(const Beat inc) noexcept { from = to; to += inc; }
 };
