@@ -123,13 +123,18 @@ template<Audio::IPlugin::Flags Flags, bool ProcessNotesAndControls, bool Process
 inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, Playback>::collectInterpolatedPoint(
         const BeatRange &beatRange, const ParamID paramID, const Point * const left, const Point &right)
 {
-    ParamValue value = left ? 0.0 : right.value;
-    switch (right.type) {
-    case Point::CurveType::Linear:
-    case Point::CurveType::Fast:
-    case Point::CurveType::Slow:
-        value = ((right.value - left->value) / (right.beat - left->beat)) * (beatRange.to - beatRange.from);
-        break;
+    ParamValue value = right.value;
+
+    if (left) {
+        switch (right.type) {
+        case Point::CurveType::Linear:
+        case Point::CurveType::Fast:
+        case Point::CurveType::Slow:
+            value = ((right.value - left->value) / (right.beat - left->beat)) * (beatRange.to - beatRange.from);
+            break;
+        default:
+            break;
+    }
     }
     _controlStack.push(paramID, value);
 }
