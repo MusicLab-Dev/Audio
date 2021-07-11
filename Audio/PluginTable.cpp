@@ -56,11 +56,13 @@ void Audio::PluginTable::decrementRefCount(IPlugin *plugin) noexcept_ndebug
 #include <Audio/Plugins/Arpeggiator.hpp>
 #include <Audio/Plugins/Chords.hpp>
 #include <Audio/Plugins/FMSynth.hpp>
+#include <Audio/Plugins/Piano.hpp>
 
 Audio::PluginTable::PluginTable(void)
 {
     registerFactory<Audio::Mixer>();
-   registerFactory<Audio::FMX>();
+    registerFactory<Audio::FMX>();
+    registerFactory<Audio::Piano>();
     registerFactory<Audio::Arpeggiator>();
 //    registerFactory<Audio::Chords>();
     registerFactory<Audio::Sampler>();

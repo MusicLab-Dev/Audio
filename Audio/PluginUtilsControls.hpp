@@ -9,3 +9,4 @@
 #include "PluginUtilsControlsEqualizer.hpp"
 #include "PluginUtilsControlsFM.hpp"
 #include "PluginUtilsControlsVolume.hpp"
+#include "PluginUtilsControlsMapping.hpp"

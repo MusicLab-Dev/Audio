@@ -11,8 +11,7 @@
  * @brief Helper for FM controls
  */
 #define REGISTER_CONTROL_FM_OPERATOR(BaseName) \
-    _REGISTER_CONTROL_FM_OUTPUT_VOLUME(BaseName##volume, 0.0, CONTROL_FM_OPERATOR_OUTPUT_VOLUME_RANGE()), \
-    _REGISTER_CONTROL_FM_OUTPUT_VOLUME_RATIO(BaseName##volumeRatio, 1.0, CONTROL_FM_OPERATOR_OUTPUT_VOLUME_RATIO_RANGE()), \
+    _REGISTER_CONTROL_FM_OUTPUT_VOLUME(BaseName##volume, -70.0, CONTROL_FM_OPERATOR_OUTPUT_VOLUME_RANGE()), \
     REGISTER_CONTROL_ENVELOPPE_ADSR( \
         BaseName##attack, 0.1, CONTROL_RANGE_STEP(0.0, 5.0, 0.001), \
         BaseName##decay, 0.2, CONTROL_RANGE_STEP(0.0, 5.0, 0.001), \
@@ -21,9 +20,11 @@
     ), \
     _REGISTER_CONTROL_FM_RATIO(BaseName##ratio, CONTROL_FM_RATIO_DEFAULT_VALUE(), CONTROL_FM_RATIO_DEFAULT_RANGE()), \
     _REGISTER_CONTROL_FM_DETUNE(BaseName##detune, CONTROL_FM_DETUNE_DEFAULT_VALUE(), CONTROL_FM_DETUNE_DEFAULT_RANGE()), \
-    _REGISTER_CONTROL_FM_FEEDBACK(BaseName##feedback, 0.0, CONTROL_FM_OPERATOR_FEEDBACK_RANGE())
+    _REGISTER_CONTROL_FM_FEEDBACK(BaseName##feedback, 0.0, CONTROL_FM_OPERATOR_FEEDBACK_RANGE()), \
+    _REGISTER_CONTROL_FM_KEY_FOLLOW(BaseName##keyAmountLeft, 0.0, CONTROL_FM_OPERATOR_KEY_FOLLOW_RANGE()), \
+    _REGISTER_CONTROL_FM_KEY_FOLLOW(BaseName##keyAmountRight, 0.0, CONTROL_FM_OPERATOR_KEY_FOLLOW_RANGE())
 
-
+/**
 #define CONTROL_FM_OPERATOR_OUTPUT_VOLUME_RATIO_RANGE() CONTROL_RANGE_STEP(1.0, 10.0, 0.1)
 #define _REGISTER_CONTROL_FM_OUTPUT_VOLUME_RATIO(Name, Value, Range) \
     REGISTER_CONTROL_FLOATING( \
@@ -43,8 +44,9 @@
             TR(English, "%") \
         ) \
     )
+**/
 
-#define CONTROL_FM_OPERATOR_OUTPUT_VOLUME_RANGE() CONTROL_RANGE_STEP(0.0, 1.0, 0.01)
+#define CONTROL_FM_OPERATOR_OUTPUT_VOLUME_RANGE() CONTROL_RANGE_STEP(-70.0, 12.0, 0.1)
 #define _REGISTER_CONTROL_FM_OUTPUT_VOLUME(Name, Value, Range) \
     REGISTER_CONTROL_FLOATING( \
         Name, Value, Range, \
@@ -60,7 +62,7 @@
             TR(English, "Vol") \
         ), \
         TR_TABLE( \
-            TR(English, "%") \
+            TR(English, "dB") \
         ) \
     )
 
@@ -85,7 +87,7 @@
         ) \
     )
 
-#define CONTROL_FM_DETUNE_DEFAULT_RANGE() CONTROL_RANGE_STEP(-11.0, 11.0, 1)
+#define CONTROL_FM_DETUNE_DEFAULT_RANGE() CONTROL_RANGE_STEP(-100.0, 100.0, 0.1)
 #define CONTROL_FM_DETUNE_DEFAULT_VALUE() 0.0
 #define _REGISTER_CONTROL_FM_DETUNE(Name, Value, Range) \
     REGISTER_CONTROL_FLOATING(Name, Value, Range, \
@@ -119,6 +121,26 @@
         ), \
         TR_TABLE( \
             TR(English, "Fdbk") \
+        ), \
+        TR_TABLE( \
+            TR(English, "") \
+        ) \
+    )
+
+#define CONTROL_FM_OPERATOR_KEY_FOLLOW_RANGE() CONTROL_RANGE_STEP(-100, 100, 1)
+#define _REGISTER_CONTROL_FM_KEY_FOLLOW(Name, Value, Range) \
+    REGISTER_CONTROL_INTEGER( \
+        Name, Value, Range, \
+        TR_TABLE( \
+            TR(English, #Name " key follow"), \
+            TR(French, "Intensité de key follow de l'opérateur") \
+        ), \
+        TR_TABLE( \
+            TR(English, #Name " key follow"), \
+            TR(French, "Intensité de key follow de l'opérateur") \
+        ), \
+        TR_TABLE( \
+            TR(English, "Key") \
         ), \
         TR_TABLE( \
             TR(English, "") \

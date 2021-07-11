@@ -15,7 +15,7 @@ inline Audio::Buffer Audio::SampleManager<Type, Normalize>::LoadSampleFile(const
 template<typename Type, bool Normalize>
 inline Audio::Buffer Audio::SampleManager<Type, Normalize>::LoadSampleFileExtension(const std::string &path, const std::string &ext, const SampleSpecs &desiredSpecs, SampleSpecs &fileSpecs, bool displaySpecs)
 {
-    for (auto i = 0u; i < sizeof(SupportedExtension) / sizeof(std::pair<int, int>); ++i) {
+    for (auto i = 0u; i < sizeof(SupportedExtension) / (sizeof(std::pair<int, int>)); ++i) {
         if (std::string(std::get<0>(SupportedExtension[i])) == ext) {
             /** @todo Convert buffer (if needed) into the templated type */
             return std::get<1>(SupportedExtension[i])(path, desiredSpecs, fileSpecs, displaySpecs);

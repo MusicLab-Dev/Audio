@@ -20,6 +20,9 @@ namespace Audio::DSP::FM
         using OperatorCountType = std::uint8_t;
         using CacheList = Core::FlatVector<float, ProcessSizeType>;
 
+        // 2 -> 1 octave
+        static constexpr float KeyFollowRate = 2.0f;
+
         struct OperatorFlat
         {
             float attack;
@@ -37,8 +40,11 @@ namespace Audio::DSP::FM
             float sustain;
             float release;
             float volume;
-            std::int32_t detune;
+            float detune;
             std::uint32_t feedback;
+            Key keyBreakPoint;
+            float keyAmountLeft;
+            float keyAmountRight;
         };
 
         template<unsigned InstanceCount>
@@ -73,14 +79,67 @@ public:
     //         return std::sin(2.0f * static_cast<float>(M_PI) * phaseIndex * frequency);
     // }
 
-    template<bool Accumulate, bool Modulate, unsigned OperatorIndex>
+    template<bool Accumulate, bool Modulate, bool IsCarrier, unsigned OperatorIndex>
     inline void processOperator(
             const float *input, float *output, const std::uint32_t processSize, const float outputGain,
             const std::uint32_t phaseIndex, const float frequencyNorm, const Key key,
             const Internal::Operator &op
     ) noexcept
     {
-        const auto outGain = op.volume * outputGain;
+        // const auto semitone = (25 - 11) % 12;
+        // const auto octave = (25 - 11) / 12;
+
+        // constexpr auto GetKeyAmountRate = [](const float amountLeft, const float amountRight, const bool direction, const Key key, const Key breakPoint)
+        // {
+        //     if (direction) {
+        //         if (!amountRight) {
+        //             return 0.0f;
+        //         } else if (amountRight < 0.0f) {
+        //             return 1.0f / std::pow(2.0f, static_cast<float>(key - breakPoint) / 12.0f) * -amountRight;
+        //         } else {
+        //             return std::pow(2.0f, static_cast<float>(key - breakPoint) / 12.0f) * amountRight;
+        //         }
+        //     } else {
+        //         if (!amountLeft) {
+        //             return 0.0f;
+        //         } else if (amountLeft < 0.0f) {
+        //             return std::pow(2.0f, static_cast<float>(key - breakPoint) / 12.0f) * -amountLeft;
+        //         } else {
+        //             return std::pow(2.0f, static_cast<float>(breakPoint - key) / 12.0f) * amountLeft;
+        //         }
+        //     }
+        // };
+
+
+        constexpr auto GetKeyAmountRate = [](const float amount, const float keyDelta)
+        {
+            if (!amount) {
+                return 1.0f;
+            } else if (amount < 0.0f) {
+                return -amount * std::pow(2.0f, -keyDelta) + 1.0f + amount;
+            } else {
+                return amount * std::pow(2.0f, keyDelta) + 1.0f - amount;
+            }
+        };
+
+
+        // [0:128]
+
+        const auto keyDelta = static_cast<float>(key - op.keyBreakPoint) / 12.0f;
+        const auto keyAmountDirection = keyDelta >= 0;
+        auto keyAmount = keyAmountDirection ? GetKeyAmountRate(op.keyAmountRight, keyDelta) : GetKeyAmountRate(op.keyAmountLeft, -keyDelta);
+
+        // if constexpr (IsCarrier)
+        //     keyAmount = 1.0f;
+
+        const auto outGain = op.volume * outputGain * keyAmount;
+
+        std::cout << OperatorIndex << std::endl;
+        std::cout << "outputGain: " << outputGain << std::endl;
+        std::cout << "volume: " << op.volume << std::endl;
+        std::cout << "key amount: " << keyAmount << std::endl;
+        std::cout << "final gain: " << outGain << std::endl;
+        std::cout << std::endl;
 
         for (auto i = 0u; i < processSize; ++i) {
             const auto index = i + phaseIndex;
@@ -117,6 +176,8 @@ public:
         _cache.resize(static_cast<Internal::ProcessSizeType>(processSize));
         if constexpr (OperatorCount == 2u) {
             oneCarrierOneModulator<Accumulate>(output, processSize, outputGain, phaseIndex, key, rootFrequency, operators);
+        } else if constexpr (OperatorCount == 4u) {
+            twoCM<Accumulate>(output, processSize, outputGain, phaseIndex, key, rootFrequency, operators);
         } else if constexpr (OperatorCount == 6u) {
             dx7_05<Accumulate>(output, processSize, outputGain, phaseIndex, key, rootFrequency, operators);
         }
@@ -139,8 +200,21 @@ private:
         // processOperator<Accumulate, true, 0>(_cache.data(), output, processSize, outputGain, phaseIndex, (rootFrequency * operators[0].frequencyDelta) / static_cast<float>(_sampleRate), key, operators[0]);
 
         // Op_0 only
-        processOperator<Accumulate, false, 0>(nullptr, output, processSize, outputGain, phaseIndex, (rootFrequency * operators[0].frequencyDelta) / static_cast<float>(_sampleRate), key, operators[0]);
+        processOperator<Accumulate, false, true, 0>(nullptr, output, processSize, outputGain, phaseIndex, (rootFrequency * operators[0].frequencyDelta) / static_cast<float>(_sampleRate), key, operators[0]);
     }
+
+    template<bool Accumulate>
+    void twoCM(
+            float *output, const std::uint32_t processSize, const float outputGain,
+            const std::uint32_t phaseIndex, const Key key, const float rootFrequency,
+            const Internal::OperatorArray<OperatorCount> &operators
+    ) noexcept
+    {
+        std::cout << "ICI" << std::endl;
+        std::cout << outputGain << std::endl << std::endl;
+        oneModulatorToCarrier_impl<Accumulate>(output, processSize, outputGain, phaseIndex, rootFrequency, key, operators);
+    }
+
 
     template<bool Accumulate>
     void dx7_05(
@@ -152,11 +226,11 @@ private:
         constexpr auto CarrierCount = 3u;
         const auto realOutputGain = outputGain / static_cast<float>(CarrierCount);
 
-        dx7_05_impl<Accumulate>(output, processSize, realOutputGain, phaseIndex, rootFrequency, key, operators);
+        oneModulatorToCarrier_impl<Accumulate>(output, processSize, realOutputGain, phaseIndex, rootFrequency, key, operators);
     }
 
     template<bool Accumulate, unsigned Index = 0u>
-    void dx7_05_impl(
+    void oneModulatorToCarrier_impl(
             float *output, const std::uint32_t processSize, const float outputGain,
             const std::uint32_t phaseIndex, const float rootFrequency, const Key key,
             const Internal::OperatorArray<OperatorCount> &operators
@@ -167,9 +241,9 @@ private:
             constexpr auto ModIdx = Index + 1;
 
             // _cache.clear();
-            processOperator<false, false, ModIdx>(nullptr, _cache.data(), processSize, 1.0f, phaseIndex, (getDetuneFrequency(rootFrequency, operators[ModIdx].detune) * operators[ModIdx].frequencyDelta) / static_cast<float>(_sampleRate), key, operators[ModIdx]);
-            processOperator<Accumulate, true, CarrierIdx>(_cache.data(), output, processSize, outputGain, phaseIndex, (getDetuneFrequency(rootFrequency, operators[CarrierIdx].detune) * operators[CarrierIdx].frequencyDelta) / static_cast<float>(_sampleRate), key, operators[CarrierIdx]);
-            dx7_05_impl<Accumulate, Index + 2>(output, processSize, outputGain, phaseIndex, rootFrequency, key, operators);
+            processOperator<false, false, false, ModIdx>(nullptr, _cache.data(), processSize, 1.0f, phaseIndex, (getDetuneFrequency(rootFrequency, operators[ModIdx].detune) * operators[ModIdx].frequencyDelta) / static_cast<float>(_sampleRate), key, operators[ModIdx]);
+            processOperator<Accumulate, true, true, CarrierIdx>(_cache.data(), output, processSize, outputGain, phaseIndex, (getDetuneFrequency(rootFrequency, operators[CarrierIdx].detune) * operators[CarrierIdx].frequencyDelta) / static_cast<float>(_sampleRate), key, operators[CarrierIdx]);
+            oneModulatorToCarrier_impl<Accumulate, Index + 2>(output, processSize, outputGain, phaseIndex, rootFrequency, key, operators);
         }
     }
 
@@ -207,11 +281,11 @@ private:
         }
     }
 
-    [[nodiscard]] float getDetuneFrequency(const float rootFrequency, std::int32_t detune) const noexcept
+    [[nodiscard]] float getDetuneFrequency(const float rootFrequency, const float detune) const noexcept
     {
         if (!detune)
             return rootFrequency;
-        const double detuneNorm = static_cast<double>(detune) / 120.0;
+        const double detuneNorm = static_cast<double>(detune) / 1200.0;
         return rootFrequency * static_cast<float>(std::pow(2.0, detuneNorm));
     }
 

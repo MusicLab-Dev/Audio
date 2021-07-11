@@ -26,7 +26,7 @@ namespace Audio
     static constexpr float EnvelopeMinTimeStepDown { EnvelopeMinTimeStepUp * 2.0f };
 
     /** @brief Default plugin output volume */
-    static constexpr DB DefaultPluginOutputVolume = -3.0;
+    static constexpr DB DefaultPluginOutputVolume = -6.0;
 
     /** @brief Convert a sample value to the decibel unit */
     template<typename Type>

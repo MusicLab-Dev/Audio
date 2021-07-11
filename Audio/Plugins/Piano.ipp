@@ -1,28 +1,28 @@
 /**
  * @ Author: Pierre Veysseyre
- * @ Description: FMX implementation
+ * @ Description: Piano implementation
  */
 
 #include <iomanip>
 
-inline void Audio::FMX::onAudioGenerationStarted(const BeatRange &range)
+inline void Audio::Piano::onAudioGenerationStarted(const BeatRange &range)
 {
     UNUSED(range);
     _fmManager.reset();
 }
 
-inline void Audio::FMX::onAudioParametersChanged(void)
+inline void Audio::Piano::onAudioParametersChanged(void)
 {
     _fmManager.reset();
     _fmManager.schema().setSampleRate(audioSpecs().sampleRate);
 }
 
-inline void Audio::FMX::setExternalPaths(const ExternalPaths &paths)
+inline void Audio::Piano::setExternalPaths(const ExternalPaths &paths)
 {
     UNUSED(paths);
 }
 
-inline void Audio::FMX::sendNotes(const NoteEvents &notes, const BeatRange &range)
+inline void Audio::Piano::sendNotes(const NoteEvents &notes, const BeatRange &range)
 {
     UNUSED(range);
     if (notes.size()) {
@@ -31,7 +31,7 @@ inline void Audio::FMX::sendNotes(const NoteEvents &notes, const BeatRange &rang
     }
 }
 
-inline void Audio::FMX::receiveAudio(BufferView output)
+inline void Audio::Piano::receiveAudio(BufferView output)
 {
     const DB outGain = ConvertDecibelToRatio(static_cast<float>(outputVolume()) + DefaultVoiceGain);
     const auto outSize = static_cast<std::uint32_t>(output.size<float>());
@@ -58,6 +58,8 @@ inline void Audio::FMX::receiveAudio(BufferView output)
             UNUSED(rootFrequency);
             UNUSED(modifiers);
 
+            // CONTROL_MAP(brightness, opBvolume, )
+            // opAvolume(brightness());
             _fmManager.processSchema<true>(realOut, realOutSize, outGain, readIndex, key, rootFrequency, {
                DSP::FM::Internal::Operator {
                    static_cast<float>(opAratio()),
@@ -69,8 +71,8 @@ inline void Audio::FMX::receiveAudio(BufferView output)
                    static_cast<float>(opAdetune()),
                    static_cast<std::uint32_t>(opAfeedback()),
                    static_cast<Key>(69u),
-                   static_cast<float>(opAkeyAmountLeft()) / 100.0f + 1.0f,
-                   static_cast<float>(opAkeyAmountRight()) / 100.0f + 1.0f
+                   static_cast<float>(opAkeyAmountLeft()) / 100.0f,
+                   static_cast<float>(opAkeyAmountRight()) / 100.0f
                },
                DSP::FM::Internal::Operator {
                    static_cast<float>(opBratio()),
@@ -82,8 +84,8 @@ inline void Audio::FMX::receiveAudio(BufferView output)
                    static_cast<float>(opBdetune()),
                    static_cast<std::uint32_t>(opBfeedback()),
                    static_cast<Key>(69u),
-                   static_cast<float>(opBkeyAmountLeft()) / 100.0f + 1.0f,
-                   static_cast<float>(opBkeyAmountRight()) / 100.0f + 1.0f
+                   static_cast<float>(opBkeyAmountLeft()) / 100.0f,
+                   static_cast<float>(opBkeyAmountRight()) / 100.0f
                },
                DSP::FM::Internal::Operator {
                    static_cast<float>(opCratio()),
@@ -95,8 +97,8 @@ inline void Audio::FMX::receiveAudio(BufferView output)
                    static_cast<float>(opCdetune()),
                    static_cast<std::uint32_t>(opCfeedback()),
                    static_cast<Key>(69u),
-                   static_cast<float>(opCkeyAmountLeft()) / 100.0f + 1.0f,
-                   static_cast<float>(opCkeyAmountRight()) / 100.0f + 1.0f
+                   static_cast<float>(opCkeyAmountLeft()) / 100.0f,
+                   static_cast<float>(opCkeyAmountRight()) / 100.0f
                },
                DSP::FM::Internal::Operator {
                    static_cast<float>(opDratio()),
@@ -108,34 +110,8 @@ inline void Audio::FMX::receiveAudio(BufferView output)
                    static_cast<float>(opDdetune()),
                    static_cast<std::uint32_t>(opDfeedback()),
                    static_cast<Key>(69u),
-                   static_cast<float>(opDkeyAmountLeft()) / 100.0f + 1.0f,
-                   static_cast<float>(opDkeyAmountRight()) / 100.0f + 1.0f
-               },
-               DSP::FM::Internal::Operator {
-                   static_cast<float>(opEratio()),
-                   static_cast<float>(opEattack()),
-                   static_cast<float>(opEdecay()),
-                   static_cast<float>(opEsustain()),
-                   static_cast<float>(opErelease()),
-                   ConvertDecibelToRatio(static_cast<float>(opEvolume())),
-                   static_cast<float>(opEdetune()),
-                   static_cast<std::uint32_t>(opEfeedback()),
-                   static_cast<Key>(69u),
-                   static_cast<float>(opEkeyAmountLeft()) / 100.0f + 1.0f,
-                   static_cast<float>(opEkeyAmountRight()) / 100.0f + 1.0f
-               },
-               DSP::FM::Internal::Operator {
-                   static_cast<float>(opFratio()),
-                   static_cast<float>(opFattack()),
-                   static_cast<float>(opFdecay()),
-                   static_cast<float>(opFsustain()),
-                   static_cast<float>(opFrelease()),
-                   ConvertDecibelToRatio(static_cast<float>(opFvolume())),
-                   static_cast<float>(opFdetune()),
-                   static_cast<std::uint32_t>(opFfeedback()),
-                   static_cast<Key>(69u),
-                   static_cast<float>(opFkeyAmountLeft()) / 100.0f + 1.0f,
-                   static_cast<float>(opFkeyAmountRight()) / 100.0f + 1.0f
+                   static_cast<float>(opDkeyAmountLeft()) / 100.0f,
+                   static_cast<float>(opDkeyAmountRight()) / 100.0f
                }
             });
             return std::make_pair(realOutSize, 0u);
