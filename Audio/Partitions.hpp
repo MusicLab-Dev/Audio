@@ -1,17 +1,25 @@
 /**
  * @ Author: Matthieu Moinvaziri
- * @ Description: Notes
+ * @ Description: Partitions
  */
 
 #pragma once
 
 #include "Partition.hpp"
+#include "PartitionInstance.hpp"
 
 namespace Audio
 {
-    /** @brief A list of NoteEvent that are generated temporarily */
-    using NotesOnTheFly = Core::TinySmallVector<NoteEvent, (Core::CacheLineSize - sizeof(NoteEvents) / sizeof(NoteEvent))>;
+    /** @brief Header of the Partitions flat vector */
+    struct PartitionsHeader
+    {
+        /** @brief A list containing all notes passed 'on the fly' */
+        using NotesOnTheFly = Core::TinyVector<NoteEvent>;
 
-    /** @brief A flat vector that contains partitions and has a cache of notes on the fly in its header */
-    using Partitions = Core::TinyFlatVector<Partition, NotesOnTheFly>;
+        NotesOnTheFly notesOnTheFly;
+        PartitionInstances instances;
+    };
+
+    /** @brief Contains all the data related to partitions */
+    using Partitions = Core::TinyFlatVector<Partition, PartitionsHeader>;
 }

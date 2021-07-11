@@ -18,8 +18,7 @@ set(AudioPrecompiledHeaders
     ${AudioDir}/Modifier.hpp
     ${AudioDir}/BufferOctave.hpp
     ${AudioDir}/Connection.hpp
-    ${AudioDir}/Control.hpp
-    ${AudioDir}/Controls.hpp
+    ${AudioDir}/ControlEvent.hpp
     ${AudioDir}/ParameterTable.hpp
     ${AudioDir}/Device.hpp
     ${AudioDir}/ExternalFactory.hpp

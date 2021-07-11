@@ -88,55 +88,53 @@ inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, P
 template<Audio::IPlugin::Flags Flags, bool ProcessNotesAndControls, bool ProcessAudio, Audio::PlaybackMode Playback>
 inline bool Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, Playback>::collectControls(const BeatRange &beatRange) noexcept
 {
-    auto &controls = node().controls();
+    auto &automations = node().automations();
 
-    if (!controls.isSafe())
+    if (!automations.isSafe())
         return false;
-    if (auto &events = controls.headerCustomType(); events) {
+    auto &automationsHeader = automations.headerCustomType();
+    if (auto &events = automationsHeader.controlsOnTheFly; events) {
         _controlStack.insert(_controlStack.end(), events.beginUnsafe(), events.endUnsafe());
         events.clearUnsafe();
     }
     if constexpr (Playback == PlaybackMode::Production) {
-        for (const auto &control : controls) {
-            if (control.muted())
+        ParamID paramID = 0u;
+        for (const auto &automation : automations) {
+            if (!automation.isSafe() || automation.headerCustomType().muted) {
+                ++paramID;
                 continue;
-            for (const auto &automation : control.automations()) {
-                if (automation.muted())
-                    continue;
-                for (const auto &instance : automation.instances()) {
-                    if (instance.to < beatRange.from)
-                        continue;
-                    else if (instance.from > beatRange.to)
-                        break;
-                    const Point *last = nullptr;
-                    for (const auto &point : automation.points()) {
-                        if (instance.from + point.beat < beatRange.to) {
-                            last = &point;
-                        }
-                        else {
-                            collectInterpolatedPoint(beatRange, control.paramID(), last, point);
-                            break;
-                        }
-                    }
+            }
+            const Point *last = nullptr;
+            for (const auto &point : automation) {
+                if (point.beat < beatRange.to)
+                    last = &point;
+                else {
+                    collectInterpolatedPoint(beatRange, paramID, last, point);
+                    break;
                 }
             }
+            ++paramID;
         }
     }
     return _controlStack;
 }
 
-
 template<Audio::IPlugin::Flags Flags, bool ProcessNotesAndControls, bool ProcessAudio, Audio::PlaybackMode Playback>
 inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, Playback>::collectInterpolatedPoint(
         const BeatRange &beatRange, const ParamID paramID, const Point * const left, const Point &right)
 {
-    ParamValue value = left ? 0.0 : right.value;
-    switch (right.type) {
-    case Point::CurveType::Linear:
-    case Point::CurveType::Fast:
-    case Point::CurveType::Slow:
-        value = ((right.value - left->value) / (right.beat - left->beat)) * (beatRange.to - beatRange.from);
-        break;
+    ParamValue value = right.value;
+
+    if (left) {
+        switch (right.type) {
+        case Point::CurveType::Linear:
+        case Point::CurveType::Fast:
+        case Point::CurveType::Slow:
+            value = ((right.value - left->value) / (right.beat - left->beat)) * (beatRange.to - beatRange.from);
+            break;
+        default:
+            break;
+    }
     }
     _controlStack.push(paramID, value);
 }
@@ -152,18 +150,19 @@ inline bool Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, P
 
     if (!partitions.isSafe())
         return false;
-    if (auto &events = partitions.headerCustomType(); events) {
+    auto &partitionsHeader = partitions.headerCustomType();
+    if (auto &events = partitionsHeader.notesOnTheFly; events) {
         _noteStack->insert(_noteStack->end(), events.beginUnsafe(), events.endUnsafe());
         events.clearUnsafe();
     }
     if constexpr (Playback == PlaybackMode::Production) {
-        for (const auto &partition : partitions) {
-            if (partition.muted())
-                continue;
-            for (const auto &instance : partition.instances()) {
-                if (instance.to <= beatRange.from || instance.from >= beatRange.to)
+        if (auto &instances = partitionsHeader.instances; instances.isSafe()) {
+            for (auto &instance : instances) {
+                if (instance.range.to <= beatRange.from)
                     continue;
-                collectPartition(partition, beatRange, beatToSampleRatio, beatMissOffset, instance);
+                else if (instance.range.from >= beatRange.to)
+                    break;
+                collectPartition(partitions[instance.partitionIndex], beatRange, beatToSampleRatio, beatMissOffset, instance);
             }
         }
     } else if constexpr (Playback == PlaybackMode::Partition) {
@@ -175,13 +174,14 @@ inline bool Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, P
 
 template<Audio::IPlugin::Flags Flags, bool ProcessNotesAndControls, bool ProcessAudio, Audio::PlaybackMode Playback>
 inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, Playback>::collectPartition(
-        const Partition &partition, const BeatRange &beatRange, const double beatToSampleRatio, const double beatMissOffset, const BeatRange &offset) noexcept
+        const Partition &partition, const BeatRange &beatRange, const double beatToSampleRatio, const double beatMissOffset, const PartitionInstance &instance) noexcept
 {
     UNUSED(beatToSampleRatio);
-    for (const auto &note : partition.notes()) {
-        const auto noteFrom = offset.from + note.range.from;
-        const auto noteTo = offset.from + note.range.to;
-        if (noteTo <= beatRange.from || noteFrom >= beatRange.to || (noteFrom < beatRange.from && noteTo > beatRange.to))
+    for (const auto &note : partition) {
+        const auto noteFrom = (note.range.from + instance.range.from) - instance.offset; // Can overflow !
+        const auto noteTo = (note.range.to + instance.range.from) - instance.offset; // Can overflow !
+        // 'note.range.from < instance.offset' detects an overflow
+        if (note.range.from < instance.offset || noteTo <= beatRange.from || noteFrom >= beatRange.to || (noteFrom < beatRange.from && noteTo > beatRange.to))
             continue;
         NoteEvent event;
         event.key = note.key;
