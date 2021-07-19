@@ -15,15 +15,15 @@
 
 namespace Audio
 {
-    template<DSP::EnvelopeType Envelope, unsigned OperatorCount>
+    template<DSP::EnvelopeType Envelope, unsigned OperatorCount, DSP::FM::AlgorithmType Algo, bool PitchEnv>
     class FMManager;
 
-    template<DSP::EnvelopeType Envelope, unsigned OperatorCount>
-    using FMManagerPtr = std::unique_ptr<FMManager<Envelope, OperatorCount>>;
+    template<DSP::EnvelopeType Envelope, unsigned OperatorCount, DSP::FM::AlgorithmType Algo, bool PitchEnv>
+    using FMManagerPtr = std::unique_ptr<FMManager<Envelope, OperatorCount, Algo, PitchEnv>>;
 }
 
 /** @brief Note manager store states of each note */
-template<Audio::DSP::EnvelopeType Envelope, unsigned OperatorCount>
+template<Audio::DSP::EnvelopeType Envelope, unsigned OperatorCount, Audio::DSP::FM::AlgorithmType Algo = Audio::DSP::FM::AlgorithmType::Default, bool PitchEnv = false>
 class alignas_double_cacheline Audio::FMManager
 {
 public:
@@ -140,8 +140,8 @@ public:
     [[nodiscard]] const DSP::EnvelopeBase<Envelope> &enveloppe(void) const noexcept { return _enveloppe; }
     [[nodiscard]] DSP::EnvelopeBase<Envelope> &enveloppe(void) noexcept { return _enveloppe; }
 
-    [[nodiscard]] const DSP::FM::Schema<OperatorCount> &schema(void) const noexcept { return _schema; }
-    [[nodiscard]] DSP::FM::Schema<OperatorCount> &schema(void) noexcept { return _schema; }
+    [[nodiscard]] const DSP::FM::Schema<OperatorCount, Algo, PitchEnv> &schema(void) const noexcept { return _schema; }
+    [[nodiscard]] DSP::FM::Schema<OperatorCount, Algo, PitchEnv> &schema(void) noexcept { return _schema; }
 
     template<bool Accumulate>
     void processSchema(
@@ -157,7 +157,8 @@ public:
 private:
     Cache   _cache;
     DSP::EnvelopeBase<Envelope> _enveloppe;
-    DSP::FM::Schema<OperatorCount> _schema;
+
+    DSP::FM::Schema<OperatorCount, Algo, PitchEnv> _schema;
     DSP::FM::Internal::OperatorCountType _longestEnvOpIndex { 0u };
 
     void updateLongestEnvOperatorIndex(const DSP::FM::Internal::OperatorArray<OperatorCount> &operators) noexcept

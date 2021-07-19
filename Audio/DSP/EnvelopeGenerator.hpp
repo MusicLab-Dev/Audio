@@ -15,7 +15,7 @@
 namespace Audio::DSP
 {
     enum class EnvelopeType : std::uint8_t {
-        AR, AD, ADSR//, DADSR, DAHDSR
+        AR, AD, ADSR, DADSR, DAHDSR
     };
 
     enum class InterpolationType : std::uint8_t {
@@ -25,8 +25,6 @@ namespace Audio::DSP
     template<EnvelopeType Envelope, unsigned Count = 1u>
     class EnvelopeBase;
 
-    class AttackRelease;
-    class AttackDecayReleaseSustain;
 }
 
 
@@ -132,6 +130,12 @@ public:
     [[nodiscard]] float adsr(
             const Key key, const std::uint32_t index,
             const float attack, const float decay, const float sustain, const float release, const SampleRate sampleRate) noexcept;
+
+    /** @brief DADSR implementation */
+    template<unsigned Index = 0u>
+    [[nodiscard]] float dadsr(
+            const Key key, const std::uint32_t index,
+            const float delay, const float attack, const float decay, const float sustain, const float release, const SampleRate sampleRate) noexcept;
 
 private:
     CacheList _cache;

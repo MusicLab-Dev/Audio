@@ -1,6 +1,6 @@
 /**
  * @ Author: Pierre Veysseyre
- * @ Description: FMX
+ * @ Description: Drums
  */
 
 #pragma once
@@ -8,28 +8,28 @@
 #include <Core/FlatVector.hpp>
 
 #include <Audio/PluginUtilsControlsFM.hpp>
-// #include <Audio/Volume.hpp>
-// #include <Audio/Modifier.hpp>
+#include <Audio/PluginUtilsControlsMapping.hpp>
+
 
 #include "Managers/FMManager.hpp"
 
 namespace Audio
 {
-    class FMX;
+    class Drums;
 }
 
-class Audio::FMX final : public Audio::IPlugin
+class Audio::Drums final : public Audio::IPlugin
 {
     REGISTER_PLUGIN(
         /* Plugin's name */
         TR_TABLE(
-            TR(English, "FMX"),
-            TR(French, "FMX")
+            TR(English, "Drums"),
+            TR(French, "Drums")
         ),
         /* Plugin description */
         TR_TABLE(
-            TR(English, "FMX allow to generate audio waveforms and play them as notes"),
-            TR(French, "FMX allow to generate audio waveforms and play them as notes")
+            TR(English, "Drums allow to generate audio waveforms and play them as notes"),
+            TR(French, "Drums allow to generate audio waveforms and play them as notes")
         ),
         /* Plugin flags */
         FLAGS(AudioOutput, NoteInput),
@@ -42,17 +42,29 @@ class Audio::FMX final : public Audio::IPlugin
             CONTROL_DEFAULT_OUTPUT_VOLUME_RANGE()
         ),
         /* FM controls */
-        REGISTER_CONTROL_FM_OPERATOR_DEFAULT(opA),
-        REGISTER_CONTROL_FM_OPERATOR_DEFAULT(opB),
-        REGISTER_CONTROL_FM_OPERATOR_DEFAULT(opC),
-        REGISTER_CONTROL_FM_OPERATOR_DEFAULT(opD),
-        REGISTER_CONTROL_FM_OPERATOR_DEFAULT(opE),
-        REGISTER_CONTROL_FM_OPERATOR_DEFAULT(opF)
+        REGISTER_CONTROL_FM_ALGORITHM_DEFAULT(
+            opA, opB, opC, opD
+        ),
+        REGISTER_CONTROL_FLOATING(
+            brightness, 0.0, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
+            TR_TABLE(
+                TR(English, "Brightness"),
+            ),
+            TR_TABLE(
+                TR(English, "Brightness"),
+            ),
+            TR_TABLE(
+                TR(English, "Bright")
+            ),
+            TR_TABLE(
+                TR(English, "%")
+            )
+        )
     )
 
 public:
     /** @brief Plugin constructor */
-    FMX(const IPluginFactory *factory) noexcept : IPlugin(factory) {}
+    Drums(const IPluginFactory *factory) noexcept : IPlugin(factory) {}
 
     virtual void receiveAudio(BufferView output);
 
@@ -70,7 +82,7 @@ public:
 
 public:
 private:
-    FMManager<DSP::EnvelopeType::ADSR, 6u> _fmManager {};
+    FMManager<DSP::EnvelopeType::DADSR, 4u, DSP::FM::AlgorithmType::KickDrum, true> _fmManager {};
 };
 
-#include "FMSynth.ipp"
+#include "Drums.ipp"

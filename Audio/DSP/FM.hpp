@@ -57,16 +57,22 @@ namespace Audio::DSP::FM
 
     }
 
-    template<unsigned OperatorCount>
+    enum class AlgorithmType : std::uint8_t {
+        Default,
+        Piano,
+        KickDrum
+    };
+
+    template<unsigned OperatorCount, AlgorithmType Algo, bool PitchEnv>
     class Schema;
 }
 
-template<unsigned OperatorCount>
+template<unsigned OperatorCount, Audio::DSP::FM::AlgorithmType Algo, bool PitchEnv = false>
 class Audio::DSP::FM::Schema
 {
 public:
 
-    using EnvelopeList = EnvelopeBase<EnvelopeType::ADSR, OperatorCount>;
+    using EnvelopeList = EnvelopeBase<EnvelopeType::ADSR, OperatorCount + PitchEnv>;
     // using FrequencyRateList = Core::SmallVector<float, OperatorCount, std::uint8_t>;
 
 
@@ -79,7 +85,7 @@ public:
     //         return std::sin(2.0f * static_cast<float>(M_PI) * phaseIndex * frequency);
     // }
 
-    template<bool Accumulate, bool Modulate, bool IsCarrier, unsigned OperatorIndex>
+    template<bool Accumulate, bool Modulate, bool IsCarrier, unsigned OperatorIndex, bool IsCosine = false>
     inline void processOperator(
             const float *input, float *output, const std::uint32_t processSize, const float outputGain,
             const std::uint32_t phaseIndex, const float frequencyNorm, const Key key,
@@ -153,9 +159,9 @@ public:
                     output[i] = realOutGain * std::sin(freq + static_cast<float>(M_PI) * input[i]);
             } else {
                 if constexpr (Accumulate)
-                    output[i] += realOutGain * processFeedback(freq, op.feedback);
+                    output[i] += realOutGain * processGeneration<IsCosine>(freq, op.feedback);
                 else
-                    output[i] = realOutGain * processFeedback(freq, op.feedback);
+                    output[i] = realOutGain * processGeneration<IsCosine>(freq, op.feedback);
             }
         }
     }
@@ -174,12 +180,32 @@ public:
     ) noexcept
     {
         _cache.resize(static_cast<Internal::ProcessSizeType>(processSize));
-        if constexpr (OperatorCount == 2u) {
-            oneCarrierOneModulator<Accumulate>(output, processSize, outputGain, phaseIndex, key, rootFrequency, operators);
-        } else if constexpr (OperatorCount == 4u) {
-            twoCM<Accumulate>(output, processSize, outputGain, phaseIndex, key, rootFrequency, operators);
-        } else if constexpr (OperatorCount == 6u) {
-            dx7_05<Accumulate>(output, processSize, outputGain, phaseIndex, key, rootFrequency, operators);
+        // std::memset(_cache.data(), 0, processSize * sizeof(float));
+
+        if constexpr (Algo == AlgorithmType::Default){
+            if constexpr (OperatorCount == 2u) {
+                oneCarrierOneModulator<Accumulate>(output, processSize, outputGain, phaseIndex, key, rootFrequency, operators);
+            } else if constexpr (OperatorCount == 4u) {
+                twoCM<Accumulate>(output, processSize, outputGain, phaseIndex, key, rootFrequency, operators);
+            } else if constexpr (OperatorCount == 6u) {
+                dx7_05<Accumulate>(output, processSize, outputGain, phaseIndex, key, rootFrequency, operators);
+            }
+        } else
+            processImpl<Accumulate>(output, processSize, outputGain, phaseIndex, key, rootFrequency, operators);
+
+    }
+    template<bool Accumulate>
+    void processImpl(
+            float *output, const std::uint32_t processSize, const float outputGain,
+            const std::uint32_t phaseIndex, const Key key, const float rootFrequency,
+            const Internal::OperatorArray<OperatorCount> &operators
+    ) noexcept
+    {
+        if constexpr (Algo == AlgorithmType::KickDrum) {
+            static_assert(OperatorCount == 4u, "Audio::DSP::FM::Schema<OperatorCount, KickDrum>::processImpl: OperatorCount must be equal to 4");
+            kickDrum_impl<Accumulate>(output, processSize, outputGain, phaseIndex, key, rootFrequency, operators);
+        } else if constexpr (Algo == AlgorithmType::Piano) {
+
         }
     }
 
@@ -187,6 +213,7 @@ private:
     EnvelopeList _envelopes;
     SampleRate _sampleRate;
     Internal::CacheList _cache;
+
 
     template<bool Accumulate>
     void oneCarrierOneModulator(
@@ -241,52 +268,80 @@ private:
             constexpr auto ModIdx = Index + 1;
 
             // _cache.clear();
-            processOperator<false, false, false, ModIdx>(nullptr, _cache.data(), processSize, 1.0f, phaseIndex, (getDetuneFrequency(rootFrequency, operators[ModIdx].detune) * operators[ModIdx].frequencyDelta) / static_cast<float>(_sampleRate), key, operators[ModIdx]);
-            processOperator<Accumulate, true, true, CarrierIdx>(_cache.data(), output, processSize, outputGain, phaseIndex, (getDetuneFrequency(rootFrequency, operators[CarrierIdx].detune) * operators[CarrierIdx].frequencyDelta) / static_cast<float>(_sampleRate), key, operators[CarrierIdx]);
+            processOperator<false, false, false, ModIdx>(nullptr, _cache.data(), processSize, 1.0f, phaseIndex, getDetuneFrequency(rootFrequency, operators[ModIdx]), key, operators[ModIdx]);
+            processOperator<Accumulate, true, true, CarrierIdx>(_cache.data(), output, processSize, outputGain, phaseIndex, getDetuneFrequency(rootFrequency, operators[CarrierIdx]), key, operators[CarrierIdx]);
             oneModulatorToCarrier_impl<Accumulate, Index + 2>(output, processSize, outputGain, phaseIndex, rootFrequency, key, operators);
         }
     }
 
-    [[nodiscard]] float processFeedback(const float freq, const std::uint32_t feedbackAmount) const noexcept
+    template<bool Accumulate>
+    void kickDrum_impl(
+            float *output, const std::uint32_t processSize, const float outputGain,
+            const std::uint32_t phaseIndex, const Key key, const float rootFrequency,
+            const Internal::OperatorArray<OperatorCount> &operators
+    ) noexcept
+    {
+        const auto realOutputGain = outputGain / static_cast<float>(1);
+
+        std::cout << "ICICICICICICICI" << std::endl;
+
+    // template<bool Accumulate, bool Modulate, bool IsCarrier, unsigned OperatorIndex>
+        // Sub (A)
+        processOperator<false, false, true, 0u>(nullptr, output, processSize, realOutputGain, phaseIndex, getDetuneFrequency(rootFrequency, operators[0u]), key, operators[0u]);
+        // Impact (B+C->D)
+        processOperator<false, false, false, 2u>(nullptr, _cache.data(), processSize, 1.0f, phaseIndex, getDetuneFrequency(rootFrequency, operators[2u]), key, operators[2u]);
+        processOperator<true, false, false, 3u>(nullptr, _cache.data(), processSize, 1.0f, phaseIndex, getDetuneFrequency(rootFrequency, operators[3u]), key, operators[3u]);
+        processOperator<true, true, true, 1u>(_cache.data(), output, processSize, realOutputGain, phaseIndex, getDetuneFrequency(rootFrequency, operators[1u]), key, operators[1u]);
+    }
+
+
+    template<bool IsCosine = false>
+    [[nodiscard]] float processGeneration(const float freq, const std::uint32_t feedbackAmount) const noexcept
     {
         switch (feedbackAmount) {
         case 0:
-            return unrollFeedback<0u>(freq);
+            return unrollGeneration<0u, IsCosine>(freq);
         case 1:
-            return unrollFeedback<1u>(freq);
+            return unrollGeneration<1u, IsCosine>(freq);
         case 2:
-            return unrollFeedback<2u>(freq);
+            return unrollGeneration<2u, IsCosine>(freq);
         case 3:
-            return unrollFeedback<3u>(freq);
+            return unrollGeneration<3u, IsCosine>(freq);
         case 4:
-            return unrollFeedback<4u>(freq);
+            return unrollGeneration<4u, IsCosine>(freq);
         case 5:
-            return unrollFeedback<5u>(freq);
+            return unrollGeneration<5u, IsCosine>(freq);
         case 6:
-            return unrollFeedback<6u>(freq);
+            return unrollGeneration<6u, IsCosine>(freq);
         case 7:
-            return unrollFeedback<7u>(freq);
+            return unrollGeneration<7u, IsCosine>(freq);
         default:
-            return unrollFeedback<0u>(freq);
+            return unrollGeneration<0u, IsCosine>(freq);
         }
     }
 
-    template<unsigned Feedback>
-    [[nodiscard]] float unrollFeedback(const float freq) const noexcept
+    template<unsigned Feedback, bool IsCosine>
+    [[nodiscard]] float unrollGeneration(const float freq) const noexcept
     {
         if constexpr (!Feedback) {
-            return std::sin(freq);
+            if constexpr (IsCosine)
+                return std::cos(freq);
+            else
+                return std::sin(freq);
         } else {
-            return std::sin(freq + unrollFeedback<Feedback - 1>(freq));
+            if constexpr (IsCosine)
+                return std::cos(freq + unrollGeneration<Feedback - 1, IsCosine>(freq));
+            else
+                return std::sin(freq + unrollGeneration<Feedback - 1, IsCosine>(freq));
         }
     }
 
-    [[nodiscard]] float getDetuneFrequency(const float rootFrequency, const float detune) const noexcept
+    [[nodiscard]] float getDetuneFrequency(const float rootFrequency, const Internal::Operator &op) const noexcept
     {
-        if (!detune)
-            return rootFrequency;
-        const double detuneNorm = static_cast<double>(detune) / 1200.0;
-        return rootFrequency * static_cast<float>(std::pow(2.0, detuneNorm));
+        if (!op.detune)
+            return rootFrequency * op.frequencyDelta / static_cast<float>(_sampleRate);
+        const double detuneNorm = static_cast<double>(op.detune) / 1200.0;
+        return rootFrequency * static_cast<float>(std::pow(2.0, detuneNorm)) * op.frequencyDelta / static_cast<float>(_sampleRate);
     }
 
 };

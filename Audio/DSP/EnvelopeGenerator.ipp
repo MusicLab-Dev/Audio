@@ -283,6 +283,69 @@ inline float Audio::DSP::EnvelopeBase<Envelope, Count>::adsr(
 }
 
 template<Audio::DSP::EnvelopeType Envelope, unsigned Count>
+template<unsigned Index>
+inline float Audio::DSP::EnvelopeBase<Envelope, Count>::dadsr(
+        const Key key, const std::uint32_t index,
+        const float delay, const float attack, const float decay, const float sustain, const float release, const SampleRate sampleRate) noexcept
+{
+    static_assert(Index < Count,
+        "Audio::DSP::EnvelopeBase::adsr: Index must be less than Instance Count");
+
+    const float OneMinusSustain = 1.0f - sustain;
+    float outGain { 1.0f };
+    auto &keyCache = _cache[key][Index];
+
+    if (const std::uint32_t delayIdx = static_cast<std::uint32_t>(delay * static_cast<float>(sampleRate)); index < delayIdx) {
+        outGain = 0.0f;
+    }
+    else if (!keyCache.triggerIndex || (index < keyCache.triggerIndex)) {
+        const std::uint32_t attackIdx = static_cast<std::uint32_t>(attack * static_cast<float>(sampleRate));
+        // Attack
+        if (index < attackIdx) {
+            // if (!keyCache.sustain && keyCache.gain) {
+            //     // std::cout << "sustain reset: " << (1.0f - keyCache.gain) / static_cast<float>(attackIdx) << std::en
+            //     keyCache.sustain = keyCache.gain;
+            // }
+            // outGain = keyCache.sustain + static_cast<float>(index) * (1.0f - keyCache.sustain) / static_cast<float>(attackIdx);
+
+            outGain = keyCache.sustain + static_cast<float>(index) / static_cast<float>(attackIdx);
+        }
+        // Decay
+        else if (const std::uint32_t decayIdx = static_cast<std::uint32_t>(decay * static_cast<float>(sampleRate)); index < (decayIdx + attackIdx)) {
+            // Sustain max -> no decay
+            if (sustain == 1.0f)
+                outGain = 1.0f;
+            else
+                outGain = (1.0f - static_cast<float>(index - attackIdx) / static_cast<float>(decayIdx)) * OneMinusSustain + sustain;
+        } else {
+            // std::cout << keyCache.triggerIndex << std::endl;
+            // Sustain
+            keyCache.sustain = 0.0f;
+            outGain = sustain;
+        }
+    } else {
+        // std::cout << index << " - " << keyCache.triggerIndex << std::endl;
+        // Release
+        // const std::uint32_t releaseIdx = ((keyCache.gain < sustain) ? keyCache.gain : release) * static_cast<float>(sampleRate);
+        const std::uint32_t releaseIdx = static_cast<std::uint32_t>(release * static_cast<float>(sampleRate));
+        if (const std::uint32_t realIndex = index - keyCache.triggerIndex; realIndex < releaseIdx) {
+            if (!keyCache.sustain) {
+                keyCache.sustain = keyCache.gain;
+            }
+            outGain = (1.0f - static_cast<float>(realIndex) / static_cast<float>(releaseIdx)) * keyCache.sustain;
+        }
+        // End of the enveloppe
+        else {
+            keyCache.sustain = 0.0f;
+            outGain = 0.0f;
+        }
+    }
+    // if (outGain && outGain != 1.0f)
+    //     std::cout << outGain << std::endl;
+    return smoothGain(keyCache, outGain, sampleRate);
+}
+
+template<Audio::DSP::EnvelopeType Envelope, unsigned Count>
 inline float Audio::DSP::EnvelopeBase<Envelope, Count>::smoothGain(KeyCache &keyCache, const float nextGain, const SampleRate sampleRate) noexcept
 {
     // time * sampleRate = samples

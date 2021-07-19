@@ -10,6 +10,25 @@
 /**
  * @brief Helper for enveloppe generator controls
  */
+#define REGISTER_CONTROL_ENVELOPPE_DELAY(Name, Value, Range) \
+    REGISTER_CONTROL_FLOATING( \
+        Name, Value, Range, \
+        TR_TABLE( \
+            TR(English, "Envelope delay"), \
+            TR(French, "Delai de l'enveloppe") \
+        ), \
+        TR_TABLE( \
+            TR(English, "Delay duration used by the enveloppe to determine when to start"), \
+            TR(French, "Durée avant que l'enveloppe commence") \
+        ), \
+        TR_TABLE( \
+            TR(English, "Delay") \
+        ), \
+        TR_TABLE( \
+            TR(English, "seconds") \
+        ) \
+    )
+
 #define REGISTER_CONTROL_ENVELOPPE_ATTACK(Name, Value, Range) \
     REGISTER_CONTROL_FLOATING( \
         Name, Value, Range, \
@@ -86,6 +105,7 @@
         ) \
     )
 
-#define REGISTER_CONTROL_ENVELOPPE_ADSR(NameA, ValueA, RangeA, NameD, ValueD, RangeD, Name, ValueS, RangeS, NameR, ValueR, RangeR) REGISTER_CONTROL_ENVELOPPE_ATTACK(NameA, ValueA, RangeA), REGISTER_CONTROL_ENVELOPPE_DECAY(NameD, ValueD, RangeD), REGISTER_CONTROL_ENVELOPPE_SUSTAIN(Name, ValueS, RangeS), REGISTER_CONTROL_ENVELOPPE_RELEASE(NameR, ValueR, RangeR)
-#define REGISTER_CONTROL_ENVELOPPE_AD(NameA, ValueA, RangeA, NameD, ValueD, RangeD) REGISTER_CONTROL_ENVELOPPE_ATTACK(NameA, ValueA, RangeA), REGISTER_CONTROL_ENVELOPPE_DECAY(NameD, ValueD, RangeD)
+#define REGISTER_CONTROL_ENVELOPPE_ADSR(NameA, ValueA, RangeA, NameDecay, ValueDecay, RangeDecay, Name, ValueS, RangeS, NameR, ValueR, RangeR) REGISTER_CONTROL_ENVELOPPE_ATTACK(NameA, ValueA, RangeA), REGISTER_CONTROL_ENVELOPPE_DECAY(NameDecay, ValueDecay, RangeDecay), REGISTER_CONTROL_ENVELOPPE_SUSTAIN(Name, ValueS, RangeS), REGISTER_CONTROL_ENVELOPPE_RELEASE(NameR, ValueR, RangeR)
+#define REGISTER_CONTROL_ENVELOPPE_DADSR(NameDelay, ValueDelay, RangeDelay, NameA, ValueA, RangeA, NameDecay, ValueDecay, RangeDecay, Name, ValueS, RangeS, NameR, ValueR, RangeR) REGISTER_CONTROL_ENVELOPPE_DELAY(NameDelay, ValueDelay, RangeDelay), REGISTER_CONTROL_ENVELOPPE_ATTACK(NameA, ValueA, RangeA), REGISTER_CONTROL_ENVELOPPE_DECAY(NameDecay, ValueDecay, RangeDecay), REGISTER_CONTROL_ENVELOPPE_SUSTAIN(Name, ValueS, RangeS), REGISTER_CONTROL_ENVELOPPE_RELEASE(NameR, ValueR, RangeR)
+#define REGISTER_CONTROL_ENVELOPPE_AD(NameA, ValueA, RangeA, NameDecay, ValueDecay, RangeDecay) REGISTER_CONTROL_ENVELOPPE_ATTACK(NameA, ValueA, RangeA), REGISTER_CONTROL_ENVELOPPE_DECAY(NameDecay, ValueDecay, RangeDecay)
 #define REGISTER_CONTROL_ENVELOPPE_AR(NameA, ValueA, RangeA, NameR, ValueR, RangeR) REGISTER_CONTROL_ENVELOPPE_ATTACK(NameA, ValueA, RangeA), REGISTER_CONTROL_ENVELOPPE_RELEASE(NameR, ValueR, RangeR)
