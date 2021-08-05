@@ -9,26 +9,33 @@
 #include <memory>
 #include <utility>
 
+#include <Core/Vector.hpp>
+
 #include <Audio/Note.hpp>
 #include <Audio/DSP/EnvelopeGenerator.hpp>
 
 namespace Audio
 {
-    template<DSP::EnvelopeType Envelope>
+    template<DSP::EnvelopeType EnvelopeType>
     class NoteManager;
 
-    template<DSP::EnvelopeType Envelope>
-    using NoteManagerPtr = std::unique_ptr<NoteManager<Envelope>>;
+    using NoteManagerDefault = NoteManager<DSP::EnvelopeType::ADSR>;
+
+    template<DSP::EnvelopeType EnvelopeType>
+    using NoteManagerPtr = std::unique_ptr<NoteManager<EnvelopeType>>;
 }
 
 /** @brief Note manager store states of each note */
-template<Audio::DSP::EnvelopeType Envelope>
+template<Audio::DSP::EnvelopeType EnvelopeType>
 class alignas_double_cacheline Audio::NoteManager
 {
 public:
     using KeyList = Core::TinySmallVector<Key, Core::CacheLineQuarterSize>;
     using IndexList = std::array<std::uint32_t, KeyCount>;
     using TriggerList = std::array<bool, KeyCount>;
+
+    using Envelope = DSP::EnvelopeClipExp<EnvelopeType, 1u>;
+    using EnvelopeCache = Core::TinyVector<float>;
 
     /** @brief Store the cache of a note */
     struct alignas_quarter_cacheline NoteCache
@@ -74,13 +81,17 @@ public:
     void reset(void)
     {
         resetCache();
+        clearEnvelopeCache();
         resetAllModifiers();
         resetReadIndexes();
-        _enveloppe.resetKeys();
+        _envelope.resetKeys();
     }
 
     /** @brief Reset the internal cache. All notes are turned off */
     void resetCache(void) noexcept;
+
+    /** @brief Clear the internal envelope cache. */
+    void clearEnvelopeCache(void) noexcept;
 
     /** @brief Reset the internal cache for this block. On&Off notes are turned off */
     void resetBlockCache(void) noexcept;
@@ -121,23 +132,26 @@ public:
     /** @brief Reset the read index of given key */
     void resetReadIndex(const Key key) noexcept { _cache.readIndexes[key] = 0u; }
 
-    /** @brief Get the enveloppe gain of given key */
+    /** @brief Get the envelope gain of given key */
     [[nodiscard]] inline float getEnvelopeGain(
-            const Key key, const std::uint32_t index,
-            const float delay, const float attack,
-            const float hold, const float decay,
-            const float sustain, const float release,
-            const SampleRate sampleRate) noexcept
+            const Key key, const std::uint32_t index) noexcept
     {
-        return _enveloppe.template getGain<0u>(key, index, delay, attack, hold, decay, sustain, release, sampleRate);
+        return _envelope.template getGain<0u>(key, index);
     }
 
-    [[nodiscard]] const DSP::EnvelopeBase<Envelope> &enveloppe(void) const noexcept { return _enveloppe; }
-    [[nodiscard]] DSP::EnvelopeBase<Envelope> &enveloppe(void) noexcept { return _enveloppe; }
+    /** @brief Generate envelope gains in the internal cache */
+    void generateEnvelopeGains(const Key key, const std::uint32_t index, const std::size_t outputSize) noexcept;
+
+    [[nodiscard]] const Envelope &envelope(void) const noexcept { return _envelope; }
+    [[nodiscard]] Envelope &envelope(void) noexcept { return _envelope; }
+
+    [[nodiscard]] const EnvelopeCache &envelopeGain(void) const noexcept { return _envelopeGain; }
+    [[nodiscard]] EnvelopeCache &envelopeGain(void) noexcept { return _envelopeGain; }
 
 private:
-    Cache   _cache;
-    DSP::EnvelopeBase<Envelope> _enveloppe;
+    Cache _cache;
+    Envelope _envelope;
+    EnvelopeCache _envelopeGain;
 };
 
 // static_assert_alignof_double_cacheline(Audio::NoteManager);

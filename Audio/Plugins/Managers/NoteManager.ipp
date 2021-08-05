@@ -5,8 +5,8 @@
 
 #include <iostream>
 
-template<Audio::DSP::EnvelopeType Envelope>
-inline void Audio::NoteManager<Envelope>::feedNotes(const NoteEvents &notes) noexcept
+template<Audio::DSP::EnvelopeType EnvelopeType>
+inline void Audio::NoteManager<EnvelopeType>::feedNotes(const NoteEvents &notes) noexcept
 {
     // std::cout << "NOTES> SEND NOTES " << notes.size() << std::endl;
 
@@ -20,7 +20,7 @@ inline void Audio::NoteManager<Envelope>::feedNotes(const NoteEvents &notes) noe
             if (it == _cache.actives.end())
                 _cache.actives.push(note.key);
             _cache.readIndexes[note.key] = 0u;
-            enveloppe().resetKey(note.key);
+            envelope().resetKey(note.key);
             target.noteModifiers.velocity = note.velocity;
             target.noteModifiers.tuning = note.tuning;
             target.noteModifiers.sampleOffset = note.sampleOffset;
@@ -31,16 +31,16 @@ inline void Audio::NoteManager<Envelope>::feedNotes(const NoteEvents &notes) noe
             const auto it = _cache.actives.find(note.key);
             if (it != _cache.actives.end()) {
                 // Reset
-                enveloppe().setTriggerIndex(note.key, _cache.readIndexes[note.key] + note.sampleOffset);
-                // enveloppe().setTriggerIndex(note.key, _cache.readIndexes[note.key]);
+                envelope().setTriggerIndex(note.key, _cache.readIndexes[note.key] + note.sampleOffset);
+                // envelope().setTriggerIndex(note.key, _cache.readIndexes[note.key]);
                 target.noteModifiers.sampleOffset = note.sampleOffset;
             }
         } break;
         case NoteEvent::EventType::OnOff:
             _cache.activesBlock.push(note.key);
             _cache.readIndexes[note.key] = 0u;
-            enveloppe().resetTriggerIndex(note.key);
-            enveloppe().resetInternalGain(note.key);
+            envelope().resetTriggerIndex(note.key);
+            envelope().resetInternalGain(note.key);
             target.noteModifiers.velocity = note.velocity;
             target.noteModifiers.tuning = note.tuning;
             target.noteModifiers.sampleOffset = note.sampleOffset;
@@ -56,15 +56,21 @@ inline void Audio::NoteManager<Envelope>::feedNotes(const NoteEvents &notes) noe
     }
 }
 
-template<Audio::DSP::EnvelopeType Envelope>
-inline void Audio::NoteManager<Envelope>::resetCache(void) noexcept
+template<Audio::DSP::EnvelopeType EnvelopeType>
+inline void Audio::NoteManager<EnvelopeType>::resetCache(void) noexcept
 {
     _cache.actives.clear();
     resetBlockCache();
 }
 
-template<Audio::DSP::EnvelopeType Envelope>
-inline void Audio::NoteManager<Envelope>::resetBlockCache(void) noexcept
+template<Audio::DSP::EnvelopeType EnvelopeType>
+inline void Audio::NoteManager<EnvelopeType>::clearEnvelopeCache(void) noexcept
+{
+    _envelopeGain.clear();
+}
+
+template<Audio::DSP::EnvelopeType EnvelopeType>
+inline void Audio::NoteManager<EnvelopeType>::resetBlockCache(void) noexcept
 {
     for (const auto &note : _cache.activesBlock) {
         if (const auto it = _cache.actives.find(note); it != _cache.actives.end())
@@ -73,14 +79,14 @@ inline void Audio::NoteManager<Envelope>::resetBlockCache(void) noexcept
     _cache.activesBlock.clear();
 }
 
-template<Audio::DSP::EnvelopeType Envelope>
-inline void Audio::NoteManager<Envelope>::resetReadIndexes(void) noexcept
+template<Audio::DSP::EnvelopeType EnvelopeType>
+inline void Audio::NoteManager<EnvelopeType>::resetReadIndexes(void) noexcept
 {
     _cache.readIndexes.fill(0u);
 }
 
-template<Audio::DSP::EnvelopeType Envelope>
-inline void Audio::NoteManager<Envelope>::resetNoteModifiers(void) noexcept
+template<Audio::DSP::EnvelopeType EnvelopeType>
+inline void Audio::NoteManager<EnvelopeType>::resetNoteModifiers(void) noexcept
 {
     for (auto &modifier : _cache.modifiers) {
         modifier.noteModifiers = NoteModifiers {
@@ -89,8 +95,8 @@ inline void Audio::NoteManager<Envelope>::resetNoteModifiers(void) noexcept
     }
 }
 
-template<Audio::DSP::EnvelopeType Envelope>
-inline void Audio::NoteManager<Envelope>::resetPolyModifiers(void) noexcept
+template<Audio::DSP::EnvelopeType EnvelopeType>
+inline void Audio::NoteManager<EnvelopeType>::resetPolyModifiers(void) noexcept
 {
     for (auto &modifier : _cache.modifiers) {
         modifier.polyPressureModifiers = NoteModifiers {
@@ -99,8 +105,8 @@ inline void Audio::NoteManager<Envelope>::resetPolyModifiers(void) noexcept
     }
 }
 
-template<Audio::DSP::EnvelopeType Envelope>
-inline void Audio::NoteManager<Envelope>::resetAllModifiers(void) noexcept
+template<Audio::DSP::EnvelopeType EnvelopeType>
+inline void Audio::NoteManager<EnvelopeType>::resetAllModifiers(void) noexcept
 {
     _cache.modifiers.fill(NoteCache {
         NoteModifiers { 0u, 0u },
@@ -108,24 +114,30 @@ inline void Audio::NoteManager<Envelope>::resetAllModifiers(void) noexcept
     });
 }
 
-template<Audio::DSP::EnvelopeType Envelope>
-inline bool Audio::NoteManager<Envelope>::incrementReadIndex(const Key key, const std::uint32_t maxIndex, std::uint32_t amount) noexcept
+template<Audio::DSP::EnvelopeType EnvelopeType>
+inline bool Audio::NoteManager<EnvelopeType>::incrementReadIndex(const Key key, const std::uint32_t maxIndex, std::uint32_t amount) noexcept
 {
     auto &readIndex = _cache.readIndexes[key];
 
     readIndex += amount;
-    if ((maxIndex && readIndex >= maxIndex) || !enveloppe().lastGain(key)) {
+    if ((maxIndex && readIndex >= maxIndex) || !envelope().lastGain(key)) {
         readIndex = 0u;
-        enveloppe().resetKey(key);
+        envelope().resetKey(key);
         return true;
     } else
         return false;
 }
 
 
-template<Audio::DSP::EnvelopeType Envelope>
+template<Audio::DSP::EnvelopeType EnvelopeType>
+inline void Audio::NoteManager<EnvelopeType>::generateEnvelopeGains(const Key key, const std::uint32_t index, const std::size_t outputSize) noexcept
+{
+    _envelope.template generateGains<false, 0u>(key, index, _envelopeGain.data(), outputSize);
+}
+
+template<Audio::DSP::EnvelopeType EnvelopeType>
 template<typename Functor>
-void Audio::NoteManager<Envelope>::processNotes(Functor &&functor) noexcept
+void Audio::NoteManager<EnvelopeType>::processNotes(Functor &&functor) noexcept
 {
     // Process the active notes
     auto itActive = std::remove_if(_cache.actives.begin(), _cache.actives.end(),
@@ -152,7 +164,7 @@ void Audio::NoteManager<Envelope>::processNotes(Functor &&functor) noexcept
 
             // Reset the note
             if (!ended) {
-                enveloppe().setTriggerIndex(key, _cache.readIndexes[key]);
+                envelope().setTriggerIndex(key, _cache.readIndexes[key]);
             }
             return ended;
         }

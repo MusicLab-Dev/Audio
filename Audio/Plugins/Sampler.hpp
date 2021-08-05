@@ -42,7 +42,7 @@ class Audio::Sampler final : public Audio::IPlugin
             CONTROL_DEFAULT_OUTPUT_VOLUME_RANGE()
         ),
         /* Envelope controls (attack, release) */
-        REGISTER_CONTROL_ENVELOPPE_AR(
+        REGISTER_CONTROL_ENVELOPE_AR(
             enveloppeAttack, 0.001, CONTROL_RANGE_STEP(0.0, 2.0, 0.001),
             enveloppeRelease, 0.001, CONTROL_RANGE_STEP(0.0, 2.0, 0.001)
         )
@@ -81,18 +81,6 @@ private:
     NoteManager<DSP::EnvelopeType::AR> _noteManager {};
 
     ExternalPaths _externalPaths;
-
-    float getEnvelopeGain(const Key key, const std::uint32_t index) noexcept
-    {
-        return _noteManager.getEnvelopeGain(key, index,
-                0.0f,
-                static_cast<float>(enveloppeAttack()),
-                0.0f,
-                0.0f,
-                0.0f,
-                static_cast<float>(enveloppeRelease()),
-        audioSpecs().sampleRate);
-    }
 };
 
 #include "Sampler.ipp"

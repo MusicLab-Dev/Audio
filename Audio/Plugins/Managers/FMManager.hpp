@@ -15,21 +15,24 @@
 
 namespace Audio
 {
-    template<DSP::EnvelopeType Envelope, unsigned OperatorCount, DSP::FM::AlgorithmType Algo, bool PitchEnv>
+    template<DSP::EnvelopeType EnvelopeType, unsigned OperatorCount, DSP::FM::AlgorithmType Algo, bool PitchEnv>
     class FMManager;
 
-    template<DSP::EnvelopeType Envelope, unsigned OperatorCount, DSP::FM::AlgorithmType Algo, bool PitchEnv>
-    using FMManagerPtr = std::unique_ptr<FMManager<Envelope, OperatorCount, Algo, PitchEnv>>;
+    template<DSP::EnvelopeType EnvelopeType, unsigned OperatorCount, DSP::FM::AlgorithmType Algo, bool PitchEnv>
+    using FMManagerPtr = std::unique_ptr<FMManager<EnvelopeType, OperatorCount, Algo, PitchEnv>>;
 }
 
 /** @brief Note manager store states of each note */
-template<Audio::DSP::EnvelopeType Envelope, unsigned OperatorCount, Audio::DSP::FM::AlgorithmType Algo = Audio::DSP::FM::AlgorithmType::Default, bool PitchEnv = false>
+template<Audio::DSP::EnvelopeType EnvelopeType, unsigned OperatorCount, Audio::DSP::FM::AlgorithmType Algo = Audio::DSP::FM::AlgorithmType::Default, bool PitchEnv = false>
 class alignas_double_cacheline Audio::FMManager
 {
 public:
     using KeyList = Core::TinySmallVector<Key, Core::CacheLineQuarterSize>;
     using IndexList = std::array<std::uint32_t, KeyCount>;
     using TriggerList = std::array<bool, KeyCount>;
+
+    using FMSchema = DSP::FM::Schema<OperatorCount, Algo, PitchEnv>;
+    using Envelope = DSP::EnvelopeDefaultExp<EnvelopeType, 1u>;
 
     /** @brief Store the cache of a note */
     struct alignas_quarter_cacheline NoteCache
@@ -79,9 +82,9 @@ public:
         resetAllModifiers();
         resetTriggers();
         resetReadIndexes();
-        _enveloppe.resetTriggerIndexes();
-        _enveloppe.resetInternalGains();
-
+        _envelope.resetTriggerIndexes();
+        _envelope.resetInternalGains();
+        _schema.resetEnvelopePitch();
         _schema.envelopes().resetKeys();
     }
 
@@ -128,37 +131,38 @@ public:
     void resetReadIndex(const Key key) noexcept { _cache.readIndexes[key] = 0u; }
 
 
-    /** @brief Get the enveloppe gain of given key */
+    /** @brief Get the envelope gain of given key */
     [[nodiscard]] inline float getEnvelopeGain(
             const Key key, const std::uint32_t index,
-            const float delay, const float attack,
+            const float delay, const float attack, const float peak,
             const float hold, const float decay,
             const float sustain, const float release,
             const SampleRate sampleRate) noexcept
-    { return _enveloppe.getGain(key, index, delay, attack, hold, decay, sustain, release, sampleRate); }
+    { return _envelope.getGain(key, index, delay, attack, peak, hold, decay, sustain, release, sampleRate); }
 
-    [[nodiscard]] const DSP::EnvelopeBase<Envelope> &enveloppe(void) const noexcept { return _enveloppe; }
-    [[nodiscard]] DSP::EnvelopeBase<Envelope> &enveloppe(void) noexcept { return _enveloppe; }
+    [[nodiscard]] const Envelope &envelope(void) const noexcept { return _envelope; }
+    [[nodiscard]] Envelope &envelope(void) noexcept { return _envelope; }
 
-    [[nodiscard]] const DSP::FM::Schema<OperatorCount, Algo, PitchEnv> &schema(void) const noexcept { return _schema; }
-    [[nodiscard]] DSP::FM::Schema<OperatorCount, Algo, PitchEnv> &schema(void) noexcept { return _schema; }
+    [[nodiscard]] const FMSchema &schema(void) const noexcept { return _schema; }
+    [[nodiscard]] FMSchema &schema(void) noexcept { return _schema; }
 
     template<bool Accumulate>
     void processSchema(
             float *output, const std::uint32_t processSize, const float outGain,
             const std::uint32_t phaseIndex, const Key key, const float rootFrequency,
-            const DSP::FM::Internal::OperatorArray<OperatorCount> &operators
+            const DSP::FM::Internal::OperatorArray<OperatorCount> &operators,
+            const DSP::FM::Internal::PitchOperator &pitchOperator = DSP::FM::Internal::PitchOperator()
     ) noexcept
     {
         updateLongestEnvOperatorIndex(operators);
-        _schema.template process<Accumulate>(output, processSize, outGain, phaseIndex, key, rootFrequency, operators);
+        _schema.template process<Accumulate>(output, processSize, outGain, phaseIndex, key, rootFrequency, operators, pitchOperator);
     }
 
 private:
     Cache   _cache;
-    DSP::EnvelopeBase<Envelope> _enveloppe;
+    Envelope _envelope;
 
-    DSP::FM::Schema<OperatorCount, Algo, PitchEnv> _schema;
+    FMSchema _schema;
     DSP::FM::Internal::OperatorCountType _longestEnvOpIndex { 0u };
 
     void updateLongestEnvOperatorIndex(const DSP::FM::Internal::OperatorArray<OperatorCount> &operators) noexcept

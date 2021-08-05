@@ -21,7 +21,7 @@ inline void Audio::FMManager<Envelope, OperatorCount, Algo, PitchEnv>::feedNotes
                 _cache.actives.push(note.key);
             _cache.readIndexes[note.key] = 0u;
             _cache.triggers[note.key] = true;
-            _schema.envelopes().resetKey(note.key);
+            _schema.envelopeResetKey(note.key);
             target.noteModifiers.velocity = note.velocity;
             target.noteModifiers.tuning = note.tuning;
             target.noteModifiers.sampleOffset = note.sampleOffset;
@@ -33,7 +33,7 @@ inline void Audio::FMManager<Envelope, OperatorCount, Algo, PitchEnv>::feedNotes
             if (it != _cache.actives.end() && _cache.triggers[note.key]) {
                 // Reset
                 _cache.triggers[note.key] = false;
-                _schema.envelopes().setTriggerIndex(note.key, _cache.readIndexes[note.key] + note.sampleOffset);
+                _schema.envelopeSetTriggerIndex(note.key, _cache.readIndexes[note.key] + note.sampleOffset);
                 target.noteModifiers.sampleOffset = note.sampleOffset;
             }
         } break;
@@ -41,8 +41,8 @@ inline void Audio::FMManager<Envelope, OperatorCount, Algo, PitchEnv>::feedNotes
             _cache.activesBlock.push(note.key);
             _cache.triggers[note.key] = true;
             _cache.readIndexes[note.key] = 0u;
-            _schema.envelopes().resetTriggerIndex(note.key);
-            _schema.envelopes().resetInternalGain(note.key);
+            _schema.envelopeResetTriggerIndex(note.key);
+            _schema.envelopeResetInternalGain(note.key);
             target.noteModifiers.velocity = note.velocity;
             target.noteModifiers.tuning = note.tuning;
             target.noteModifiers.sampleOffset = note.sampleOffset;
@@ -120,7 +120,7 @@ inline bool Audio::FMManager<Envelope, OperatorCount, Algo, PitchEnv>::increment
     if ((maxIndex && readIndex >= maxIndex) || _schema.envelopes().isGainEnded(key)) {
         readIndex = 0u;
         trigger = false;
-        _schema.envelopes().resetKey(key);
+        _schema.envelopeResetKey(key);
         return true;
     } else
         return false;
@@ -173,7 +173,7 @@ void Audio::FMManager<Envelope, OperatorCount, Algo, PitchEnv>::processNotes(Fun
             // Reset the note
             if (!ended) {
                 keyTrigger = false;
-                _schema.envelopes().setTriggerIndex(key, _cache.readIndexes[key]);
+                _schema.envelopeSetTriggerIndex(key, _cache.readIndexes[key]);
             }
             return ended;
         }

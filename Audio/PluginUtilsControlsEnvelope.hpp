@@ -10,7 +10,7 @@
 /**
  * @brief Helper for enveloppe generator controls
  */
-#define REGISTER_CONTROL_ENVELOPPE_DELAY(Name, Value, Range) \
+#define REGISTER_CONTROL_ENVELOPE_DELAY(Name, Value, Range) \
     REGISTER_CONTROL_FLOATING( \
         Name, Value, Range, \
         TR_TABLE( \
@@ -29,7 +29,7 @@
         ) \
     )
 
-#define REGISTER_CONTROL_ENVELOPPE_ATTACK(Name, Value, Range) \
+#define REGISTER_CONTROL_ENVELOPE_ATTACK(Name, Value, Range) \
     REGISTER_CONTROL_FLOATING( \
         Name, Value, Range, \
         TR_TABLE( \
@@ -48,7 +48,26 @@
         ) \
     )
 
-#define REGISTER_CONTROL_ENVELOPPE_DECAY(Name, Value, Range) \
+#define REGISTER_CONTROL_ENVELOPE_PEAK(Name, Value, Range) \
+    REGISTER_CONTROL_FLOATING( \
+        Name, Value, Range, \
+        TR_TABLE( \
+            TR(English, "Envelope peak"), \
+            TR(French, "Niveau maximum de l'enveloppe") \
+        ), \
+        TR_TABLE( \
+            TR(English, "Peak level used by the enveloppe to determine volume gain"), \
+            TR(French, "Volume maximum utilisé tant qu'une note est jouée") \
+        ), \
+        TR_TABLE( \
+            TR(English, "Pk") \
+        ), \
+        TR_TABLE( \
+            TR(English, "%") \
+        ) \
+    )
+
+#define REGISTER_CONTROL_ENVELOPE_DECAY(Name, Value, Range) \
     REGISTER_CONTROL_FLOATING( \
         Name, Value, Range, \
         TR_TABLE( \
@@ -67,7 +86,7 @@
         ) \
     )
 
-#define REGISTER_CONTROL_ENVELOPPE_SUSTAIN(Name, Value, Range) \
+#define REGISTER_CONTROL_ENVELOPE_SUSTAIN(Name, Value, Range) \
     REGISTER_CONTROL_FLOATING( \
         Name, Value, Range, \
         TR_TABLE( \
@@ -75,7 +94,7 @@
             TR(French, "Niveau intermédiaire de l'enveloppe") \
         ), \
         TR_TABLE( \
-            TR(English, "Sustain duration used by the enveloppe to determine volume gain"), \
+            TR(English, "Sustain level used by the enveloppe to determine volume gain"), \
             TR(French, "Volume intermédiaire utilisé tant qu'une note est jouée") \
         ), \
         TR_TABLE( \
@@ -86,7 +105,7 @@
         ) \
     )
 
-#define REGISTER_CONTROL_ENVELOPPE_RELEASE(Name, Value, Range) \
+#define REGISTER_CONTROL_ENVELOPE_RELEASE(Name, Value, Range) \
     REGISTER_CONTROL_FLOATING( \
         Name, Value, Range, \
         TR_TABLE( \
@@ -105,7 +124,31 @@
         ) \
     )
 
-#define REGISTER_CONTROL_ENVELOPPE_ADSR(NameA, ValueA, RangeA, NameDecay, ValueDecay, RangeDecay, Name, ValueS, RangeS, NameR, ValueR, RangeR) REGISTER_CONTROL_ENVELOPPE_ATTACK(NameA, ValueA, RangeA), REGISTER_CONTROL_ENVELOPPE_DECAY(NameDecay, ValueDecay, RangeDecay), REGISTER_CONTROL_ENVELOPPE_SUSTAIN(Name, ValueS, RangeS), REGISTER_CONTROL_ENVELOPPE_RELEASE(NameR, ValueR, RangeR)
-#define REGISTER_CONTROL_ENVELOPPE_DADSR(NameDelay, ValueDelay, RangeDelay, NameA, ValueA, RangeA, NameDecay, ValueDecay, RangeDecay, Name, ValueS, RangeS, NameR, ValueR, RangeR) REGISTER_CONTROL_ENVELOPPE_DELAY(NameDelay, ValueDelay, RangeDelay), REGISTER_CONTROL_ENVELOPPE_ATTACK(NameA, ValueA, RangeA), REGISTER_CONTROL_ENVELOPPE_DECAY(NameDecay, ValueDecay, RangeDecay), REGISTER_CONTROL_ENVELOPPE_SUSTAIN(Name, ValueS, RangeS), REGISTER_CONTROL_ENVELOPPE_RELEASE(NameR, ValueR, RangeR)
-#define REGISTER_CONTROL_ENVELOPPE_AD(NameA, ValueA, RangeA, NameDecay, ValueDecay, RangeDecay) REGISTER_CONTROL_ENVELOPPE_ATTACK(NameA, ValueA, RangeA), REGISTER_CONTROL_ENVELOPPE_DECAY(NameDecay, ValueDecay, RangeDecay)
-#define REGISTER_CONTROL_ENVELOPPE_AR(NameA, ValueA, RangeA, NameR, ValueR, RangeR) REGISTER_CONTROL_ENVELOPPE_ATTACK(NameA, ValueA, RangeA), REGISTER_CONTROL_ENVELOPPE_RELEASE(NameR, ValueR, RangeR)
+
+#define REGISTER_CONTROL_ENVELOPE_ADSR_PEAK(NameA, ValueA, RangeA, NamePeak, ValuePeak, RangePeak, NameDecay, ValueDecay, RangeDecay, NameS, ValueS, RangeS, NameR, ValueR, RangeR) \
+    REGISTER_CONTROL_ENVELOPE_ATTACK(NameA, ValueA, RangeA), \
+    REGISTER_CONTROL_ENVELOPE_PEAK(NamePeak, ValuePeak, RangePeak), \
+    REGISTER_CONTROL_ENVELOPE_DECAY(NameDecay, ValueDecay, RangeDecay), \
+    REGISTER_CONTROL_ENVELOPE_SUSTAIN(NameS, ValueS, RangeS), \
+    REGISTER_CONTROL_ENVELOPE_RELEASE(NameR, ValueR, RangeR)
+
+#define REGISTER_CONTROL_ENVELOPE_ADSR(NameA, ValueA, RangeA, NameDecay, ValueDecay, RangeDecay, NameS, ValueS, RangeS, NameR, ValueR, RangeR) \
+    REGISTER_CONTROL_ENVELOPE_ATTACK(NameA, ValueA, RangeA), \
+    REGISTER_CONTROL_ENVELOPE_DECAY(NameDecay, ValueDecay, RangeDecay), \
+    REGISTER_CONTROL_ENVELOPE_SUSTAIN(NameS, ValueS, RangeS), \
+    REGISTER_CONTROL_ENVELOPE_RELEASE(NameR, ValueR, RangeR)
+
+#define REGISTER_CONTROL_ENVELOPE_DADSR(NameDelay, ValueDelay, RangeDelay, NameA, ValueA, RangeA, NameDecay, ValueDecay, RangeDecay, NameS, ValueS, RangeS, NameR, ValueR, RangeR) \
+    REGISTER_CONTROL_ENVELOPE_DELAY(NameDelay, ValueDelay, RangeDelay), \
+    REGISTER_CONTROL_ENVELOPE_ATTACK(NameA, ValueA, RangeA), \
+    REGISTER_CONTROL_ENVELOPE_DECAY(NameDecay, ValueDecay, RangeDecay), \
+    REGISTER_CONTROL_ENVELOPE_SUSTAIN(NameS, ValueS, RangeS), \
+    REGISTER_CONTROL_ENVELOPE_RELEASE(NameR, ValueR, RangeR)
+
+#define REGISTER_CONTROL_ENVELOPE_AD(NameA, ValueA, RangeA, NameDecay, ValueDecay, RangeDecay) \
+    REGISTER_CONTROL_ENVELOPE_ATTACK(NameA, ValueA, RangeA), \
+    REGISTER_CONTROL_ENVELOPE_DECAY(NameDecay, ValueDecay, RangeDecay)
+
+#define REGISTER_CONTROL_ENVELOPE_AR(NameA, ValueA, RangeA, NameR, ValueR, RangeR) \
+    REGISTER_CONTROL_ENVELOPE_ATTACK(NameA, ValueA, RangeA), \
+    REGISTER_CONTROL_ENVELOPE_RELEASE(NameR, ValueR, RangeR)

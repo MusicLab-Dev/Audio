@@ -5,8 +5,6 @@
 
 #pragma once
 
-#include <Core/FlatVector.hpp>
-
 #include <Audio/PluginUtilsControlsVolume.hpp>
 #include <Audio/PluginUtilsControlsEnvelope.hpp>
 #include <Audio/Volume.hpp>
@@ -43,11 +41,11 @@ class Audio::Oscillator final : public Audio::IPlugin
             CONTROL_DEFAULT_OUTPUT_VOLUME_RANGE()
         ),
         /* Envelope controls (attack, decay, sustain, release) */
-        REGISTER_CONTROL_ENVELOPPE_ADSR(
-            enveloppeAttack, 0.1, CONTROL_RANGE_STEP(0.0, 5.0, 0.001),
-            enveloppeDecay, 0.2, CONTROL_RANGE_STEP(0.0, 5.0, 0.001),
-            enveloppeSustain, 0.8, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
-            enveloppeRelease, 0.2, CONTROL_RANGE_STEP(0.0, 5.0, 0.001)
+        REGISTER_CONTROL_ENVELOPE_ADSR(
+            envelopeAttack, 0.1, CONTROL_RANGE_STEP(0.0, 5.0, 0.001),
+            envelopeDecay, 0.2, CONTROL_RANGE_STEP(0.0, 5.0, 0.001),
+            envelopeSustain, 0.8, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
+            envelopeRelease, 0.2, CONTROL_RANGE_STEP(0.0, 5.0, 0.001)
         ),
         REGISTER_CONTROL_ENUM(
             waveform,
@@ -72,11 +70,11 @@ class Audio::Oscillator final : public Audio::IPlugin
                     TR(English, "Saw"),
                     TR(French, "Scie")
                 )
-                // ,
-                // TR_TABLE(
-                //     TR(English, "Noise"),
-                //     TR(French, "Bruit")
-                // ),
+                ,
+                TR_TABLE(
+                    TR(English, "Noise"),
+                    TR(French, "Bruit")
+                ),
                 // TR_TABLE(
                 //     TR(English, "Error"),
                 //     TR(French, "Error")
@@ -135,56 +133,10 @@ public:
 
     virtual void onAudioGenerationStarted(const BeatRange &range);
 
-
-public:
 private:
-    NoteManager<DSP::EnvelopeType::ADSR> _noteManager {};
+    NoteManagerDefault _noteManager {};
     Osc _oscillator;
     Volume<float> _volumeHandler;
-
-    float getEnvelopeGain(const Key key, const std::uint32_t index) noexcept
-    {
-        return _noteManager.getEnvelopeGain(key, index,
-                0.0f,
-                static_cast<float>(enveloppeAttack()),
-                0.0f,
-                static_cast<float>(enveloppeDecay()),
-                static_cast<float>(enveloppeSustain()),
-                static_cast<float>(enveloppeRelease()),
-        audioSpecs().sampleRate);
-    }
-
-    template<bool Accumulate = true, typename Type>
-    void generateWaveform(const Osc::Waveform waveform, Type *output, const std::size_t outputSize,
-            const float frequency, const SampleRate sampleRate, const std::uint32_t phaseOffset, const Key key, const DB gain) noexcept;
-
-    template<bool Accumulate, typename Type>
-    void generateSine(Type *output, const std::size_t outputSize,
-            const float frequency, const SampleRate sampleRate, const std::uint32_t phaseOffset, const Key key, const DB gain) noexcept;
-
-    template<bool Accumulate, typename Type>
-    void generateCosine(Type *output, const std::size_t outputSize,
-            const float frequency, const SampleRate sampleRate, const std::uint32_t phaseOffset, const Key key, const DB gain) noexcept;
-
-    template<bool Accumulate, typename Type>
-    void generateSquare(Type *output, const std::size_t outputSize,
-            const float frequency, const SampleRate sampleRate, const std::uint32_t phaseOffset, const Key key, const DB gain) noexcept;
-
-    template<bool Accumulate, typename Type>
-    void generateTriangle(Type *output, const std::size_t outputSize,
-            const float frequency, const SampleRate sampleRate, const std::uint32_t phaseOffset, const Key key, const DB gain) noexcept;
-
-    template<bool Accumulate, typename Type>
-    void generateSaw(Type *output, const std::size_t outputSize,
-            const float frequency, const SampleRate sampleRate, const std::uint32_t phaseOffset, const Key key, const DB gain) noexcept;
-
-    template<bool Accumulate, typename Type>
-    void generateError(Type *output, const std::size_t outputSize,
-            const float frequency, const SampleRate sampleRate, const std::uint32_t phaseOffset, const Key key, const DB gain) noexcept;
-
-    template<bool Accumulate, typename Type>
-    void generateNoise(Type *output, const std::size_t outputSize,
-            const float frequency, const SampleRate sampleRate, const std::uint32_t phaseOffset, const Key key, const DB gain) noexcept;
 };
 
 #include "Oscillator.ipp"

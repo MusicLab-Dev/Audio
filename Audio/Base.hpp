@@ -19,6 +19,7 @@
 #include "BaseDevice.hpp"
 #include "BaseIndex.hpp"
 #include "BaseVolume.hpp"
+#include "BaseNote.hpp"
 
 namespace Audio
 {
@@ -33,31 +34,6 @@ namespace Audio
 
     /** @brief Index of a note */
     using NoteIndex = std::uint16_t;
-
-    /** @brief Key of a note */
-    using Key = std::uint8_t;
-
-    /** @brief Middle key */
-    static constexpr Key RootKey = 69u;
-
-    /** @brief Middle key (A4) */
-    static constexpr float RootKeyFrequency = 440.f;
-
-    /** @brief Semitone delta */
-    static constexpr double SemitoneUpDelta = 1.05946309436;
-    static constexpr double SemitoneDownDelta = 0.943874312682;
-
-    /** @brief Semitone */
-    using Semitone = std::int8_t;
-
-    /** @brief Number of different handled keys */
-    constexpr Key KeyCount = 128u;
-
-    /** @brief Velocity of a note */
-    using Velocity = std::uint16_t;
-
-    /** @brief Note pitch tuning */
-    using Tuning = std::uint16_t;
 
     /** @brief Midi note channels */
     using MidiChannels = std::uint8_t;
@@ -136,4 +112,8 @@ namespace Audio
 
     /** @brief Count of playback modes */
     constexpr std::size_t PlaybackModeCount = static_cast<std::size_t>(PlaybackMode::OnTheFly) + 1;
+
+    /** @brief Get normalized frequency */
+    static inline float GetFrequencyNorm(const float frequency, const SampleRate sampleRate) noexcept
+        { return 2.0f * static_cast<float>(M_PI) * frequency / static_cast<float>(sampleRate); }
 }

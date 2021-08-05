@@ -26,16 +26,18 @@
 #define REGISTER_CONTROL_FM_ALGORITHM_DELAY(...)                REGISTER_CONTROL_FM_OPERATOR_EACH(DELAY, __VA_ARGS__)
 #define REGISTER_CONTROL_FM_ALGORITHM_DEFAULT_PITCH(...) \
     REGISTER_CONTROL_FM_OPERATOR_EACH(DEFAULT, __VA_ARGS__), \
-    REGISTER_CONTROL_ENVELOPPE_ADSR( \
-        pitchEnvattack, 0.1, CONTROL_RANGE_STEP(0.0, 5.0, 0.0001), \
-        pitchEnvdecay, 0.2, CONTROL_RANGE_STEP(0.0, 5.0, 0.001), \
-        pitchEnvsustain, 0.8, CONTROL_RANGE_STEP(0.0, 1.0, 0.01), \
-        pitchEnvrelease, 0.2, CONTROL_RANGE_STEP(0.0, 5.0, 0.001) \
-    ), \
+    _REGISTER_CONTROL_FM_PITCH_VOLUME(pitchVolume, 0.0, CONTROL_RANGE_STEP(0.0, 1.0, 0.01)), \
+    REGISTER_CONTROL_ENVELOPE_ADSR_PEAK( \
+        pitchAttack, 0.1, CONTROL_RANGE_STEP(0.0, 5.0, 0.0001), \
+        pitchPeak, 1.0, CONTROL_RANGE_STEP(0.0, 1.0, 0.01), \
+        pitchDecay, 0.2, CONTROL_RANGE_STEP(0.0, 1.0, 0.00001), \
+        pitchSustain, 0.8, CONTROL_RANGE_STEP(0.0, 1.0, 0.01), \
+        pitchRelease, 0.2, CONTROL_RANGE_STEP(0.0, 5.0, 0.001) \
+    ) \
 
 #define REGISTER_CONTROL_FM_OPERATOR_DEFAULT(BaseName) \
     _REGISTER_CONTROL_FM_OUTPUT_VOLUME(BaseName##volume, -70.0, CONTROL_FM_OPERATOR_OUTPUT_VOLUME_RANGE()), \
-    REGISTER_CONTROL_ENVELOPPE_ADSR( \
+    REGISTER_CONTROL_ENVELOPE_ADSR( \
         BaseName##attack, 0.1, CONTROL_RANGE_STEP(0.0, 5.0, 0.0001), \
         BaseName##decay, 0.2, CONTROL_RANGE_STEP(0.0, 5.0, 0.001), \
         BaseName##sustain, 0.8, CONTROL_RANGE_STEP(0.0, 1.0, 0.01), \
@@ -49,7 +51,7 @@
 
 #define REGISTER_CONTROL_FM_OPERATOR_DELAY(BaseName) \
     _REGISTER_CONTROL_FM_OUTPUT_VOLUME(BaseName##volume, -70.0, CONTROL_FM_OPERATOR_OUTPUT_VOLUME_RANGE()), \
-    REGISTER_CONTROL_ENVELOPPE_DADSR( \
+    REGISTER_CONTROL_ENVELOPE_DADSR( \
         BaseName##delay, 0.0, CONTROL_RANGE_STEP(0.0, 0.5, 0.001), \
         BaseName##attack, 0.1, CONTROL_RANGE_STEP(0.0, 5.0, 0.001), \
         BaseName##decay, 0.2, CONTROL_RANGE_STEP(0.0, 5.0, 0.001), \
@@ -83,6 +85,25 @@
         ) \
     )
 **/
+
+#define _REGISTER_CONTROL_FM_PITCH_VOLUME(Name, Value, Range) \
+    REGISTER_CONTROL_FLOATING( \
+        Name, Value, Range, \
+        TR_TABLE( \
+            TR(English, "Pitch envelope volume"), \
+            TR(French, "Volume de l'enveloppe de fréquence") \
+        ), \
+        TR_TABLE( \
+            TR(English, "Pitch envelope volume"), \
+            TR(French, "Volume de l'enveloppe de fréquence") \
+        ), \
+        TR_TABLE( \
+            TR(English, "Vol") \
+        ), \
+        TR_TABLE( \
+            TR(English, "%") \
+        ) \
+    )
 
 #define CONTROL_FM_OPERATOR_OUTPUT_VOLUME_RANGE() CONTROL_RANGE_STEP(-70.0, 12.0, 0.1)
 #define _REGISTER_CONTROL_FM_OUTPUT_VOLUME(Name, Value, Range) \

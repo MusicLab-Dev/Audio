@@ -14,35 +14,70 @@
 
 namespace Audio::DSP
 {
-    enum class EnvelopeType : std::uint8_t {
+    constexpr auto DefaultExponentialInterpolationRate = 4u;
+    enum class InterpolationType : std::uint8_t
+    {
+        Linear = 0,
+        Exp = 1,
+        ExpInverse = 2
+    };
+
+    enum class EnvelopeType : std::uint8_t
+    {
         AR, AD, ADSR, DADSR, DAHDSR
     };
 
-    enum class InterpolationType : std::uint8_t {
-        Linear, Exp, InverseExp
+    struct alignas_half_cacheline EnvelopeSpecs
+    {
+        float delay { 0.0f };
+        float attack { 0.0f };
+        float peak { 0.0f };
+        float hold { 0.0f };
+        float decay { 0.0f };
+        float sustain { 0.0f };
+        float release { 0.0f };
     };
 
-    template<EnvelopeType Envelope, unsigned Count = 1u>
+    // enum class InterpolationType : std::uint8_t {
+    //     Linear, Exp, InverseExp
+    // };
+
+    template<EnvelopeType Envelope, InterpolationType AttackInterp, InterpolationType DecayInterp, InterpolationType ReleaseInterp, bool Smooth, bool Clip, unsigned Count = 1u>
     class EnvelopeBase;
 
+    template<EnvelopeType Envelope, unsigned Count>
+    using EnvelopeDefaultLinear = EnvelopeBase<Envelope, InterpolationType::Linear, InterpolationType::Linear, InterpolationType::Linear, false, false, Count>;
+    template<EnvelopeType Envelope, unsigned Count>
+    using EnvelopeClipLinear = EnvelopeBase<Envelope, InterpolationType::Linear, InterpolationType::Linear, InterpolationType::Linear, false, true, Count>;
+
+    template<EnvelopeType Envelope, unsigned Count>
+    using EnvelopeDefaultExp = EnvelopeBase<Envelope, InterpolationType::Exp, InterpolationType::Exp, InterpolationType::Exp, false, false, Count>;
+    template<EnvelopeType Envelope, unsigned Count>
+    using EnvelopeClipExp = EnvelopeBase<Envelope, InterpolationType::Exp, InterpolationType::Exp, InterpolationType::Exp, false, true, Count>;
 }
 
 
-template<Audio::DSP::EnvelopeType Envelope, unsigned Count>
+template<Audio::DSP::EnvelopeType Envelope, Audio::DSP::InterpolationType AttackInterp, Audio::DSP::InterpolationType DecayInterp, Audio::DSP::InterpolationType ReleaseInterp, bool Smooth, bool Clip, unsigned Count>
 class Audio::DSP::EnvelopeBase
 {
 public:
-    struct alignas_half_cacheline KeyCache
+    struct KeyCache
     {
         std::uint32_t triggerIndex { 0u };
         float gain { 0.0f };
         float sustain { 0.0f };
     };
-    static_assert_alignof_half_cacheline(KeyCache);
 
     using CacheList = std::array<std::array<KeyCache, Count>, KeyCount>;
+    using EnvelopeSpecsCache = std::array<EnvelopeSpecs, Count>;
 
     EnvelopeBase(void) { resetKeys(); }
+
+    template<bool Accumulate, unsigned EnvelopeIndex = 0u>
+    void generateGains(
+            const Key key, const std::uint32_t index,
+            float *output, const std::size_t outputSize) noexcept;
+
 
     /** @brief Reset a specific instance for each keys */
     template<unsigned Index>
@@ -96,6 +131,13 @@ public:
     /** @brief Reset all instances' gains of a specific key */
     void resetInternalGain(const Key key) noexcept;
 
+    /** @brief Set the internal envelope specs */
+    template<unsigned Index>
+    void setSpecs(const EnvelopeSpecs &specs) noexcept;
+
+    /** @brief Set the internal envelope sample rate */
+    void setSampleRate(const SampleRate sampleRate) noexcept { _sampleRate = sampleRate; }
+
 
     /** @brief Check if the gain is null for a specific key */
     [[nodiscard]] bool isGainEnded(const Key key) const noexcept;
@@ -107,40 +149,74 @@ public:
     /** @brief Get the enveloppe gain */
     template<unsigned Index = 0u>
     [[nodiscard]] float getGain(
-            const Key key, const std::uint32_t index,
-            const float delay, const float attack,
-            const float hold, const float decay,
-            const float sustain, const float release,
-            const SampleRate sampleRate) noexcept;
+            const Key key, const std::uint32_t index) noexcept;
 
     /** @brief AR implementation */
     template<unsigned Index = 0u>
     [[nodiscard]] float attackRelease(
-            const Key key, const std::uint32_t index,
-            const float attack, const float release, const SampleRate sampleRate) noexcept;
+            const Key key, const std::uint32_t index) noexcept;
 
     /** @brief AD implementation */
     template<unsigned Index = 0u>
     [[nodiscard]] float attackDecay(
-            const Key key, const std::uint32_t index,
-            const float attack, const float decay, const SampleRate sampleRate) noexcept;
+            const Key key, const std::uint32_t index) noexcept;
 
     /** @brief ADSR implementation */
     template<unsigned Index = 0u>
     [[nodiscard]] float adsr(
-            const Key key, const std::uint32_t index,
-            const float attack, const float decay, const float sustain, const float release, const SampleRate sampleRate) noexcept;
+            const Key key, const std::uint32_t index) noexcept;
 
     /** @brief DADSR implementation */
     template<unsigned Index = 0u>
     [[nodiscard]] float dadsr(
-            const Key key, const std::uint32_t index,
-            const float delay, const float attack, const float decay, const float sustain, const float release, const SampleRate sampleRate) noexcept;
+            const Key key, const std::uint32_t index) noexcept;
 
 private:
+    EnvelopeSpecsCache _specs;
+    Audio::SampleRate _sampleRate;
     CacheList _cache;
 
-    [[nodiscard]] float smoothGain(KeyCache &keyCache, const float nextGain, const SampleRate sampleRate) noexcept;
+    [[nodiscard]] float smoothGain(KeyCache &keyCache, const float nextGain) noexcept;
+
+    template<unsigned Power = DefaultExponentialInterpolationRate>
+    float unrollExponential(const float gain) const noexcept
+    {
+        if constexpr (Power)
+            return gain * unrollExponential<Power - 1u>(gain);
+        return 1.0f;
+    }
+
+    void processAttack(float &outGain, const std::uint32_t index, const std::uint32_t duration) noexcept
+    {
+        outGain = static_cast<float>(index) / static_cast<float>(duration);
+
+        if constexpr (AttackInterp == InterpolationType::Exp) {
+            outGain = unrollExponential(outGain);
+        } else if constexpr (AttackInterp == InterpolationType::ExpInverse) {
+        }
+    }
+
+    void processDecay(float &outGain, const std::uint32_t index, const std::uint32_t duration, const float sustain) noexcept
+    {
+        outGain = static_cast<float>(index) / static_cast<float>(duration);
+
+        if constexpr (DecayInterp == InterpolationType::Exp) {
+            outGain = unrollExponential(outGain);
+        } else if constexpr (DecayInterp == InterpolationType::ExpInverse) {
+        }
+        outGain = (1.0f - outGain) * (1.0f - sustain) + sustain;
+    }
+
+    void processRelease(float &outGain, const std::uint32_t index, const std::uint32_t duration, const float sustain) noexcept
+    {
+        outGain = static_cast<float>(index) / static_cast<float>(duration);
+
+        if constexpr (DecayInterp == InterpolationType::Exp) {
+            outGain = unrollExponential(outGain);
+        } else if constexpr (DecayInterp == InterpolationType::ExpInverse) {
+        }
+        outGain = (1.0f - outGain) * sustain;
+    }
 };
 
 #include "EnvelopeGenerator.ipp"

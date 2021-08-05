@@ -11,6 +11,7 @@ set(AudioPrecompiledHeaders
     ${AudioDir}/Automation.hpp
     ${AudioDir}/Base.hpp
     ${AudioDir}/BaseVolume.hpp
+    ${AudioDir}/BaseNote.hpp
     ${AudioDir}/BaseDevice.hpp
     ${AudioDir}/BaseIndex.hpp
     ${AudioDir}/Math.hpp
@@ -149,6 +150,8 @@ set(AudioDSPSources
     ${AudioDSPDir}/Filter.hpp
     ${AudioDSPDir}/Delay.hpp
     ${AudioDSPDir}/Delay.ipp
+    ${AudioDSPDir}/Generator.hpp
+    ${AudioDSPDir}/Generator.ipp
 )
 
 add_library(${PROJECT_NAME}

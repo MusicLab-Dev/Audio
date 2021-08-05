@@ -42,9 +42,17 @@ class Audio::Drums final : public Audio::IPlugin
             CONTROL_DEFAULT_OUTPUT_VOLUME_RANGE()
         ),
         /* FM controls */
-        REGISTER_CONTROL_FM_ALGORITHM_DEFAULT(
+        REGISTER_CONTROL_FM_ALGORITHM_DEFAULT_PITCH(
             opA, opB, opC, opD
         ),
+
+        // // Sub section env
+        // REGISTER_CONTROL_ENVELOPE_ADSR(
+        //     subAttack, 0.1, CONTROL_RANGE_STEP(0.0, 5.0, 0.0001),
+        //     subDecay, 0.2, CONTROL_RANGE_STEP(0.0, 5.0, 0.001),
+        //     subSustain, 0.8, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
+        //     BaseName##release, 0.2, CONTROL_RANGE_STEP(0.0, 5.0, 0.001)
+        // ),
         REGISTER_CONTROL_FLOATING(
             brightness, 0.0, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
             TR_TABLE(

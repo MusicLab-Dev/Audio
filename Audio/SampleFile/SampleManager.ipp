@@ -15,10 +15,11 @@ inline Audio::Buffer Audio::SampleManager<Type, Normalize>::LoadSampleFile(const
 template<typename Type, bool Normalize>
 inline Audio::Buffer Audio::SampleManager<Type, Normalize>::LoadSampleFileExtension(const std::string &path, const std::string &ext, const SampleSpecs &desiredSpecs, SampleSpecs &fileSpecs, bool displaySpecs)
 {
-    for (auto i = 0u; i < sizeof(SupportedExtension) / (sizeof(std::pair<int, int>)); ++i) {
-        if (std::string(std::get<0>(SupportedExtension[i])) == ext) {
+    // BUG: sizeof(SupportedExtension) / sizeof(std::pair<int, int>) -> Triggers a warning that thinks we try to get the number of elements
+    for (const Extension &extension : SupportedExtension) {
+        if (ext == extension.name) {
             /** @todo Convert buffer (if needed) into the templated type */
-            return std::get<1>(SupportedExtension[i])(path, desiredSpecs, fileSpecs, displaySpecs);
+            return extension.loadFunc(path, desiredSpecs, fileSpecs, displaySpecs);
         }
     }
     throw std::runtime_error("Audio::SampleManager::LoadSampleFileExtension: Extension file not supported: '" + ext + "'.");

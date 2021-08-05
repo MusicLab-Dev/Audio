@@ -11,6 +11,7 @@
 #include <Core/FlatVector.hpp>
 
 #include "EnvelopeGenerator.hpp"
+#include "Generator.hpp"
 
 namespace Audio::DSP::FM
 {
@@ -19,6 +20,7 @@ namespace Audio::DSP::FM
         using ProcessSizeType = std::uint16_t;
         using OperatorCountType = std::uint8_t;
         using CacheList = Core::FlatVector<float, ProcessSizeType>;
+        using PitchIndexList = std::array<std::uint32_t, KeyCount>;
 
         // 2 -> 1 octave
         static constexpr float KeyFollowRate = 2.0f;
@@ -34,6 +36,7 @@ namespace Audio::DSP::FM
 
         struct Operator
         {
+            Generator::Waveform waveform;
             float frequencyDelta;
             float attack;
             float decay;
@@ -45,6 +48,16 @@ namespace Audio::DSP::FM
             Key keyBreakPoint;
             float keyAmountLeft;
             float keyAmountRight;
+        };
+
+        struct PitchOperator
+        {
+            float attack;
+            float peak;
+            float decay;
+            float sustain;
+            float release;
+            float volume;
         };
 
         template<unsigned InstanceCount>
@@ -72,7 +85,8 @@ class Audio::DSP::FM::Schema
 {
 public:
 
-    using EnvelopeList = EnvelopeBase<EnvelopeType::ADSR, OperatorCount + PitchEnv>;
+    using EnvelopeList = EnvelopeClipExp<EnvelopeType::ADSR, OperatorCount + PitchEnv>;
+    using EnvelopeCache = Core::TinyVector<float>;
     // using FrequencyRateList = Core::SmallVector<float, OperatorCount, std::uint8_t>;
 
 
@@ -85,38 +99,14 @@ public:
     //         return std::sin(2.0f * static_cast<float>(M_PI) * phaseIndex * frequency);
     // }
 
-    template<bool Accumulate, bool Modulate, bool IsCarrier, unsigned OperatorIndex, bool IsCosine = false>
+    template<bool Accumulate, bool Modulate, bool IsCarrier, unsigned OperatorIndex>
     inline void processOperator(
             const float *input, float *output, const std::uint32_t processSize, const float outputGain,
             const std::uint32_t phaseIndex, const float frequencyNorm, const Key key,
             const Internal::Operator &op
     ) noexcept
     {
-        // const auto semitone = (25 - 11) % 12;
-        // const auto octave = (25 - 11) / 12;
-
-        // constexpr auto GetKeyAmountRate = [](const float amountLeft, const float amountRight, const bool direction, const Key key, const Key breakPoint)
-        // {
-        //     if (direction) {
-        //         if (!amountRight) {
-        //             return 0.0f;
-        //         } else if (amountRight < 0.0f) {
-        //             return 1.0f / std::pow(2.0f, static_cast<float>(key - breakPoint) / 12.0f) * -amountRight;
-        //         } else {
-        //             return std::pow(2.0f, static_cast<float>(key - breakPoint) / 12.0f) * amountRight;
-        //         }
-        //     } else {
-        //         if (!amountLeft) {
-        //             return 0.0f;
-        //         } else if (amountLeft < 0.0f) {
-        //             return std::pow(2.0f, static_cast<float>(key - breakPoint) / 12.0f) * -amountLeft;
-        //         } else {
-        //             return std::pow(2.0f, static_cast<float>(breakPoint - key) / 12.0f) * amountLeft;
-        //         }
-        //     }
-        // };
-
-
+        UNUSED(frequencyNorm);
         constexpr auto GetKeyAmountRate = [](const float amount, const float keyDelta)
         {
             if (!amount) {
@@ -138,31 +128,77 @@ public:
         // if constexpr (IsCarrier)
         //     keyAmount = 1.0f;
 
-        const auto outGain = op.volume * outputGain * keyAmount;
+        const DB outGain = op.volume * outputGain * keyAmount;
 
-        std::cout << OperatorIndex << std::endl;
-        std::cout << "outputGain: " << outputGain << std::endl;
-        std::cout << "volume: " << op.volume << std::endl;
-        std::cout << "key amount: " << keyAmount << std::endl;
-        std::cout << "final gain: " << outGain << std::endl;
-        std::cout << std::endl;
+        // std::cout << OperatorIndex << std::endl;
+        // std::cout << "outputGain: " << outputGain << std::endl;
+        // std::cout << "volume: " << op.volume << std::endl;
+        // std::cout << "key amount: " << keyAmount << std::endl;
+        // std::cout << "final gain: " << outGain << std::endl;
+        // std::cout << std::endl;
 
-        for (auto i = 0u; i < processSize; ++i) {
-            const auto index = i + phaseIndex;
-            const auto realOutGain = outGain * _envelopes.template getGain<OperatorIndex>(key, index, 0.0f, op.attack, 0.0f, op.decay, op.sustain, op.release, _sampleRate);
-            const auto freq = 2.0f * static_cast<float>(M_PI) * (static_cast<float>(index)) * frequencyNorm;
+//         for (Internal::ProcessSizeType i = 0u; i < processSize; ++i) {
+//             const auto index = i + phaseIndex;
+//             const auto realOutGain = outGain * _envelopes.template getGain<OperatorIndex>(key, index);
+//             auto freq = 2.0f * static_cast<float>(M_PI) * (static_cast<float>(index));
+//             if constexpr (PitchEnv && IsCarrier)
+//                 freq *= Audio::GetNoteFrequencyDelta(frequencyNorm, _pitchCache[i]) / static_cast<float>(_sampleRate);
+//             else
+//                 freq *= frequencyNorm / static_cast<float>(_sampleRate);
 
-            if constexpr (Modulate) {
-                if constexpr (Accumulate)
-                    output[i] += realOutGain * std::sin(freq + static_cast<float>(M_PI) * input[i]);
-                else
-                    output[i] = realOutGain * std::sin(freq + static_cast<float>(M_PI) * input[i]);
-            } else {
-                if constexpr (Accumulate)
-                    output[i] += realOutGain * processGeneration<IsCosine>(freq, op.feedback);
-                else
-                    output[i] = realOutGain * processGeneration<IsCosine>(freq, op.feedback);
-            }
+// // triangle
+// // (1.0f - std::acos(std::cos(2.0f * static_cast<float>(i) * frequencyNorm)) * static_cast<float>(M_2_PI))
+//             // if constexpr (Modulate) {
+//             //     if constexpr (Accumulate)
+//             //         output[i] += realOutGain * (1.0f - std::acos(std::cos(2.0f * static_cast<float>(i) * frequencyNorm + input[i])) * static_cast<float>(M_2_PI));
+//             //     else
+//             //         output[i] = realOutGain * std::sin(freq + static_cast<float>(M_PI) * input[i]);
+//             // } else {
+//             //     if constexpr (Accumulate)
+//             //         output[i] += realOutGain * processGeneratio>(freq, op.feedback);
+//             //     else
+//             //         output[i] = realOutGain * processGeneratio>(freq, op.feedback);
+//             // }
+
+
+//             if constexpr (Modulate) {
+//                 if constexpr (Accumulate)
+//                     output[i] += realOutGain * std::sin(freq + static_cast<float>(M_PI) * input[i]);
+//                 else
+//                     output[i] = realOutGain * std::sin(freq + static_cast<float>(M_PI) * input[i]);
+//             } else {
+//                 if constexpr (Accumulate)
+//                     output[i] += realOutGain * generateWaveform(freq, op.feedback);
+//                 else
+//                     output[i] = realOutGain * generateWaveform(freq, op.feedback);
+//             }
+//         }
+
+
+//         return;
+        _envelopes.template generateGains<false, OperatorIndex>(key, phaseIndex, _envelopeGain.data(), processSize);
+        // std::fill(_envelopeGain.begin(), _envelopeGain.end(), 1.0f);
+        if constexpr (Modulate) {
+            DSP::Generator::GenerateModulateWaveform<Accumulate>(
+                op.waveform,
+                output,
+                _envelopeGain.data(),
+                input,
+                processSize,
+                Audio::GetFrequencyNorm(frequencyNorm, _sampleRate),
+                phaseIndex,
+                outGain
+            );
+        } else {
+            DSP::Generator::GenerateWaveform<Accumulate>(
+                op.waveform,
+                output,
+                _envelopeGain.data(),
+                processSize,
+                Audio::GetFrequencyNorm(frequencyNorm, _sampleRate),
+                phaseIndex,
+                outGain
+            );
         }
     }
 
@@ -170,17 +206,34 @@ public:
     [[nodiscard]] EnvelopeList &envelopes(void) noexcept { return _envelopes; }
     [[nodiscard]] const EnvelopeList &envelopes(void) const noexcept { return _envelopes; }
 
-    void setSampleRate(const SampleRate sampleRate) noexcept { _sampleRate = sampleRate; }
+    void envelopeResetKey(const Key key) noexcept
+    {
+        _pitchIndexes[key] = 0u;
+        _envelopes.resetKey(key);
+    }
+    void envelopeSetTriggerIndex(const Key key, const std::uint32_t index) noexcept { _envelopes.setTriggerIndex(key, index); }
+    void envelopeResetTriggerIndex(const Key key) noexcept { _envelopes.resetTriggerIndex(key); }
+    void envelopeResetInternalGain(const Key key) noexcept { _envelopes.resetInternalGain(key); }
+
+    void resetEnvelopePitch(void) noexcept { _pitchIndexes.fill(0u); }
+
+    void setSampleRate(const SampleRate sampleRate) noexcept { _sampleRate = sampleRate; _envelopes.setSampleRate(sampleRate); }
 
     template<bool Accumulate>
     void process(
             float *output, const std::uint32_t processSize, const float outputGain,
             const std::uint32_t phaseIndex, const Key key, const float rootFrequency,
-            const Internal::OperatorArray<OperatorCount> &operators
+            const Internal::OperatorArray<OperatorCount> &operators,
+            const Internal::PitchOperator &pitchOp = Internal::PitchOperator()
     ) noexcept
     {
         _cache.resize(static_cast<Internal::ProcessSizeType>(processSize));
-        // std::memset(_cache.data(), 0, processSize * sizeof(float));
+        _envelopeGain.resize(static_cast<Internal::ProcessSizeType>(processSize));
+        // Update envelopes specs
+        updateEnvelopesSpecs<OperatorCount>(operators);
+
+        if constexpr (PitchEnv)
+            processPitchOperator(key, rootFrequency, processSize, pitchOp);
 
         if constexpr (Algo == AlgorithmType::Default){
             if constexpr (OperatorCount == 2u) {
@@ -213,7 +266,30 @@ private:
     EnvelopeList _envelopes;
     SampleRate _sampleRate;
     Internal::CacheList _cache;
+    Internal::CacheList _pitchCache;
+    Internal::PitchIndexList _pitchIndexes;
+    EnvelopeCache _envelopeGain;
 
+
+    void processPitchOperator(const Key key, const float rootFrequency, const std::uint32_t processSize, const Internal::PitchOperator &pitchOp) noexcept
+    {
+        UNUSED(rootFrequency);
+        constexpr float MaxSemitonePeak = 72.0f;
+
+        _pitchCache.resize(static_cast<Internal::ProcessSizeType>(processSize));
+        auto &pitchIdx = _pitchIndexes[key];
+        for (Internal::ProcessSizeType i = 0u; i < processSize; ++i, pitchIdx++) {
+            const float semitoneDelta = MaxSemitonePeak * pitchOp.volume * (_envelopes.template getGain<OperatorCount>(key, pitchIdx));
+            // const float ret = Audio::GetNoteFrequencyDelta(rootFrequency, semitoneDelta);
+            _pitchCache[i] = semitoneDelta;
+        }
+
+        // std::cout << "pitchCache:   " << _pitchCache[0] << std::endl;
+        // std::cout << "pitchCache_:  " << _pitchCache[processSize / 3] << std::endl;
+        // std::cout << "pitchCache__: " << _pitchCache[2 * processSize / 3] << std::endl;
+        // std::cout << std::endl;
+
+    }
 
     template<bool Accumulate>
     void oneCarrierOneModulator(
@@ -283,11 +359,8 @@ private:
     {
         const auto realOutputGain = outputGain / static_cast<float>(1);
 
-        std::cout << "ICICICICICICICI" << std::endl;
-
-    // template<bool Accumulate, bool Modulate, bool IsCarrier, unsigned OperatorIndex>
         // Sub (A)
-        processOperator<false, false, true, 0u>(nullptr, output, processSize, realOutputGain, phaseIndex, getDetuneFrequency(rootFrequency, operators[0u]), key, operators[0u]);
+        processOperator<true, false, true, 0u>(nullptr, output, processSize, realOutputGain, phaseIndex, getDetuneFrequency(rootFrequency, operators[0u]), key, operators[0u]);
         // Impact (B+C->D)
         processOperator<false, false, false, 2u>(nullptr, _cache.data(), processSize, 1.0f, phaseIndex, getDetuneFrequency(rootFrequency, operators[2u]), key, operators[2u]);
         processOperator<true, false, false, 3u>(nullptr, _cache.data(), processSize, 1.0f, phaseIndex, getDetuneFrequency(rootFrequency, operators[3u]), key, operators[3u]);
@@ -295,53 +368,72 @@ private:
     }
 
 
-    template<bool IsCosine = false>
-    [[nodiscard]] float processGeneration(const float freq, const std::uint32_t feedbackAmount) const noexcept
+    [[nodiscard]] float generateWaveform(const float freq, const std::uint32_t feedbackAmount) const noexcept
     {
         switch (feedbackAmount) {
         case 0:
-            return unrollGeneration<0u, IsCosine>(freq);
+            return unrollFeedback<0u>(freq);
         case 1:
-            return unrollGeneration<1u, IsCosine>(freq);
+            return unrollFeedback<1u>(freq);
         case 2:
-            return unrollGeneration<2u, IsCosine>(freq);
+            return unrollFeedback<2u>(freq);
         case 3:
-            return unrollGeneration<3u, IsCosine>(freq);
+            return unrollFeedback<3u>(freq);
         case 4:
-            return unrollGeneration<4u, IsCosine>(freq);
+            return unrollFeedback<4u>(freq);
         case 5:
-            return unrollGeneration<5u, IsCosine>(freq);
+            return unrollFeedback<5u>(freq);
         case 6:
-            return unrollGeneration<6u, IsCosine>(freq);
+            return unrollFeedback<6u>(freq);
         case 7:
-            return unrollGeneration<7u, IsCosine>(freq);
+            return unrollFeedback<7u>(freq);
         default:
-            return unrollGeneration<0u, IsCosine>(freq);
+            return unrollFeedback<0u>(freq);
         }
     }
 
-    template<unsigned Feedback, bool IsCosine>
-    [[nodiscard]] float unrollGeneration(const float freq) const noexcept
+    template<unsigned Feedback>
+    [[nodiscard]] float unrollFeedback(const float freq) const noexcept
     {
         if constexpr (!Feedback) {
-            if constexpr (IsCosine)
-                return std::cos(freq);
-            else
-                return std::sin(freq);
+            return std::sin(freq);
         } else {
-            if constexpr (IsCosine)
-                return std::cos(freq + unrollGeneration<Feedback - 1, IsCosine>(freq));
-            else
-                return std::sin(freq + unrollGeneration<Feedback - 1, IsCosine>(freq));
+            return std::sin(freq + unrollFeedback<Feedback - 1>(freq));
         }
     }
+
+
+    template<unsigned Count = OperatorCount>
+    void updateEnvelopesSpecs(const Internal::OperatorArray<OperatorCount> &operators) noexcept
+    {
+        if constexpr (Count) {
+            updateEnvelopesSpecs<Count - 1u>(operators[Count - 1u]);
+            updateEnvelopesSpecs<Count - 1u>(operators);
+        }
+    }
+
+    template<unsigned Index>
+    void updateEnvelopesSpecs(const Internal::Operator &op) noexcept
+    {
+        _envelopes.template setSpecs<Index>(DSP::EnvelopeSpecs {
+            0.0f,
+            op.attack,
+            1.0f,
+            0.0f,
+            op.decay,
+            op.sustain,
+            op.release
+        });
+
+    }
+
 
     [[nodiscard]] float getDetuneFrequency(const float rootFrequency, const Internal::Operator &op) const noexcept
     {
         if (!op.detune)
-            return rootFrequency * op.frequencyDelta / static_cast<float>(_sampleRate);
+            return rootFrequency * op.frequencyDelta; // / static_cast<float>(_sampleRate);
         const double detuneNorm = static_cast<double>(op.detune) / 1200.0;
-        return rootFrequency * static_cast<float>(std::pow(2.0, detuneNorm)) * op.frequencyDelta / static_cast<float>(_sampleRate);
+        return rootFrequency * static_cast<float>(std::pow(2.0, detuneNorm)) * op.frequencyDelta;// / static_cast<float>(_sampleRate);
     }
 
 };

@@ -12,44 +12,71 @@ using namespace Audio;
 static constexpr BlockSize Size = 1024u;
 static constexpr SampleRate SR = 48000u;
 
-using EnvAD =   DSP::EnvelopeBase<DSP::EnvelopeType::AD>;
-using EnvAR =   DSP::EnvelopeBase<DSP::EnvelopeType::AR>;
-using EnvADSR = DSP::EnvelopeBase<DSP::EnvelopeType::ADSR>;
-
-
-TEST(EnvelopeGenerator, Simple_AttackDecay)
-{
-    EnvAD ad;
-    UNUSED(ad);
-}
-
-TEST(EnvelopeGenerator, Simple_AttackRelease)
-{
-    EnvAR ar;
-    UNUSED(ar);
-}
 
 TEST(EnvelopeGenerator, Simple_AttackDecayReleaseSustain)
 {
-    DSP::EnvelopeBase<DSP::EnvelopeType::ADSR> env;
+    DSP::EnvelopeClipLinear<DSP::EnvelopeType::ADSR, 1u> env;
 
     Key key { 69u };
-    const float atk { 0.1f };
-    const float dec { 0.1f };
-    const float sus { 0.5f };
-    const float rel { 0.1f };
+    DSP::EnvelopeSpecs specs {
+        0.0f, // delay
+        0.1f, // attack
+        1.0f, // peak
+        0.0f, // hold
+        0.1f, // decay
+        0.5f, // sustain
+        0.1f // release
+    };
+    env.setSpecs<0u>(specs);
+    env.setSampleRate(100u);
 
     auto i = 0u;
     for (; i < 30u; ++i) {
-        auto gain = env.adsr(key, i, atk, dec, sus, rel, 100u);
+        auto gain = env.adsr(key, i);
         UNUSED(gain);
         // std::cout << "i: " << i << " -> " << gain << std::endl;
     }
     env.setTriggerIndex(key, i);
     for (; i < 40u; ++i) {
-        auto gain = env.adsr(key, i, atk, dec, sus, rel, 100u);
+        auto gain = env.adsr(key, i);
         // std::cout << "i: " << i << " -> " << gain << std::endl;
         UNUSED(gain);
+    }
+    UNUSED(env);
+}
+
+
+TEST(EnvelopeGenerator, NoCliping)
+{
+    DSP::EnvelopeDefaultLinear<DSP::EnvelopeType::ADSR, 1u> env;
+
+    Key key { 69u };
+    const SampleRate sampleRate { 44100u };
+
+    DSP::EnvelopeSpecs specs {
+        0.0f, // delay
+        0.0f, // attack
+        1.0f, // peak
+        0.0f, // hold
+        1.0f, // decay
+        0.2f, // sustain
+        1.0f // release
+    };
+
+    env.setSpecs<0u>(specs);
+    env.setSampleRate(sampleRate);
+
+    auto i = 0u;
+    for (; i < 30u; ++i) {
+        auto gain = env.getGain(key, i);
+        UNUSED(gain);
+        // std::cout << "i: " << i << " -> " << gain << std::endl;
+    }
+    env.setTriggerIndex(key, i);
+    for (; i < 40u; ++i) {
+        auto gain = env.getGain(key, i);
+        UNUSED(gain);
+        // std::cout << "i: " << i << " -> " << gain << std::endl;
     }
     UNUSED(env);
 }

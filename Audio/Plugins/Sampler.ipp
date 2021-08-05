@@ -69,6 +69,7 @@ inline void Audio::Sampler::receiveAudio(BufferView output)
     const std::uint32_t outSize = static_cast<std::uint32_t>(output.size<float>());
     float * const out = reinterpret_cast<float *>(output.byteData());
 
+    _noteManager.envelopeGain().resize(outSize);
     _noteManager.processNotes(
         [this, outGain, outSize, out](const Key key, const std::uint32_t readIndex, const NoteModifiers &modifiers) -> std::pair<std::uint32_t, std::uint32_t> {
             const std::int32_t realKeyIdx = static_cast<std::int32_t>(key) % KeysPerOctave;
@@ -88,6 +89,9 @@ inline void Audio::Sampler::receiveAudio(BufferView output)
             auto realOutSize = outSize;
             auto realOut = out;
 
+            // Generate envelope gains
+            _noteManager.generateEnvelopeGains(key, readIndex, realOutSize);
+
             // Handle note end
             if (modifiers.sampleOffset && !readIndex) {
                 realOut += modifiers.sampleOffset;
@@ -101,7 +105,7 @@ inline void Audio::Sampler::receiveAudio(BufferView output)
                 // Apply enveloppe
                 for (auto i = 0u, j = readIndex; i < realOutSize; ++i, ++j) {
                     // realOut[i] += sampleBuffer[j] * outGain;
-                    realOut[i] += sampleBuffer[j] * getEnvelopeGain(key, j) * outGain;
+                    realOut[i] += sampleBuffer[j] * _noteManager.envelopeGain()[i] * outGain;
                 }
                 return std::make_pair(realOutSize, sampleSize);
             // The key need an octave shift
@@ -120,7 +124,7 @@ inline void Audio::Sampler::receiveAudio(BufferView output)
                 /** @warning FIX PROBLEMS */
                 // Apply enveloppe
                 for (auto i = 0u, j = readIndex; i < realOutSize; ++i, ++j) {
-                    realOut[i] *= getEnvelopeGain(key, j) * outGain;
+                    realOut[i] *= _noteManager.envelopeGain()[i] * outGain;
                 }
                 return std::make_pair(realOutSize, resampleSize);
             }

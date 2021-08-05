@@ -22,11 +22,17 @@ namespace Audio
 template<typename Type, bool Normalize>
 struct Audio::SampleManager
 {
-    static const constexpr std::tuple<
-        const char *,
-        Buffer(*)(const std::string &path, const SampleSpecs &desiredSpecs, SampleSpecs &fileSpecs, bool displaySpecs),
-        bool(*)(const std::string &path, const BufferView &inputBuffer)
-    > SupportedExtension[] {
+    struct Extension
+    {
+        using LoadFunc = Buffer(*)(const std::string &path, const SampleSpecs &desiredSpecs, SampleSpecs &fileSpecs, bool displaySpecs);
+        using WriteFunc = bool(*)(const std::string &path, const BufferView &inputBuffer);
+
+        const char *name { nullptr };
+        LoadFunc loadFunc { nullptr };
+        WriteFunc writeFunc { nullptr };
+    };
+
+    static const constexpr Extension SupportedExtension[] {
         { SampleManagerWAV::Extension, &SampleManagerWAV::LoadFile, &SampleManagerWAV::WriteFile }
     };
 
