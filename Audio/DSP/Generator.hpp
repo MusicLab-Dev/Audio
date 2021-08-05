@@ -260,6 +260,6 @@ namespace Audio::DSP::Generator
     void GenerateModulateNoise(Type *output, const Type *modulation, const std::size_t outputSize,
             const float frequencyNorm, const std::uint32_t phaseOffset = 0u, const DB gain = 1.0f) noexcept
         { return Internal::GenerateModulateWaveformImpl<Accumulate, Internal::GenerateModulateNoiseSample<Type>>(output, modulation, outputSize, frequencyNorm, phaseOffset, gain); }
-};
+}
 
 #include "Generator.ipp"
