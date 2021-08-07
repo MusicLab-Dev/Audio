@@ -61,7 +61,7 @@ inline void Audio::Oscillator::receiveAudio(BufferView output)
             }
             UNUSED(modifiers);
             _noteManager.generateEnvelopeGains(key, readIndex, realOutSize);
-            DSP::Generator::GenerateWaveform<true>(
+            DSP::Generator::Generate<true>(
                 static_cast<DSP::Generator::Waveform>(waveform()),
                 realOut,
                 _noteManager.envelopeGain().data(),

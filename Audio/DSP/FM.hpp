@@ -179,7 +179,7 @@ public:
         _envelopes.template generateGains<false, OperatorIndex>(key, phaseIndex, _envelopeGain.data(), processSize);
         // std::fill(_envelopeGain.begin(), _envelopeGain.end(), 1.0f);
         if constexpr (Modulate) {
-            DSP::Generator::GenerateModulateWaveform<Accumulate>(
+            DSP::Generator::Modulate<Accumulate>(
                 op.waveform,
                 output,
                 _envelopeGain.data(),
@@ -190,7 +190,7 @@ public:
                 outGain
             );
         } else {
-            DSP::Generator::GenerateWaveform<Accumulate>(
+            DSP::Generator::Generate<Accumulate>(
                 op.waveform,
                 output,
                 _envelopeGain.data(),

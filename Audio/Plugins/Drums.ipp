@@ -90,7 +90,7 @@ inline void Audio::Drums::receiveAudio(BufferView output)
                     static_cast<float>(opBkeyAmountRight()) / 100.0f
                },
                DSP::FM::Internal::Operator {
-                    DSP::Generator::Waveform::Triangle,
+                    DSP::Generator::Waveform::Saw,
                     static_cast<float>(opCratio()),
                     static_cast<float>(opCattack()),
                     static_cast<float>(opCdecay()),
@@ -104,7 +104,7 @@ inline void Audio::Drums::receiveAudio(BufferView output)
                     static_cast<float>(opCkeyAmountRight()) / 100.0f
                },
                DSP::FM::Internal::Operator {
-                    DSP::Generator::Waveform::Triangle,
+                    DSP::Generator::Waveform::Noise,
                     static_cast<float>(opDratio()),
                     static_cast<float>(opDattack()),
                     static_cast<float>(opDdecay()),
