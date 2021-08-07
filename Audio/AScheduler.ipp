@@ -212,6 +212,8 @@ inline void Audio::AScheduler::buildGraph(void)
                 return true;
             // The delayed data must be re-delayed
             } else {
+                std::chrono::milliseconds ms(1000 * _processBlockSize / _sampleRate);
+                std::this_thread::sleep_for(ms);
                 return false;
             }
         // There is no data delayed
