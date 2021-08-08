@@ -163,12 +163,12 @@ private:
     Envelope _envelope;
 
     FMSchema _schema;
-    DSP::FM::Internal::OperatorCountType _longestEnvOpIndex { 0u };
+    std::uint32_t _longestEnvOpIndex { 0u };
 
     void updateLongestEnvOperatorIndex(const DSP::FM::Internal::OperatorArray<OperatorCount> &operators) noexcept
     {
         float maxEnvSize { 0.f };
-        for (DSP::FM::Internal::OperatorCountType i = 0; i < OperatorCount; ++i) {
+        for (auto i = 0u; i < OperatorCount; ++i) {
             if (const float envSize = operators[i].attack + operators[i].decay + operators[i].sustain + operators[i].release; envSize > maxEnvSize) {
                 maxEnvSize = envSize;
                 _longestEnvOpIndex = i;

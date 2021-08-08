@@ -71,4 +71,15 @@ namespace Utils
         randState = out;
         return out;
     }
+
+    [[nodiscard]] inline std::uint32_t fastRand(std::uint32_t &last) noexcept
+    {
+        std::uint32_t out { last };
+
+        out ^= out << 13u;
+        out ^= out >> 17u;
+        out ^= out << 5u;
+        last = out;
+        return out;
+    }
 }

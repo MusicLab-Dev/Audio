@@ -50,6 +50,8 @@ namespace Audio
     /** @brief Get the frequency of a key */
     [[nodiscard]] inline float GetNoteFrequencyDelta(const float rootFreq, const float semitoneDelta) noexcept
     {
+        if (semitoneDelta == 0.0f)
+            return rootFreq;
         return std::pow(2.0f, static_cast<float>(semitoneDelta / KeysPerOctave)) * rootFreq;
     }
 }
