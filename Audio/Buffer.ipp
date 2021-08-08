@@ -24,6 +24,11 @@ inline Audio::Internal::AllocationHeader *Audio::Internal::BufferAllocator::Allo
         return nullptr;
 }
 
+inline void Audio::Internal::BufferBase::clear(void) noexcept
+{
+    std::memset(reinterpret_cast<void *>(_header + 1), 0, _header->channelByteSize * static_cast<std::size_t>(_header->channelArrangement));
+}
+
 inline bool Audio::Internal::BufferBase::isZero(void) const noexcept
 {
     // We can assert that a buffer has at least 3 * sizeof(size_t) because its buffer data is aligned to cacheline size
@@ -83,8 +88,6 @@ inline void Audio::Buffer::copyRange(const Internal::BufferBase &target, const s
     }
 }
 
-#include <iostream>
-
 template<typename Type>
 inline void Audio::Buffer::resample(const SampleRate newSampleRate) noexcept
 {
@@ -100,4 +103,33 @@ inline void Audio::Buffer::resample(const SampleRate newSampleRate) noexcept
     //     resize(newSize * sizeof(Type), newSampleRate, channelArrangement(), format());
     // }
     // return DSP::Resampler<Type>::ResampleOctave(data<Type>)
+}
+
+template<typename Type>
+inline void Audio::Buffer::updateVolumeCache(void) noexcept
+{
+    static_assert(std::is_same_v<Type, float>, "Buffer::updateVolumeCache: Only float is implemented");
+
+    BufferVolumeCache cache {
+        0.0, 0.0
+    };
+    const auto count = size<Type>();
+    auto it = data<Type>();
+    const auto end = it + count;
+
+    while (it != end) {
+        const float abs = std::abs(*it);
+        if (abs > cache.peak)
+            cache.peak = abs;
+        cache.rms += abs * abs;
+        ++it;
+    }
+    cache.peak = ConvertSampleToDecibel(cache.peak);
+    cache.rms = ConvertSampleToDecibel(std::sqrt(cache.rms / static_cast<Type>(count)));
+    header()->volumeCache.store(cache);
+}
+
+inline void Audio::Buffer::resetVolumeCache(void) noexcept
+{
+    header()->volumeCache.store(BufferVolumeCache {});
 }

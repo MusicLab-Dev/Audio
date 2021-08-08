@@ -29,6 +29,7 @@ inline void Audio::Node::onAudioGenerationStarted(const BeatRange &range) noexce
 {
     // We process plugins from bottom to top
     _cache.clear();
+    _cache.resetVolumeCache();
     plugin()->onAudioGenerationStarted(range);
     for (auto &child : _children) {
         child->onAudioGenerationStarted(range);

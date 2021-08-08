@@ -102,6 +102,10 @@ public:
     [[nodiscard]] Buffer &cache(void) noexcept { return _cache; }
     [[nodiscard]] const Buffer &cache(void) const noexcept { return _cache; }
 
+    /** @brief Get the analysis request count */
+    [[nodiscard]] std::uint8_t &analysisRequestCount(void) noexcept { return _analysisRequestCount; }
+    [[nodiscard]] std::uint8_t analysisRequestCount(void) const noexcept { return _analysisRequestCount; }
+
     /** @brief Prepare the internal cache for a given audio output specifications
      *  Note that this function will recusrively call itself for every sub-children */
     void prepareCache(const AudioSpecs &specs);
@@ -118,7 +122,7 @@ private:
     Buffer              _cache; // 8
     Automations         _automations {}; // 8
     bool                _muted { false }; // 1
-    bool                _dirty { false }; // 1
+    std::uint8_t        _analysisRequestCount { 0 }; // 1
     IPlugin::Flags      _flags {}; // 2
     Color               _color {}; // 4
     Core::FlatString    _name {}; // 8

@@ -82,6 +82,8 @@ inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, P
             DSP::Merge<float>(_bufferStack, node().cache(), 1.0f, false);
             _bufferStack.clear();
         }
+        if (node().analysisRequestCount())
+            node().cache().template updateVolumeCache<float>();
     }
 }
 

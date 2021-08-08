@@ -11,6 +11,7 @@
 #include <atomic>
 #include <array>
 #include <memory_resource>
+#include <limits>
 
 #include "Base.hpp"
 
@@ -20,6 +21,12 @@ namespace Audio
     class BufferView;
 
     using BufferViews = Core::TinyVector<BufferView>;
+
+    struct BufferVolumeCache
+    {
+        DB peak { -std::numeric_limits<DB>::infinity() };
+        DB rms { -std::numeric_limits<DB>::infinity() };
+    };
 
     namespace Internal
     {
@@ -37,6 +44,7 @@ namespace Audio
             ChannelArrangement channelArrangement {};
             Format format {};
             // Chrono timestamp {}
+            std::atomic<BufferVolumeCache> volumeCache {};
             AllocationHeader *next { nullptr };
         };
     }
@@ -114,7 +122,7 @@ public:
     void swap(BufferBase &other) noexcept { std::swap(_header, other._header); }
 
     /** @brief Clear the internal content */
-    void clear(void) { std::memset(reinterpret_cast<void *>(_header + 1), 0, _header->channelByteSize * static_cast<std::size_t>(_header->channelArrangement)); }
+    void clear(void) noexcept;
 
     /** @brief Fast allocation check */
     [[nodiscard]] operator bool(void) const noexcept { return _header; }
@@ -170,8 +178,13 @@ public:
     template<typename Type = std::byte>
     [[nodiscard]] std::size_t capacity(void) const noexcept { return _header->capacity / sizeof(Type); }
 
+    /** @brief Get volume cache */
+    [[nodiscard]] BufferVolumeCache volumeCache(void) const noexcept { return _header->volumeCache.load(); }
+
+
     /** @brief Check if the buffer is filled of zero */
     [[nodiscard]] bool isZero(void) const noexcept;
+
 
 public: // Internal public functions for buffers compatibility
     /** @brief Get the allocation header */
@@ -231,6 +244,14 @@ public:
     /** @brief Resample the actual buffer, resize if needed */
     template<typename Type>
     void resample(const SampleRate newSampleRate) noexcept;
+
+
+    /** @brief Update internal volume cache */
+    template<typename Type>
+    void updateVolumeCache(void) noexcept;
+
+    /** @brief Reset internal volume cache */
+    void resetVolumeCache(void) noexcept;
 };
 
 static_assert_fit_eighth_cacheline(Audio::Buffer);

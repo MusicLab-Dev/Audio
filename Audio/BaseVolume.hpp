@@ -30,7 +30,13 @@ namespace Audio
 
     /** @brief Convert a sample value to the decibel unit */
     template<typename Type>
-    [[nodiscard]] inline DB ConvertSampleToDecibel(const Type value) noexcept { return 20.0f * std::log10(std::abs(value) / static_cast<double>(std::numeric_limits<Type>::max())); }
+    [[nodiscard]] inline DB ConvertSampleToDecibel(const Type value) noexcept
+    {
+        if constexpr (std::is_floating_point_v<Type>)
+            return 20.0f * std::log10(std::abs(value));
+        else
+            return 20.0f * static_cast<float>(std::log10(static_cast<double>(std::abs(value)) / static_cast<double>(std::numeric_limits<Type>::max())));
+    }
 
     /** @brief Convert a decibel value to sample unit */
     template<typename Type>

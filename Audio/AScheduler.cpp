@@ -10,6 +10,7 @@
 #include "AScheduler.hpp"
 
 using namespace Audio;
+using namespace std::chrono_literals;
 
 
 AScheduler::AScheduler(void)
