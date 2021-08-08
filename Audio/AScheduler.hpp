@@ -119,10 +119,7 @@ public:
     [[nodiscard]] SampleRate sampleRate(void) const noexcept { return _sampleRate; }
 
     /** @brief Setup processBeatSize & processBlockSize parameters with a desired processBlockSize */
-    void setProcessParamByBlockSize(const BlockSize processBlockSize, const SampleRate sampleRate) noexcept;
-
-    /** @brief Set the taget audio block size */
-    void setAudioBlockSize(const BlockSize blockSize) noexcept;
+    void setProcessParams(const BlockSize processBlockSize, const SampleRate sampleRate, const std::uint32_t cachedAudioFrames) noexcept;
 
 
     /** @brief Get the BPM / tempo */
@@ -253,11 +250,12 @@ private:
     std::atomic<Beat> _audioElapsedBeat { 0u }; // Represent elapsed beat since last play
     std::atomic<Beat> _audioBlockBeatSize { 0u }; // Used by the audio callback to determine how many beat elapsed
     BlockSize _audioBlockSize { 0u };
+    std::uint32_t _cachedAudioFrames { 0u };
     double _audioBlockBeatMissCount { 0.0 };
     double _audioBlockBeatMissOffset { 0.0 };
 
     /** @brief Audio callback queue */
-    static inline Core::SPSCQueue<std::uint8_t> _AudioQueue { 2048 * 4 };
+    static inline Core::SPSCQueue<std::uint8_t> _AudioQueue {};
 
 
     /** @brief Build a graph */

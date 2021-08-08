@@ -204,32 +204,11 @@ inline void Audio::AScheduler::buildGraph(void)
         return;
 
     auto &graph = this->graph<Playback>();
-    auto conditional = graph.emplace([this] {
-        if (_overflowCache) {
-            // The delayed data has been consumed
-            if (flushOverflowCache()) {
-                _overflowCache.release();
-                return true;
-            // The delayed data must be re-delayed
-            } else {
-                std::chrono::milliseconds ms(1000 * _processBlockSize / _sampleRate);
-                std::this_thread::sleep_for(ms);
-                return false;
-            }
-        // There is no data delayed
-        } else
-            return true;
-    });
     auto noteTask = MakeSchedulerTask<Playback, true, false>(graph, parent->flags(), this, parent, nullptr);
     noteTask.first.setName(parent->name() + "_control_note");
     auto audioTask = MakeSchedulerTask<Playback, false, true>(graph, parent->flags(), this, parent, nullptr);
     audioTask.first.setName(parent->name() + "_audio");
 
-    auto overflowTask = graph.emplace([]{
-        std::this_thread::sleep_for(std::chrono::nanoseconds(5000));
-    });
-    conditional.precede(overflowTask);
-    conditional.precede(noteTask.first);
     // If master is the only node, connect his tasks
     if (parent->children().empty()) {
         noteTask.first.precede(audioTask.first);

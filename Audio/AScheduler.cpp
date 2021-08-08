@@ -19,18 +19,26 @@ AScheduler::AScheduler(void)
     for (auto &cache : _graphs) {
         cache.graph.setRepeatCallback([this](void) -> bool {
             bool exited = false;
-            if (_overflowCache) {
-                exited = onAudioQueueBusy();
+            getCurrentBeatRange().increment(_processBeatSize);
+            processBeatMiss();
+            if (isLooping())
+                processLooping();
+            if (produceAudioData(_project->master()->cache())) {
+                exited = onAudioBlockGenerated();
             } else {
-                getCurrentBeatRange().increment(_processBeatSize);
-                processBeatMiss();
-                if (isLooping())
-                    processLooping();
-                if (produceAudioData(_project->master()->cache())) {
-                    exited = onAudioBlockGenerated();
-                } else {
+                do {
                     exited = onAudioQueueBusy();
-                }
+                    if (exited)
+                        break;
+                    // Sleep for a 1/2 realtime frame if there are cached frame, else 1/3
+                    std::this_thread::sleep_for(
+                        std::chrono::milliseconds(
+                            (_cachedAudioFrames ? 1000 / 2 : 1000 / 3) * _processBlockSize / _sampleRate
+                        )
+                    );
+                } while (!flushOverflowCache());
+                if (!exited)
+                    exited = onAudioBlockGenerated();
             }
             if (exited) {
                 std::cout << "Shutting down process graph, clearing cache" << std::endl;
@@ -132,14 +140,19 @@ bool AScheduler::consumeAudioData(std::uint8_t *data, const std::size_t size)
     return true;
 }
 
-void AScheduler::setProcessParamByBlockSize(const BlockSize processBlockSize, const SampleRate sampleRate) noexcept
+void AScheduler::setProcessParams(const BlockSize processBlockSize, const SampleRate sampleRate, const std::uint32_t cachedAudioFrames) noexcept
 {
     const auto newTempo = tempo();
 
     _sampleRate = sampleRate;
     _processBlockSize = processBlockSize;
+    _audioBlockSize = processBlockSize;
+    _cachedAudioFrames = cachedAudioFrames;
     _processBeatSize = ComputeBeatSize(processBlockSize, newTempo, _sampleRate, _beatMissOffset);
-    _audioBlockBeatSize = ComputeBeatSize(_audioBlockSize, newTempo, _sampleRate, _audioBlockBeatMissOffset);
+    _audioBlockBeatSize = _processBeatSize;
+    _audioBlockBeatMissOffset = _beatMissOffset;
+    _AudioQueue.resize(_cachedAudioFrames * _audioBlockSize * sizeof(float));
+    std::cout << "ProcessParams: BlockSize " << processBlockSize << " SampleRate " << sampleRate << " cachedAudioFrames " << cachedAudioFrames << " queue size " << _cachedAudioFrames * _audioBlockSize * sizeof(float) << std::endl;
     for (auto &cache : _graphs)
         cache.currentBeatRange = { cache.currentBeatRange.from, cache.currentBeatRange.from + _processBeatSize };
 }
@@ -154,10 +167,4 @@ void AScheduler::setBPM(const BPM bpm) noexcept
     _audioBlockBeatSize = ComputeBeatSize(_audioBlockSize, newTempo, _sampleRate, _audioBlockBeatMissOffset);
     for (auto &cache : _graphs)
         cache.currentBeatRange = { cache.currentBeatRange.from, cache.currentBeatRange.from + _processBeatSize };
-}
-
-void AScheduler::setAudioBlockSize(const BlockSize blockSize) noexcept
-{
-    _audioBlockSize = blockSize;
-    _audioBlockBeatSize = ComputeBeatSize(_audioBlockSize, tempo(), _sampleRate, _audioBlockBeatMissOffset);
 }

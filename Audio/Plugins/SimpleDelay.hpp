@@ -115,6 +115,8 @@ public:
 
     virtual void onAudioGenerationStarted(const BeatRange &range);
 
+    virtual void onAudioParametersChanged(void);
+
 private:
     DSP::BasicDelay<float> _delay;
     Buffer _inputCache;

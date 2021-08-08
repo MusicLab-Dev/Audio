@@ -125,6 +125,10 @@ public:
     static PhysicalDescriptors GetPhysicalDescriptors(const bool recordInputs = true, const bool recordOutputs = true);
     static void DebugPhysicalDescriptors(void);
 
+    /** @brief Set internal logical descriptor */
+    void setLogicalDescriptor(const LogicalDescriptor &descriptor) noexcept
+        { _descriptor = descriptor; }
+
     /** @brief Reload the device interface according to the internal descriptor */
     void reloadDevice(void);
 

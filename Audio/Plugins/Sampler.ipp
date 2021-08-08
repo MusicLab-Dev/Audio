@@ -40,18 +40,15 @@ inline void Audio::Sampler::loadSample(const std::string_view &path)
 
 inline void Audio::Sampler::onAudioParametersChanged(void)
 {
-    for (auto &buffer : _buffers) {
-        const auto newSize = GetFormatByteLength(audioSpecs().format) * audioSpecs().processBlockSize;
-        buffer.resize(newSize, audioSpecs().sampleRate, audioSpecs().channelArrangement, audioSpecs().format);
-    }
+    if (!_externalPaths.empty())
+        loadSample<float>(_externalPaths[0]);
 }
 
 inline void Audio::Sampler::setExternalPaths(const ExternalPaths &paths)
 {
     _externalPaths = paths;
-    if (!paths.empty()) {
-        loadSample<float>(paths[0]);
-    }
+    if (!_externalPaths.empty())
+        loadSample<float>(_externalPaths[0]);
 }
 
 inline void Audio::Sampler::sendNotes(const NoteEvents &notes, const BeatRange &range)

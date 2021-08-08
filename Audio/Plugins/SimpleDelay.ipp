@@ -8,11 +8,14 @@
 #include <Audio/DSP/Merge.hpp>
 #include <Audio/DSP/FIR.hpp>
 
-inline void Audio::SimpleDelay::onAudioGenerationStarted(const BeatRange &range)
+inline void Audio::SimpleDelay::onAudioParametersChanged(void)
 {
-    UNUSED(range);
     _delay.reset(audioSpecs(), 10.0f, static_cast<float>(delayTime()));
     _inputCache.resize(GetFormatByteLength(audioSpecs().format) * audioSpecs().processBlockSize, audioSpecs().sampleRate, audioSpecs().channelArrangement, audioSpecs().format);
+}
+
+inline void Audio::SimpleDelay::onAudioGenerationStarted(const BeatRange &)
+{
     _inputCache.clear();
 }
 

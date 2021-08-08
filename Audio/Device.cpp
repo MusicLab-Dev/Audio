@@ -125,6 +125,7 @@ void Device::reloadDevice(void)
     _descriptor.sampleRate = static_cast<SampleRate>(acquiredSpec.freq);
     _descriptor.format = ReverseFormat(acquiredSpec.format);
     _descriptor.channelArrangement = static_cast<ChannelArrangement>(acquiredSpec.channels);
+    std::cout << "Acquired device: " << _descriptor.blockSize << " " << _descriptor.sampleRate << std::endl;
 }
 
 void Device::DebugPhysicalDescriptors(void)
