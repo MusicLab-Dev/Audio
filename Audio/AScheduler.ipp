@@ -38,53 +38,22 @@ inline void Audio::AScheduler::addEvent(Apply &&apply, Notify &&notify)
     }
 }
 
-inline const Flow::Graph &Audio::AScheduler::getCurrentGraph(void) const noexcept
-{
-    switch (playbackMode()) {
-    case PlaybackMode::Production:
-        return graph<PlaybackMode::Production>();
-    case PlaybackMode::Live:
-        return graph<PlaybackMode::Live>();
-    case PlaybackMode::Partition:
-        return graph<PlaybackMode::Partition>();
-    case PlaybackMode::OnTheFly:
-        return graph<PlaybackMode::OnTheFly>();
-    default:
-        return graph<PlaybackMode::Production>();
-    }
-}
-
-inline const Audio::BeatRange &Audio::AScheduler::getCurrentBeatRange(void) const noexcept
-{
-    switch (playbackMode()) {
-    case PlaybackMode::Production:
-        return currentBeatRange<PlaybackMode::Production>();
-    case PlaybackMode::Live:
-        return currentBeatRange<PlaybackMode::Live>();
-    case PlaybackMode::Partition:
-        return currentBeatRange<PlaybackMode::Partition>();
-    case PlaybackMode::OnTheFly:
-        return currentBeatRange<PlaybackMode::OnTheFly>();
-    default:
-        return currentBeatRange<PlaybackMode::Production>();
-    }
-}
-
 template<Audio::PlaybackMode Playback>
 inline void Audio::AScheduler::invalidateGraph(void)
 {
-    std::cout << "invalidate graph " << static_cast<std::size_t>(Playback) << std::endl;
-
     if (!_project)
         throw std::logic_error("AScheduler::invalidateGraph: Scheduler has no linked project");
-    getCurrentGraph().clear();
-    _dirtyFlags[static_cast<std::size_t>(playbackMode())] = false;
+    graph().clear();
     if constexpr (Playback == PlaybackMode::Partition || Playback == PlaybackMode::OnTheFly) {
         if (!_partitionNode)
             throw std::logic_error("AScheduler::invalidateGraph: Scheduler has no linked partition node");
         if (_partitionIndex >= _partitionNode->partitions().size())
             throw std::logic_error("AScheduler::invalidateGraph: Partition node doesn't have a partition at given index");
     }
+    if constexpr (Playback == PlaybackMode::Export)
+        graph().setRepeatCallback([this] { return onExportGraphCompleted(); });
+    else
+        graph().setRepeatCallback([this] { return onPlaybackGraphCompleted(); });
     buildGraph<Playback>();
 }
 
@@ -92,7 +61,7 @@ template<bool SetDirty>
 inline void Audio::AScheduler::invalidateCurrentGraph(void)
 {
     if constexpr (SetDirty)
-        setDirtyFlags();
+        graph().clear();
     else {
         switch (playbackMode()) {
         case PlaybackMode::Production:
@@ -107,16 +76,11 @@ inline void Audio::AScheduler::invalidateCurrentGraph(void)
     }
 }
 
-inline void Audio::AScheduler::setDirtyFlags(void) noexcept
-{
-    _dirtyFlags.fill(true);
-}
-
 inline void Audio::AScheduler::wait(void) noexcept_ndebug
 {
     coreAssert(state() == State::Pause,
         throw std::logic_error("Audio::AScheduler::wait: Scheduler must be in paused mode before wait is called"));
-    getCurrentGraph().wait();
+    graph().wait();
 }
 
 inline void Audio::AScheduler::dispatchApplyEvents(void)
@@ -138,8 +102,8 @@ inline void Audio::AScheduler::dispatchNotifyEvents(void)
 inline void Audio::AScheduler::scheduleCurrentGraph(void)
 {
     _hasExitedGraph = false;
-    onAudioProcessStarted(getCurrentBeatRange());
-    _scheduler->schedule(getCurrentGraph());
+    onAudioProcessStarted(currentBeatRange());
+    _scheduler->schedule(graph());
 }
 
 inline void Audio::AScheduler::prepareCache(const AudioSpecs &specs)
@@ -203,10 +167,9 @@ inline void Audio::AScheduler::buildGraph(void)
     if (!parent)
         return;
 
-    auto &graph = this->graph<Playback>();
-    auto noteTask = MakeSchedulerTask<Playback, true, false>(graph, parent->flags(), this, parent, nullptr);
+    auto noteTask = MakeSchedulerTask<Playback, true, false>(graph(), parent->flags(), this, parent, nullptr);
     noteTask.first.setName(parent->name() + "_control_note");
-    auto audioTask = MakeSchedulerTask<Playback, false, true>(graph, parent->flags(), this, parent, nullptr);
+    auto audioTask = MakeSchedulerTask<Playback, false, true>(graph(), parent->flags(), this, parent, nullptr);
     audioTask.first.setName(parent->name() + "_audio");
 
     // If master is the only node, connect his tasks
@@ -222,7 +185,7 @@ inline void Audio::AScheduler::buildGraph(void)
     if constexpr (Playback == PlaybackMode::Partition || Playback == PlaybackMode::OnTheFly) {
         parent = parent->parent();
         while (parent) {
-            auto parentAudioTask = MakeSchedulerTask<Playback, false, true>(graph, parent->flags(), this, parent, nullptr);
+            auto parentAudioTask = MakeSchedulerTask<Playback, false, true>(graph(), parent->flags(), this, parent, nullptr);
             parentAudioTask.first.setName(parent->name() + "_audio");
             parentAudioTask.first.succeed(audioTask.first);
             audioTask = parentAudioTask;
@@ -236,15 +199,15 @@ inline void Audio::AScheduler::buildNodeTask(const Node *node,
         std::pair<Flow::Task, const NoteEvents *> &parentNoteTask, std::pair<Flow::Task, const NoteEvents *> &parentAudioTask)
 {
     if (node->children().empty()) {
-        auto task = MakeSchedulerTask<Playback, true, true>(graph<Playback>(), node->flags(), this, const_cast<Node *>(node), parentNoteTask.second);
+        auto task = MakeSchedulerTask<Playback, true, true>(graph(), node->flags(), this, const_cast<Node *>(node), parentNoteTask.second);
         task.first.setName(node->name().toStdString() + "_control_note_audio");
         task.first.succeed(parentNoteTask.first);
         task.first.precede(parentAudioTask.first);
         return;
     }
-    auto noteTask = MakeSchedulerTask<Playback, true, false>(graph<Playback>(), node->flags(), this, const_cast<Node *>(node), parentNoteTask.second);
+    auto noteTask = MakeSchedulerTask<Playback, true, false>(graph(), node->flags(), this, const_cast<Node *>(node), parentNoteTask.second);
     noteTask.first.setName(node->name().toStdString() + "_control_note");
-    auto audioTask = MakeSchedulerTask<Playback, false, true>(graph<Playback>(), node->flags(), this, const_cast<Node *>(node), parentNoteTask.second);
+    auto audioTask = MakeSchedulerTask<Playback, false, true>(graph(), node->flags(), this, const_cast<Node *>(node), parentNoteTask.second);
     audioTask.first.setName(node->name().toStdString() + "_audio");
     noteTask.first.succeed(parentNoteTask.first);
 
@@ -254,11 +217,11 @@ inline void Audio::AScheduler::buildNodeTask(const Node *node,
     audioTask.first.precede(parentAudioTask.first);
 }
 
-inline Audio::Beat Audio::AScheduler::ComputeBeatSize(const BlockSize blockSize, const Tempo tempo, const SampleRate sampleRate, double &beatMissOffset) noexcept
+inline Audio::Beat Audio::AScheduler::ComputeBeatSize(const BlockSize blockSize, const Tempo tempo, const SampleRate sampleRate, float &beatMissOffset) noexcept
 {
-    const double beats = (static_cast<double>(blockSize) / sampleRate) * tempo * Audio::BeatPrecision;
-    const double beatsFloor = std::floor(beats);
-    const double beatsCeil = std::ceil(beats);
+    const float beats = (static_cast<float>(blockSize) / sampleRate) * tempo * Audio::BeatPrecision;
+    const float beatsFloor = std::floor(beats);
+    const float beatsCeil = std::ceil(beats);
 
     if (auto ceilDt = beatsCeil - beats, floorDt = beats - beatsFloor; ceilDt < floorDt) {
         beatMissOffset = -ceilDt;
@@ -269,11 +232,11 @@ inline Audio::Beat Audio::AScheduler::ComputeBeatSize(const BlockSize blockSize,
     }
 }
 
-inline Audio::BlockSize Audio::AScheduler::ComputeSampleSize(const Beat blockBeatSize, const Tempo tempo, const SampleRate sampleRate, const double beatMissOffset, const double beatMissCount) noexcept
+inline Audio::BlockSize Audio::AScheduler::ComputeSampleSize(const Beat blockBeatSize, const Tempo tempo, const SampleRate sampleRate, const float beatMissOffset, const float beatMissCount) noexcept
 {
     if (beatMissOffset > 0.0) {
-        return static_cast<BlockSize>(((static_cast<double>(blockBeatSize) - beatMissOffset + beatMissCount) / (tempo * Audio::BeatPrecision)) * sampleRate);
+        return static_cast<BlockSize>(((static_cast<float>(blockBeatSize) - beatMissOffset + beatMissCount) / (tempo * Audio::BeatPrecision)) * sampleRate);
     } else {
-        return static_cast<BlockSize>(((static_cast<double>(blockBeatSize) + beatMissOffset - beatMissCount) / (tempo * Audio::BeatPrecision)) * sampleRate);
+        return static_cast<BlockSize>(((static_cast<float>(blockBeatSize) + beatMissOffset - beatMissCount) / (tempo * Audio::BeatPrecision)) * sampleRate);
     }
 }

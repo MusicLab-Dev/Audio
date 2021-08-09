@@ -94,7 +94,7 @@ void Interpreter::prepareCache(void)
 
     std::cout << "scheduler::processBeatSize: " << _scheduler.processBeatSize() << std::endl;
     std::cout << "scheduler::LoopingRange: " << _scheduler.loopBeatRange() << std::endl;
-    std::cout << "beatRange: " << _scheduler.getCurrentBeatRange() << std::endl;
+    std::cout << "beatRange: " << _scheduler.currentBeatRange() << std::endl;
     // exit(0);
 }
 

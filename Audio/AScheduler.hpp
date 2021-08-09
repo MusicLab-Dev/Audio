@@ -29,7 +29,7 @@ class alignas_cacheline Audio::AScheduler
 {
 public:
     /** @brief Internal play state */
-    enum class State : int {
+    enum class State : std::uint32_t {
         Pause, Play
     };
 
@@ -48,10 +48,6 @@ public:
         Flow::Graph graph {};
         BeatRange currentBeatRange {};
     };
-
-    /** @brief Caches of every playback mode */
-    using PlaybackGraphs = std::array<PlaybackGraph, Audio::PlaybackModeCount>;
-
 
     /** @brief Default constructor (will crash if you play without project !) */
     AScheduler(void);
@@ -94,17 +90,13 @@ public:
     void setPlaybackMode(const PlaybackMode mode) noexcept { _playbackMode = mode; }
 
 
-    /** @brief Get a generation graph */
-    template<PlaybackMode Playback>
-    [[nodiscard]] Flow::Graph &graph(void) noexcept { return _graphs[static_cast<std::size_t>(Playback)].graph; }
-    template<PlaybackMode Playback>
-    [[nodiscard]] const Flow::Graph &graph(void) const noexcept { return _graphs[static_cast<std::size_t>(Playback)].graph; }
+    /** @brief Get the currently used graph (depend of playback mode) */
+    [[nodiscard]] const Flow::Graph &graph(void) const noexcept { return _graphCache.graph; }
+    [[nodiscard]] Flow::Graph &graph(void) noexcept { return _graphCache.graph; }
 
-    /** @brief Get an internal current beat range */
-    template<PlaybackMode Playback>
-    [[nodiscard]] const BeatRange &currentBeatRange(void) const noexcept { return _graphs[static_cast<std::size_t>(Playback)].currentBeatRange; }
-    template<PlaybackMode Playback>
-    [[nodiscard]] BeatRange &currentBeatRange(void) noexcept { return _graphs[static_cast<std::size_t>(Playback)].currentBeatRange; }
+    /** @brief Get the currently used beat range (depend of playback mode) */
+    [[nodiscard]] const BeatRange &currentBeatRange(void) const noexcept { return _graphCache.currentBeatRange; }
+    [[nodiscard]] BeatRange &currentBeatRange(void) noexcept { return _graphCache.currentBeatRange; }
 
 
     /** @brief Get / Set the partition node */
@@ -139,17 +131,7 @@ public:
     void addEvent(Apply &&apply, Notify &&notify);
 
 
-    /** @brief Get the currently used graph (depend of playback mode) */
-    [[nodiscard]] const Flow::Graph &getCurrentGraph(void) const noexcept;
-    [[nodiscard]] Flow::Graph &getCurrentGraph(void) noexcept
-        { return const_cast<Flow::Graph &>(const_cast<const AScheduler *>(this)->getCurrentGraph()); }
-
-    /** @brief Get the currently used beat range (depend of playback mode) */
-    [[nodiscard]] const BeatRange &getCurrentBeatRange(void) const noexcept;
-    [[nodiscard]] BeatRange &getCurrentBeatRange(void) noexcept
-        { return const_cast<BeatRange &>(const_cast<const AScheduler *>(this)->getCurrentBeatRange()); }
-
-    /** @brief Invalidates a graph */
+    /** @brief Invalidates graph */
     template<PlaybackMode Playback>
     void invalidateGraph(void);
     template<bool SetDirty = true>
@@ -166,9 +148,6 @@ public:
     /** @brief Virtual callback called
      *  @return true if the current graph has to stop */
     [[nodiscard]] virtual bool onAudioQueueBusy(void) = 0;
-
-    /** @brief Set all dirty flags to true */
-    void setDirtyFlags(void) noexcept;
 
     /** @brief Will wait until the processing graph is completed
      *  Never call this without setting state to 'Pause' during the whole wait call */
@@ -196,14 +175,19 @@ public:
 
 
     /** @brief Get the current beat miss offset / count */
-    [[nodiscard]] double beatMissOffset(void) const noexcept { return _beatMissOffset; }
-    [[nodiscard]] double beatMissCount(void) const noexcept { return _beatMissCount; }
+    [[nodiscard]] float beatMissOffset(void) const noexcept { return _beatMissOffset; }
+    [[nodiscard]] float beatMissCount(void) const noexcept { return _beatMissCount; }
+
+
+    /** @brief Start the exportation of the project */
+    void exportProject(const std::string_view &destination) noexcept;
+
 
     /** @brief Compute a beat size out of a sample size */
-    [[nodiscard]] static Beat ComputeBeatSize(const BlockSize blockSize, const Tempo tempo, const SampleRate sampleRate, double &beatMissOffset) noexcept;
+    [[nodiscard]] static Beat ComputeBeatSize(const BlockSize blockSize, const Tempo tempo, const SampleRate sampleRate, float &beatMissOffset) noexcept;
 
     /** @brief Compute a sample size out of a beat size */
-    [[nodiscard]] static BlockSize ComputeSampleSize(const Beat blockBeatSize, const Tempo tempo, const SampleRate sampleRate, const double beatMissOffset, const double beatMissCount) noexcept;
+    [[nodiscard]] static BlockSize ComputeSampleSize(const Beat blockBeatSize, const Tempo tempo, const SampleRate sampleRate, const float beatMissOffset, const float beatMissCount) noexcept;
 
 protected:
     /** @brief Dispatch apply events without clearing event list */
@@ -237,22 +221,19 @@ private:
     bool _hasExitedGraph { true };
     std::uint32_t _partitionIndex { 0 };
     Node *_partitionNode { nullptr };
-    double _beatMissCount { 0.0 };
-    double _beatMissOffset { 0.0 };
-    std::array<bool, Audio::PlaybackModeCount> _dirtyFlags {};
+    float _beatMissCount { 0.0 };
+    float _beatMissOffset { 0.0 };
     std::uint32_t _processLoopCrop { 0u };
     BPM _bpm { 120.0f };
+    PlaybackGraph _graphCache {};
 
-    // Cacheline 3
-    PlaybackGraphs _graphs {};
-
-    // Cacheline 4 - High frequency atomic read / write
+    // Cacheline 3 - High frequency atomic read / write
     std::atomic<Beat> _audioElapsedBeat { 0u }; // Represent elapsed beat since last play
     std::atomic<Beat> _audioBlockBeatSize { 0u }; // Used by the audio callback to determine how many beat elapsed
     BlockSize _audioBlockSize { 0u };
     std::uint32_t _cachedAudioFrames { 0u };
-    double _audioBlockBeatMissCount { 0.0 };
-    double _audioBlockBeatMissOffset { 0.0 };
+    float _audioBlockBeatMissCount { 0.0 };
+    float _audioBlockBeatMissOffset { 0.0 };
 
     /** @brief Audio callback queue */
     static inline Core::SPSCQueue<std::uint8_t> _AudioQueue {};
@@ -268,9 +249,10 @@ private:
 
 
     /** @brief Will feed audio data into the global queue */
-    bool produceAudioData(const BufferView output);
+    [[nodiscard]] bool produceAudioData(const BufferView output);
 
-    bool flushOverflowCache(void);
+    /** @brief Tries to flush to overflow cache */
+    [[nodiscard]] bool flushOverflowCache(void);
 
     /** @brief Process looping, it modify the currentBeatRange */
     void processLooping(void) noexcept;
@@ -281,9 +263,16 @@ private:
 
     /** @brief Schedule the current graph */
     void scheduleCurrentGraph(void);
+
+    /** @brief Callback emited by graph when completed */
+    [[nodiscard]] bool onPlaybackGraphCompleted(void) noexcept;
+
+    /** @brief Callback emited by graph when completed */
+    [[nodiscard]] bool onExportGraphCompleted(void) noexcept;
 };
 
-static_assert_sizeof(Audio::AScheduler, Core::CacheLineSize * 4);
+static_assert_alignof_cacheline(Audio::AScheduler);
+static_assert_sizeof(Audio::AScheduler, Core::CacheLineSize * 3);
 
 #include "SchedulerTask.ipp"
 #include "AScheduler.ipp"

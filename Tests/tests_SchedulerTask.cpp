@@ -96,14 +96,14 @@ TEST(SchedulerTask, NotesCollection)
 
         scheduler.invalidateCurrentGraph();
 
-        auto &graph = scheduler.getCurrentGraph();
+        auto &graph = scheduler.currentGraph;
         EXPECT_EQ(graph.size(), 6);
 
 
         // scheduler.graph().setRunning(true);
         for (auto i = 0u; i < MaxFrames; ++i) {
             std::cout << "=====\n\n";
-            scheduler.getCurrentBeatRange() = BeatRange({ i * FrameSize, (i + 1) * FrameSize });
+            scheduler.currentBeatRange() = BeatRange({ i * FrameSize, (i + 1) * FrameSize });
             scheduler.setState(AScheduler::State::Play);
             scheduler.setState(AScheduler::State::Pause);
             scheduler.wait();
