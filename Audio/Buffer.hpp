@@ -231,8 +231,12 @@ public:
     void release(void) noexcept { if (header()) Internal::BufferAllocator::Deallocate(header()); setHeader(nullptr); }
 
 
-    /** @brief Resize the buffer if needed to fit requirements */
+    /** @brief Resize the buffer if needed to fit requirements (the buffer data is undefined and must be reset manually) */
     void resize(const std::size_t channelByteSize, const SampleRate sampleRate, const ChannelArrangement channelArrangement, const Format format) noexcept;
+
+    /** @brief Resize an allocated buffer if needed to fit size requirement (the buffer data is preserved)
+     *  The buffer must be already allocated before calling this function */
+    void grow(const std::size_t channelByteSize) noexcept;
 
     /** @brief Copy the target buffer */
     void copy(const Internal::BufferBase &target);

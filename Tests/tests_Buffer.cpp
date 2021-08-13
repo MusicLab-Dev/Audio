@@ -91,3 +91,19 @@ TEST(Buffer, BufferSmallCopy)
     for (auto i = 0; i < 8; ++i)
         ASSERT_EQ(source.data<char>()[i], 42);
 }
+
+TEST(Buffer, BufferGrow)
+{
+    Buffer source(10u, 44100u, ChannelArrangement::Stereo, Format::Fixed8);
+    std::memset(source.byteData(), 42, source.size<std::uint8_t>());
+    const auto size = source.size<std::uint8_t>();
+    for (auto i = 0u; i < size; ++i)
+        ASSERT_EQ(source.byteData()[i], 42);
+    source.grow(20u);
+    std::memset(source.byteData() + size, 24, size);
+    const auto newSize = source.size<std::uint8_t>();
+    for (auto i = 0u; i < size; ++i)
+        ASSERT_EQ(source.byteData()[i], 42);
+    for (auto i = size; i < newSize; ++i)
+        ASSERT_EQ(source.byteData()[i], 24);
+}
