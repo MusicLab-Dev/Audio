@@ -16,7 +16,7 @@ namespace Audio
     using ProjectPtr = std::shared_ptr<Project>;
 }
 
-class alignas_cacheline Audio::Project
+class alignas_quarter_cacheline Audio::Project
 {
 public:
     /** @brief Construct a new project with a given name */
@@ -42,6 +42,6 @@ private:
     Core::FlatString    _name {};
 };
 
-static_assert_fit_cacheline(Audio::Project);
+static_assert_fit_quarter_cacheline(Audio::Project);
 
 #include "Project.ipp"

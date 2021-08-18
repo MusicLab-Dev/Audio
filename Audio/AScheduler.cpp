@@ -133,9 +133,10 @@ void AScheduler::setBPM(const BPM bpm) noexcept
     currentBeatRange().to = currentBeatRange().from + _processBeatSize;
 }
 
-void AScheduler::exportProject(const std::string_view &) noexcept
+void AScheduler::exportProject(void) noexcept
 {
-
+    setPlaybackMode(PlaybackMode::Export);
+    invalidateGraph<PlaybackMode::Export>();
 }
 
 bool AScheduler::onPlaybackGraphCompleted(void) noexcept
@@ -173,5 +174,15 @@ bool AScheduler::onPlaybackGraphCompleted(void) noexcept
 
 bool AScheduler::onExportGraphCompleted(void) noexcept
 {
-    return onPlaybackGraphCompleted();
+    bool exited = false;
+    currentBeatRange().increment(_processBeatSize);
+    processBeatMiss();
+    // if (isLooping())
+    //     processLooping();
+    exited = onExportBlockGenerated();
+    if (exited) {
+        std::cout << "Shutting down export graph, clearing cache" << std::endl;
+        return false;
+    } else
+        return true;
 }

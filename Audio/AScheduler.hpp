@@ -145,9 +145,13 @@ public:
      *  @return true if the current graph has to stop */
     [[nodiscard]] virtual bool onAudioBlockGenerated(void) = 0;
 
-    /** @brief Virtual callback called
+    /** @brief Virtual callback called when a frame couldn't be inserted into the audio queue
      *  @return true if the current graph has to stop */
     [[nodiscard]] virtual bool onAudioQueueBusy(void) = 0;
+
+    /** @brief Virtual callback called when an export block has been generated
+     *  @return true if the export graph has to stop */
+    [[nodiscard]] virtual bool onExportBlockGenerated(void) = 0;
 
     /** @brief Will wait until the processing graph is completed
      *  Never call this without setting state to 'Pause' during the whole wait call */
@@ -180,7 +184,7 @@ public:
 
 
     /** @brief Start the exportation of the project */
-    void exportProject(const std::string_view &destination) noexcept;
+    void exportProject(void) noexcept;
 
 
     /** @brief Compute a beat size out of a sample size */
