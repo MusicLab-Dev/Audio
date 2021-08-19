@@ -95,6 +95,10 @@ set(AudioPluginsSources
     ${AudioPluginsDir}/Arpeggiator.ipp
     ${AudioPluginsDir}/Chords.hpp
     ${AudioPluginsDir}/Chords.ipp
+    ${AudioPluginsDir}/Drums.hpp
+    ${AudioPluginsDir}/Drums.ipp
+    ${AudioPluginsDir}/Kick.hpp
+    ${AudioPluginsDir}/Kick.ipp
 )
 
 set(AudioPluginManagerDir ${AudioPluginsDir}/Managers)

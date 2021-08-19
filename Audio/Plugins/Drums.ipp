@@ -60,147 +60,75 @@ inline void Audio::Drums::receiveAudio(BufferView output)
 
             // CONTROL_MAP(brightness, opBvolume, )
             // opAvolume(brightness());
-            // _fmManager.processSchema<true>(realOut, realOutSize, outGain, readIndex, key, rootFrequency, {
-            //    DSP::FM::Internal::Operator {
-            //         DSP::Generator::Waveform::Sine,
-            //         static_cast<float>(opAratio()),
-            //         static_cast<float>(opAattack()),
-            //         static_cast<float>(opAdecay()),
-            //         static_cast<float>(opAsustain()),
-            //         static_cast<float>(opArelease()),
-            //         ConvertDecibelToRatio(static_cast<float>(opAvolume())),
-            //         static_cast<float>(opAdetune()),
-            //         static_cast<std::uint32_t>(opAfeedback()),
-            //         static_cast<Key>(69u),
-            //         static_cast<float>(opAkeyAmountLeft()) / 100.0f,
-            //         static_cast<float>(opAkeyAmountRight()) / 100.0f
-            //    },
-            //    DSP::FM::Internal::Operator {
-            //         DSP::Generator::Waveform::Triangle,
-            //         static_cast<float>(opBratio()),
-            //         static_cast<float>(opBattack()),
-            //         static_cast<float>(opBdecay()),
-            //         static_cast<float>(opBsustain()),
-            //         static_cast<float>(opBrelease()),
-            //         ConvertDecibelToRatio(static_cast<float>(opBvolume())),
-            //         static_cast<float>(opBdetune()),
-            //         static_cast<std::uint32_t>(opBfeedback()),
-            //         static_cast<Key>(69u),
-            //         static_cast<float>(opBkeyAmountLeft()) / 100.0f,
-            //         static_cast<float>(opBkeyAmountRight()) / 100.0f
-            //    },
-            //    DSP::FM::Internal::Operator {
-            //         DSP::Generator::Waveform::Saw,
-            //         static_cast<float>(opCratio()),
-            //         static_cast<float>(opCattack()),
-            //         static_cast<float>(opCdecay()),
-            //         static_cast<float>(opCsustain()),
-            //         static_cast<float>(opCrelease()),
-            //         ConvertDecibelToRatio(static_cast<float>(opCvolume())),
-            //         static_cast<float>(opCdetune()),
-            //         static_cast<std::uint32_t>(opCfeedback()),
-            //         static_cast<Key>(69u),
-            //         static_cast<float>(opCkeyAmountLeft()) / 100.0f,
-            //         static_cast<float>(opCkeyAmountRight()) / 100.0f
-            //    },
-            //    DSP::FM::Internal::Operator {
-            //         DSP::Generator::Waveform::Noise,
-            //         static_cast<float>(opDratio()),
-            //         static_cast<float>(opDattack()),
-            //         static_cast<float>(opDdecay()),
-            //         static_cast<float>(opDsustain()),
-            //         static_cast<float>(opDrelease()),
-            //         ConvertDecibelToRatio(static_cast<float>(opDvolume())),
-            //         static_cast<float>(opDdetune()),
-            //         static_cast<std::uint32_t>(opDfeedback()),
-            //         static_cast<Key>(69u),
-            //         static_cast<float>(opDkeyAmountLeft()) / 100.0f,
-            //         static_cast<float>(opDkeyAmountRight()) / 100.0f
-            //    }
-            // },
-            // DSP::FM::Internal::PitchOperator {
-            //     static_cast<float>(pitchAttack()),
-            //     static_cast<float>(pitchPeak()),
-            //     static_cast<float>(pitchDecay()),
-            //     static_cast<float>(pitchSustain()),
-            //     static_cast<float>(pitchRelease()),
-            //     static_cast<float>(pitchVolume())
-            // });
-            _fmManager.processSchema<true>(realOut, realOutSize, 1.0f, readIndex, key, rootFrequency, {
+            _fmManager.processSchema<true>(realOut, realOutSize, outGain, readIndex, key, rootFrequency, {
                DSP::FM::Internal::Operator {
                     DSP::Generator::Waveform::Sine,
-                    0.5f,
-                    0.0f,
-                    static_cast<float>(duration()),
-                    0.0f,
-                    static_cast<float>(duration()),
-                    1.0f,
-                    0.0f,
-                    0u,
+                    static_cast<float>(opAratio()),
+                    static_cast<float>(opAattack()),
+                    static_cast<float>(opAdecay()),
+                    static_cast<float>(opAsustain()),
+                    static_cast<float>(opArelease()),
+                    ConvertDecibelToRatio(static_cast<float>(opAvolume())),
+                    static_cast<float>(opAdetune()),
+                    static_cast<std::uint32_t>(opAfeedback()),
                     static_cast<Key>(69u),
-                    0.0f,
-                    0.0f
+                    static_cast<float>(opAkeyAmountLeft()) / 100.0f,
+                    static_cast<float>(opAkeyAmountRight()) / 100.0f
                },
                DSP::FM::Internal::Operator {
-                    boost() ? DSP::Generator::Waveform::Triangle : DSP::Generator::Waveform::Sine,
-                    0.5f,
-                    0.0f,
-                    static_cast<float>(duration()),
-                    0.0f,
-                    static_cast<float>(duration()),
-                    1.0f,
-                    0.0f,
-                    0u,
+                    DSP::Generator::Waveform::Triangle,
+                    static_cast<float>(opBratio()),
+                    static_cast<float>(opBattack()),
+                    static_cast<float>(opBdecay()),
+                    static_cast<float>(opBsustain()),
+                    static_cast<float>(opBrelease()),
+                    ConvertDecibelToRatio(static_cast<float>(opBvolume())),
+                    static_cast<float>(opBdetune()),
+                    static_cast<std::uint32_t>(opBfeedback()),
                     static_cast<Key>(69u),
-                    0.0f,
-                    0.0f
+                    static_cast<float>(opBkeyAmountLeft()) / 100.0f,
+                    static_cast<float>(opBkeyAmountRight()) / 100.0f
                },
                DSP::FM::Internal::Operator {
-                    DSP::Generator::Waveform::Sine,
-                    1.0f,
-                    0.0f,
-                    static_cast<float>(duration() * 2.0f),
-                    0.0f,
-                    static_cast<float>(duration() * 2.0f),
-                    static_cast<float>(color()),
-                    0.0f,
-                    0u,
+                    DSP::Generator::Waveform::Saw,
+                    static_cast<float>(opCratio()),
+                    static_cast<float>(opCattack()),
+                    static_cast<float>(opCdecay()),
+                    static_cast<float>(opCsustain()),
+                    static_cast<float>(opCrelease()),
+                    ConvertDecibelToRatio(static_cast<float>(opCvolume())),
+                    static_cast<float>(opCdetune()),
+                    static_cast<std::uint32_t>(opCfeedback()),
                     static_cast<Key>(69u),
-                    0.0f,
-                    0.0f
+                    static_cast<float>(opCkeyAmountLeft()) / 100.0f,
+                    static_cast<float>(opCkeyAmountRight()) / 100.0f
                },
                DSP::FM::Internal::Operator {
                     DSP::Generator::Waveform::Noise,
-                    1.0f,
-                    0.0f,
-                    static_cast<float>(clic() * 0.01),
-                    0.0f,
-                    0.001f,
-                    1.0f,
-                    0.0f,
-                    0u,
+                    static_cast<float>(opDratio()),
+                    static_cast<float>(opDattack()),
+                    static_cast<float>(opDdecay()),
+                    static_cast<float>(opDsustain()),
+                    static_cast<float>(opDrelease()),
+                    ConvertDecibelToRatio(static_cast<float>(opDvolume())),
+                    static_cast<float>(opDdetune()),
+                    static_cast<std::uint32_t>(opDfeedback()),
                     static_cast<Key>(69u),
-                    0.0f,
-                    0.0f
+                    static_cast<float>(opDkeyAmountLeft()) / 100.0f,
+                    static_cast<float>(opDkeyAmountRight()) / 100.0f
                }
             },
             DSP::FM::Internal::PitchOperator {
-                0.0f, // Attack
-                1.0f, // peak
-                static_cast<float>(sweepDuration() * 0.1 + 0.01),
-                0.0f,
-                0.01f,
-                static_cast<float>(sweepImpact() * 0.9 + 0.1)
+                static_cast<float>(pitchAttack()),
+                static_cast<float>(pitchPeak()),
+                static_cast<float>(pitchDecay()),
+                static_cast<float>(pitchSustain()),
+                static_cast<float>(pitchRelease()),
+                static_cast<float>(pitchVolume())
             });
             return std::make_pair(realOutSize, 0u);
         }
     );
-    static constexpr float MaxDriveRatio = 5.0f;
-    // const DB outGainInvert = 1.0f / outGain;
-    const float drive = static_cast<float>(overdrive()) * MaxDriveRatio + 1.0f;
-    for (auto i = 0u; i < outSize; ++i) {
-        out[i] = std::tanh(drive * out[i]) * outGain;
-    }
 
     // std::cout << std::endl;
     // std::cout << _fmManager.getActiveNoteSize() << std::endl;
