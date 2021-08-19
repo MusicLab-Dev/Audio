@@ -52,7 +52,7 @@ public:
         ChannelArrangement  channelArrangement { ChannelArrangement::Mono };
     };
 
-    /** @brief Descibes SDL device beahaviours */
+    /** @brief Descibes SDL device behaviors */
     struct alignas_cacheline PhysicalDescriptor
     {
         Core::TinyString    name {};

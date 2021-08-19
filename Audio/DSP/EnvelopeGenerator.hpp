@@ -53,7 +53,11 @@ namespace Audio::DSP
     template<EnvelopeType Envelope, unsigned Count>
     using EnvelopeDefaultExp = EnvelopeBase<Envelope, InterpolationType::Exp, InterpolationType::Exp, InterpolationType::Exp, false, false, Count>;
     template<EnvelopeType Envelope, unsigned Count>
+    using EnvelopeDefaultExpInverse = EnvelopeBase<Envelope, InterpolationType::Exp, InterpolationType::ExpInverse, InterpolationType::ExpInverse, false, false, Count>;
+    template<EnvelopeType Envelope, unsigned Count>
     using EnvelopeClipExp = EnvelopeBase<Envelope, InterpolationType::Exp, InterpolationType::Exp, InterpolationType::Exp, false, true, Count>;
+    template<EnvelopeType Envelope, unsigned Count>
+    using EnvelopeClipExpInverse = EnvelopeBase<Envelope, InterpolationType::Exp, InterpolationType::ExpInverse, InterpolationType::ExpInverse, false, true, Count>;
 }
 
 
@@ -186,11 +190,21 @@ private:
         return 1.0f;
     }
 
+    template<unsigned Power = DefaultExponentialInterpolationRate>
+    float unrollExponentialInverse(const float gain) const noexcept
+    {
+        if constexpr (Power)
+            return gain / unrollExponential<Power - 1u>(gain);
+        return 1.0f;
+    }
+
     void processAttack(float &outGain, const std::uint32_t index, const std::uint32_t duration) noexcept
     {
         outGain = static_cast<float>(index) / static_cast<float>(duration);
 
-        if constexpr (AttackInterp == InterpolationType::Exp) {
+        if constexpr (AttackInterp == InterpolationType::Linear)
+            return;
+        else if constexpr (AttackInterp == InterpolationType::Exp) {
             outGain = unrollExponential(outGain);
         } else if constexpr (AttackInterp == InterpolationType::ExpInverse) {
         }
@@ -200,22 +214,30 @@ private:
     {
         outGain = static_cast<float>(index) / static_cast<float>(duration);
 
-        if constexpr (DecayInterp == InterpolationType::Exp) {
-            outGain = unrollExponential(outGain);
+        if constexpr (AttackInterp == InterpolationType::Linear)
+            outGain = (1.0f - outGain) * (1.0f - sustain) + sustain;
+        else if constexpr (DecayInterp == InterpolationType::Exp) {
+            outGain = unrollExponential(1.0f - outGain);
+            outGain = outGain * (1.0f - sustain) + sustain;
         } else if constexpr (DecayInterp == InterpolationType::ExpInverse) {
+            outGain = unrollExponential(outGain);
+            outGain = (1.0f - outGain) * (1.0f - sustain) + sustain;
         }
-        outGain = (1.0f - outGain) * (1.0f - sustain) + sustain;
     }
 
     void processRelease(float &outGain, const std::uint32_t index, const std::uint32_t duration, const float sustain) noexcept
     {
         outGain = static_cast<float>(index) / static_cast<float>(duration);
 
-        if constexpr (DecayInterp == InterpolationType::Exp) {
-            outGain = unrollExponential(outGain);
+        if constexpr (AttackInterp == InterpolationType::Linear)
+            outGain = (1.0f - outGain) * sustain;
+        else if constexpr (DecayInterp == InterpolationType::Exp) {
+            outGain = unrollExponential(1.0f - outGain);
+            outGain = outGain * sustain;
         } else if constexpr (DecayInterp == InterpolationType::ExpInverse) {
+            outGain = unrollExponential(outGain);
+            outGain = (1.0f - outGain) * sustain;
         }
-        outGain = (1.0f - outGain) * sustain;
     }
 };
 

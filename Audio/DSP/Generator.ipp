@@ -3,121 +3,166 @@
  * @ Description: Generator implementation
  */
 
-template<bool Accumulate, auto ComputeFunc, typename Type>
-inline void Audio::DSP::Generator::Internal::GenerateImpl(Type *output, const std::size_t outputSize,
-        const float frequencyNorm, const std::uint32_t phaseOffset, const DB gain) noexcept
+
+template<typename Type>
+inline Type Audio::DSP::Generator::Internal::GenerateNoiseSample(const float indexNorm, const DB gain) noexcept
 {
-    auto k = 0ul;
-    for (auto i = phaseOffset; k < outputSize; ++i, ++k) {
-        if constexpr (Accumulate)
-            output[k] += ComputeFunc(frequencyNorm, i, gain);
-        else
-            output[k] = ComputeFunc(frequencyNorm, i, gain);
+    if constexpr (std::is_signed_v<Type>) {
+        if constexpr (std::is_floating_point_v<Type>) {
+            return static_cast<Type>(
+                gain * (static_cast<double>(Utils::RandomDataSet::FastRand(static_cast<std::size_t>(indexNorm))) / static_cast<double>(std::numeric_limits<std::size_t>::max()) - 0.5) * 2.0
+            );
+        } else {
+            return static_cast<Type>(
+                gain * static_cast<double>(Utils::RandomDataSet::FastRand(static_cast<std::size_t>(indexNorm))) / static_cast<double>(std::numeric_limits<std::size_t>::max()) * 2.0 * static_cast<double>(std::numeric_limits<Type>::max() - static_cast<double>(std::numeric_limits<Type>::max()))
+            );
+        }
+    } else {
+        return static_cast<Type>(
+            gain * static_cast<double>(Utils::RandomDataSet::FastRand(static_cast<std::size_t>(indexNorm))) / static_cast<double>(std::numeric_limits<std::size_t>::max()) * static_cast<double>(std::numeric_limits<Type>::max())
+        );
     }
 }
 
 template<bool Accumulate, auto ComputeFunc, typename Type>
-inline void Audio::DSP::Generator::Internal::GenerateImpl(Type *output, const Type *input, const std::size_t outputSize,
-        const float frequencyNorm, const std::uint32_t phaseOffset, const DB gain) noexcept
+inline float Audio::DSP::Generator::Internal::GenerateImpl(Type *output, const std::size_t outputSize,
+        const float frequencyNorm, const float phaseOffset, const DB gain) noexcept
 {
-    auto k = 0ul;
-    for (auto i = phaseOffset; k < outputSize; ++i, ++k) {
+    float phase = phaseOffset;
+
+    for (auto i = 0ul; i < outputSize; ++i) {
         if constexpr (Accumulate)
-            output[k] += input[k] * ComputeFunc(frequencyNorm, i, gain);
+            output[i] += ComputeFunc(phase, gain);
         else
-            output[k] = input[k] * ComputeFunc(frequencyNorm, i, gain);
+            output[i] = ComputeFunc(phase, gain);
+        phase += frequencyNorm;
     }
+    return phase;
 }
 
 template<bool Accumulate, auto ComputeFunc, typename Type>
-inline void Audio::DSP::Generator::Internal::ModulateImpl(
+inline float Audio::DSP::Generator::Internal::GenerateImpl(Type *output, const Type *input, const std::size_t outputSize,
+        const float frequencyNorm, const float phaseOffset, const DB gain) noexcept
+{
+    float phase = phaseOffset;
+
+    for (auto i = 0ul; i < outputSize; ++i) {
+        if constexpr (Accumulate)
+            output[i] += input[i] * ComputeFunc(phase, gain);
+        else
+            output[i] = input[i] * ComputeFunc(phase, gain);
+        phase += frequencyNorm;
+    }
+    return phase;
+}
+
+template<bool Accumulate, auto ComputeFunc, typename Type>
+inline float Audio::DSP::Generator::Internal::ModulateImpl(
         Type *output, const Type *modulation, const std::size_t outputSize,
-        const float frequencyNorm, const std::uint32_t phaseOffset, const DB gain) noexcept
+        const float frequencyNorm, const float phaseOffset, const DB gain) noexcept
 {
-    auto k = 0ul;
-    for (auto i = phaseOffset; k < outputSize; ++i, ++k) {
+    float phase = phaseOffset;
+
+    for (auto i = 0ul; i < outputSize; ++i) {
         if constexpr (Accumulate)
-            output[k] += ComputeFunc(frequencyNorm, modulation[k], i, gain);
+            output[i] += ComputeFunc(phase, modulation[i], gain);
         else
-            output[k] = ComputeFunc(frequencyNorm, modulation[k], i, gain);
+            output[i] = ComputeFunc(phase, modulation[i], gain);
+        phase += frequencyNorm;
     }
+    return phase;
 }
 
 template<bool Accumulate, auto ComputeFunc, typename Type>
-inline void Audio::DSP::Generator::Internal::ModulateImpl(
+inline float Audio::DSP::Generator::Internal::ModulateImpl(
         Type *output, const Type *input, const Type *modulation, const std::size_t outputSize,
-        const float frequencyNorm, const std::uint32_t phaseOffset, const DB gain) noexcept
+        const float frequencyNorm, const float phaseOffset, const DB gain) noexcept
 {
-    auto k = 0ul;
-    for (auto i = phaseOffset; k < outputSize; ++i, ++k) {
+    float phase = phaseOffset;
+
+    for (auto i = 0ul; i < outputSize; ++i) {
         if constexpr (Accumulate)
-            output[k] += input[k] * ComputeFunc(frequencyNorm, modulation[k], i, gain);
+            output[i] += input[i] * ComputeFunc(phase, modulation[i], gain);
         else
-            output[k] = input[k] * ComputeFunc(frequencyNorm, modulation[k], i, gain);
+            output[i] = input[i] * ComputeFunc(phase, modulation[i], gain);
+        phase += frequencyNorm;
     }
+    return phase;
 }
 
 template<bool Accumulate, auto ComputeFunc, typename Type>
-inline void Audio::DSP::Generator::Internal::SemitoneShiftImpl(
+inline float Audio::DSP::Generator::Internal::SemitoneShiftImpl(
         Type *output, const Type *semitone, const std::size_t outputSize,
-        const float frequencyNorm, const std::uint32_t phaseOffset, const DB gain) noexcept
+        const float frequencyNorm, const float phaseOffset, const DB gain) noexcept
 {
-    auto k = 0ul;
-    for (auto i = phaseOffset; k < outputSize; ++i, ++k) {
+    float phase = phaseOffset;
+
+    for (auto i = 0ul; i < outputSize; ++i) {
         if constexpr (Accumulate)
-            output[k] += ComputeFunc(GetNoteFrequencyDelta(frequencyNorm, semitone[k]), i, gain);
+            output[i] += ComputeFunc(phase, gain);
         else
-            output[k] = ComputeFunc(GetNoteFrequencyDelta(frequencyNorm, semitone[k]), i, gain);
+            output[i] = ComputeFunc(phase, gain);
+        phase += GetNoteFrequencyDelta(frequencyNorm, semitone[i]);
     }
+    return phase;
 }
 
 template<bool Accumulate, auto ComputeFunc, typename Type>
-inline void Audio::DSP::Generator::Internal::SemitoneShiftImpl(
+inline float Audio::DSP::Generator::Internal::SemitoneShiftImpl(
         Type *output, const Type *input, const Type *semitone, const std::size_t outputSize,
-        const float frequencyNorm, const std::uint32_t phaseOffset, const DB gain) noexcept
+        const float frequencyNorm, const float phaseOffset, const DB gain) noexcept
 {
-    auto k = 0ul;
-    for (auto i = phaseOffset; k < outputSize; ++i, ++k) {
+    float phase = phaseOffset;
+
+    for (auto i = 0ul; i < outputSize; ++i) {
         if constexpr (Accumulate)
-            output[k] += input[k] * ComputeFunc(GetNoteFrequencyDelta(frequencyNorm, semitone[k]), i, gain);
+            output[i] += input[i] * ComputeFunc(phase, gain);
         else
-            output[k] = input[k] * ComputeFunc(GetNoteFrequencyDelta(frequencyNorm, semitone[k]), i, gain);
+            output[i] = input[i] * ComputeFunc(phase, gain);
+        phase += GetNoteFrequencyDelta(frequencyNorm, semitone[i]);
     }
+    return phase;
 }
 
 
 template<bool Accumulate, auto ComputeFunc, typename Type>
-inline void Audio::DSP::Generator::Internal::ModulateSemitoneShiftImpl(
+inline float Audio::DSP::Generator::Internal::ModulateSemitoneShiftImpl(
         Type *output, const Type *modulation, const Type *semitone, const std::size_t outputSize,
-        const float frequencyNorm, const std::uint32_t phaseOffset, const DB gain) noexcept
+        const float frequencyNorm, const float phaseOffset, const DB gain) noexcept
 {
-    auto k = 0ul;
-    for (auto i = phaseOffset; k < outputSize; ++i, ++k) {
+    float phase = phaseOffset;
+
+    for (auto i = 0ul; i < outputSize; ++i) {
         if constexpr (Accumulate)
-            output[k] += ComputeFunc(GetNoteFrequencyDelta(frequencyNorm, semitone[k]), modulation[k], i, gain);
+            output[i] += ComputeFunc(phase, modulation[i], gain);
         else
-            output[k] = ComputeFunc(GetNoteFrequencyDelta(frequencyNorm, semitone[k]), modulation[k], i, gain);
+            output[i] = ComputeFunc(phase, modulation[i], gain);
+        phase += GetNoteFrequencyDelta(frequencyNorm, semitone[i]);
     }
+    return phase;
 }
 
 template<bool Accumulate, auto ComputeFunc, typename Type>
-inline void Audio::DSP::Generator::Internal::ModulateSemitoneShiftImpl(
+inline float Audio::DSP::Generator::Internal::ModulateSemitoneShiftImpl(
         Type *output, const Type *input, const Type *modulation, const Type *semitone, const std::size_t outputSize,
-        const float frequencyNorm, const std::uint32_t phaseOffset, const DB gain) noexcept
+        const float frequencyNorm, const float phaseOffset, const DB gain) noexcept
 {
-    auto k = 0ul;
-    for (auto i = phaseOffset; k < outputSize; ++i, ++k) {
+    float phase = phaseOffset;
+
+    for (auto i = 0ul; i < outputSize; ++i) {
         if constexpr (Accumulate)
-            output[k] += input[k] * ComputeFunc(GetNoteFrequencyDelta(frequencyNorm, semitone[k]), modulation[k], i, gain);
+            output[i] += input[i] * ComputeFunc(phase, modulation[i], gain);
         else
-            output[k] = input[k] * ComputeFunc(GetNoteFrequencyDelta(frequencyNorm, semitone[k]), modulation[k], i, gain);
+            output[i] = input[i] * ComputeFunc(phase, modulation[i], gain);
+        phase += GetNoteFrequencyDelta(frequencyNorm, semitone[i]);
     }
+    return phase;
 }
 
 
 
 template<bool Accumulate, typename ...Args>
-inline void Audio::DSP::Generator::Internal::WaveformGenerateHelper(const Waveform waveform, Args &&...args)
+inline float Audio::DSP::Generator::Internal::WaveformGenerateHelper(const Waveform waveform, Args &&...args)
 {
     switch (waveform) {
     case Waveform::Sine:
@@ -133,12 +178,12 @@ inline void Audio::DSP::Generator::Internal::WaveformGenerateHelper(const Wavefo
     case Waveform::Noise:
         return GenerateNoise<Accumulate>(std::forward<Args>(args)...);
     default:
-        return;
+        return 0.0f;
     }
 }
 
 template<bool Accumulate, typename ...Args>
-inline void Audio::DSP::Generator::Internal::WaveformModulateHelper(const Waveform waveform, Args &&...args)
+inline float Audio::DSP::Generator::Internal::WaveformModulateHelper(const Waveform waveform, Args &&...args)
 {
     switch (waveform) {
     case Waveform::Sine:
@@ -154,12 +199,12 @@ inline void Audio::DSP::Generator::Internal::WaveformModulateHelper(const Wavefo
     case Waveform::Noise:
         return ModulateNoise<Accumulate>(std::forward<Args>(args)...);
     default:
-        return;
+        return 0.0f;
     }
 }
 
 template<bool Accumulate, typename ...Args>
-inline void Audio::DSP::Generator::Internal::WaveformSemitoneShiftHelper(const Waveform waveform, Args &&...args)
+inline float Audio::DSP::Generator::Internal::WaveformSemitoneShiftHelper(const Waveform waveform, Args &&...args)
 {
     switch (waveform) {
     case Waveform::Sine:
@@ -175,12 +220,12 @@ inline void Audio::DSP::Generator::Internal::WaveformSemitoneShiftHelper(const W
     case Waveform::Noise:
         return SemitoneShiftNoise<Accumulate>(std::forward<Args>(args)...);
     default:
-        return;
+        return 0.0f;
     }
 }
 
 template<bool Accumulate, typename ...Args>
-inline void Audio::DSP::Generator::Internal::WaveformModulateSemitoneShiftHelper(const Waveform waveform, Args &&...args)
+inline float Audio::DSP::Generator::Internal::WaveformModulateSemitoneShiftHelper(const Waveform waveform, Args &&...args)
 {
     switch (waveform) {
     case Waveform::Sine:
@@ -196,6 +241,6 @@ inline void Audio::DSP::Generator::Internal::WaveformModulateSemitoneShiftHelper
     case Waveform::Noise:
         return ModulateSemitoneShiftNoise<Accumulate>(std::forward<Args>(args)...);
     default:
-        return;
+        return 0.0f;
     }
 }

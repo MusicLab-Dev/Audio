@@ -9,6 +9,7 @@
 #include <Audio/PluginUtilsControlsEnvelope.hpp>
 #include <Audio/Volume.hpp>
 #include <Audio/Modifier.hpp>
+#include <Audio/DSP/Oscillator.hpp>
 
 #include "Managers/NoteManager.hpp"
 
@@ -135,7 +136,7 @@ public:
 
 private:
     NoteManagerDefault _noteManager {};
-    Osc _oscillator;
+    DSP::Oscillator<1u> _oscillator;
     Volume<float> _volumeHandler;
 };
 

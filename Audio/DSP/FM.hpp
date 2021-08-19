@@ -10,8 +10,9 @@
 
 #include <Core/FlatVector.hpp>
 
+#include <Audio/Math.hpp>
 #include "EnvelopeGenerator.hpp"
-#include "Generator.hpp"
+#include "Oscillator.hpp"
 
 namespace Audio::DSP::FM
 {
@@ -82,11 +83,53 @@ template<unsigned OperatorCount, Audio::DSP::FM::AlgorithmType Algo, bool PitchE
 class Audio::DSP::FM::Schema
 {
 public:
-
-    using EnvelopeList = EnvelopeClipExp<EnvelopeType::ADSR, OperatorCount + PitchEnv>;
+    // using EnvelopeList = EnvelopeDefaultExp<EnvelopeType::ADSR, OperatorCount + PitchEnv>;
+    using EnvelopeList = EnvelopeDefaultLinear<EnvelopeType::ADSR, OperatorCount + PitchEnv>;
     using EnvelopeCache = Core::TinyVector<float>;
     // using FrequencyRateList = Core::SmallVector<float, OperatorCount, std::uint8_t>;
 
+    template<bool Accumulate, bool Modulate, bool IsCarrier, unsigned OperatorIndex>
+    inline void processOperatorTransient(
+            const float *input, float *output, const std::uint32_t processSize, const float outputGain,
+            const std::uint32_t phaseIndex, const float frequencyNorm, const Key key,
+            const Internal::Operator &op
+    ) noexcept
+    {
+        constexpr auto GetKeyAmountRate = [](const float amount, const float keyDelta)
+        {
+            if (!amount) {
+                return 1.0f;
+            } else if (amount < 0.0f) {
+                return -amount * std::pow(2.0f, -keyDelta) + 1.0f + amount;
+            } else {
+                return amount * std::pow(2.0f, keyDelta) + 1.0f - amount;
+            }
+        };
+        const auto keyDelta = static_cast<float>(key - op.keyBreakPoint) / 12.0f;
+        const auto keyAmountDirection = keyDelta >= 0;
+        auto keyAmount = keyAmountDirection ? GetKeyAmountRate(op.keyAmountRight, keyDelta) : GetKeyAmountRate(op.keyAmountLeft, -keyDelta);
+
+        // if constexpr (IsCarrier)
+        //     keyAmount = 1.0f;
+
+        const DB outGain = op.volume * outputGain * keyAmount;
+
+        _envelopes.template generateGains<false, OperatorIndex>(key, phaseIndex, _envelopeGain.data(), processSize);
+        // _random.setLast(static_cast<Utils::RandomGenerator::ProcessType>(key));
+
+        UNUSED(input);
+        UNUSED(frequencyNorm);
+        auto k = 0u;
+        for (auto i = processSize; k < processSize; ++i, ++k) {
+            const auto rnd = _random.randAs<float>();
+            if constexpr (Accumulate) {
+                output[k] += rnd * _envelopeGain[k] * outGain;
+                // output[k] += rnd * _envelopeGain[k] * outGain;
+            } else {
+                output[k] = rnd * _envelopeGain[k] * outGain;
+            }
+        }
+    }
 
     template<bool Accumulate, bool Modulate, bool IsCarrier, unsigned OperatorIndex>
     inline void processOperator(
@@ -114,30 +157,60 @@ public:
 
         const DB outGain = op.volume * outputGain * keyAmount;
 
+        if (!outGain) {
+            std::fill(output, output + processSize, 0.0f);
+            return;
+        }
+
         _envelopes.template generateGains<false, OperatorIndex>(key, phaseIndex, _envelopeGain.data(), processSize);
-        if constexpr (Modulate) {
-            DSP::Generator::ModulateSemitoneShift<Accumulate>(
-                op.waveform,
-                output,
-                _envelopeGain.data(),
-                input,
-                _pitchCache.data(),
-                processSize,
-                Audio::GetFrequencyNorm(frequencyNorm, _sampleRate),
-                phaseIndex,
-                outGain
-            );
+        if constexpr (PitchEnv) {
+            if constexpr (Modulate) {
+                _oscillator.template modulateSemitoneShift<Accumulate, OperatorIndex>(
+                    op.waveform,
+                    output,
+                    _envelopeGain.data(),
+                    input,
+                    _pitchCache.data(),
+                    processSize,
+                    key,
+                    frequencyNorm,
+                    outGain
+                );
+            } else {
+                _oscillator.template semitoneShift<Accumulate, OperatorIndex>(
+                    op.waveform,
+                    output,
+                    _envelopeGain.data(),
+                    _pitchCache.data(),
+                    processSize,
+                    key,
+                    frequencyNorm,
+                    outGain
+                );
+            }
         } else {
-            DSP::Generator::SemitoneShift<Accumulate>(
-                op.waveform,
-                output,
-                _envelopeGain.data(),
-                _pitchCache.data(),
-                processSize,
-                Audio::GetFrequencyNorm(frequencyNorm, _sampleRate),
-                phaseIndex,
-                outGain
-            );
+            if constexpr (Modulate) {
+                _oscillator.template modulate<Accumulate, OperatorIndex>(
+                    op.waveform,
+                    output,
+                    _envelopeGain.data(),
+                    input,
+                    processSize,
+                    key,
+                    frequencyNorm,
+                    outGain
+                );
+            } else {
+                _oscillator.template generate<Accumulate, OperatorIndex>(
+                    op.waveform,
+                    output,
+                    _envelopeGain.data(),
+                    processSize,
+                    key,
+                    frequencyNorm,
+                    outGain
+                );
+            }
         }
     }
 
@@ -149,6 +222,7 @@ public:
     {
         _pitchIndexes[key] = 0u;
         _envelopes.resetKey(key);
+        _oscillator.resetKey(key);
     }
     void envelopeSetTriggerIndex(const Key key, const std::uint32_t index) noexcept { _envelopes.setTriggerIndex(key, index); }
     void envelopeResetTriggerIndex(const Key key) noexcept { _envelopes.resetTriggerIndex(key); }
@@ -166,6 +240,9 @@ public:
             const Internal::PitchOperator &pitchOp = Internal::PitchOperator()
     ) noexcept
     {
+        const auto freqNorm = Audio::GetFrequencyNorm(rootFrequency, _sampleRate);
+
+        _random.setLast(0u);
         if (_cache.capacity() != processSize)
             _cache.resize(processSize);
         if (_envelopeGain.capacity() != processSize)
@@ -174,48 +251,57 @@ public:
         updateEnvelopesSpecs<OperatorCount>(operators);
 
         if constexpr (PitchEnv)
-            processPitchOperator(key, rootFrequency, processSize, pitchOp);
+            processPitchOperator(key, processSize, pitchOp);
 
         if constexpr (Algo == AlgorithmType::Default){
             if constexpr (OperatorCount == 2u) {
-                oneCarrierOneModulator<Accumulate>(output, processSize, outputGain, phaseIndex, key, rootFrequency, operators);
+                oneCarrierOneModulator<Accumulate>(output, processSize, outputGain, phaseIndex, key, freqNorm, operators);
             } else if constexpr (OperatorCount == 4u) {
-                twoCM<Accumulate>(output, processSize, outputGain, phaseIndex, key, rootFrequency, operators);
+                twoCM<Accumulate>(output, processSize, outputGain, phaseIndex, key, freqNorm, operators);
             } else if constexpr (OperatorCount == 6u) {
-                dx7_05<Accumulate>(output, processSize, outputGain, phaseIndex, key, rootFrequency, operators);
+                dx7_05<Accumulate>(output, processSize, outputGain, phaseIndex, key, freqNorm, operators);
             }
         } else
-            processImpl<Accumulate>(output, processSize, outputGain, phaseIndex, key, rootFrequency, operators);
+            processImpl<Accumulate>(output, processSize, outputGain, phaseIndex, key, freqNorm, operators);
 
     }
     template<bool Accumulate>
     void processImpl(
             float *output, const std::uint32_t processSize, const float outputGain,
-            const std::uint32_t phaseIndex, const Key key, const float rootFrequency,
+            const std::uint32_t phaseIndex, const Key key, const float freqNorm,
             const Internal::OperatorArray<OperatorCount> &operators
     ) noexcept
     {
         if constexpr (Algo == AlgorithmType::KickDrum) {
             static_assert(OperatorCount == 4u, "Audio::DSP::FM::Schema<OperatorCount, KickDrum>::processImpl: OperatorCount must be equal to 4");
-            kickDrum_impl<Accumulate>(output, processSize, outputGain, phaseIndex, key, rootFrequency, operators);
+            kickDrum_impl<Accumulate>(output, processSize, outputGain, phaseIndex, key, freqNorm, operators);
         } else if constexpr (Algo == AlgorithmType::Piano) {
 
         }
     }
 
 private:
+    // Internal operators envelope
     EnvelopeList _envelopes;
-    SampleRate _sampleRate;
+    // Internal output cache
     Internal::CacheList _cache;
-    Internal::CacheList _pitchCache;
-    Internal::PitchIndexList _pitchIndexes;
+    // Internal envelope output cache
     EnvelopeCache _envelopeGain;
+    // Internal sample rate
+    SampleRate _sampleRate;
+    // Pitch envelope output cache
+    Internal::CacheList _pitchCache;
+    // Pitch envelope read indexes cache
+    Internal::PitchIndexList _pitchIndexes;
+    // Internal random generator for transients
+    Utils::RandomGenerator _random;
+    // Internal Oscillator
+    DSP::Oscillator<OperatorCount> _oscillator;
 
 
-    void processPitchOperator(const Key key, const float rootFrequency, const std::uint32_t processSize, const Internal::PitchOperator &pitchOp) noexcept
+    void processPitchOperator(const Key key, const std::uint32_t processSize, const Internal::PitchOperator &pitchOp) noexcept
     {
-        UNUSED(rootFrequency);
-        constexpr float MaxSemitonePeak = 32.0f;
+        constexpr float MaxSemitonePeak = 12.0f * 6.0f; // 6 octaves
 
         if (_pitchCache.capacity() != processSize)
             _pitchCache.resize(processSize);
@@ -232,15 +318,9 @@ private:
         });
         for (auto i = 0u; i < processSize; ++i, pitchIdx++) {
             const float semitoneDelta = MaxSemitonePeak * pitchOp.volume * (_envelopes.template getGain<OperatorCount>(key, pitchIdx));
-            // const float ret = Audio::GetNoteFrequencyDelta(rootFrequency, semitoneDelta);
+
             _pitchCache[i] = semitoneDelta;
         }
-
-        // std::cout << "pitchCache:   " << _pitchCache[0] << std::endl;
-        // std::cout << "pitchCache_:  " << _pitchCache[processSize / 3] << std::endl;
-        // std::cout << "pitchCache__: " << _pitchCache[2 * processSize / 3] << std::endl;
-        // std::cout << std::endl;
-
     }
 
     template<bool Accumulate>
@@ -293,7 +373,6 @@ private:
             constexpr auto CarrierIdx = Index;
             constexpr auto ModIdx = Index + 1;
 
-            // _cache.clear();
             processOperator<false, false, false, ModIdx>(nullptr, _cache.data(), processSize, 1.0f, phaseIndex, getDetuneFrequency(rootFrequency, operators[ModIdx]), key, operators[ModIdx]);
             processOperator<Accumulate, true, true, CarrierIdx>(_cache.data(), output, processSize, outputGain, phaseIndex, getDetuneFrequency(rootFrequency, operators[CarrierIdx]), key, operators[CarrierIdx]);
             oneModulatorToCarrier_impl<Accumulate, Index + 2>(output, processSize, outputGain, phaseIndex, rootFrequency, key, operators);
@@ -307,13 +386,21 @@ private:
             const Internal::OperatorArray<OperatorCount> &operators
     ) noexcept
     {
-        const auto realOutputGain = outputGain / static_cast<float>(1);
+        const auto realOutputGain = outputGain / static_cast<float>(2);
 
+        // // Sub (A)
+        // processOperator<true, false, true, 0u>(nullptr, output, processSize, realOutputGain, phaseIndex, getDetuneFrequency(rootFrequency, operators[0u]), key, operators[0u]);
+        // // Impact (B+C->D)
+        // processOperator<false, false, false, 2u>(nullptr, _cache.data(), processSize, 1.0f, phaseIndex, getDetuneFrequency(rootFrequency, operators[2u]), key, operators[2u]);
+        // processOperator<true, false, false, 3u>(nullptr, _cache.data(), processSize, 1.0f, phaseIndex, getDetuneFrequency(rootFrequency, operators[3u]), key, operators[3u]);
+        // processOperator<true, true, true, 1u>(_cache.data(), output, processSize, realOutputGain, phaseIndex, getDetuneFrequency(rootFrequency, operators[1u]), key, operators[1u]);
+
+        // Noise (D) for clicking sound
+        processOperator<false, false, false, 3u>(nullptr, _cache.data(), processSize, 1.0f, phaseIndex, getDetuneFrequency(rootFrequency, operators[3u]), key, operators[3u]);
         // Sub (A)
-        processOperator<true, false, true, 0u>(nullptr, output, processSize, realOutputGain, phaseIndex, getDetuneFrequency(rootFrequency, operators[0u]), key, operators[0u]);
-        // Impact (B+C->D)
+        processOperator<Accumulate, true, true, 0u>(_cache.data(), output, processSize, realOutputGain, phaseIndex, getDetuneFrequency(rootFrequency, operators[0u]), key, operators[0u]);
+        // Color (C->B)
         processOperator<false, false, false, 2u>(nullptr, _cache.data(), processSize, 1.0f, phaseIndex, getDetuneFrequency(rootFrequency, operators[2u]), key, operators[2u]);
-        processOperator<true, false, false, 3u>(nullptr, _cache.data(), processSize, 1.0f, phaseIndex, getDetuneFrequency(rootFrequency, operators[3u]), key, operators[3u]);
         processOperator<true, true, true, 1u>(_cache.data(), output, processSize, realOutputGain, phaseIndex, getDetuneFrequency(rootFrequency, operators[1u]), key, operators[1u]);
     }
 

@@ -3,14 +3,11 @@
  * @ Description: Oscillator implementation
  */
 
-#include <iomanip>
-
-#include <Audio/DSP/Generator.hpp>
-
 inline void Audio::Oscillator::onAudioGenerationStarted(const BeatRange &range)
 {
     UNUSED(range);
     _noteManager.reset();
+    _oscillator.reset();
 }
 
 inline void Audio::Oscillator::onAudioParametersChanged(void)
@@ -52,7 +49,6 @@ inline void Audio::Oscillator::receiveAudio(BufferView output)
     _noteManager.envelopeGain().resize(outSize);
     _noteManager.processNotes(
         [this, outGain, outSize, out](const Key key, const std::uint32_t readIndex, const NoteModifiers &modifiers) -> std::pair<std::uint32_t, std::uint32_t> {
-            const float frequency = std::pow(2.f, static_cast<float>(static_cast<int>(key) - RootKey) / KeysPerOctave) * RootKeyFrequency;
             auto realOut = out;
             auto realOutSize = outSize;
             if (modifiers.sampleOffset && !readIndex) {
@@ -60,14 +56,18 @@ inline void Audio::Oscillator::receiveAudio(BufferView output)
                 realOutSize -= modifiers.sampleOffset;
             }
             UNUSED(modifiers);
+            const auto freqNorm = GetFrequencyNorm(GetNoteFrequency(key), audioSpecs().sampleRate);
             _noteManager.generateEnvelopeGains(key, readIndex, realOutSize);
-            DSP::Generator::Generate<true>(
+
+            // DSP::Generator::Generate<true>(
+
+            _oscillator.generate<true>(
                 static_cast<DSP::Generator::Waveform>(waveform()),
                 realOut,
                 _noteManager.envelopeGain().data(),
                 realOutSize,
-                GetFrequencyNorm(frequency, audioSpecs().sampleRate),
-                readIndex,
+                key,
+                freqNorm,
                 outGain
             );
             return std::make_pair(realOutSize, 0u);

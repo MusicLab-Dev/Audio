@@ -42,30 +42,113 @@ class Audio::Drums final : public Audio::IPlugin
             CONTROL_DEFAULT_OUTPUT_VOLUME_RANGE()
         ),
         /* FM controls */
-        REGISTER_CONTROL_FM_ALGORITHM_DEFAULT_PITCH(
-            opA, opB, opC, opD
-        ),
-
-        // // Sub section env
-        // REGISTER_CONTROL_ENVELOPE_ADSR(
-        //     subAttack, 0.1, CONTROL_RANGE_STEP(0.0, 5.0, 0.0001),
-        //     subDecay, 0.2, CONTROL_RANGE_STEP(0.0, 5.0, 0.001),
-        //     subSustain, 0.8, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
-        //     BaseName##release, 0.2, CONTROL_RANGE_STEP(0.0, 5.0, 0.001)
+        // REGISTER_CONTROL_FM_ALGORITHM_DEFAULT_PITCH(
+        //     opA, opB, opC, opD
         // ),
+
         REGISTER_CONTROL_FLOATING(
-            brightness, 0.0, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
+            duration, 0.3, CONTROL_RANGE_STEP(0.0, 1.0, 0.001),
             TR_TABLE(
-                TR(English, "Brightness"),
+                TR(English, "Duration"),
             ),
             TR_TABLE(
-                TR(English, "Brightness"),
+                TR(English, "Duration"),
             ),
             TR_TABLE(
-                TR(English, "Bright")
+                TR(English, "Dur")
+            ),
+            TR_TABLE(
+                TR(English, "s")
+            )
+        ),
+        REGISTER_CONTROL_FLOATING(
+            color, 0.0, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
+            TR_TABLE(
+                TR(English, "Color"),
+            ),
+            TR_TABLE(
+                TR(English, "Color"),
+            ),
+            TR_TABLE(
+                TR(English, "Color")
             ),
             TR_TABLE(
                 TR(English, "%")
+            )
+        ),
+        REGISTER_CONTROL_FLOATING(
+            sweepDuration, 0.1, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
+            TR_TABLE(
+                TR(English, "Sweep duration"),
+            ),
+            TR_TABLE(
+                TR(English, "Sweep duration"),
+            ),
+            TR_TABLE(
+                TR(English, "Sweep")
+            ),
+            TR_TABLE(
+                TR(English, "%")
+            )
+        ),
+        REGISTER_CONTROL_FLOATING(
+            sweepImpact, 0.25, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
+            TR_TABLE(
+                TR(English, "Sweep impact"),
+            ),
+            TR_TABLE(
+                TR(English, "Sweep impact"),
+            ),
+            TR_TABLE(
+                TR(English, "Impact")
+            ),
+            TR_TABLE(
+                TR(English, "%")
+            )
+        ),
+        REGISTER_CONTROL_FLOATING(
+            clic, 0.2, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
+            TR_TABLE(
+                TR(English, "Clic"),
+            ),
+            TR_TABLE(
+                TR(English, "Clic"),
+            ),
+            TR_TABLE(
+                TR(English, "Clc")
+            ),
+            TR_TABLE(
+                TR(English, "%")
+            )
+        ),
+        REGISTER_CONTROL_FLOATING(
+            overdrive, 0.15, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
+            TR_TABLE(
+                TR(English, "Overdrive"),
+            ),
+            TR_TABLE(
+                TR(English, "Overdrive"),
+            ),
+            TR_TABLE(
+                TR(English, "Drv")
+            ),
+            TR_TABLE(
+                TR(English, "%")
+            )
+        ),
+        REGISTER_CONTROL_BOOLEAN(
+            boost, 0.0,
+            TR_TABLE(
+                TR(English, "Boost"),
+            ),
+            TR_TABLE(
+                TR(English, "Boost"),
+            ),
+            TR_TABLE(
+                TR(English, "Boost")
+            ),
+            TR_TABLE(
+                TR(English, "")
             )
         )
     )

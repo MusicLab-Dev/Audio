@@ -22,6 +22,7 @@ set(AudioTestsSources
     ${AudioTestsDir}/tests_Project.cpp
 
     ${AudioTestsDir}/tests_Reformater.cpp
+    ${AudioTestsDir}/tests_RandomGenerator.cpp
 
     # ${AudioTestsDir}/tests_SchedulerTask.cpp
     # ${AudioTestsDir}/tests_Device.cpp

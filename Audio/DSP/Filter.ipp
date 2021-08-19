@@ -35,7 +35,7 @@ inline void Audio::DSP::Filter::GenerateFilter(const FIRSpecs specs, float *wind
 template<bool ProcessWindow, bool Accumulate>
 inline void Audio::DSP::Filter::GenerateFilterLowPass(const FIRSpecs specs, float *window) noexcept
 {
-    // cutoffNorm/pi*sinc(x*cutoffNorm/pi)
+    // cutoffNorm/pi*Sinc(x*cutoffNorm/pi)
     // ONLY use type1 (symetric & odd size) || type2 (symetric & even size)
 
     const std::size_t size = specs.filterSize;
@@ -48,16 +48,16 @@ inline void Audio::DSP::Filter::GenerateFilterLowPass(const FIRSpecs specs, floa
         if constexpr (ProcessWindow)
             coef = ComputeWindow<false>(specs.windowType, i, size, true);
         if constexpr (Accumulate)
-            *window++ += coef * (cutoffRateBegin * Utils::sinc<true>(idx * cutoffRateBegin)) * specs.gain;
+            *window++ += coef * (cutoffRateBegin * Utils::Sinc<true>(idx * cutoffRateBegin)) * specs.gain;
         else
-            *window++ = coef * (cutoffRateBegin * Utils::sinc<true>(idx * cutoffRateBegin)) * specs.gain;
+            *window++ = coef * (cutoffRateBegin * Utils::Sinc<true>(idx * cutoffRateBegin)) * specs.gain;
     }
 }
 
 template<bool ProcessWindow, bool Accumulate>
 inline void Audio::DSP::Filter::GenerateFilterHighPass(const FIRSpecs specs, float *window) noexcept
 {
-    // sinc<pi>(x) - cutoffNorm/pi*sinc(x*cutoffNorm/pi)
+    // sinc<pi>(x) - cutoffNorm/pi*Sinc(x*cutoffNorm/pi)
     // ONLY use type4 (anti-symetric & even size)
 
     const std::size_t size = specs.filterSize;
@@ -70,16 +70,16 @@ inline void Audio::DSP::Filter::GenerateFilterHighPass(const FIRSpecs specs, flo
         if constexpr (ProcessWindow)
             coef = ComputeWindow<false>(specs.windowType, i, size, true);
         if constexpr (Accumulate)
-            *window++ += coef * (Utils::sinc<true>(idx) - (cutoffRateBegin * Utils::sinc<true>(idx * cutoffRateBegin))) * specs.gain;
+            *window++ += coef * (Utils::Sinc<true>(idx) - (cutoffRateBegin * Utils::Sinc<true>(idx * cutoffRateBegin))) * specs.gain;
         else
-            *window++ = coef * (Utils::sinc<true>(idx) - (cutoffRateBegin * Utils::sinc<true>(idx * cutoffRateBegin))) * specs.gain;
+            *window++ = coef * (Utils::Sinc<true>(idx) - (cutoffRateBegin * Utils::Sinc<true>(idx * cutoffRateBegin))) * specs.gain;
     }
 }
 
 template<bool ProcessWindow, bool Accumulate>
 inline void Audio::DSP::Filter::GenerateFilterBandPass(const FIRSpecs specs, float *window) noexcept
 {
-    // cutoffNormHigh/pi*sinc(x*cutoffNormHigh/pi) - cutoffNormLow/pi*sinc(x*cutoffNormLow/pi)
+    // cutoffNormHigh/pi*Sinc(x*cutoffNormHigh/pi) - cutoffNormLow/pi*Sinc(x*cutoffNormLow/pi)
     // ONLY use type3 (anti-symetric & odd size) | type4 (anti-symetric & even size)
     // type4 actually
 
@@ -94,16 +94,16 @@ inline void Audio::DSP::Filter::GenerateFilterBandPass(const FIRSpecs specs, flo
         if constexpr (ProcessWindow)
             coef = ComputeWindow<false>(specs.windowType, i, size, true);
         if constexpr (Accumulate)
-            *window++ += coef * ((cutoffRateEnd * Utils::sinc<true>(idx * cutoffRateEnd)) - (cutoffRateBegin * Utils::sinc<true>(idx * cutoffRateBegin))) * specs.gain;
+            *window++ += coef * ((cutoffRateEnd * Utils::Sinc<true>(idx * cutoffRateEnd)) - (cutoffRateBegin * Utils::Sinc<true>(idx * cutoffRateBegin))) * specs.gain;
         else
-            *window++ = coef * ((cutoffRateEnd * Utils::sinc<true>(idx * cutoffRateEnd)) - (cutoffRateBegin * Utils::sinc<true>(idx * cutoffRateBegin))) * specs.gain;
+            *window++ = coef * ((cutoffRateEnd * Utils::Sinc<true>(idx * cutoffRateEnd)) - (cutoffRateBegin * Utils::Sinc<true>(idx * cutoffRateBegin))) * specs.gain;
     }
 }
 
 template<bool ProcessWindow, bool Accumulate>
 inline void Audio::DSP::Filter::GenerateFilterBandStop(const FIRSpecs specs, float *window) noexcept
 {
-    // sinc<pi>(x) - (cutoffNormHigh/pi*sinc(x*cutoffNormHigh/pi) - cutoffNormLow/pi*sinc(x*cutoffNormLow/pi))
+    // sinc<pi>(x) - (cutoffNormHigh/pi*Sinc(x*cutoffNormHigh/pi) - cutoffNormLow/pi*Sinc(x*cutoffNormLow/pi))
 
     const std::size_t size = specs.filterSize;
     const float cutoffRateBegin = 2.0f * specs.cutoffBegin / specs.sampleRate;
@@ -116,8 +116,8 @@ inline void Audio::DSP::Filter::GenerateFilterBandStop(const FIRSpecs specs, flo
         if constexpr (ProcessWindow)
             coef = ComputeWindow<false>(specs.windowType, i, size, true);
         if constexpr (Accumulate)
-            *window++ += coef * (Utils::sinc<true>(idx) - ((cutoffRateEnd * Utils::sinc<true>(idx * cutoffRateEnd)) - (cutoffRateBegin * Utils::sinc<true>(idx * cutoffRateBegin)) * specs.gain));
+            *window++ += coef * (Utils::Sinc<true>(idx) - ((cutoffRateEnd * Utils::Sinc<true>(idx * cutoffRateEnd)) - (cutoffRateBegin * Utils::Sinc<true>(idx * cutoffRateBegin)) * specs.gain));
         else
-            *window++ = coef * (Utils::sinc<true>(idx) - ((cutoffRateEnd * Utils::sinc<true>(idx * cutoffRateEnd)) - (cutoffRateBegin * Utils::sinc<true>(idx * cutoffRateBegin)) * specs.gain));
+            *window++ = coef * (Utils::Sinc<true>(idx) - ((cutoffRateEnd * Utils::Sinc<true>(idx * cutoffRateEnd)) - (cutoffRateBegin * Utils::Sinc<true>(idx * cutoffRateBegin)) * specs.gain));
     }
 }

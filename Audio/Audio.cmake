@@ -51,6 +51,7 @@ set(AudioSources
     ${AudioDir}/AScheduler.ipp
     ${AudioDir}/AScheduler.cpp
     ${AudioDir}/SchedulerTask.ipp
+    ${AudioDir}/Math.cpp
     ${AudioDir}/BaseIndex.cpp
     ${AudioDir}/Buffer.ipp
     ${AudioDir}/Buffer.cpp
@@ -152,6 +153,7 @@ set(AudioDSPSources
     ${AudioDSPDir}/Delay.ipp
     ${AudioDSPDir}/Generator.hpp
     ${AudioDSPDir}/Generator.ipp
+    ${AudioDSPDir}/Oscillator.hpp
 )
 
 add_library(${PROJECT_NAME}

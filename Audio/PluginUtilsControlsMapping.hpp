@@ -7,13 +7,11 @@
 
 #include <cmath>
 
-#include "PluginUtils.hpp"
-
 /**
  * @brief Helper to map controls
  */
 
-// bright[0:100] -> apBvolume[20:80]
+// impact[0:100] -> pitchEnvVolume[0:1]
 
-#define CONTROL_MAP(Src, Dest, DestFrom, DestTo) \
-    Dest(std::lerp(DestFrom, DestTo, Src()));
+#define CONTROL_MAP(SrcValue, DestValue, DestRangeFrom, DestRangeTo) \
+    DestValue(std::lerp(DestRangeFrom, DestRangeTo, SrcValue()));
