@@ -46,7 +46,9 @@ inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, P
         *_noteStack = *_parentNoteStack;
     else
         _noteStack->clear();
-    const auto beatRange = scheduler().template currentBeatRange<Playback>();
+    if (node().muted())
+        return;
+    const auto beatRange = scheduler().currentBeatRange();
     auto &plugin = *node().plugin();
     if constexpr (ProcessNotesAndControls) {
         auto realBeatRange = beatRange;

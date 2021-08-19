@@ -56,6 +56,19 @@ inline void Audio::Buffer::resize(const std::size_t channelByteSize, const Sampl
     }
 }
 
+inline void Audio::Buffer::grow(const std::size_t channelByteSize) noexcept
+{
+    const auto totalSize = channelByteSize * static_cast<std::size_t>(channelArrangement());
+
+    if (totalSize <= capacity())
+        header()->channelByteSize = channelByteSize;
+    else {
+        Buffer target(channelByteSize, sampleRate(), channelArrangement(), format());
+        std::memcpy(target.byteData(), byteData(), size<std::uint8_t>());
+        *this = std::move(target);
+    }
+}
+
 inline void Audio::Buffer::copy(const Internal::BufferBase &target)
 {
     if (*this && target.size<std::uint8_t>() <= capacity()) {

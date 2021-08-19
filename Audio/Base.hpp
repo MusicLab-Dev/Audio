@@ -107,7 +107,8 @@ namespace Audio
         Production,
         Live,
         Partition,
-        OnTheFly
+        OnTheFly,
+        Export
     };
 
     /** @brief Count of playback modes */

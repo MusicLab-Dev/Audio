@@ -64,16 +64,18 @@ struct Audio::SampleManagerWAV
         std::uint32_t dataSize { 0u }; // (in bytes) fileSize - 44
     };
 
-    /** @brief Load a audio WAV file into a buffer */
-    [[nodiscard]] static Buffer LoadFile_old(const std::string &path, const SampleSpecs &desiredSpecs, SampleSpecs &fileSpecs, bool displaySpecs);
-    [[nodiscard]] static bool WriteFile(const std::string &path, const BufferView &inputBuffer);
-
+    /** @brief Load an audio WAV file into a buffer */
     [[nodiscard]] static Buffer LoadFile(const std::string &path, const SampleSpecs &desiredSpecs, SampleSpecs &fileSpecs, bool displaySpecs);
 
+    /** @brief Write an audio buffer into a WAV file */
+    [[nodiscard]] static bool WriteFile(const std::string &path, const BufferView &inputBuffer);
+
 private:
+    /** @brief Implementation of the LoadFile function */
     template<typename Type>
     static void WriteToBufferImpl(const Type *input, Type *output, const ChannelArrangement channelArrangement, const std::size_t size) noexcept;
 
+    /** @brief Implementation of the WriteFile function */
     template<typename Type>
     static void WriteFromBufferImpl(const Type *input, Type *output, const ChannelArrangement channelArrangement, const std::size_t size) noexcept;
 };

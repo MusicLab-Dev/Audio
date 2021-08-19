@@ -15,40 +15,7 @@ using namespace std::chrono_literals;
 
 AScheduler::AScheduler(void)
 {
-    _dirtyFlags.fill(true);
-    for (auto &cache : _graphs) {
-        cache.graph.setRepeatCallback([this](void) -> bool {
-            bool exited = false;
-            getCurrentBeatRange().increment(_processBeatSize);
-            processBeatMiss();
-            if (isLooping())
-                processLooping();
-            if (produceAudioData(_project->master()->cache())) {
-                exited = onAudioBlockGenerated();
-            } else {
-                do {
-                    exited = onAudioQueueBusy();
-                    if (exited)
-                        break;
-                    // Sleep for a 1/2 realtime frame if there are cached frame, else 1/3
-                    std::this_thread::sleep_for(
-                        std::chrono::milliseconds(
-                            (_cachedAudioFrames ? 1000 / 2 : 1000 / 3) * _processBlockSize / _sampleRate
-                        )
-                    );
-                } while (!flushOverflowCache());
-                if (!exited)
-                    exited = onAudioBlockGenerated();
-            }
-            if (exited) {
-                std::cout << "Shutting down process graph, clearing cache" << std::endl;
-                clearAudioQueue();
-                clearOverflowCache();
-                return false;
-            } else
-                return true;
-        });
-    }
+    graph().construct();
 }
 
 bool AScheduler::setState(const State state) noexcept
@@ -68,8 +35,8 @@ bool AScheduler::setState(const State state) noexcept
         _beatMissCount = _beatMissOffset;
         _audioBlockBeatMissCount = _beatMissOffset;
         _audioElapsedBeat = 0u;
-        if (!getCurrentGraph().running()) {
-            if (_dirtyFlags[static_cast<std::size_t>(playbackMode())])
+        if (!graph().running()) {
+            if (!graph().size())
                 invalidateCurrentGraph<false>();
             scheduleCurrentGraph();
         }
@@ -81,17 +48,17 @@ bool AScheduler::setState(const State state) noexcept
 
 void AScheduler::processBeatMiss(void) noexcept
 {
-    auto &range = getCurrentBeatRange();
+    auto &range = currentBeatRange();
 
     _beatMissCount += _beatMissOffset;
-    if (_beatMissCount <= -1.0) {
-        _beatMissCount += 1.0;
+    if (_beatMissCount <= -1.0f) {
+        _beatMissCount += 1.0f;
         range = {
             range.from,
             range.to - 1
         };
-    } else if (_beatMissCount >= 1.0) {
-        _beatMissCount -= 1.0;
+    } else if (_beatMissCount >= 1.0f) {
+        _beatMissCount -= 1.0f;
         range = {
             range.from,
             range.to + 1
@@ -100,7 +67,7 @@ void AScheduler::processBeatMiss(void) noexcept
 }
 void AScheduler::processLooping(void) noexcept
 {
-    auto &range = getCurrentBeatRange();
+    auto &range = currentBeatRange();
 
     if (range.from < _loopBeatRange.to && range.to > _loopBeatRange.to) {
         _processLoopCrop = _processBlockSize - ComputeSampleSize(
@@ -129,11 +96,11 @@ bool AScheduler::consumeAudioData(std::uint8_t *data, const std::size_t size)
     // Compute the audio elapsed beat
     auto blockBeatSize = _audioBlockBeatSize.load();
     _audioBlockBeatMissCount += _audioBlockBeatMissOffset;
-    if (_audioBlockBeatMissCount <= -1.0) {
-        _audioBlockBeatMissCount += 1.0;
+    if (_audioBlockBeatMissCount <= -1.0f) {
+        _audioBlockBeatMissCount += 1.0f;
         --blockBeatSize;
-    } else if (_audioBlockBeatMissCount >= 1.0) {
-        _audioBlockBeatMissCount -= 1.0;
+    } else if (_audioBlockBeatMissCount >= 1.0f) {
+        _audioBlockBeatMissCount -= 1.0f;
         ++blockBeatSize;
     }
     _audioElapsedBeat += blockBeatSize;
@@ -152,9 +119,7 @@ void AScheduler::setProcessParams(const BlockSize processBlockSize, const Sample
     _audioBlockBeatSize = _processBeatSize;
     _audioBlockBeatMissOffset = _beatMissOffset;
     _AudioQueue.resize(_cachedAudioFrames * _audioBlockSize * sizeof(float));
-    std::cout << "ProcessParams: BlockSize " << processBlockSize << " SampleRate " << sampleRate << " cachedAudioFrames " << cachedAudioFrames << " queue size " << _cachedAudioFrames * _audioBlockSize * sizeof(float) << std::endl;
-    for (auto &cache : _graphs)
-        cache.currentBeatRange = { cache.currentBeatRange.from, cache.currentBeatRange.from + _processBeatSize };
+    currentBeatRange().to = currentBeatRange().from + _processBeatSize;
 }
 
 void AScheduler::setBPM(const BPM bpm) noexcept
@@ -165,6 +130,59 @@ void AScheduler::setBPM(const BPM bpm) noexcept
     const auto newTempo = tempo();
     _processBeatSize = ComputeBeatSize(_processBlockSize, newTempo, _sampleRate, _beatMissOffset);
     _audioBlockBeatSize = ComputeBeatSize(_audioBlockSize, newTempo, _sampleRate, _audioBlockBeatMissOffset);
-    for (auto &cache : _graphs)
-        cache.currentBeatRange = { cache.currentBeatRange.from, cache.currentBeatRange.from + _processBeatSize };
+    currentBeatRange().to = currentBeatRange().from + _processBeatSize;
+}
+
+void AScheduler::exportProject(void) noexcept
+{
+    setPlaybackMode(PlaybackMode::Export);
+    invalidateGraph<PlaybackMode::Export>();
+}
+
+bool AScheduler::onPlaybackGraphCompleted(void) noexcept
+{
+    bool exited = false;
+    currentBeatRange().increment(_processBeatSize);
+    processBeatMiss();
+    if (isLooping())
+        processLooping();
+    if (produceAudioData(_project->master()->cache())) {
+        exited = onAudioBlockGenerated();
+    } else {
+        do {
+            exited = onAudioQueueBusy();
+            if (exited)
+                break;
+            // Sleep for a 1/4 realtime frame if there are cached frame, else 1/8
+            std::this_thread::sleep_for(
+                std::chrono::milliseconds(
+                    (_cachedAudioFrames ? 1000 / 4 : 1000 / 8) * _processBlockSize / _sampleRate
+                )
+            );
+        } while (!flushOverflowCache());
+        if (!exited)
+            exited = onAudioBlockGenerated();
+    }
+    if (exited) {
+        std::cout << "Shutting down process graph, clearing cache" << std::endl;
+        clearAudioQueue();
+        clearOverflowCache();
+        return false;
+    } else
+        return true;
+}
+
+bool AScheduler::onExportGraphCompleted(void) noexcept
+{
+    bool exited = false;
+    currentBeatRange().increment(_processBeatSize);
+    processBeatMiss();
+    // if (isLooping())
+    //     processLooping();
+    exited = onExportBlockGenerated();
+    if (exited) {
+        std::cout << "Shutting down export graph, clearing cache" << std::endl;
+        return false;
+    } else
+        return true;
 }
