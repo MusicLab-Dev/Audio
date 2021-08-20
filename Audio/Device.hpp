@@ -79,7 +79,7 @@ public:
     void stop(void);
 
     /** @brief Check if the device is running (and audio callback is registered) */
-    [[nodiscard]] bool running(void) const noexcept;
+    [[nodiscard]] bool running(void) const noexcept { return _running; }
 
 
     /** @brief Get/Set the actual device name */
@@ -140,6 +140,7 @@ private:
     LogicalDescriptor _descriptor {};
     AudioCallback _callback {};
     DeviceID _deviceID {};
+    bool _running { false };
 
     /** @brief Internal audio callback, called by backend */
     static void InternalAudioCallback(void *userdata, std::uint8_t *data, int size) noexcept;

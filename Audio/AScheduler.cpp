@@ -153,18 +153,30 @@ bool AScheduler::onPlaybackGraphCompleted(void) noexcept
             exited = onAudioQueueBusy();
             if (exited)
                 break;
-            // Sleep for a 1/4 realtime frame if there are cached frame, else 1/8
-            std::this_thread::sleep_for(
-                std::chrono::milliseconds(
-                    (_cachedAudioFrames ? 1000 / 4 : 1000 / 8) * _processBlockSize / _sampleRate
-                )
-            );
+            std::uint32_t sleepFactor;
+            switch (_cachedAudioFrames) {
+            case 0u:
+            case 1u:
+                sleepFactor = 1000000u / 8u;
+                break;
+            case 2u:
+                sleepFactor = 1000000u / 4u;
+                break;
+            case 3u:
+                sleepFactor = 1000000u / 2u;
+                break;
+            default:
+                sleepFactor = 1000000u;
+                break;
+            }
+            const std::chrono::nanoseconds sleepDuration((sleepFactor * _processBlockSize) / _sampleRate);
+            std::this_thread::sleep_for(sleepDuration);
         } while (!flushOverflowCache());
         if (!exited)
             exited = onAudioBlockGenerated();
     }
     if (exited) {
-        std::cout << "Shutting down process graph, clearing cache" << std::endl;
+        std::cout << "[Audio Graph] Shut down" << std::endl;
         clearAudioQueue();
         clearOverflowCache();
         return false;
@@ -181,7 +193,7 @@ bool AScheduler::onExportGraphCompleted(void) noexcept
     //     processLooping();
     exited = onExportBlockGenerated();
     if (exited) {
-        std::cout << "Shutting down export graph, clearing cache" << std::endl;
+        std::cout << "[Export Graph] Shut down" << std::endl;
         return false;
     } else
         return true;

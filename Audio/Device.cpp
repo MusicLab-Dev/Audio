@@ -54,16 +54,13 @@ Device::~Device(void)
 void Device::start(void)
 {
     SDL_PauseAudioDevice(_deviceID, false);
+    _running = true;
 }
 
 void Device::stop(void)
 {
     SDL_PauseAudioDevice(_deviceID, true);
-}
-
-bool Device::running(void) const noexcept
-{
-    return (SDL_GetAudioDeviceStatus(_deviceID) == SDL_AUDIO_PLAYING);
+    _running = false;
 }
 
 bool Device::reloadDriver(const Core::TinyString &driverName) noexcept
@@ -73,7 +70,7 @@ bool Device::reloadDriver(const Core::TinyString &driverName) noexcept
 
 void Device::reloadDevice(void)
 {
-    std::cout << "Reloading driver..." << std::endl;
+    std::cout << "[Audio Device] Reloading driver..." << std::endl;
     constexpr auto GetFormat = [](const Format format) -> SDL_AudioFormat {
         switch (format) {
         case Format::Unknown:
@@ -125,7 +122,7 @@ void Device::reloadDevice(void)
     _descriptor.sampleRate = static_cast<SampleRate>(acquiredSpec.freq);
     _descriptor.format = ReverseFormat(acquiredSpec.format);
     _descriptor.channelArrangement = static_cast<ChannelArrangement>(acquiredSpec.channels);
-    std::cout << "Acquired device: " << _descriptor.blockSize << " " << _descriptor.sampleRate << std::endl;
+    std::cout << "[Audio Device] Acquired device: " << _descriptor.blockSize << " " << _descriptor.sampleRate << std::endl;
 }
 
 void Device::DebugPhysicalDescriptors(void)
