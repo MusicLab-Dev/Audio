@@ -60,9 +60,10 @@ inline void Audio::Buffer::grow(const std::size_t channelByteSize) noexcept
 {
     const auto totalSize = channelByteSize * static_cast<std::size_t>(channelArrangement());
 
-    if (totalSize <= capacity())
+    if (totalSize <= capacity()) {
+        header()->size = totalSize;
         header()->channelByteSize = channelByteSize;
-    else {
+    } else {
         Buffer target(channelByteSize, sampleRate(), channelArrangement(), format());
         std::memcpy(target.byteData(), byteData(), size<std::uint8_t>());
         *this = std::move(target);

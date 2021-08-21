@@ -15,7 +15,6 @@ inline Audio::Buffer Audio::SampleManager<Type, Normalize>::LoadSampleFile(const
 template<typename Type, bool Normalize>
 inline Audio::Buffer Audio::SampleManager<Type, Normalize>::LoadSampleFileExtension(const std::string &path, const std::string &ext, const SampleSpecs &desiredSpecs, SampleSpecs &fileSpecs, bool displaySpecs)
 {
-    // BUG: sizeof(SupportedExtension) / sizeof(std::pair<int, int>) -> Triggers a warning that thinks we try to get the number of elements
     for (const Extension &extension : SupportedExtension) {
         if (ext == extension.name) {
             /** @todo Convert buffer (if needed) into the templated type */
@@ -37,10 +36,10 @@ inline bool Audio::SampleManager<Type, Normalize>::WriteSampleFile(const std::st
 template<typename Type, bool Normalize>
 inline bool Audio::SampleManager<Type, Normalize>::WriteSampleFileExtension(const std::string &path, const BufferView &sample, const std::string &ext)
 {
-    for (auto i = 0u; i < sizeof(SupportedExtension) / sizeof(std::pair<int, int>); ++i) {
-        if (std::string(std::get<0>(SupportedExtension[i])) == ext) {
+    for (const Extension &extension : SupportedExtension) {
+        if (ext == extension.name) {
             /** @todo Convert buffer (if needed) into the templated type */
-            return std::get<2>(SupportedExtension[i])(path, sample);
+            return extension.writeFunc(path, sample);
         }
     }
     throw std::runtime_error("Audio::SampleManager::WriteSampleFileExtension: Extension file not supported: '" + ext + "'.");

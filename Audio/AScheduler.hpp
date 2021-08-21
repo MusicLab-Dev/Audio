@@ -188,10 +188,10 @@ public:
 
 
     /** @brief Compute a beat size out of a sample size */
-    [[nodiscard]] static Beat ComputeBeatSize(const BlockSize blockSize, const Tempo tempo, const SampleRate sampleRate, float &beatMissOffset) noexcept;
+    [[nodiscard]] static Beat ComputeBeatSize(const std::uint32_t sampleSize, const Tempo tempo, const SampleRate sampleRate, float &beatMissOffset) noexcept;
 
     /** @brief Compute a sample size out of a beat size */
-    [[nodiscard]] static BlockSize ComputeSampleSize(const Beat blockBeatSize, const Tempo tempo, const SampleRate sampleRate, const float beatMissOffset, const float beatMissCount) noexcept;
+    [[nodiscard]] static std::uint32_t ComputeSampleSize(const Beat beatSize, const Tempo tempo, const SampleRate sampleRate, const float beatMissOffset, const float beatMissCount) noexcept;
 
 protected:
     /** @brief Dispatch apply events without clearing event list */

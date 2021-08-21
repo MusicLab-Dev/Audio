@@ -101,7 +101,7 @@ inline bool Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, P
         _controlStack.insert(_controlStack.end(), events.beginUnsafe(), events.endUnsafe());
         events.clearUnsafe();
     }
-    if constexpr (Playback == PlaybackMode::Production) {
+    if constexpr (Playback == PlaybackMode::Production || Playback == PlaybackMode::Export) {
         ParamID paramID = 0u;
         for (const auto &automation : automations) {
             if (!automation.isSafe() || automation.headerCustomType().muted) {
@@ -159,7 +159,7 @@ inline bool Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, P
         _noteStack->insert(_noteStack->end(), events.beginUnsafe(), events.endUnsafe());
         events.clearUnsafe();
     }
-    if constexpr (Playback == PlaybackMode::Production) {
+    if constexpr (Playback == PlaybackMode::Production || Playback == PlaybackMode::Export) {
         if (auto &instances = partitionsHeader.instances; instances.isSafe()) {
             for (auto &instance : instances) {
                 if (instance.range.to <= beatRange.from)

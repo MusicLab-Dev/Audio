@@ -156,7 +156,7 @@ public:
     /** @brief Get the byte size per channel */
     [[nodiscard]] std::size_t channelByteSize(void) const noexcept { return _header->channelByteSize; }
 
-    /** @brief Get the sample count per cahnnel */
+    /** @brief Get the sample count per channel */
     [[nodiscard]] std::size_t channelSampleCount(void) const noexcept { return _header->channelByteSize / GetFormatByteLength(_header->format); }
 
 

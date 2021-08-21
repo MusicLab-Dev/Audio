@@ -217,9 +217,9 @@ inline void Audio::AScheduler::buildNodeTask(const Node *node,
     audioTask.first.precede(parentAudioTask.first);
 }
 
-inline Audio::Beat Audio::AScheduler::ComputeBeatSize(const BlockSize blockSize, const Tempo tempo, const SampleRate sampleRate, float &beatMissOffset) noexcept
+inline Audio::Beat Audio::AScheduler::ComputeBeatSize(const std::uint32_t sampleSize, const Tempo tempo, const SampleRate sampleRate, float &beatMissOffset) noexcept
 {
-    const float beats = (static_cast<float>(blockSize) / sampleRate) * tempo * Audio::BeatPrecision;
+    const float beats = (static_cast<float>(sampleSize) / sampleRate) * tempo * Audio::BeatPrecision;
     const float beatsFloor = std::floor(beats);
     const float beatsCeil = std::ceil(beats);
 
@@ -232,11 +232,11 @@ inline Audio::Beat Audio::AScheduler::ComputeBeatSize(const BlockSize blockSize,
     }
 }
 
-inline Audio::BlockSize Audio::AScheduler::ComputeSampleSize(const Beat blockBeatSize, const Tempo tempo, const SampleRate sampleRate, const float beatMissOffset, const float beatMissCount) noexcept
+inline std::uint32_t Audio::AScheduler::ComputeSampleSize(const Beat beatSize, const Tempo tempo, const SampleRate sampleRate, const float beatMissOffset, const float beatMissCount) noexcept
 {
     if (beatMissOffset > 0.0) {
-        return static_cast<BlockSize>(((static_cast<float>(blockBeatSize) - beatMissOffset + beatMissCount) / (tempo * Audio::BeatPrecision)) * sampleRate);
+        return static_cast<std::uint32_t>((static_cast<float>(sampleRate) * (static_cast<float>(beatSize) - beatMissOffset + beatMissCount)) / (tempo * Audio::BeatPrecision));
     } else {
-        return static_cast<BlockSize>(((static_cast<float>(blockBeatSize) + beatMissOffset - beatMissCount) / (tempo * Audio::BeatPrecision)) * sampleRate);
+        return static_cast<std::uint32_t>((static_cast<float>(sampleRate) * (static_cast<float>(beatSize) + beatMissOffset - beatMissCount)) / (tempo * Audio::BeatPrecision));
     }
 }
