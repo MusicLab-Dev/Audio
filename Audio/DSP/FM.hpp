@@ -174,6 +174,7 @@ public:
                     processSize,
                     key,
                     frequencyNorm,
+                    phaseIndex,
                     outGain
                 );
             } else {
@@ -185,6 +186,7 @@ public:
                     processSize,
                     key,
                     frequencyNorm,
+                    phaseIndex,
                     outGain
                 );
             }
@@ -198,6 +200,7 @@ public:
                     processSize,
                     key,
                     frequencyNorm,
+                    phaseIndex,
                     outGain
                 );
             } else {
@@ -208,6 +211,7 @@ public:
                     processSize,
                     key,
                     frequencyNorm,
+                    phaseIndex,
                     outGain
                 );
             }

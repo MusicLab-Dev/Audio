@@ -17,12 +17,13 @@ set(AudioTestsSources
     ${AudioTestsDir}/tests_NoteManager.cpp
     ${AudioTestsDir}/tests_Merge.cpp
     ${AudioTestsDir}/tests_Resampler.cpp
-    ${AudioTestsDir}/tests_Biquad.cpp
     ${AudioTestsDir}/tests_EnvelopeGenerator.cpp
     ${AudioTestsDir}/tests_Project.cpp
 
     ${AudioTestsDir}/tests_Reformater.cpp
-    ${AudioTestsDir}/tests_RandomGenerator.cpp
+    # ${AudioTestsDir}/tests_RandomGenerator.cpp
+
+    ${AudioTestsDir}/tests_Biquad.cpp
 
     # ${AudioTestsDir}/tests_SchedulerTask.cpp
     # ${AudioTestsDir}/tests_Device.cpp

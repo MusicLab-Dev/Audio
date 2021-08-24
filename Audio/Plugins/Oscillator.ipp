@@ -8,6 +8,7 @@ inline void Audio::Oscillator::onAudioGenerationStarted(const BeatRange &range)
     UNUSED(range);
     _noteManager.reset();
     _oscillator.reset();
+    _filter.reset();
 }
 
 inline void Audio::Oscillator::onAudioParametersChanged(void)
@@ -34,8 +35,6 @@ inline void Audio::Oscillator::receiveAudio(BufferView output)
     const DB outGain = ConvertDecibelToRatio(static_cast<float>(outputVolume()) + DefaultVoiceGain);
     const auto outSize = static_cast<std::uint32_t>(output.size<float>());
     float *out = reinterpret_cast<float *>(output.byteData());
-    // const bool noRelease = (enveloppeRelease() <= EnvelopeMinTimeStep);
-    // const bool noRelease = !enveloppeRelease();
 
     _noteManager.envelope().setSpecs<0u>(DSP::EnvelopeSpecs {
         0.0f,
@@ -56,11 +55,10 @@ inline void Audio::Oscillator::receiveAudio(BufferView output)
                 realOutSize -= modifiers.sampleOffset;
             }
             UNUSED(modifiers);
-            const auto freqNorm = GetFrequencyNorm(GetNoteFrequency(key), audioSpecs().sampleRate);
+            const auto freq = GetNoteFrequency(key);
+            const auto freqNorm = GetFrequencyNorm(freq, audioSpecs().sampleRate);
+
             _noteManager.generateEnvelopeGains(key, readIndex, realOutSize);
-
-            // DSP::Generator::Generate<true>(
-
             _oscillator.generate<true>(
                 static_cast<DSP::Generator::Waveform>(waveform()),
                 realOut,
@@ -68,8 +66,22 @@ inline void Audio::Oscillator::receiveAudio(BufferView output)
                 realOutSize,
                 key,
                 freqNorm,
+                readIndex,
                 outGain
             );
+
+            // for (auto i = 0u; i < realOutSize; ++i) {
+            //     const float cutOff = (_noteManager.envelopeGain()[i] * static_cast<float>(tmpFilter()) + 1.0f) * freq;
+            //     _filter.setup(DSP::Biquad::Internal::Specs {
+            //         DSP::Filter::AdvancedType::LowPass,
+            //         static_cast<float>(audioSpecs().sampleRate),
+            //         { cutOff, 0.0f },
+            //         1.0f,
+            //         0.707f
+            //     });
+            //     realOut[i] = _filter.processSample(realOut[i], key, 1.0f);
+            // }
+
             return std::make_pair(realOutSize, 0u);
         }
     );

@@ -9,6 +9,19 @@ inline void Audio::Piano::onAudioGenerationStarted(const BeatRange &range)
 {
     UNUSED(range);
     _fmManager.reset();
+    _filter.init(
+        DSP::Filter::FIRSpecs(
+            DSP::Filter::BasicType::LowPass,
+            DSP::Filter::WindowType::Hanning,
+            33ul,
+            static_cast<float>(audioSpecs().sampleRate),
+            8000.0f,
+            0.0f,
+            1.0f
+        )
+    );
+    _cache.resize(GetFormatByteLength(audioSpecs().format) * audioSpecs().processBlockSize, audioSpecs().sampleRate, audioSpecs().channelArrangement, audioSpecs().format);
+    _cache.clear();
 }
 
 inline void Audio::Piano::onAudioParametersChanged(void)
@@ -62,7 +75,7 @@ inline void Audio::Piano::receiveAudio(BufferView output)
             // opAvolume(brightness());
             _fmManager.processSchema<true>(realOut, realOutSize, outGain, readIndex, key, rootFrequency, {
                DSP::FM::Internal::Operator {
-                    DSP::Generator::Waveform::Sine,
+                    DSP::Generator::Waveform::Saw,
                     static_cast<float>(opAratio()),
                     static_cast<float>(opAattack()),
                     static_cast<float>(opAdecay()),
@@ -90,7 +103,7 @@ inline void Audio::Piano::receiveAudio(BufferView output)
                     static_cast<float>(opBkeyAmountRight()) / 100.0f
                },
                DSP::FM::Internal::Operator {
-                    DSP::Generator::Waveform::Sine,
+                    DSP::Generator::Waveform::Saw,
                     static_cast<float>(opCratio()),
                     static_cast<float>(opCattack()),
                     static_cast<float>(opCdecay()),
@@ -122,30 +135,17 @@ inline void Audio::Piano::receiveAudio(BufferView output)
         }
     );
 
-    // std::cout << std::endl;
-    // std::cout << _fmManager.getActiveNoteSize() << std::endl;
-    // std::cout << _fmManager.getActiveNoteBlockSize() << std::endl;
-
-    // To benchmark, must be slower
-    // Modifier<float>::ApplyIndexFunctor(out, outSize, 0u, [&, outGain](const std::size_t index) -> float {
-    //     UNUSED(index);
-    //     float sample {};
-    //     const auto activeNote = _fmManager.getActiveNote();
-    //     const auto activeNoteSize = activeNote.size();
-    //     // std::cout << "Receive <audio>: " << activeNote.size() << std::endl;
-    //     for (auto iKey = 0u; iKey < activeNoteSize; ++iKey) {
-    //         const auto key = activeNote[iKey];
-    //         const auto trigger = _fmManager.trigger(key);
-    //         // Phase index
-    //         const auto phaseIndex = _fmManager.readIndex(key);
-    //         const float frequency = std::pow(2.f, static_cast<float>(static_cast<int>(key) - RootKey) / KeysPerOctave) * RootKeyFrequency;
-    //         const float frequencyNorm = 2.f * static_cast<float>(M_PI) * frequency / static_cast<float>(audioSpecs().sampleRate);
-    //         sample += std::sin(static_cast<float>(index) * frequencyNorm) *
-    //         getEnvelopeGain(key, static_cast<std::uint32_t>(phaseIndex), trigger);
-    //     }
-    //     return sample * outGain;
-    //         // std::sin(static_cast<float>(index) * frequencyNorm) *
-    //         // getEnvelopeGain(key, static_cast<std::uint32_t>(index), trigger) * gain;
-    // });
+    _filter.setSpecs(
+        DSP::Filter::FIRSpecs(
+            DSP::Filter::BasicType::LowPass,
+            DSP::Filter::WindowType::Default,
+            33ul,
+            static_cast<float>(audioSpecs().sampleRate),
+            8000.0f,
+            0.0f,
+            1.0f
+        )
+    );
+    _filter.filter<true>(out, audioSpecs().processBlockSize, out, outGain);
 
 }

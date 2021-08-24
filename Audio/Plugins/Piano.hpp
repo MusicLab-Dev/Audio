@@ -9,7 +9,7 @@
 
 #include <Audio/PluginUtilsControlsFM.hpp>
 #include <Audio/PluginUtilsControlsMapping.hpp>
-
+#include <Audio/DSP/FIR.hpp>
 
 #include "Managers/FMManager.hpp"
 
@@ -84,6 +84,8 @@ public:
 public:
 private:
     FMManager<DSP::EnvelopeType::ADSR, 4u> _fmManager {};
+    DSP::FIR::BasicFilter<float> _filter;
+    Buffer _cache;
 };
 
 #include "Piano.ipp"

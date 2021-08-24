@@ -14,7 +14,7 @@ set(AudioPrecompiledHeaders
     ${AudioDir}/BaseNote.hpp
     ${AudioDir}/BaseDevice.hpp
     ${AudioDir}/BaseIndex.hpp
-    ${AudioDir}/Math.hpp
+    ${AudioDir}/MathConstants.hpp
     ${AudioDir}/Buffer.hpp
     ${AudioDir}/Modifier.hpp
     ${AudioDir}/BufferOctave.hpp
@@ -38,10 +38,11 @@ set(AudioPrecompiledHeaders
     ${AudioDir}/Project.hpp
     ${AudioDir}/UtilsMidi.hpp
     ${AudioDir}/Volume.hpp
-)
+    )
 
 set(AudioSources
     ${AudioPrecompiledHeaders}
+    ${AudioDir}/Math.hpp
     ${AudioDir}/PluginUtilsControls.hpp
     ${AudioDir}/PluginUtilsControlsEnvelope.hpp
     ${AudioDir}/PluginUtilsControlsEqualizer.hpp
@@ -91,6 +92,8 @@ set(AudioPluginsSources
     ${AudioPluginsDir}/GammaEqualizer.ipp
     ${AudioPluginsDir}/SimpleDelay.hpp
     ${AudioPluginsDir}/SimpleDelay.ipp
+    ${AudioPluginsDir}/SimpleReverb.hpp
+    ${AudioPluginsDir}/SimpleReverb.ipp
     ${AudioPluginsDir}/Arpeggiator.hpp
     ${AudioPluginsDir}/Arpeggiator.ipp
     ${AudioPluginsDir}/Chords.hpp
@@ -158,6 +161,7 @@ set(AudioDSPSources
     ${AudioDSPDir}/Generator.hpp
     ${AudioDSPDir}/Generator.ipp
     ${AudioDSPDir}/Oscillator.hpp
+    ${AudioDSPDir}/Phase.hpp
 )
 
 add_library(${PROJECT_NAME}

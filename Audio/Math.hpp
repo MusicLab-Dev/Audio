@@ -11,6 +11,8 @@
 
 #include <array>
 
+#include "MathConstants.hpp"
+
 namespace Audio::Utils
 {
     struct RandomDataSet

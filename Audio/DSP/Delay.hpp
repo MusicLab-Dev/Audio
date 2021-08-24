@@ -13,64 +13,164 @@
 
 namespace Audio::DSP
 {
+    enum class InternalPath : std::uint8_t
+    {
+        Default,    // Feedforward comb filter
+        Feedback,   // Feedback comb filter
+        Both        // All-pass filter
+    };
+
+    template<typename Type, InternalPath Path = InternalPath::Default, unsigned Count = 1u>
+    class DelayLineBase;
+
+    template<typename Type, InternalPath Path = InternalPath::Default, unsigned Count = 1u>
+    using DelayLineParallel = DelayLineBase<Type, Path, Count>;
+
+    template<typename Type, InternalPath Path = InternalPath::Default>
+    using DelayLineUnique = DelayLineBase<Type, Path, 1u>;
+
+    template<typename Type, InternalPath Path = InternalPath::Default, unsigned Count = 1u>
+    class DelayLineSerie;
+
     template<typename Type>
-    class BasicDelay;
+    struct DelayLineAllPass
+    {
+        DelayLineUnique<Type, InternalPath::Feedback> _feedback;
+        DelayLineUnique<Type, InternalPath::Default> _feedforward;
+    };
+
 }
 
-template<typename Type>
-class Audio::DSP::BasicDelay
+template<typename Type, Audio::DSP::InternalPath, unsigned Count>
+class Audio::DSP::DelayLineBase
 {
 public:
-    using Cache = Core::TinyVector<Type>;
-    using Index = std::size_t;
+    using ProcessIndex = std::size_t;
+    using ProcessCache = Core::TinyVector<Type>;
 
-    BasicDelay(void) = default;
-    BasicDelay(const float sampleRate, const std::size_t blockSize, const float maxDelaySize, const float delaySize) { reset(sampleRate, blockSize, delaySize); }
+    struct InternalCache
+    {
+        // Internal delay cache
+        ProcessCache delayCache;
+        Buffer lastIn;
+        Buffer lastOut;
+        // Delay time in samples
+        ProcessIndex delayTime { 0u };
+        // Read index in samples
+        ProcessIndex readIndex { 0u };
+        // Write index in samples
+        ProcessIndex writeIndex { 0u };
 
-    // void setMaxDelaySize(const SampleRate sampleRate, const float maxDelay) noexcept;
-    // void setDelaySize(const SampleRate sampleRate, const float delay) noexcept;
-    void sendData(const Type *input, const std::size_t inputSize, const float feedbackRate) noexcept;
+        float feedbackRate { 0.0f };
+        float feedforwardRate { 0.0f };
+
+        /** @todo REMOVE THIS MEMBER ! */
+        std::size_t blockSize { 0u };
+    };
+
+    using Cache = std::array<InternalCache, Count>;
+
+    DelayLineBase(void) = default;
+
+    void sendDataAll(const Type *input, const std::size_t inputSize) noexcept
+        { sendDataAllImpl<0u>(input, inputSize); }
+
+    template<unsigned Index = 0u>
+    void sendData(const Type *input, const std::size_t inputSize) noexcept;
+
+    template<bool Accumulate>
+    void receiveDataAll(Type *output, const std::size_t outputSize, const float mixRate) noexcept
+        { receiveDataAllImpl<0u, Accumulate>(output, outputSize, mixRate); }
+
+    template<bool Accumulate, unsigned Index = 0u>
     void receiveData(Type *output, const std::size_t outputSize, const float mixRate) noexcept;
 
+
     /** @brief Reset internal cache and indexes */
+    void resetAll(const AudioSpecs &audioSpecs, const float maxDelaySize, const float delaySize) noexcept
+        { resetAllImpl<0u>(audioSpecs, maxDelaySize, delaySize); }
+
+    template<unsigned Index = 0u>
     void reset(const AudioSpecs &audioSpecs, const float maxDelaySize, const float delaySize) noexcept;
 
+    template<unsigned Index = 0u>
+    void setAmount(const float feedback, const float feedforward) noexcept;
+
+    template<unsigned Index = 0u>
     void setDelayTime(const float sampleRate, const float delayTime) noexcept
     {
-        const Index newDelayTime = static_cast<Index>(sampleRate * delayTime);
-        if (_delayTime == newDelayTime)
+        const ProcessIndex newDelayTime = getDelayTime(sampleRate, delayTime);
+        if (_cache[Index].delayTime == newDelayTime)
             return;
-        _delayTime = newDelayTime;
-        const int delta = static_cast<int>(newDelayTime) - static_cast<int>(_delayTime);
-        const int newReadIndex = static_cast<int>(_readIndex) + delta;
+        _cache[Index].delayTime = newDelayTime;
+        const int delta = static_cast<int>(newDelayTime) - static_cast<int>(_cache[Index].delayTime);
+        const int newReadIndex = static_cast<int>(_cache[Index].readIndex) + delta;
         // Overflow
         if (newReadIndex < 0) {
-            _readIndex = static_cast<Index>(_delayCache.size()) + static_cast<Index>(-newReadIndex);
+            _cache[Index].readIndex = static_cast<ProcessIndex>(_cache[Index].delayCache.size()) + static_cast<ProcessIndex>(-newReadIndex);
         } else {
-            _readIndex = static_cast<Index>(newReadIndex);
+            _cache[Index].readIndex = static_cast<ProcessIndex>(newReadIndex);
         }
     }
 
-    // Buffer &inputCache(void) noexcept { return _inputCache; }
-    // const Buffer &inputCache(void) const noexcept { return _inputCache; }
+private:
+    Cache _cache;
+
+    template<unsigned Index>
+    void incrementReadIndex(void) noexcept;
+    template<unsigned Index>
+    void incrementWriteIndex(void) noexcept;
+
+    ProcessIndex getDelayTime(const float sampleRate, const float time) const noexcept;
+
+    template<unsigned Index>
+    void sendDataAllImpl(const Type *input, const std::size_t inputSize) noexcept;
+
+    template<bool Accumulate, unsigned Index>
+    void receiveDataAllImpl(Type *output, const std::size_t outputSize, const float mixRate) noexcept;
+
+    template<unsigned Index>
+    void resetAllImpl(const AudioSpecs &audioSpecs, const float maxDelaySize, const float delaySize) noexcept;
+
+};
+
+
+
+template<typename Type, Audio::DSP::InternalPath Path, unsigned Count>
+class Audio::DSP::DelayLineSerie
+{
+public:
+    using Lines = DelayLineBase<Type, Path>;
+
+    DelayLineSerie(void) = default;
+
+    void sendData(const Type *input, const std::size_t inputSize) noexcept
+    {
+
+    }
+
+    void receiveData(Type *output, const std::size_t outputSize) noexcept
+    {
+
+    }
+
+
+    void reset(const AudioSpecs &audioSpecs, const float maxDelaySize, const float delaySize) noexcept
+        { _lines.reset(audioSpecs, maxDelaySize, delaySize); }
+
+    void setFeedback(const float feedback) noexcept
+        { _lines.setFeedback(feedback); }
+
+    void setDelayTime(const float sampleRate, const float delayTime) noexcept
+        { _lines.setDelayTime(sampleRate, delayTime); }
 
 private:
-    // Internal delay cache
-    Cache _delayCache;
-    Buffer _lastIn;
-    Buffer _lastOut;
-    // Delay time in samples
-    Index _delayTime { 0u };
-    // Read index in samples
-    Index _readIndex { 0u };
-    // Write index in samples
-    Index _writeIndex { 0u };
+    Lines _lines;
 
-    /** @todo REMOVE THIS MEMBER ! */
-    std::size_t _blockSize { 0u };
+    void incrementReadIndex(void) noexcept;
+    void incrementWriteIndex(void) noexcept;
 
-    Index getNextReadIndex(void) noexcept;
-    Index getNextWriteIndex(void) noexcept;
+    typename Lines::ProcessIndex getDelayTime(const float sampleRate, const float time) const noexcept;
 };
 
 #include "Delay.ipp"

@@ -32,7 +32,7 @@ inline void Audio::SigmaFilter::receiveAudio(BufferView output)
     // Update filter cutoffs
     // _filter.setCutoffs(cutoffFrequencyFrom(), cutoffFrequencyTo());
 
-    _filter.filterBlock(_cache.data<float>(), audioSpecs().processBlockSize, out, outGain);
+    _filter.filterBlock(_cache.data<float>(), audioSpecs().processBlockSize, out, 0u, outGain);
 }
 
 inline void Audio::SigmaFilter::sendAudio(const BufferViews &inputs)

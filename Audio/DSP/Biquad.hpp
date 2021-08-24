@@ -23,7 +23,8 @@
 namespace Audio::DSP::Biquad
 {
     /** @brief Describe the parameters used for a second-order IIR filter section */
-    namespace Internal {
+    namespace Internal
+    {
         struct Coefficients
         {
             float a[3] { 0.0 };
@@ -38,7 +39,6 @@ namespace Audio::DSP::Biquad
             float cutoffs[2];
             float gain;
             float qFactor;
-            bool qAsBandWidth;
         };
 
         /** @brief Select the internal implementation: classic form or optimized (for memory) form */
@@ -55,13 +55,15 @@ namespace Audio::DSP::Biquad
             Transposed2     // 2 registers, 3 addOp -> better for floating-points
         };
 
-        [[nodiscard]] Coefficients GenerateCoefficientsLowPass(const float sampleRate, const float freq, const float q, const bool qAsBandWidth) noexcept;
-        [[nodiscard]] Coefficients GenerateCoefficientsHighPass(const float sampleRate, const float freq, const float q, const bool qAsBandWidth) noexcept;
-        [[nodiscard]] Coefficients GenerateCoefficientsBandPass(const float sampleRate, const float freq, const float q, const bool qAsBandWidth) noexcept;
-        [[nodiscard]] Coefficients GenerateCoefficientsBandStop(const float sampleRate, const float freq, const float q, const bool qAsBandWidth) noexcept;
-        [[nodiscard]] Coefficients GenerateCoefficientsPeak(const float sampleRate, const float freq, const float gain, const float q, const bool qAsBandWidth) noexcept;
+        [[nodiscard]] Coefficients GenerateCoefficientsLowPass(const float sampleRate, const float freq, const float q) noexcept;
+        [[nodiscard]] Coefficients GenerateCoefficientsHighPass(const float sampleRate, const float freq, const float q) noexcept;
+        [[nodiscard]] Coefficients GenerateCoefficientsBandPass(const float sampleRate, const float freq, const float q) noexcept;
+        [[nodiscard]] Coefficients GenerateCoefficientsBandPassFlat(const float sampleRate, const float freq, const float q) noexcept;
+        [[nodiscard]] Coefficients GenerateCoefficientsBandStop(const float sampleRate, const float freq, const float q) noexcept;
+        [[nodiscard]] Coefficients GenerateCoefficientsPeak(const float sampleRate, const float freq, const float gain, const float q) noexcept;
         [[nodiscard]] Coefficients GenerateCoefficientsLowShelf(const float sampleRate, const float freq, const float gain, const float q) noexcept;
         [[nodiscard]] Coefficients GenerateCoefficientsHighShelf(const float sampleRate, const float freq, const float gain, const float q) noexcept;
+        [[nodiscard]] Coefficients GenerateCoefficientsAllPass(const float sampleRate, const float freq, const float q) noexcept;
 
     }
 
@@ -80,35 +82,39 @@ template<Audio::DSP::Biquad::Internal::Form Form>
 class Audio::DSP::Biquad::Filter
 {
 public:
+    using Cache = std::array<float, (Form == Internal::Form::Direct1 || Form == Internal::Form::Transposed1) ? 4 : 2>;
+    using KeyCache = std::array<Cache, KeyCount>;
+
     /** @brief Default constructor */
     Filter(void) = default;
 
     /** Get the internal biquad coefficients */
     [[nodiscard]] const Internal::Coefficients &coefficients(void) const noexcept { return _coefs; }
-    void setupCoefficients(const Internal::Coefficients &coefficients) noexcept { _coefs = coefficients; }
 
-    /** Process a block of samples */
-    template<typename Type>
-    void filterBlock(const Type *input, const std::size_t size, Type *output, const DB outGain = 1.0) noexcept;
-    // void processBlock1(Type *block, std::size_t len) noexcept;
-
-    float foo1(const float a, const float b, const float c) noexcept {
-        return a * b + c;
-    }
-    float foo2(const float a, const float b, const float c) noexcept {
-        return std::fma(a, b, c);
-    }
-
-    void resetRegisters(void) noexcept;
-
-protected:
-    Internal::Coefficients   _coefs;
-    float _regs[(Form == Internal::Form::Direct1 || Form == Internal::Form::Transposed1) ? 4 : 2] { 0.0 };
+    void setup(const Internal::Specs &specs) noexcept { _coefs = GenerateCoefficients(specs); }
 
     /** @brief Process a sample into the biquad */
     template<typename Type>
-    [[nodiscard]] Type process(const Type in, const DB outGain) noexcept;
-    // [[nodiscard]] float process1(const float in) noexcept;
+    [[nodiscard]] Type processSample(const Type in, const Key key, const DB outGain) noexcept;
+    // [[nodiscard]] float processSample1(const float in) noexcept;
+
+    /** Process a block of samples */
+    template<typename Type>
+    void filterBlock(const Type *input, const std::size_t size, Type *output, const Key key, const DB outGain = 1.0) noexcept;
+    // void processBlock1(Type *block, std::size_t len) noexcept;
+
+
+    void reset(void) noexcept
+    {
+        for (auto &reg : _regs)
+            reg.fill(0.0f);
+    }
+    void resetKey(const Key key) noexcept { _regs[key].fill(0.0f); }
+
+protected:
+    Internal::Coefficients   _coefs;
+    KeyCache _regs { 0.0 };
+
 };
 
 

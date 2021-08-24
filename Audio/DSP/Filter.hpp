@@ -36,11 +36,12 @@ namespace Audio::DSP::Filter
         LowPass = 0u,
         HighPass,
         BandPass,
-        BandPass2,
+        BandPassFlat,
         BandStop, /* Notch */
         Peak,
         LowShelf,
         HighShelf,
+        AllPass,
         Default = LowPass
     };
 

@@ -1,6 +1,6 @@
 /**
  * @ Author: Pierre Veysseyre
- * @ Description: SimpleDelay
+ * @ Description: SimpleReverb
  */
 
 #pragma once
@@ -10,20 +10,20 @@
 
 namespace Audio
 {
-    class SimpleDelay;
+    class SimpleReverb;
 }
 
-class Audio::SimpleDelay final : public Audio::IPlugin
+class Audio::SimpleReverb final : public Audio::IPlugin
 {
     REGISTER_PLUGIN(
         /* Plugin's name */
         TR_TABLE(
-            TR(English, "Delay"),
-            TR(French, "Delay")
+            TR(English, "Reverb"),
+            TR(French, "Reverb")
         ),
         /* Plugin description */
         TR_TABLE(
-            TR(English, "SimpleDelay allow to mix multiple audio source"),
+            TR(English, "SimpleReverb allow to mix multiple audio source"),
             TR(French, "Le mixeur permet de mixer plusieurs sources sonore")
         ),
         /* Plugin flags */
@@ -45,27 +45,23 @@ class Audio::SimpleDelay final : public Audio::IPlugin
             byBass
         ),
         REGISTER_CONTROL_FLOATING(
-            delayTime,
+            reverbTime,
             0.0,
-            // CONTROL_RANGE_STEP(0.0, 0.001, 0.0001),
-            CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
+            CONTROL_RANGE_STEP(0.0, 5.0, 0.01),
             TR_TABLE(
-                TR(English, "Delay time"),
-                TR(French, "Durée du delay")
+                TR(English, "Reverb time"),
+                TR(French, "Durée du reverb")
             ),
             TR_TABLE(
-                TR(English, "Delay time"),
-                TR(French, "Durée du delay")
+                TR(English, "Reverb time"),
+                TR(French, "Durée du reverb")
             ),
             TR_TABLE(
-                TR(English, "Del")
+                TR(English, "Dur")
             ),
             TR_TABLE(
                 TR(English, "seconds")
             )
-        ),
-        REGISTER_CONTROL_EFFECT_SYNC_TEMPO(
-            sync
         ),
         REGISTER_CONTROL_FLOATING(
             feedbackRate,
@@ -91,12 +87,12 @@ class Audio::SimpleDelay final : public Audio::IPlugin
             0.5,
             CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
             TR_TABLE(
-                TR(English, "Delay mix"),
-                TR(French, "Mix du delay")
+                TR(English, "Reverb mix"),
+                TR(French, "Mix du reverb")
             ),
             TR_TABLE(
-                TR(English, "Delay mix"),
-                TR(French, "Mix du delay")
+                TR(English, "Reverb mix"),
+                TR(French, "Mix du reverb")
             ),
             TR_TABLE(
                 TR(English, "Mix")
@@ -109,7 +105,7 @@ class Audio::SimpleDelay final : public Audio::IPlugin
 
 public:
     /** @brief Plugin constructor */
-    SimpleDelay(const IPluginFactory *factory) noexcept : IPlugin(factory) {}
+    SimpleReverb(const IPluginFactory *factory) noexcept : IPlugin(factory) {}
 
     virtual void sendAudio(const BufferViews &inputs);
     virtual void receiveAudio(BufferView output);
@@ -119,9 +115,10 @@ public:
     virtual void onAudioParametersChanged(void);
 
 private:
-    DSP::DelayLineUnique<float, DSP::InternalPath::Default> _delay;
-    DSP::DelayLineAllPass<float> _allPass;
+    DSP::DelayLineParallel<float, DSP::InternalPath::Default, 4u> _combFilters;
+    Core::TinyVector<DSP::DelayLineUnique<float, DSP::InternalPath::Feedback>> _allPassFilters;
+    std::array<DSP::DelayLineAllPass<float>, 3u> _allPassTmp;
     Buffer _inputCache;
 };
 
-#include "SimpleDelay.ipp"
+#include "SimpleReverb.ipp"

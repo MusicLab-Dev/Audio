@@ -12,11 +12,20 @@ inline void Audio::SimpleDelay::onAudioParametersChanged(void)
 {
     _delay.reset(audioSpecs(), 10.0f, static_cast<float>(delayTime()));
     _inputCache.resize(GetFormatByteLength(audioSpecs().format) * audioSpecs().processBlockSize, audioSpecs().sampleRate, audioSpecs().channelArrangement, audioSpecs().format);
+
+    // Remove
+    // _allPass.reset(audioSpecs(), 10.0f, static_cast<float>(delayTime()));
+    // _allPass.reset(audioSpecs(), 10.0f, static_cast<float>(delayTime()));
 }
 
 inline void Audio::SimpleDelay::onAudioGenerationStarted(const BeatRange &)
 {
     _inputCache.clear();
+    _delay.reset(audioSpecs(), 10.0f, static_cast<float>(delayTime()));
+
+    // Remove
+    // _allPass.reset(audioSpecs(), 10.0f, static_cast<float>(delayTime()));
+    // _allPass.reset(audioSpecs(), 10.0f, static_cast<float>(delayTime()));
 }
 
 inline void Audio::SimpleDelay::receiveAudio(BufferView output)
@@ -30,22 +39,24 @@ inline void Audio::SimpleDelay::receiveAudio(BufferView output)
         return;
     }
 
-    /** @todo Maybe add this control to the process (_delay.receiveData) */
+    const auto realMixRate = static_cast<float>(mixRate());
+    _delay.setAmount(static_cast<float>(feedbackRate()), 1.0f);
     _delay.setDelayTime(static_cast<float>(audioSpecs().sampleRate), static_cast<float>(delayTime()));
-    // Mix input & delay output
-    _delay.receiveData(out, outSize, static_cast<float>(mixRate()));
+    _delay.receiveData<false>(out, outSize, realMixRate);
 
     // float dry { 1.0f };
     // float wet { 1.0f };
-    // if (mixRate != 0.5f) {
-    //     if (mixRate >= 0.5f) {
-    //         wet = 1.0f - mixRate;
+    // if (realMixRate != 0.5f) {
+    //     if (realMixRate >= 0.5f) {
+    //         wet = (1.0f - realMixRate) * 2.0f;
     //     } else {
-    //         dry = mixRate;
+    //         dry = (realMixRate * 2.0f);
     //     }
     // }
     // for (auto i = 0u; i < outSize; ++i) {
     //     const auto delayOut = out[i];
+    //     UNUSED(wet);
+    //     UNUSED(dry);
     //     out[i] = _inputCache.data<float>()[i] * dry + delayOut * wet;
     // }
 
@@ -60,6 +71,7 @@ inline void Audio::SimpleDelay::sendAudio(const BufferViews &inputs)
     ));
     DSP::Merge<float>(inputs, _inputCache, inGain, true);
     if (!static_cast<bool>(byBass())) {
-        _delay.sendData(_inputCache.data<float>(), _inputCache.size<float>(), static_cast<float>(feedbackRate()));
+        _delay.setAmount(static_cast<float>(feedbackRate()), 1.0f);
+        _delay.sendData(_inputCache.data<float>(), _inputCache.size<float>());
     }
 }
