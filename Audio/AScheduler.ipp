@@ -72,6 +72,8 @@ inline void Audio::AScheduler::invalidateCurrentGraph(void)
             return invalidateGraph<PlaybackMode::Partition>();
         case PlaybackMode::OnTheFly:
             return invalidateGraph<PlaybackMode::OnTheFly>();
+        case PlaybackMode::Export:
+            return invalidateGraph<PlaybackMode::Export>();
         }
     }
 }
