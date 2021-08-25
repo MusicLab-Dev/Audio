@@ -75,7 +75,7 @@ inline void Audio::Piano::receiveAudio(BufferView output)
             // opAvolume(brightness());
             _fmManager.processSchema<true>(realOut, realOutSize, outGain, readIndex, key, rootFrequency, {
                DSP::FM::Internal::Operator {
-                    DSP::Generator::Waveform::Saw,
+                    DSP::Generator::Waveform::Sine,
                     static_cast<float>(opAratio()),
                     static_cast<float>(opAattack()),
                     static_cast<float>(opAdecay()),
@@ -130,6 +130,14 @@ inline void Audio::Piano::receiveAudio(BufferView output)
                     static_cast<float>(opDkeyAmountLeft()) / 100.0f,
                     static_cast<float>(opDkeyAmountRight()) / 100.0f
                }
+            },
+            DSP::FM::Internal::PitchOperator {
+                static_cast<float>(pitchAttack()),
+                static_cast<float>(pitchPeak()),
+                static_cast<float>(pitchDecay()),
+                static_cast<float>(pitchSustain()),
+                static_cast<float>(pitchRelease()),
+                static_cast<float>(pitchVolume())
             });
             return std::make_pair(realOutSize, 0u);
         }
@@ -146,6 +154,6 @@ inline void Audio::Piano::receiveAudio(BufferView output)
             1.0f
         )
     );
-    _filter.filter<true>(out, audioSpecs().processBlockSize, out, outGain);
+    // _filter.filter<true>(out, audioSpecs().processBlockSize, out, outGain);
 
 }
