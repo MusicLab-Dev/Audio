@@ -4,8 +4,8 @@
  */
 
 #include <iostream>
-#include <SDL2/SDL.h>
 
+#include "SDL2.hpp"
 #include "Interpreter.hpp"
 
 static const Audio::Device::LogicalDescriptor Descriptor

@@ -447,7 +447,7 @@ private:
     template<unsigned Count = OperatorCount>
     void updateEnvelopesSpecs(const Internal::OperatorArray<OperatorCount> &operators) noexcept
     {
-        if constexpr (Count) {
+        if constexpr (Count != 0u) {
             updateEnvelopesSpecs<Count - 1u>(operators[Count - 1u]);
             updateEnvelopesSpecs<Count - 1u>(operators);
         }
