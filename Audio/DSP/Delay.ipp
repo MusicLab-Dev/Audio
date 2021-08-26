@@ -205,9 +205,9 @@ template<typename Type, Audio::DSP::InternalPath Path, unsigned Count>
 template<unsigned Index>
 void Audio::DSP::DelayLineBase<Type, Path, Count>::setFeedbackAmount(const float amount) noexcept
 {
-    if (amount >= 0.9f)
-        _cache[Index].feedbackAmount = 0.9f;
-    else
+    // if (amount >= 0.9f)
+    //     _cache[Index].feedbackAmount = 0.9f;
+    // else
         _cache[Index].feedbackAmount = amount;
     _cache[Index].inputRate = -_cache[Index].feedbackAmount;
 }

@@ -46,7 +46,7 @@ class Audio::SimpleReverb final : public Audio::IPlugin
         ),
         REGISTER_CONTROL_FLOATING(
             reverbTime,
-            0.0,
+            1.0,
             CONTROL_RANGE_STEP(0.0, 5.0, 0.01),
             TR_TABLE(
                 TR(English, "Reverb time"),
