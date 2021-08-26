@@ -41,7 +41,7 @@ public:
             CONTROL_DEFAULT_OUTPUT_VOLUME_RANGE()
         ),
         REGISTER_CONTROL_EFFECT_BYPASS(
-            byBass
+            bypass
         ),
         REGISTER_CONTROL_EQUALIZER_BANDS(
             frequenyBands,

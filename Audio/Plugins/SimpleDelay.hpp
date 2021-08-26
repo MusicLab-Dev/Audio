@@ -42,7 +42,7 @@ class Audio::SimpleDelay final : public Audio::IPlugin
             CONTROL_DEFAULT_OUTPUT_VOLUME_RANGE()
         ),
         REGISTER_CONTROL_EFFECT_BYPASS(
-            byBass
+            bypass
         ),
         REGISTER_CONTROL_FLOATING(
             delayTime,
@@ -68,7 +68,7 @@ class Audio::SimpleDelay final : public Audio::IPlugin
             sync
         ),
         REGISTER_CONTROL_FLOATING(
-            feedbackRate,
+            feedbackAmount,
             0.0,
             CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
             TR_TABLE(
@@ -119,8 +119,9 @@ public:
     virtual void onAudioParametersChanged(void);
 
 private:
-    DSP::DelayLineUnique<float, DSP::InternalPath::Default> _delay;
-    DSP::DelayLineAllPass<float> _allPass;
+    DSP::DelayLineUnique<float, DSP::InternalPath::Both> _delay;
+    DSP::DelayLineUnique<float, DSP::InternalPath::Default> _feedforward;
+    DSP::DelayLineUnique<float, DSP::InternalPath::Feedback> _feedback;
     Buffer _inputCache;
 };
 

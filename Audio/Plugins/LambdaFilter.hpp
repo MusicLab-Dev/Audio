@@ -55,7 +55,7 @@ class Audio::LambdaFilter final : public Audio::IPlugin
             CONTROL_RANGE_STEP(50.0, 22'000, 1.0)
         ),
         REGISTER_CONTROL_EFFECT_BYPASS(
-            byBass
+            bypass
         ),
         // REGISTER_CONTROL_OUTPUT_VOLUME(
         //     toto,

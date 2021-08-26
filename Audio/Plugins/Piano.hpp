@@ -42,10 +42,11 @@ class Audio::Piano final : public Audio::IPlugin
             CONTROL_DEFAULT_OUTPUT_VOLUME_RANGE()
         ),
         /* FM controls */
-        REGISTER_CONTROL_FM_OPERATOR_DEFAULT(opA),
-        REGISTER_CONTROL_FM_OPERATOR_DEFAULT(opB),
-        REGISTER_CONTROL_FM_OPERATOR_DEFAULT(opC),
-        REGISTER_CONTROL_FM_OPERATOR_DEFAULT(opD),
+        REGISTER_CONTROL_FM_ALGORITHM_DEFAULT_PITCH(opA, opB, opC, opD),
+        // REGISTER_CONTROL_FM_OPERATOR_DEFAULT(opA),
+        // REGISTER_CONTROL_FM_OPERATOR_DEFAULT(opB),
+        // REGISTER_CONTROL_FM_OPERATOR_DEFAULT(opC),
+        // REGISTER_CONTROL_FM_OPERATOR_DEFAULT(opD),
         REGISTER_CONTROL_FLOATING(
             brightness, 0.0, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
             TR_TABLE(
@@ -83,7 +84,7 @@ public:
 
 public:
 private:
-    FMManager<DSP::EnvelopeType::ADSR, 4u> _fmManager {};
+    FMManager<DSP::EnvelopeType::ADSR, 4u, DSP::FM::AlgorithmType::Default, true> _fmManager {};
     DSP::FIR::BasicFilter<float> _filter;
     Buffer _cache;
 };

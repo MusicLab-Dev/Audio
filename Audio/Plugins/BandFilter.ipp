@@ -29,7 +29,7 @@ inline void Audio::BandFilter::onAudioGenerationStarted(const BeatRange &range)
 inline void Audio::BandFilter::receiveAudio(BufferView output)
 {
     float *out = output.data<float>();
-    if (static_cast<bool>(byBass())) {
+    if (static_cast<bool>(bypass())) {
         std::memcpy(out, _cache.data<float>(), output.size<std::uint8_t>());
         return;
     }
@@ -56,7 +56,7 @@ inline void Audio::BandFilter::sendAudio(const BufferViews &inputs)
     if (!inputs.size())
         return;
     const DB inGain = ConvertDecibelToRatio(static_cast<float>(
-        static_cast<bool>(byBass()) ? inputGain() + outputVolume() : inputGain()
+        static_cast<bool>(bypass()) ? inputGain() + outputVolume() : inputGain()
     ));
     DSP::Merge<float>(inputs, _cache, inGain, true);
 }

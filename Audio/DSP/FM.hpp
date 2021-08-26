@@ -51,12 +51,12 @@ namespace Audio::DSP::FM
 
         struct PitchOperator
         {
-            float attack;
-            float peak;
-            float decay;
-            float sustain;
-            float release;
-            float volume;
+            float attack { 0.0f };
+            float peak { 0.0f };
+            float decay { 0.0f };
+            float sustain { 0.0f };
+            float release { 0.0f };
+            float volume { 0.0f };
         };
 
         template<unsigned InstanceCount>

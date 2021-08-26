@@ -55,7 +55,7 @@ class Audio::BandFilter final : public Audio::IPlugin
             CONTROL_RANGE_STEP(50.0, 22'000, 1.0)
         ),
         REGISTER_CONTROL_EFFECT_BYPASS(
-            byBass
+            bypass
         ),
         REGISTER_CONTROL_ENUM(
             /* Control variable / getter / setter name */

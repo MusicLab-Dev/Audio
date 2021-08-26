@@ -22,18 +22,29 @@ template<typename Type, Audio::DSP::InternalPath Path, unsigned Count>
 template<unsigned Index>
 inline void Audio::DSP::DelayLineBase<Type, Path, Count>::reset(const AudioSpecs &audioSpecs, const float maxDelaySize, const float delaySize) noexcept
 {
-    _cache[Index].feedbackRate = 0.0f;
+
+    _cache[Index].inIdx = 0u;
+    _cache[Index].lastOutFeedback = 0;
+
+    _cache[Index].delayRate = 0.0f;
     _cache[Index].blockSize = audioSpecs.processBlockSize;
-    const std::uint32_t delayCacheSize = static_cast<std::uint32_t>(static_cast<float>(audioSpecs.sampleRate) * maxDelaySize) + static_cast<std::uint32_t>(audioSpecs.processBlockSize);
-    _cache[Index].delayCache.clear();
-    _cache[Index].delayCache.resize(delayCacheSize);
     _cache[Index].delayTime = static_cast<ProcessIndex>(static_cast<float>(audioSpecs.sampleRate) * delaySize);
-    _cache[Index].readIndex = 0u;
-    _cache[Index].writeIndex = _cache[Index].delayTime;
+    const std::uint32_t delayCacheSize = static_cast<std::uint32_t>(static_cast<float>(audioSpecs.sampleRate) * maxDelaySize) + static_cast<std::uint32_t>(audioSpecs.processBlockSize);
+    _cache[Index].inputCache.clear();
+    _cache[Index].inputCache.resize(delayCacheSize);
+    _cache[Index].inputReadIndex = 0u;
+    _cache[Index].inputWriteIndex = _cache[Index].delayTime;
+
+    _cache[Index].outputCache.clear();
+    _cache[Index].outputCache.resize(delayCacheSize);
+    _cache[Index].outputReadIndex = 0u;
+    _cache[Index].outputWriteIndex = _cache[Index].delayTime;
+
 
     const auto cacheSize = GetFormatByteLength(audioSpecs.format) * audioSpecs.processBlockSize;
-    _cache[Index].lastIn.resize(cacheSize, audioSpecs.sampleRate, audioSpecs.channelArrangement, audioSpecs.format);
-    _cache[Index].lastIn.clear();
+    _cache[Index].input.resize(cacheSize, audioSpecs.sampleRate, audioSpecs.channelArrangement, audioSpecs.format);
+    _cache[Index].input.clear();
+
     _cache[Index].lastOut.resize(cacheSize, audioSpecs.sampleRate, audioSpecs.channelArrangement, audioSpecs.format);
     _cache[Index].lastOut.clear();
 }
@@ -50,11 +61,11 @@ inline void Audio::DSP::DelayLineBase<Type, Path, Count>::sendDataAllImpl(const 
 
 template<typename Type, Audio::DSP::InternalPath Path, unsigned Count>
 template<bool Accumulate, unsigned Index>
-inline void Audio::DSP::DelayLineBase<Type, Path, Count>::receiveDataAllImpl(Type *output, const std::size_t outputSize, const float mixRate) noexcept
+inline void Audio::DSP::DelayLineBase<Type, Path, Count>::receiveDataAllImpl(Type *output, const std::size_t outputSize, const float outGain) noexcept
 {
     if constexpr (Index < Count) {
-        receiveData<Accumulate, Index>(output, outputSize, mixRate);
-        receiveDataAllImpl<true, Index + 1u>(output, outputSize, mixRate);
+        receiveData<Accumulate, Index>(output, outputSize, outGain);
+        receiveDataAllImpl<true, Index + 1u>(output, outputSize, outGain);
     }
     if constexpr (Index == Count) {
         for (auto i = 0u; i < outputSize; ++i)
@@ -69,95 +80,134 @@ inline void Audio::DSP::DelayLineBase<Type, Path, Count>::sendData(const Type *i
     auto &line = _cache[Index];
 
     for (auto i = 0u; i < inputSize; ++i) {
-        const auto lastIn = input[i];
-        line.lastIn.template data<Type>()[i] = lastIn;
+        const auto in = input[i];
+        line.input.template data<Type>()[i] = in;
         if constexpr (Path == InternalPath::Default) {
-            _cache[Index].delayCache.data()[_cache[Index].writeIndex] = lastIn + _cache[Index].feedbackRate * _cache[Index].lastOut.template data<Type>()[i];
-            incrementWriteIndex<Index>();
+            // _cache[Index].inputCache.data()[_cache[Index].inputWriteIndex] = in + _cache[Index].delayRate * _cache[Index].lastOut.template data<Type>()[i];
+            // incrementInputWriteIndex<Index>();
         } else if constexpr (Path == InternalPath::Feedback) {
-            // _cache[Index].delayCache.data()[_cache[Index].writeIndex] = lastIn + _cache[Index].feedbackRate * _cache[Index].lastOut.data<Type>()[i];
-            // incrementWriteIndex();
+        } else {
+            // _cache[Index].inputCache.data()[_cache[Index].inputWriteIndex] = in + 1 * _cache[Index].lastOut.template data<Type>()[i];
+            // incrementInputWriteIndex<Index>();
         }
     }
 }
 
 template<typename Type, Audio::DSP::InternalPath Path, unsigned Count>
 template<bool Accumulate, unsigned Index>
-inline void Audio::DSP::DelayLineBase<Type, Path, Count>::receiveData(Type *output, const std::size_t outputSize, const float mixRate) noexcept
+inline void Audio::DSP::DelayLineBase<Type, Path, Count>::receiveData(Type *output, const std::size_t outputSize, const float outGain) noexcept
 {
-    float dry { 1.0f };
-    float wet { 1.0f };
-    if (mixRate != 0.5f) {
-        if (mixRate >= 0.5f) {
-            wet = (1.0f - mixRate) * 2.0f;
-        } else {
-            dry = (mixRate * 2.0f);
-        }
-    }
+    auto &line = _cache[Index];
+
     for (auto i = 0u; i < outputSize; ++i) {
         Type out {};
 
         if constexpr (Path == InternalPath::Default) {
-            const auto lastOut = _cache[Index].delayCache.data()[_cache[Index].readIndex];
-            out = lastOut * wet + _cache[Index].lastIn.template data<Type>()[i] * dry;
-            _cache[Index].lastOut.template data<Type>()[i] = lastOut;
-            incrementReadIndex<Index>();
-        } else if constexpr (Path == InternalPath::Feedback) {
-            const auto lastOut = _cache[Index].delayCache.data()[_cache[Index].readIndex];
-            const auto in = _cache[Index].lastIn.template data<Type>()[i];
+            // const auto delay = line.inputCache.data()[line.inputReadIndex];
 
-            const auto delay = in + lastOut * _cache[Index].feedbackRate;
-            _cache[Index].delayCache.data()[_cache[Index].writeIndex] = delay;
-            _cache[Index].lastOut.template data<Type>()[i] = delay;
-            out = in * dry + delay * wet;
-            incrementReadIndex<Index>();
-            incrementWriteIndex<Index>();
+            // out = delay;
+            // line.lastOut.template data<Type>()[i] = delay;
+            // incrementInputReadIndex<Index>();
+
+            out = processFeedforwardSample<Index>(line.input.template data<Type>()[i]);
+
+        } else if constexpr (Path == InternalPath::Feedback) {
+            // const auto lastOut = line.outputCache.data()[line.outputReadIndex];
+            // const auto in = line.input.template data<Type>()[i];
+
+            // const auto ret = in + lastOut * line.delayRate;
+            // line.outputCache.data()[line.outputWriteIndex] = ret;
+            // line.lastOut.template data<Type>()[i] = ret;
+            // out = ret - in;
+            // incrementOutputReadIndex<Index>();
+            // incrementOutputWriteIndex<Index>();
+
+            out = processFeedbackSample<Index>(line.input.template data<Type>()[i]);
+
         } else {
+            // const auto delay = line.inputCache.data()[line.inputReadIndex];
+            // const auto lastOut = line.outputCache.data()[line.outputReadIndex];
+            // const auto in = line.input.template data<Type>()[i];
+
+            // const auto retDelay = -in * line.delayRate + delay * line.inputRate + lastOut * line.delayRate;
+            // // const auto ret = delay * line.inputRate + lastOut * line.delayRate;
+            // const auto ret = retDelay;
+            // line.outputCache.data()[line.outputWriteIndex] = ret;
+            // line.lastOut.template data<Type>()[i] = ret;
+            // out = ret + in * line.delayRate;
+            // incrementInputReadIndex<Index>();
+            // incrementOutputReadIndex<Index>();
+            // incrementOutputWriteIndex<Index>();
+
+            out = processBothSample<Index>(line.input.template data<Type>()[i]);
         }
 
         if constexpr (Accumulate) {
-            output[i] += out;
+            output[i] += out * outGain;
         } else {
-            output[i] = out;
+            output[i] = out * outGain;
         }
     }
-    // std::cout << _cache[Index].writeIndex - _cache[Index].readIndex << std::endl;
 }
 
 template<typename Type, Audio::DSP::InternalPath Path, unsigned Count>
 template<unsigned Index>
-inline void Audio::DSP::DelayLineBase<Type, Path, Count>::incrementReadIndex(void) noexcept
+typename Audio::DSP::DelayLineBase<Type, Path, Count>::ProcessIndex Audio::DSP::DelayLineBase<Type, Path, Count>::getNextIndex(const ProcessIndex index) const noexcept
 {
-    if (++_cache[Index].readIndex >= _cache[Index].delayTime + static_cast<ProcessIndex>(_cache[Index].blockSize))
-        _cache[Index].readIndex = 0u;
+    if (const auto idx = index + 1u; idx >= _cache[Index].delayTime + static_cast<ProcessIndex>(_cache[Index].blockSize))
+        return 0u;
+    else
+        return idx;
 }
 
-template<typename Type, Audio::DSP::InternalPath Path, unsigned Count>
-template<unsigned Index>
-inline void Audio::DSP::DelayLineBase<Type, Path, Count>::incrementWriteIndex(void) noexcept
-{
-    if (++_cache[Index].writeIndex >= _cache[Index].delayTime + static_cast<ProcessIndex>(_cache[Index].blockSize))
-        _cache[Index].writeIndex = 0u;
-}
 
 template<typename Type, Audio::DSP::InternalPath Path, unsigned Count>
 typename Audio::DSP::DelayLineBase<Type, Path, Count>::ProcessIndex Audio::DSP::DelayLineBase<Type, Path, Count>::getDelayTime(const float sampleRate, const float time) const noexcept
 {
-    if (time == 0.0f)
-        return 1u;
-    if (const auto index = sampleRate * time; index < 1.0f)
-        return 1u;
-    else
+    static constexpr auto MinDelaySize = 2u;
+
+    if (time == 0.0f) {
+        return MinDelaySize;
+    }
+    if (const auto index = sampleRate * time; index < static_cast<float>(MinDelaySize)) {
+        return MinDelaySize;
+    }
+    else {
         return static_cast<ProcessIndex>(index);
+    }
 }
 
 template<typename Type, Audio::DSP::InternalPath Path, unsigned Count>
 template<unsigned Index>
-void Audio::DSP::DelayLineBase<Type, Path, Count>::setAmount(const float feedback, const float feedforward) noexcept
+void Audio::DSP::DelayLineBase<Type, Path, Count>::setInternalRate(const float delay, const float input) noexcept
 {
-    if (feedback >= 0.9f)
-        _cache[Index].feedbackRate = 0.9f;
+    _cache[Index].delayRate = delay;
+    _cache[Index].inputRate = input;
+}
+
+template<typename Type, Audio::DSP::InternalPath Path, unsigned Count>
+template<unsigned Index>
+void Audio::DSP::DelayLineBase<Type, Path, Count>::setInternalRateDefault(void) noexcept
+{
+    if constexpr (Path == InternalPath::Default) {
+        _cache[Index].delayRate = 1.0f;
+        _cache[Index].inputRate = 0.0f;
+    } else if constexpr (Path == InternalPath::Feedback) {
+        _cache[Index].delayRate = 1.0f;
+        _cache[Index].inputRate = 0.0f;
+    } else {
+        _cache[Index].delayRate = 1.0f;
+        _cache[Index].inputRate = 0.0f;
+    }
+}
+
+template<typename Type, Audio::DSP::InternalPath Path, unsigned Count>
+template<unsigned Index>
+void Audio::DSP::DelayLineBase<Type, Path, Count>::setFeedbackAmount(const float amount) noexcept
+{
+    if (amount >= 0.9f)
+        _cache[Index].feedbackAmount = 0.9f;
     else
-        _cache[Index].feedbackRate = feedback;
-    _cache[Index].feedforwardRate = feedforward;
+        _cache[Index].feedbackAmount = amount;
+    _cache[Index].inputRate = -_cache[Index].feedbackAmount;
 }
