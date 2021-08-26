@@ -2,6 +2,14 @@ cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 project(Audio)
 
 find_package(SDL2 REQUIRED)
+if(${SDL2_FOUND})
+    message(STATUS "SDL2_FOUND: " ${SDL2_FOUND})
+    message(STATUS "SDL2_INCLUDE_DIRS:" ${SDL2_INCLUDE_DIRS})
+    message(STATUS "SDL2_LIBRARIES: " ${SDL2_LIBRARIES})
+else()
+    message(STATUS "SDL2_FOUND: " ${SDL2_FOUND})
+    message(FATAL_ERROR "SDL2 NOT FOUND" )
+endif()
 
 get_filename_component(AudioDir ${CMAKE_CURRENT_LIST_FILE} PATH)
 
@@ -42,6 +50,7 @@ set(AudioPrecompiledHeaders
 
 set(AudioSources
     ${AudioPrecompiledHeaders}
+    ${AudioDir}/SDL2.hpp
     ${AudioDir}/Math.hpp
     ${AudioDir}/PluginUtilsControls.hpp
     ${AudioDir}/PluginUtilsControlsEnvelope.hpp
@@ -179,6 +188,9 @@ target_link_libraries(${PROJECT_NAME} PUBLIC Core Flow)
 
 if(MSVC)
     target_link_libraries(${PROJECT_NAME} PUBLIC SDL2::SDL2)
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "Apple")
+    target_link_libraries(${PROJECT_NAME} PUBLIC ${SDL2_LIBRARIES})
+    target_include_directories(${PROJECT_NAME} PUBLIC ${SDL2_INCLUDE_DIRS})
 else()
     target_link_libraries(${PROJECT_NAME} PUBLIC SDL2)
 endif()

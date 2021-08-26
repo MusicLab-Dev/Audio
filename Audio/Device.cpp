@@ -6,10 +6,9 @@
 #include <stdexcept>
 #include <iostream>
 
-#include <SDL2/SDL.h>
-
 #include <Core/StringUtils.hpp>
 
+#include "SDL2.hpp"
 #include "Device.hpp"
 
 using namespace Audio;

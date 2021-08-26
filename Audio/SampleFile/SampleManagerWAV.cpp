@@ -4,12 +4,10 @@
  */
 
 #include <fstream>
-
-#include <SDL2/SDL.h>
+#include <iostream>
 
 #include "SampleManagerWAV.hpp"
-
-#include <iostream>
+#include "../SDL2.hpp"
 
 using namespace Audio;
 

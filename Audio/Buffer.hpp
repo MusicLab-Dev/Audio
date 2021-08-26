@@ -10,8 +10,9 @@
 #include <memory>
 #include <atomic>
 #include <array>
-#include <memory_resource>
 #include <limits>
+
+#include <Core/PMR.hpp>
 
 #include "Base.hpp"
 

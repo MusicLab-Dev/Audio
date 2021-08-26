@@ -185,7 +185,7 @@ private:
     template<unsigned Power = DefaultExponentialInterpolationRate>
     float unrollExponential(const float gain) const noexcept
     {
-        if constexpr (Power)
+        if constexpr (Power != 0u)
             return gain * unrollExponential<Power - 1u>(gain);
         return 1.0f;
     }
