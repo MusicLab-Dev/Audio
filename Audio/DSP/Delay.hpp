@@ -188,14 +188,14 @@ private:
     {
         auto &line = _cache[Index];
         const auto delay = getDelaySample<Index>();
-        const auto out = (x - delay) * line.feedbackAmount;
+        const auto next = x + delay * line.feedbackAmount;
         // const auto out = delay * line.feedbackAmount + x;
 
-        line.inputCache.data()[line.inIdx] = out;
+        line.inputCache.data()[line.inIdx] = next;
         if (++line.inIdx >= line.delayTime)
             line.inIdx = 0u;
-        return out * (line.feedbackAmount * line.delayRate) + x * line.inputRate;
-        // return out * -line.feedbackAmount + delay;
+        return next * -line.feedbackAmount;
+        // return delay * line.delayRate + x * -line.inputRate;
     }
 
     template<unsigned Index>

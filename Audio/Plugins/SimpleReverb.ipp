@@ -49,9 +49,9 @@ inline void Audio::SimpleReverb::onAudioParametersChanged(void)
     _combFilters.reset<1u>(audioSpecs(), 10.0f, static_cast<float>(reverbTime()) * 29.0f / 1000.0f);
     _combFilters.reset<2u>(audioSpecs(), 10.0f, static_cast<float>(reverbTime()) * 37.0f / 1000.0f);
     _combFilters.reset<3u>(audioSpecs(), 10.0f, static_cast<float>(reverbTime()) * 47.0f / 1000.0f);
-    _allPassFilters[0u].reset(audioSpecs(), 1.0f, 3.1f / 1000.0f);
-    _allPassFilters[1u].reset(audioSpecs(), 1.0f, 1.7f / 1000.0f);
-    _allPassFilters[2u].reset(audioSpecs(), 1.0f, 0.3f / 1000.0f);
+    _allPassFilters[0u].reset(audioSpecs(), 1.0f, 12.6077097506f / 1000.0f);
+    _allPassFilters[1u].reset(audioSpecs(), 1.0f, 10.0f / 1000.0f);
+    _allPassFilters[2u].reset(audioSpecs(), 1.0f, 7.73242630385f / 1000.0f);
 }
 
 inline void Audio::SimpleReverb::onAudioGenerationStarted(const BeatRange &)
@@ -62,9 +62,9 @@ inline void Audio::SimpleReverb::onAudioGenerationStarted(const BeatRange &)
     _combFilters.reset<1u>(audioSpecs(), 10.0f, static_cast<float>(reverbTime()) * 29.0f / 1000.0f);
     _combFilters.reset<2u>(audioSpecs(), 10.0f, static_cast<float>(reverbTime()) * 37.0f / 1000.0f);
     _combFilters.reset<3u>(audioSpecs(), 10.0f, static_cast<float>(reverbTime()) * 47.0f / 1000.0f);
-    _allPassFilters[0u].reset(audioSpecs(), 1.0f, 3.1f / 1000.0f);
-    _allPassFilters[1u].reset(audioSpecs(), 1.0f, 1.7f / 1000.0f);
-    _allPassFilters[2u].reset(audioSpecs(), 1.0f, 0.3f / 1000.0f);
+    _allPassFilters[0u].reset(audioSpecs(), 1.0f, 12.6077097506f / 1000.0f);
+    _allPassFilters[1u].reset(audioSpecs(), 1.0f, 10.0f / 1000.0f);
+    _allPassFilters[2u].reset(audioSpecs(), 1.0f, 7.73242630385f / 1000.0f);
 }
 
 inline void Audio::SimpleReverb::receiveAudio(BufferView output)
@@ -98,20 +98,20 @@ inline void Audio::SimpleReverb::receiveAudio(BufferView output)
     _allPassFilters[1u].setFeedbackAmount(static_cast<float>(allPassFeedback()));
     _allPassFilters[2u].setFeedbackAmount(static_cast<float>(allPassFeedback()));
 
-    _allPassFilters[0u].setDelayTime(static_cast<float>(audioSpecs().sampleRate), 3.1f / 1000.0f);
-    _allPassFilters[1u].setDelayTime(static_cast<float>(audioSpecs().sampleRate), 1.7f / 1000.0f);
-    _allPassFilters[2u].setDelayTime(static_cast<float>(audioSpecs().sampleRate), 0.3f / 1000.0f);
+    _allPassFilters[0u].setDelayTime(static_cast<float>(audioSpecs().sampleRate), 12.6077097506f / 1000.0f);
+    _allPassFilters[1u].setDelayTime(static_cast<float>(audioSpecs().sampleRate), 10.0f / 1000.0f);
+    _allPassFilters[2u].setDelayTime(static_cast<float>(audioSpecs().sampleRate), 7.73242630385f / 1000.0f);
 
 
     // _combFilters.sendDataAll(out, outSize);
-    _combFilters.receiveDataAll<false>(out, outSize, 0.7f);
+    _combFilters.receiveDataAll<false>(out, outSize);
     // std::memcpy(out, _inputCache.data<float>(), outSize * sizeof(float));
     _allPassFilters[0u].sendData(out, outSize);
-    _allPassFilters[0u].receiveData<false>(out, outSize, 0.7f);
-    // _allPassFilters[1u].sendData(out, outSize);
-    // _allPassFilters[1u].receiveData<false>(out, outSize, 0.7f);
-    // allPass[2u].sendData(out, outSize);
-    // allPass[2u].receiveData<false>(out, outSize, 0.7f);
+    _allPassFilters[0u].receiveData<false>(out, outSize);
+    _allPassFilters[1u].sendData(out, outSize);
+    _allPassFilters[1u].receiveData<false>(out, outSize);
+    // _allPassFilters[2u].sendData(out, outSize);
+    // _allPassFilters[2u].receiveData<false>(out, outSize);
 
 
     const auto realMixRate = static_cast<float>(mixRate());

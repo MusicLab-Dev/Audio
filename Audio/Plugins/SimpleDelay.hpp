@@ -48,7 +48,7 @@ class Audio::SimpleDelay final : public Audio::IPlugin
             delayTime,
             0.0,
             // CONTROL_RANGE_STEP(0.0, 0.001, 0.0001),
-            CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
+            CONTROL_RANGE_STEP(0.0, 1.0, 0.001),
             TR_TABLE(
                 TR(English, "Delay time"),
                 TR(French, "Durée du delay")

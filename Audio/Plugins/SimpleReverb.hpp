@@ -65,7 +65,7 @@ class Audio::SimpleReverb final : public Audio::IPlugin
         ),
         REGISTER_CONTROL_FLOATING(
             combFeedback,
-            0.0,
+            0.96,
             CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
             TR_TABLE(
                 TR(English, "Comb feedback"),
@@ -84,7 +84,7 @@ class Audio::SimpleReverb final : public Audio::IPlugin
         ),
         REGISTER_CONTROL_FLOATING(
             allPassFeedback,
-            0.0,
+            0.47,
             CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
             TR_TABLE(
                 TR(English, "Allpass feedback"),
