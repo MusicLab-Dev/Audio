@@ -167,6 +167,9 @@ set(AudioDSPSources
     ${AudioDSPDir}/Filter.hpp
     ${AudioDSPDir}/Delay.hpp
     ${AudioDSPDir}/Delay.ipp
+    ${AudioDSPDir}/Reverb.hpp
+    ${AudioDSPDir}/Reverb.ipp
+    ${AudioDSPDir}/Reverb.cpp
     ${AudioDSPDir}/Generator.hpp
     ${AudioDSPDir}/Generator.ipp
     ${AudioDSPDir}/Oscillator.hpp

@@ -46,7 +46,7 @@ class Audio::SimpleDelay final : public Audio::IPlugin
         ),
         REGISTER_CONTROL_FLOATING(
             delayTime,
-            0.0,
+            0.2 ,
             // CONTROL_RANGE_STEP(0.0, 0.001, 0.0001),
             CONTROL_RANGE_STEP(0.0, 1.0, 0.001),
             TR_TABLE(
@@ -119,9 +119,7 @@ public:
     virtual void onAudioParametersChanged(void);
 
 private:
-    DSP::DelayLineUnique<float, DSP::InternalPath::Both> _delay;
-    DSP::DelayLineUnique<float, DSP::InternalPath::Default> _feedforward;
-    DSP::DelayLineUnique<float, DSP::InternalPath::Feedback> _feedback;
+    DSP::DelayLineUnique<float, DSP::DelayLineDesign::Default> _delay;
     Buffer _inputCache;
 };
 

@@ -7,6 +7,7 @@
 
 #include <Audio/PluginUtils.hpp>
 #include <Audio/DSP/Delay.hpp>
+#include <Audio/DSP/Reverb.hpp>
 
 namespace Audio
 {
@@ -64,44 +65,6 @@ class Audio::SimpleReverb final : public Audio::IPlugin
             )
         ),
         REGISTER_CONTROL_FLOATING(
-            combFeedback,
-            0.96,
-            CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
-            TR_TABLE(
-                TR(English, "Comb feedback"),
-                TR(French, "Comb feedback")
-            ),
-            TR_TABLE(
-                TR(English, "Comb feedback"),
-                TR(French, "Comb feedback")
-            ),
-            TR_TABLE(
-                TR(English, "Comb")
-            ),
-            TR_TABLE(
-                TR(English, "%")
-            )
-        ),
-        REGISTER_CONTROL_FLOATING(
-            allPassFeedback,
-            0.47,
-            CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
-            TR_TABLE(
-                TR(English, "Allpass feedback"),
-                TR(French, "Allpass feedback")
-            ),
-            TR_TABLE(
-                TR(English, "Allpass feedback"),
-                TR(French, "Allpass feedback")
-            ),
-            TR_TABLE(
-                TR(English, "Allpass")
-            ),
-            TR_TABLE(
-                TR(English, "%")
-            )
-        ),
-        REGISTER_CONTROL_FLOATING(
             mixRate,
             0.5,
             CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
@@ -120,136 +83,20 @@ class Audio::SimpleReverb final : public Audio::IPlugin
                 TR(English, "%")
             )
         ),
-
         REGISTER_CONTROL_FLOATING(
-            combTimeA,
-            0.0,
+            preDelayTime,
+            0.08,
             CONTROL_RANGE_STEP(0.0, 0.5, 0.001),
             TR_TABLE(
-                TR(English, "Reverb time"),
-                TR(French, "Durée du reverb")
+                TR(English, "Pre-delay duration"),
+                TR(French, "Delai avant premières réflexions")
             ),
             TR_TABLE(
-                TR(English, "Reverb time"),
-                TR(French, "Durée du reverb")
+                TR(English, "Pre-delay duration"),
+                TR(French, "Delai avant premières réflexions")
             ),
             TR_TABLE(
-                TR(English, "CB_A")
-            ),
-            TR_TABLE(
-                TR(English, "seconds")
-            )
-        ),
-        REGISTER_CONTROL_FLOATING(
-            combTimeB,
-            0.0,
-            CONTROL_RANGE_STEP(0.0, 0.5, 0.001),
-            TR_TABLE(
-                TR(English, "Reverb time"),
-                TR(French, "Durée du reverb")
-            ),
-            TR_TABLE(
-                TR(English, "Reverb time"),
-                TR(French, "Durée du reverb")
-            ),
-            TR_TABLE(
-                TR(English, "CB_B")
-            ),
-            TR_TABLE(
-                TR(English, "seconds")
-            )
-        ),
-        REGISTER_CONTROL_FLOATING(
-            combTimeC,
-            0.0,
-            CONTROL_RANGE_STEP(0.0, 0.5, 0.001),
-            TR_TABLE(
-                TR(English, "Reverb time"),
-                TR(French, "Durée du reverb")
-            ),
-            TR_TABLE(
-                TR(English, "Reverb time"),
-                TR(French, "Durée du reverb")
-            ),
-            TR_TABLE(
-                TR(English, "CB_C")
-            ),
-            TR_TABLE(
-                TR(English, "seconds")
-            )
-        ),
-        REGISTER_CONTROL_FLOATING(
-            combTimeD,
-            0.0,
-            CONTROL_RANGE_STEP(0.0, 0.5, 0.001),
-            TR_TABLE(
-                TR(English, "Reverb time"),
-                TR(French, "Durée du reverb")
-            ),
-            TR_TABLE(
-                TR(English, "Reverb time"),
-                TR(French, "Durée du reverb")
-            ),
-            TR_TABLE(
-                TR(English, "CB_D")
-            ),
-            TR_TABLE(
-                TR(English, "seconds")
-            )
-        ),
-
-        REGISTER_CONTROL_FLOATING(
-            allpassTimeA,
-            0.0,
-            CONTROL_RANGE_STEP(0.0, 0.5, 0.001),
-            TR_TABLE(
-                TR(English, "Reverb time"),
-                TR(French, "Durée du reverb")
-            ),
-            TR_TABLE(
-                TR(English, "Reverb time"),
-                TR(French, "Durée du reverb")
-            ),
-            TR_TABLE(
-                TR(English, "AP_A")
-            ),
-            TR_TABLE(
-                TR(English, "seconds")
-            )
-        ),
-        REGISTER_CONTROL_FLOATING(
-            allpassTimeB,
-            0.0,
-            CONTROL_RANGE_STEP(0.0, 0.5, 0.001),
-            TR_TABLE(
-                TR(English, "Reverb time"),
-                TR(French, "Durée du reverb")
-            ),
-            TR_TABLE(
-                TR(English, "Reverb time"),
-                TR(French, "Durée du reverb")
-            ),
-            TR_TABLE(
-                TR(English, "AP_B")
-            ),
-            TR_TABLE(
-                TR(English, "seconds")
-            )
-        ),
-        REGISTER_CONTROL_FLOATING(
-            allpassTimeC,
-            0.0,
-            CONTROL_RANGE_STEP(0.0, 0.5, 0.001),
-            TR_TABLE(
-                TR(English, "Reverb time"),
-                TR(French, "Durée du reverb")
-            ),
-            TR_TABLE(
-                TR(English, "Reverb time"),
-                TR(French, "Durée du reverb")
-            ),
-            TR_TABLE(
-                TR(English, "AP_C")
+                TR(English, "Pre")
             ),
             TR_TABLE(
                 TR(English, "seconds")
@@ -269,10 +116,8 @@ public:
     virtual void onAudioParametersChanged(void);
 
 private:
-    DSP::DelayLineParallel<float, DSP::InternalPath::Default, 4u> _combFilters;
-    std::array<DSP::DelayLineUnique<float, DSP::InternalPath::Both>, 3u> _allPassFilters;
-    // std::array<DSP::DelayLineAllPass<float>, 3u> _allPassFilters;
     Buffer _inputCache;
+    DSP::Reverb::Basic<float> _reverb;
 };
 
 #include "SimpleReverb.ipp"

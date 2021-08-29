@@ -12,24 +12,12 @@ inline void Audio::SimpleDelay::onAudioParametersChanged(void)
 {
     _delay.reset(audioSpecs(), 10.0f, static_cast<float>(delayTime()));
     _inputCache.resize(GetFormatByteLength(audioSpecs().format) * audioSpecs().processBlockSize, audioSpecs().sampleRate, audioSpecs().channelArrangement, audioSpecs().format);
-
-    // Remove
-    _feedback.reset(audioSpecs(), 10.0f, static_cast<float>(delayTime()));
-    _feedforward.reset(audioSpecs(), 10.0f, static_cast<float>(delayTime()));
 }
 
 inline void Audio::SimpleDelay::onAudioGenerationStarted(const BeatRange &)
 {
     _inputCache.clear();
     _delay.reset(audioSpecs(), 10.0f, static_cast<float>(delayTime()));
-
-    // Remove
-    _feedback.reset(audioSpecs(), 10.0f, static_cast<float>(delayTime()));
-    _feedforward.reset(audioSpecs(), 10.0f, static_cast<float>(delayTime()));
-    _feedback.setInternalRate(1.0f, 1.0f);
-    _feedback.setFeedbackAmount(static_cast<float>(feedbackAmount()));
-    _feedforward.setInternalRate(1.0f, 1.0f);
-    _feedforward.setFeedbackAmount(0.0f);
 }
 
 inline void Audio::SimpleDelay::receiveAudio(BufferView output)
@@ -43,6 +31,12 @@ inline void Audio::SimpleDelay::receiveAudio(BufferView output)
         return;
     }
 
+    _delay.setInputAmount(0.0f);
+    _delay.setDelayAmount(static_cast<float>(feedbackAmount()));
+    _delay.setDelayTime(static_cast<float>(audioSpecs().sampleRate), static_cast<float>(delayTime()));
+
+    _delay.process<0u, false>(_inputCache.data<float>(), out, outSize);
+
     const auto realMixRate = static_cast<float>(mixRate());
     float dry { 1.0f };
     float wet { 1.0f };
@@ -53,30 +47,10 @@ inline void Audio::SimpleDelay::receiveAudio(BufferView output)
             dry = (realMixRate * 2.0f);
         }
     }
-
-    _delay.setFeedbackAmount(static_cast<float>(feedbackAmount()));
-    _delay.setInternalRate(wet, dry);
-    // _delay.setDelayTime(static_cast<float>(audioSpecs().sampleRate), static_cast<float>(delayTime() * 100) / static_cast<float>(audioSpecs().sampleRate) * 2.0f);
-    // _delay.setDelayTime(static_cast<float>(audioSpecs().sampleRate), static_cast<float>(delayTime()));
-
-
-    _feedback.setInternalRate(1.0f, 1.0f);
-    _feedback.setFeedbackAmount(static_cast<float>(feedbackAmount()));
-    _feedforward.setInternalRate(1.0f, 1.0f);
-    _feedforward.setFeedbackAmount(0.0f);
-
-    _delay.receiveData<false>(out, outSize);
-    // _feedforward.receiveData<false>(out, outSize);
-    // _feedback.sendData(out, outSize);
-    // _feedback.receiveData<false>(out, outSize);
-
-    // for (auto i = 0u; i < outSize; ++i) {
-    //     const auto delayOut = out[i];
-    //     // UNUSED(wet);
-    //     // UNUSED(dry);
-    //     out[i] = _inputCache.data<float>()[i] * dry + delayOut * wet;
-    // }
-
+    for (auto i = 0u; i < outSize; ++i) {
+        const auto delayOut = out[i];
+        out[i] = _inputCache.data<float>()[i] * dry + delayOut * wet;
+    }
 }
 
 inline void Audio::SimpleDelay::sendAudio(const BufferViews &inputs)
@@ -88,10 +62,7 @@ inline void Audio::SimpleDelay::sendAudio(const BufferViews &inputs)
     ));
     DSP::Merge<float>(inputs, _inputCache, inGain, true);
     if (!static_cast<bool>(bypass())) {
-        _delay.setInternalRate(1.0f, 1.0f);
-        _delay.setFeedbackAmount(static_cast<float>(feedbackAmount()));
-        _delay.sendData(_inputCache.data<float>(), _inputCache.size<float>());
-
-        // _feedforward.sendData(_inputCache.data<float>(), _inputCache.size<float>());
+        // _delay.setDelayAmount(static_cast<float>(feedbackAmount()));
+        // _delay.sendData(_inputCache.data<float>(), _inputCache.size<float>());
     }
 }
