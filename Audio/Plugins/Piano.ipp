@@ -75,7 +75,7 @@ inline void Audio::Piano::receiveAudio(BufferView output)
             // opAvolume(brightness());
             _fmManager.processSchema<true>(realOut, realOutSize, outGain, readIndex, key, rootFrequency, {
                DSP::FM::Internal::Operator {
-                    DSP::Generator::Waveform::Sine,
+                    DSP::Generator::Waveform::PulseQuarter,
                     static_cast<float>(opAratio()),
                     static_cast<float>(opAattack()),
                     static_cast<float>(opAdecay()),

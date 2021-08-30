@@ -72,11 +72,18 @@ class Audio::Oscillator final : public Audio::IPlugin
                 TR_TABLE(
                     TR(English, "Saw"),
                     TR(French, "Scie")
-                )
-                ,
+                ),
                 TR_TABLE(
                     TR(English, "Noise"),
                     TR(French, "Bruit")
+                ),
+                TR_TABLE(
+                    TR(English, "PulseThird"),
+                    TR(French, "Carré tiers")
+                ),
+                TR_TABLE(
+                    TR(English, "PulseQuarter"),
+                    TR(French, "Carré quart")
                 ),
                 // TR_TABLE(
                 //     TR(English, "Error"),

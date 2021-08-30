@@ -34,10 +34,10 @@ template<>
 template<>
 inline float Audio::DSP::Biquad::Filter<Audio::DSP::Biquad::Internal::Form::Transposed2>::processSample(const float in, const Key key, const Audio::DB outGain) noexcept
 {
-    const float out = in * _coefs.a[0] + _regs[key][0];
+    const float out = in * _coefs.b[0] + _regs[key][0];
 
-    _regs[key][0] = in * _coefs.a[1] + _regs[key][1] - _coefs.b[1] * out;
-    _regs[key][1] = in * _coefs.a[2] - _coefs.b[2] * out;
+    _regs[key][0] = in * _coefs.b[1] + _regs[key][1] - _coefs.a[1] * out;
+    _regs[key][1] = in * _coefs.b[2] - _coefs.a[2] * out;
     return out * outGain;
 }
 

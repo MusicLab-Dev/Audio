@@ -78,5 +78,5 @@ Audio::PluginTable::PluginTable(void)
     registerFactory<Audio::SimpleReverb>();
     registerFactory<Audio::GammaEqualizer>();
     // registerFactory<Audio::LambdaFilter>();
-    // registerFactory<Audio::SigmaFilter>();
+    registerFactory<Audio::SigmaFilter>();
 }

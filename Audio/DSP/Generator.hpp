@@ -51,7 +51,9 @@ namespace Audio::DSP::Generator
         Square,
         Triangle,
         Saw,
-        Noise
+        Noise,
+        PulseThird,
+        PulseQuarter
     };
 
 
@@ -120,6 +122,12 @@ namespace Audio::DSP::Generator
             { return static_cast<Type>(-std::atan(Utils::Cot(indexNorm)) * static_cast<float>(M_2_PI) * gain); }
         template<typename Type>
         [[nodiscard]] Type GenerateNoiseSample(const float indexNorm, const std::uint32_t index, const DB gain = 1.0f) noexcept;
+        template<typename Type>
+        [[nodiscard]] Type GeneratePulseThirdSample(const float indexNorm, const std::uint32_t index, const DB gain = 1.0f) noexcept
+            { return static_cast<float>(GenerateSawSample<Type>(indexNorm, index) + 1.0f) > 1.0f / 3.0f ? gain : -gain; }
+        template<typename Type>
+        [[nodiscard]] Type GeneratePulseQuarterSample(const float indexNorm, const std::uint32_t index, const DB gain = 1.0f) noexcept
+            { return  static_cast<float>(GenerateSawSample<Type>(indexNorm, index) + 1.0f) > 0.25f ? gain : -gain; }
 
 
         /** @brief Waveform sample generation with input as frequency modulation */
@@ -141,6 +149,12 @@ namespace Audio::DSP::Generator
         template<typename Type>
         [[nodiscard]] Type ModulateNoiseSample(const float indexNorm, const std::uint32_t index, const float, const DB gain = 1.0f) noexcept
             { return GenerateNoiseSample<Type>(indexNorm, index, gain); }
+        template<typename Type>
+        [[nodiscard]] Type ModulatePulseThirdSample(const float indexNorm, const std::uint32_t index, const float modulation, const DB gain = 1.0f) noexcept
+            { return static_cast<float>(ModulateSawSample<Type>(indexNorm, index, modulation) + 1.0f) > 1.0f / 3.0f ? gain : -gain; }
+        template<typename Type>
+        [[nodiscard]] Type ModulatePulseQuarterSample(const float indexNorm, const std::uint32_t index, const float modulation, const DB gain = 1.0f) noexcept
+            { return  static_cast<float>(ModulateSawSample<Type>(indexNorm, index, modulation) + 1.0f) > 0.25f ? gain : -gain; }
 
 
         /** @brief Helper used to generate a waveform function using runtime specialization */
@@ -222,6 +236,8 @@ namespace Audio::DSP::Generator
     GENERATOR_REGISTER_WAVEFORM(Triangle)
     GENERATOR_REGISTER_WAVEFORM(Saw)
     GENERATOR_REGISTER_WAVEFORM(Noise)
+    GENERATOR_REGISTER_WAVEFORM(PulseThird)
+    GENERATOR_REGISTER_WAVEFORM(PulseQuarter)
 }
 
 #undef GENERATOR_REGISTER_WAVEFORM

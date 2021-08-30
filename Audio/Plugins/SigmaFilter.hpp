@@ -46,12 +46,12 @@ class Audio::SigmaFilter final : public Audio::IPlugin
         ),
         REGISTER_CONTROL_FILTER_CUTOFF(
             cutoffFrequencyFrom,
-            120.0,
+            1000.0,
             CONTROL_FILTER_CUTOFF_DEFAULT_RANGE()
         ),
         REGISTER_CONTROL_FILTER_CUTOFF(
             cutoffFrequencyTo,
-            1000.0,
+            8000.0,
             CONTROL_FILTER_CUTOFF_DEFAULT_RANGE()
         ),
         REGISTER_CONTROL_ENUM(
@@ -110,6 +110,7 @@ private:
     DSP::Biquad::Filter<DSP::Biquad::Internal::Form::Transposed2> _filter;
     // DSP::X<DSP::Biquad::BiquadParam::InternalForm::Transposed2> _filter;
     Buffer _cache;
+    float _lastOut;
 };
 
 #include "SigmaFilter.ipp"

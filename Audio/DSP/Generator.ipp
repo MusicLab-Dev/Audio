@@ -186,6 +186,10 @@ inline float Audio::DSP::Generator::Internal::WaveformGenerateHelper(const Wavef
         return GenerateSaw<Accumulate>(std::forward<Args>(args)...);
     case Waveform::Noise:
         return GenerateNoise<Accumulate>(std::forward<Args>(args)...);
+    case Waveform::PulseThird:
+        return GeneratePulseThird<Accumulate>(std::forward<Args>(args)...);
+    case Waveform::PulseQuarter:
+        return GeneratePulseQuarter<Accumulate>(std::forward<Args>(args)...);
     default:
         return 0.0f;
     }
@@ -207,6 +211,10 @@ inline float Audio::DSP::Generator::Internal::WaveformModulateHelper(const Wavef
         return ModulateSaw<Accumulate>(std::forward<Args>(args)...);
     case Waveform::Noise:
         return ModulateNoise<Accumulate>(std::forward<Args>(args)...);
+    case Waveform::PulseThird:
+        return ModulatePulseThird<Accumulate>(std::forward<Args>(args)...);
+    case Waveform::PulseQuarter:
+        return ModulatePulseQuarter<Accumulate>(std::forward<Args>(args)...);
     default:
         return 0.0f;
     }
@@ -228,6 +236,10 @@ inline float Audio::DSP::Generator::Internal::WaveformSemitoneShiftHelper(const 
         return SemitoneShiftSaw<Accumulate>(std::forward<Args>(args)...);
     case Waveform::Noise:
         return SemitoneShiftNoise<Accumulate>(std::forward<Args>(args)...);
+    case Waveform::PulseThird:
+        return SemitoneShiftPulseThird<Accumulate>(std::forward<Args>(args)...);
+    case Waveform::PulseQuarter:
+        return SemitoneShiftPulseQuarter<Accumulate>(std::forward<Args>(args)...);
     default:
         return 0.0f;
     }
@@ -249,6 +261,10 @@ inline float Audio::DSP::Generator::Internal::WaveformModulateSemitoneShiftHelpe
         return ModulateSemitoneShiftSaw<Accumulate>(std::forward<Args>(args)...);
     case Waveform::Noise:
         return ModulateSemitoneShiftNoise<Accumulate>(std::forward<Args>(args)...);
+    case Waveform::PulseThird:
+        return ModulateSemitoneShiftPulseThird<Accumulate>(std::forward<Args>(args)...);
+    case Waveform::PulseQuarter:
+        return ModulateSemitoneShiftPulseQuarter<Accumulate>(std::forward<Args>(args)...);
     default:
         return 0.0f;
     }
