@@ -23,7 +23,7 @@ public:
     void resetKey(const Key key) noexcept { _phaseIndex[key].fill(0.0f); }
 
     template<unsigned Index>
-    void resetKey(const Key key) noexcept { _phaseIndex[key] = 0.0f; }
+    void resetKey(const Key key) noexcept { _phaseIndex[key][Index] = 0.0f; }
 
     void reset(void) noexcept
     {
@@ -103,11 +103,9 @@ private:
     template<unsigned Index>
     void incrementPhaseIndex(const Key key, const float nextPhase) noexcept
     {
-        const float cycle = 2.0f * static_cast<float>(M_PI);
-
-        if (const float dt = nextPhase / cycle; dt >= 1.0f) {
-            _phaseIndex[key][Index].setPhase(nextPhase - static_cast<std::size_t>(dt) * cycle);
-        } else
-            _phaseIndex[key][Index].setPhase(nextPhase);
+        float phase = nextPhase;
+        while (phase >= Pi2F)
+            phase -= Pi2F;
+        _phaseIndex[key][Index].setPhase(phase);
     }
 };

@@ -22,7 +22,9 @@ namespace Audio
 
     /** @brief Semitone delta */
     static constexpr double SemitoneUpDelta = 1.05946309436;
+    static constexpr double SemitoneCentUpDelta = (SemitoneUpDelta - 1.0) / 12.0 + 1.0;
     static constexpr double SemitoneDownDelta = 0.943874312682;
+    static constexpr double SemitoneCentDownDelta = (SemitoneDownDelta - 1.0) / 12.0 + 1.0;
 
     static constexpr std::uint8_t KeysPerOctave = 12u;
     static constexpr std::uint8_t OctaveRootKey = 5u;

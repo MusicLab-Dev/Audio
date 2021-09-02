@@ -8,26 +8,25 @@
 inline void Audio::Piano::onAudioGenerationStarted(const BeatRange &range)
 {
     UNUSED(range);
-    _fmManager.reset();
-    _filter.init(
-        DSP::Filter::FIRSpecs(
-            DSP::Filter::BasicType::LowPass,
-            DSP::Filter::WindowType::Hanning,
-            33ul,
-            static_cast<float>(audioSpecs().sampleRate),
-            8000.0f,
-            0.0f,
-            1.0f
-        )
-    );
+    _noteManager.reset();
+    _oscillators.reset();
+    _filter.setup(DSP::Biquad::Internal::Specs {
+        DSP::Filter::AdvancedType::LowPass,
+        static_cast<float>(audioSpecs().sampleRate),
+        { 8000.0f, 0.0f },
+        1.0f,
+        0.707f
+    });
+    _filterEnv.resetKeys();
     _cache.resize(GetFormatByteLength(audioSpecs().format) * audioSpecs().processBlockSize, audioSpecs().sampleRate, audioSpecs().channelArrangement, audioSpecs().format);
     _cache.clear();
 }
 
 inline void Audio::Piano::onAudioParametersChanged(void)
 {
-    _fmManager.reset();
-    _fmManager.schema().setSampleRate(audioSpecs().sampleRate);
+    _noteManager.reset();
+    _noteManager.envelope().setSampleRate(audioSpecs().sampleRate);
+    _filterEnv.setSampleRate(audioSpecs().sampleRate);
 }
 
 inline void Audio::Piano::setExternalPaths(const ExternalPaths &paths)
@@ -39,8 +38,7 @@ inline void Audio::Piano::sendNotes(const NoteEvents &notes, const BeatRange &ra
 {
     UNUSED(range);
     if (notes.size()) {
-        // std::cout << range << std::endl;
-        _fmManager.feedNotes(notes);
+        _noteManager.feedNotes(notes);
     }
 }
 
@@ -49,111 +47,128 @@ inline void Audio::Piano::receiveAudio(BufferView output)
     const DB outGain = ConvertDecibelToRatio(static_cast<float>(outputVolume()) + DefaultVoiceGain);
     const auto outSize = static_cast<std::uint32_t>(output.size<float>());
     float *out = reinterpret_cast<float *>(output.byteData());
-    // const bool noRelease = !enveloppeRelease();
-    const bool noRelease = false;
 
-
-
-    _fmManager.processNotes(
-        [this, outGain, outSize, out, noRelease](const Key key, const bool trigger, const std::uint32_t readIndex, const NoteModifiers &modifiers) -> std::pair<std::uint32_t, std::uint32_t> {
-            const float rootFrequency = std::pow(2.f, static_cast<float>(static_cast<int>(key) - RootKey) / KeysPerOctave) * RootKeyFrequency;
+    _noteManager.envelopeGain().resize(outSize);
+    _noteManager.processNotes(
+        [this, outGain, outSize, out](const Key key, const std::uint32_t readIndex, const NoteModifiers &modifiers) -> std::pair<std::uint32_t, std::uint32_t> {
             auto realOut = out;
             auto realOutSize = outSize;
-            if (modifiers.sampleOffset) {
-                if (trigger) {
-                    realOut += modifiers.sampleOffset;
-                    realOutSize -= modifiers.sampleOffset;
-                } else if (noRelease) {
-                    realOutSize = modifiers.sampleOffset;
-                }
+            if (modifiers.sampleOffset && !readIndex) {
+                realOut += modifiers.sampleOffset;
+                realOutSize -= modifiers.sampleOffset;
             }
-            UNUSED(readIndex);
-            UNUSED(rootFrequency);
             UNUSED(modifiers);
+            const auto freq = GetNoteFrequency(key);
+            const auto freqNorm = GetFrequencyNorm(freq, audioSpecs().sampleRate);
 
-            // CONTROL_MAP(brightness, opBvolume, )
-            // opAvolume(brightness());
-            _fmManager.processSchema<true>(realOut, realOutSize, outGain, readIndex, key, rootFrequency, {
-               DSP::FM::Internal::Operator {
-                    DSP::Generator::Waveform::PulseQuarter,
-                    static_cast<float>(opAratio()),
-                    static_cast<float>(opAattack()),
-                    static_cast<float>(opAdecay()),
-                    static_cast<float>(opAsustain()),
-                    static_cast<float>(opArelease()),
-                    ConvertDecibelToRatio(static_cast<float>(opAvolume())),
-                    static_cast<float>(opAdetune()),
-                    static_cast<std::uint32_t>(opAfeedback()),
-                    static_cast<Key>(69u),
-                    static_cast<float>(opAkeyAmountLeft()) / 100.0f,
-                    static_cast<float>(opAkeyAmountRight()) / 100.0f
-               },
-               DSP::FM::Internal::Operator {
-                    DSP::Generator::Waveform::Sine,
-                    static_cast<float>(opBratio()),
-                    static_cast<float>(opBattack()),
-                    static_cast<float>(opBdecay()),
-                    static_cast<float>(opBsustain()),
-                    static_cast<float>(opBrelease()),
-                    ConvertDecibelToRatio(static_cast<float>(opBvolume())),
-                    static_cast<float>(opBdetune()),
-                    static_cast<std::uint32_t>(opBfeedback()),
-                    static_cast<Key>(69u),
-                    static_cast<float>(opBkeyAmountLeft()) / 100.0f,
-                    static_cast<float>(opBkeyAmountRight()) / 100.0f
-               },
-               DSP::FM::Internal::Operator {
-                    DSP::Generator::Waveform::Saw,
-                    static_cast<float>(opCratio()),
-                    static_cast<float>(opCattack()),
-                    static_cast<float>(opCdecay()),
-                    static_cast<float>(opCsustain()),
-                    static_cast<float>(opCrelease()),
-                    ConvertDecibelToRatio(static_cast<float>(opCvolume())),
-                    static_cast<float>(opCdetune()),
-                    static_cast<std::uint32_t>(opCfeedback()),
-                    static_cast<Key>(69u),
-                    static_cast<float>(opCkeyAmountLeft()) / 100.0f,
-                    static_cast<float>(opCkeyAmountRight()) / 100.0f
-               },
-               DSP::FM::Internal::Operator {
-                    DSP::Generator::Waveform::Sine,
-                    static_cast<float>(opDratio()),
-                    static_cast<float>(opDattack()),
-                    static_cast<float>(opDdecay()),
-                    static_cast<float>(opDsustain()),
-                    static_cast<float>(opDrelease()),
-                    ConvertDecibelToRatio(static_cast<float>(opDvolume())),
-                    static_cast<float>(opDdetune()),
-                    static_cast<std::uint32_t>(opDfeedback()),
-                    static_cast<Key>(69u),
-                    static_cast<float>(opDkeyAmountLeft()) / 100.0f,
-                    static_cast<float>(opDkeyAmountRight()) / 100.0f
-               }
-            },
-            DSP::FM::Internal::PitchOperator {
-                static_cast<float>(pitchAttack()),
-                static_cast<float>(pitchPeak()),
-                static_cast<float>(pitchDecay()),
-                static_cast<float>(pitchSustain()),
-                static_cast<float>(pitchRelease()),
-                static_cast<float>(pitchVolume())
+            // Generate envelope for osc
+            constexpr auto DefaultAttack = 0.01f;
+            constexpr auto DefaultDecay = 5.5f;
+            constexpr auto DefaultSustain = 0.0f;
+            constexpr auto DefaultRelease = 1.5f;
+            _noteManager.envelope().setSpecs<0u>(DSP::EnvelopeSpecs {
+                0.0f,
+                DefaultAttack, // A
+                1.0f,
+                0.0f,
+                DefaultDecay,// D
+                DefaultSustain,// S
+                DefaultRelease,// R
             });
+            _noteManager.generateEnvelopeGains(key, readIndex, realOutSize);
+            // Generate osc
+            const auto DetuneDelta = static_cast<float>(detuneAmount());
+            const auto DetuneFreqUp = GetNoteFrequencyDelta(freqNorm * 2.0f, 7.0f + DetuneDelta);
+            const auto DetuneFreqDown = GetNoteFrequencyDelta(freqNorm * 4.0f, 7.0f - DetuneDelta);
+            _oscillators.generate<false, 0u>(
+                DSP::Generator::Waveform::Saw,
+                _cache.data<float>(),
+                _noteManager.envelopeGain().data(),
+                realOutSize,
+                key,
+                freqNorm,
+                readIndex,
+                outGain
+            );
+            // Reset phase of detuned osc (sync)
+            if (!readIndex) {
+                _oscillators.resetKey<1u>(key);
+                _oscillators.resetKey<2u>(key);
+            }
+            _oscillators.generate<true, 1u>(
+                DSP::Generator::Waveform::Saw,
+                _cache.data<float>(),
+                _noteManager.envelopeGain().data(),
+                realOutSize,
+                key,
+                DetuneFreqUp,
+                readIndex,
+                outGain / 2.0f
+            );
+            _oscillators.generate<true, 2u>(
+                DSP::Generator::Waveform::Saw,
+                _cache.data<float>(),
+                _noteManager.envelopeGain().data(),
+                realOutSize,
+                key,
+                freqNorm * 4.0f,
+                readIndex,
+                outGain / 2.0f
+            );
+
+            // Get the real frequency according to: keyFollow, filterCutoff
+            const Key CenteredKey = 60u; // C4 (middle C)
+            const float CenteredKeyFreq = GetNoteFrequency(CenteredKey);
+            const float keyFreqDelta = GetNoteFrequency(key) / CenteredKeyFreq;
+            const auto keyFollowMultiplier = std::abs(static_cast<float>(filterKeyFollow()));
+            float freqRate { 1.0f };
+            if (keyFreqDelta >= 1.0f) {
+                freqRate = (keyFreqDelta - 1.0f) * keyFollowMultiplier + 1.0f;
+            } else {
+                freqRate = 1.0f / ((1.0f / keyFreqDelta - 1.0f) * keyFollowMultiplier + 1.0f);
+            }
+            if (filterKeyFollow() < 0.0f)
+                freqRate = 1.0f / freqRate;
+            freqRate *= static_cast<float>(filterCutoff());
+
+            // Generate envelope for filter
+            _filterEnv.setSpecs<0u>(DSP::EnvelopeSpecs {
+                0.0f,
+                DefaultDecay / 2.0f, // A
+                1.0f,
+                0.0f,
+                DefaultDecay,// D
+                0.0f,// S
+                1.0f,// R
+            });
+            // _filterEnv.generateEnvelopeGains(key, readIndex, realOutSize);
+            float envF = 0.0f;
+            for (auto i = 0u; i < realOutSize; ++i) {
+                envF = _filterEnv.getGain(key, readIndex + i);
+                float cutOff = 1.0f / (envF * static_cast<float>(filterEnvAmount()) + 1.0f) * freqRate;
+                // float cutOff = static_cast<float>(filterCutoff());
+                // float cutOff = freqRate;
+
+                if (const auto max = static_cast<float>(audioSpecs().sampleRate) / 2.0f; cutOff > max)
+                    cutOff = max;
+                _filter.setup(DSP::Biquad::Internal::Specs {
+                    DSP::Filter::AdvancedType::LowPass,
+                    static_cast<float>(audioSpecs().sampleRate),
+                    { cutOff, 0.0f },
+                    1.0f,
+                    static_cast<float>(filterResonance() * 9.0 + 0.707)
+                });
+                realOut[i] += _filter.processSample(_cache.data<float>()[i], key, 1.0f);
+            }
+            // Reset filter envelope cache if last gain is zero
+            if (!envF) {
+                _filterEnv.resetKey(key);
+            }
+
+
             return std::make_pair(realOutSize, 0u);
         }
     );
 
-    _filter.setSpecs(
-        DSP::Filter::FIRSpecs(
-            DSP::Filter::BasicType::LowPass,
-            DSP::Filter::WindowType::Default,
-            33ul,
-            static_cast<float>(audioSpecs().sampleRate),
-            8000.0f,
-            0.0f,
-            1.0f
-        )
-    );
-    // _filter.filter<true>(out, audioSpecs().processBlockSize, out, outGain);
 
 }

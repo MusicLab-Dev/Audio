@@ -7,6 +7,7 @@
 
 #include <Audio/Base.hpp>
 #include <Audio/Math.hpp>
+#include <Audio/MathConstants.hpp>
 
 #define GENERATOR_REGISTER_WAVEFORM(Name) \
     template<bool Accumulate, typename Type> \
@@ -69,6 +70,26 @@ namespace Audio::DSP::Generator
         }
     };
 
+    struct AntiAlliasing
+    {
+        [[nodiscard]] static inline float GetCorrection(const float phaseNormOne, const float freqNormOne) noexcept
+        {
+            float phase = 0.0f;
+
+            if (phaseNormOne < freqNormOne) {
+                phase = phaseNormOne / freqNormOne;
+                return phase + phase - phase * phase - 1.0f;
+            }
+            else if (phaseNormOne > 1.0f - freqNormOne) {
+                phase = (phaseNormOne - 1.0f) / freqNormOne;
+                return phase * phase + phase + phase + 1.0f;
+            }
+            return 0.0f;
+        }
+    };
+
+
+
     namespace Internal
     {
         /** @brief Generate implementation */
@@ -119,15 +140,15 @@ namespace Audio::DSP::Generator
             { return static_cast<Type>((1.0f - std::acos(std::sin(indexNorm)) * static_cast<float>(M_2_PI)) * gain); }
         template<typename Type>
         [[nodiscard]] Type GenerateSawSample(const float indexNorm, const std::uint32_t, const DB gain = 1.0f) noexcept
-            { return static_cast<Type>(-std::atan(Utils::Cot(indexNorm)) * static_cast<float>(M_2_PI) * gain); }
+            { return static_cast<Type>(-std::atan(Utils::Cot(indexNorm / 2.0f)) * static_cast<float>(M_2_PI) * gain); }
         template<typename Type>
         [[nodiscard]] Type GenerateNoiseSample(const float indexNorm, const std::uint32_t index, const DB gain = 1.0f) noexcept;
         template<typename Type>
         [[nodiscard]] Type GeneratePulseThirdSample(const float indexNorm, const std::uint32_t index, const DB gain = 1.0f) noexcept
-            { return static_cast<float>(GenerateSawSample<Type>(indexNorm, index) + 1.0f) > 1.0f / 3.0f ? gain : -gain; }
+            { return static_cast<float>(GenerateSawSample<Type>(indexNorm, index) + 1.0f) > 4.0f / 3.0f ? gain : -gain; }
         template<typename Type>
         [[nodiscard]] Type GeneratePulseQuarterSample(const float indexNorm, const std::uint32_t index, const DB gain = 1.0f) noexcept
-            { return  static_cast<float>(GenerateSawSample<Type>(indexNorm, index) + 1.0f) > 0.25f ? gain : -gain; }
+            { return  static_cast<float>(GenerateSawSample<Type>(indexNorm, index) + 1.0f) > 1.5f ? gain : -gain; }
 
 
         /** @brief Waveform sample generation with input as frequency modulation */
@@ -145,16 +166,16 @@ namespace Audio::DSP::Generator
             { return static_cast<Type>((1.0f - std::acos(std::sin(indexNorm + modulation)) * static_cast<float>(M_2_PI)) * gain); }
         template<typename Type>
         [[nodiscard]] Type ModulateSawSample(const float indexNorm, const std::uint32_t, const float modulation, const DB gain = 1.0f) noexcept
-            { return static_cast<Type>(-std::atan(Utils::Cot(indexNorm + modulation)) * static_cast<float>(M_2_PI) * gain); }
+            { return static_cast<Type>(-std::atan(Utils::Cot(indexNorm / 2.0f + modulation)) * static_cast<float>(M_2_PI) * gain); }
         template<typename Type>
         [[nodiscard]] Type ModulateNoiseSample(const float indexNorm, const std::uint32_t index, const float, const DB gain = 1.0f) noexcept
             { return GenerateNoiseSample<Type>(indexNorm, index, gain); }
         template<typename Type>
         [[nodiscard]] Type ModulatePulseThirdSample(const float indexNorm, const std::uint32_t index, const float modulation, const DB gain = 1.0f) noexcept
-            { return static_cast<float>(ModulateSawSample<Type>(indexNorm, index, modulation) + 1.0f) > 1.0f / 3.0f ? gain : -gain; }
+            { return static_cast<float>(ModulateSawSample<Type>(indexNorm, index, modulation) + 1.0f) > 4.0f / 3.0f ? gain : -gain; }
         template<typename Type>
         [[nodiscard]] Type ModulatePulseQuarterSample(const float indexNorm, const std::uint32_t index, const float modulation, const DB gain = 1.0f) noexcept
-            { return  static_cast<float>(ModulateSawSample<Type>(indexNorm, index, modulation) + 1.0f) > 0.25f ? gain : -gain; }
+            { return  static_cast<float>(ModulateSawSample<Type>(indexNorm, index, modulation) + 1.0f) > 1.5f ? gain : -gain; }
 
 
         /** @brief Helper used to generate a waveform function using runtime specialization */
