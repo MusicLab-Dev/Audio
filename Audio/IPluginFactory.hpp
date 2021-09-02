@@ -29,7 +29,8 @@ public:
         NoteInput               = 1 << 2,
         NoteOutput              = 1 << 3,
         SingleExternalInput     = 1 << 5,
-        MultipleExternalInputs  = 1 << 6
+        MultipleExternalInputs  = 1 << 6,
+        NoChildren              = 1 << 7
     };
 
     enum class SDK : std::uint32_t {

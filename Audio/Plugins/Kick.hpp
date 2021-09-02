@@ -32,7 +32,7 @@ class Audio::Kick final : public Audio::IPlugin
             TR(French, "Kick allow to generate spicy kicks")
         ),
         /* Plugin flags */
-        FLAGS(AudioOutput, NoteInput),
+        FLAGS(AudioOutput, NoteInput, NoChildren),
         /* Plugin tags */
         TAGS(Synth),
         /* Control list */
