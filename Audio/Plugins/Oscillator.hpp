@@ -34,7 +34,7 @@ class Audio::Oscillator final : public Audio::IPlugin
             TR(French, "Le Oscillateur permet de générer des formes d'ondes audio et de les jouer comme des notes")
         ),
         /* Plugin flags */
-        FLAGS(AudioOutput, NoteInput),
+        FLAGS(AudioOutput, NoteInput, NoChildren),
         /* Plugin tags */
         TAGS(Synth),
         /* Control list */
