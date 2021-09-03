@@ -1,6 +1,6 @@
 /**
- * @file BasicFilter.ipp
- * @brief BasicFilter implementation
+ * @file CutoffFilter.ipp
+ * @brief CutoffFilter implementation
  *
  * @author Pierre V
  * @date 2021-04-23
@@ -8,7 +8,7 @@
 
 #include <Audio/DSP/Merge.hpp>
 
-inline void Audio::BasicFilter::onAudioGenerationStarted(const BeatRange &range)
+inline void Audio::CutoffFilter::onAudioGenerationStarted(const BeatRange &range)
 {
     UNUSED(range);
     _filter.init(
@@ -26,7 +26,7 @@ inline void Audio::BasicFilter::onAudioGenerationStarted(const BeatRange &range)
     _cache.clear();
 }
 
-inline void Audio::BasicFilter::receiveAudio(BufferView output)
+inline void Audio::CutoffFilter::receiveAudio(BufferView output)
 {
     float *out = output.data<float>();
     if (static_cast<bool>(bypass())) {
@@ -51,7 +51,7 @@ inline void Audio::BasicFilter::receiveAudio(BufferView output)
     _filter.filter(_cache.data<float>(), audioSpecs().processBlockSize, out, outGain);
 }
 
-inline void Audio::BasicFilter::sendAudio(const BufferViews &inputs)
+inline void Audio::CutoffFilter::sendAudio(const BufferViews &inputs)
 {
     if (!inputs.size())
         return;

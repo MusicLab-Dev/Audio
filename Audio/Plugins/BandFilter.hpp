@@ -21,13 +21,13 @@ class Audio::BandFilter final : public Audio::IPlugin
     REGISTER_PLUGIN(
         /* Plugin's name */
         TR_TABLE(
-            TR(English, "BandFilter"),
-            TR(French, "Filtre basique")
+            TR(English, "Band Filter"),
+            TR(French, "Filtre bande")
         ),
         /* Plugin description */
         TR_TABLE(
             TR(English, "Band Filter allow to filter audio signal"),
-            TR(French, "Le filtre basique permet de filtrer de l'audio")
+            TR(French, "Le filtre bande permet de filtrer de l'audio")
         ),
         /* Plugin flags */
         FLAGS(AudioInput, AudioOutput),

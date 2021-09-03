@@ -48,7 +48,7 @@ void Audio::PluginTable::decrementRefCount(IPlugin *plugin) noexcept_ndebug
 #include <Audio/Plugins/Sampler.hpp>
 #include <Audio/Plugins/Oscillator.hpp>
 #include <Audio/Plugins/LambdaFilter.hpp>
-#include <Audio/Plugins/BasicFilter.hpp>
+#include <Audio/Plugins/CutoffFilter.hpp>
 #include <Audio/Plugins/BandFilter.hpp>
 #include <Audio/Plugins/SigmaFilter.hpp>
 #include <Audio/Plugins/GammaEqualizer.hpp>
@@ -73,7 +73,7 @@ Audio::PluginTable::PluginTable(void)
     registerFactory<Audio::Sampler>();
     registerFactory<Audio::Oscillator>();
     registerFactory<Audio::BandFilter>();
-    registerFactory<Audio::BasicFilter>();
+    registerFactory<Audio::CutoffFilter>();
     registerFactory<Audio::SimpleDelay>();
     registerFactory<Audio::SimpleReverb>();
     registerFactory<Audio::GammaEqualizer>();
