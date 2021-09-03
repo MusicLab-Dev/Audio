@@ -7,13 +7,9 @@
 
 #include <Audio/PluginUtilsControlsVolume.hpp>
 #include <Audio/PluginUtilsControlsEnvelope.hpp>
-#include <Audio/Volume.hpp>
-#include <Audio/Modifier.hpp>
 #include <Audio/DSP/Oscillator.hpp>
 
 #include "Managers/NoteManager.hpp"
-
-#include <Audio/DSP/Biquad.hpp>
 
 namespace Audio
 {
@@ -108,48 +104,6 @@ class Audio::Oscillator final : public Audio::IPlugin
             TR_TABLE(
                 TR(English, "")
             )
-        ),
-        REGISTER_CONTROL_FLOATING(
-            tmpCut, 10000.0, CONTROL_RANGE_STEP(20.0, 20000.0, 10.0),
-            /* Control name */
-            TR_TABLE(
-                TR(English, "Oscillator waveform"),
-                TR(French, "Type d'onde de l'oscillateur")
-            ),
-            /* Control's description */
-            TR_TABLE(
-                TR(English, "Oscillator waveform"),
-                TR(French, "Type d'onde de l'oscillateur")
-            ),
-            /* Control's short name */
-            TR_TABLE(
-                TR(English, "CUT")
-            ),
-            /* Control's unit */
-            TR_TABLE(
-                TR(English, "")
-            )
-        ),
-        REGISTER_CONTROL_FLOATING(
-            tmpFilter, 0.0, CONTROL_RANGE_STEP(0.0, 10.0, 0.1),
-            /* Control name */
-            TR_TABLE(
-                TR(English, "Oscillator waveform"),
-                TR(French, "Type d'onde de l'oscillateur")
-            ),
-            /* Control's description */
-            TR_TABLE(
-                TR(English, "Oscillator waveform"),
-                TR(French, "Type d'onde de l'oscillateur")
-            ),
-            /* Control's short name */
-            TR_TABLE(
-                TR(English, "FILTER")
-            ),
-            /* Control's unit */
-            TR_TABLE(
-                TR(English, "%")
-            )
         )
     )
 
@@ -188,8 +142,6 @@ public:
 private:
     NoteManagerDefault _noteManager {};
     DSP::Oscillator<1u> _oscillator;
-    Volume<float> _volumeHandler;
-    DSP::Biquad::Filter<DSP::Biquad::Internal::Form::Direct1> _filter;
 };
 
 #include "Oscillator.ipp"

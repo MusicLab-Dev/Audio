@@ -8,11 +8,11 @@ inline void Audio::Oscillator::onAudioGenerationStarted(const BeatRange &range)
     UNUSED(range);
     _noteManager.reset();
     _oscillator.reset();
-    _filter.reset();
 }
 
 inline void Audio::Oscillator::onAudioParametersChanged(void)
 {
+    _noteManager.reset();
     _noteManager.envelope().setSampleRate(audioSpecs().sampleRate);
 }
 
@@ -25,7 +25,6 @@ inline void Audio::Oscillator::sendNotes(const NoteEvents &notes, const BeatRang
 {
     UNUSED(range);
     if (notes.size()) {
-        // std::cout << range << std::endl;
         _noteManager.feedNotes(notes);
     }
 }
@@ -69,18 +68,6 @@ inline void Audio::Oscillator::receiveAudio(BufferView output)
                 readIndex,
                 outGain
             );
-
-            // for (auto i = 0u; i < realOutSize; ++i) {
-            //     const float cutOff = (_noteManager.envelopeGain()[i] * static_cast<float>(tmpFilter()) + 1.0f) * freq;
-            //     _filter.setup(DSP::Biquad::Internal::Specs {
-            //         DSP::Filter::AdvancedType::LowPass,
-            //         static_cast<float>(audioSpecs().sampleRate),
-            //         { cutOff, 0.0f },
-            //         1.0f,
-            //         0.707f
-            //     });
-            //     realOut[i] = _filter.processSample(realOut[i], key, 1.0f);
-            // }
 
             return std::make_pair(realOutSize, 0u);
         }

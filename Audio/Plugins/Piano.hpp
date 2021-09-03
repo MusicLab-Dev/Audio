@@ -7,11 +7,9 @@
 
 #include <Core/FlatVector.hpp>
 
-#include <Audio/PluginUtilsControlsFM.hpp>
 #include <Audio/PluginUtilsControlsMapping.hpp>
 #include <Audio/DSP/FIR.hpp>
-
-#include "Managers/FMManager.hpp"
+#include <Audio/DSP/Biquad.hpp>
 
 namespace Audio
 {
@@ -41,12 +39,6 @@ class Audio::Piano final : public Audio::IPlugin
             DefaultPluginOutputVolume,
             CONTROL_DEFAULT_OUTPUT_VOLUME_RANGE()
         ),
-        /* FM controls */
-        REGISTER_CONTROL_FM_ALGORITHM_DEFAULT_PITCH(opA, opB, opC, opD),
-        // REGISTER_CONTROL_FM_OPERATOR_DEFAULT(opA),
-        // REGISTER_CONTROL_FM_OPERATOR_DEFAULT(opB),
-        // REGISTER_CONTROL_FM_OPERATOR_DEFAULT(opC),
-        // REGISTER_CONTROL_FM_OPERATOR_DEFAULT(opD),
         REGISTER_CONTROL_FLOATING(
             brightness, 0.0, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
             TR_TABLE(
@@ -58,6 +50,111 @@ class Audio::Piano final : public Audio::IPlugin
             TR_TABLE(
                 TR(English, "Bright")
             ),
+            TR_TABLE(
+                TR(English, "%")
+            )
+        ),
+        REGISTER_CONTROL_FLOATING(
+            filterCutoff, 1000.0, CONTROL_RANGE_STEP(20.0, 8000.0, 20.0),
+            /* Control name */
+            TR_TABLE(
+                TR(English, "Filter frequency cutoff"),
+                TR(French, "Type d'onde de l'oscillateur")
+            ),
+            /* Control's description */
+            TR_TABLE(
+                TR(English, "Filter frequency cutoff"),
+                TR(French, "Type d'onde de l'oscillateur")
+            ),
+            /* Control's short name */
+            TR_TABLE(
+                TR(English, "Cut")
+            ),
+            /* Control's unit */
+            TR_TABLE(
+                TR(English, "")
+            )
+        ),
+        REGISTER_CONTROL_FLOATING(
+            filterEnvAmount, 0.0, CONTROL_RANGE_STEP(0.0, 17.0, 0.01),
+            /* Control name */
+            TR_TABLE(
+                TR(English, "Envelope amount to the filter cutoff"),
+                TR(French, "Type d'onde de l'oscillateur")
+            ),
+            /* Control's description */
+            TR_TABLE(
+                TR(English, "Envelope amount to the filter cutoff"),
+                TR(French, "Type d'onde de l'oscillateur")
+            ),
+            /* Control's short name */
+            TR_TABLE(
+                TR(English, "Env")
+            ),
+            /* Control's unit */
+            TR_TABLE(
+                TR(English, "%")
+            )
+        ),
+        REGISTER_CONTROL_FLOATING(
+            filterResonance, 0.0, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
+            /* Control name */
+            TR_TABLE(
+                TR(English, "Filter resonance amount"),
+                TR(French, "Type d'onde de l'oscillateur")
+            ),
+            /* Control's description */
+            TR_TABLE(
+                TR(English, "Filter resonance amount"),
+                TR(French, "Type d'onde de l'oscillateur")
+            ),
+            /* Control's short name */
+            TR_TABLE(
+                TR(English, "Q")
+            ),
+            /* Control's unit */
+            TR_TABLE(
+                TR(English, "%")
+            )
+        ),
+        REGISTER_CONTROL_FLOATING(
+            filterKeyFollow, 0.0, CONTROL_RANGE_STEP(-1.0, 1.0, 0.01),
+            /* Control name */
+            TR_TABLE(
+                TR(English, "Key folow amount to filter cutoff"),
+                TR(French, "Type d'onde de l'oscillateur")
+            ),
+            /* Control's description */
+            TR_TABLE(
+                TR(English, "Key folow amount to filter cutoff"),
+                TR(French, "Type d'onde de l'oscillateur")
+            ),
+            /* Control's short name */
+            TR_TABLE(
+                TR(English, "KeyFollow")
+            ),
+            /* Control's unit */
+            TR_TABLE(
+                TR(English, "%")
+            )
+        ),
+        REGISTER_CONTROL_FLOATING(
+            detuneAmount, 0.0, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
+            /* Control name */
+            TR_TABLE(
+                TR(English, "Detune osc amount"),
+                TR(French, "Type d'onde de l'oscillateur")
+            ),
+            /* Control's description */
+            TR_TABLE(
+                TR(English, "Detune osc amount"),
+                TR(French, "Type d'onde de l'oscillateur")
+            ),
+            /* Control's short name */
+            TR_TABLE(
+                TR(English, "Det")
+            ),
+            /* Control's unit */
             TR_TABLE(
                 TR(English, "%")
             )
@@ -82,10 +179,12 @@ public:
     virtual void onAudioGenerationStarted(const BeatRange &range);
 
 
-public:
 private:
-    FMManager<DSP::EnvelopeType::ADSR, 4u, DSP::FM::AlgorithmType::Default, true> _fmManager {};
-    DSP::FIR::BasicFilter<float> _filter;
+    NoteManagerDefault _noteManager {};
+    DSP::Oscillator<3u> _oscillators;
+    DSP::Biquad::Filter<DSP::Biquad::Internal::Form::Transposed2> _filter;
+    DSP::EnvelopeDefaultLinear<DSP::EnvelopeType::ADSR, 1u> _filterEnv;
+
     Buffer _cache;
 };
 

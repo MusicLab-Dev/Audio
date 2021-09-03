@@ -26,7 +26,6 @@ inline void Audio::SigmaFilter::receiveAudio(BufferView output)
 {
     const DB outGain = ConvertDecibelToRatio(static_cast<DB>(outputVolume()));
     float *out = output.data<float>();
-    const auto outSize = output.size<float>();
     output.clear();
 
     _filter.setup(DSP::Biquad::Internal::Specs {
@@ -39,6 +38,7 @@ inline void Audio::SigmaFilter::receiveAudio(BufferView output)
     _filter.filterBlock(_cache.data<float>(), audioSpecs().processBlockSize, out, 0u, outGain);
 
 
+    // const auto outSize = output.size<float>();
     // const float cutOffNorm = GetFrequencyNorm(static_cast<float>(cutoffFrequencyFrom()), audioSpecs().sampleRate);
     // const float decay = std::pow(M_Ef32, -cutOffNorm);
     // const auto a = decay;

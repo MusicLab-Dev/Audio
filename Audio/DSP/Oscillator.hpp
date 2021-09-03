@@ -23,7 +23,7 @@ public:
     void resetKey(const Key key) noexcept { _phaseIndex[key].fill(0.0f); }
 
     template<unsigned Index>
-    void resetKey(const Key key) noexcept { _phaseIndex[key] = 0.0f; }
+    void resetKey(const Key key) noexcept { _phaseIndex[key][Index] = 0.0f; }
 
     void reset(void) noexcept
     {
@@ -38,7 +38,7 @@ public:
             const Key key, const float frequencyNorm, const std::uint32_t indexOffset, const DB gain) noexcept
     {
         const auto nextPhase = Generator::Generate<Accumulate>(waveform, output, outputSize, frequencyNorm, _phaseIndex[key][Index].phase(), indexOffset, gain);
-        incrementPhaseIndex<Index>(key, nextPhase);
+        _phaseIndex[key][Index].setPhase(nextPhase);
     }
 
     template<bool Accumulate, unsigned Index = 0u, typename Type>
@@ -46,7 +46,7 @@ public:
             const Key key, const float frequencyNorm, const std::uint32_t indexOffset, const DB gain) noexcept
     {
         const auto nextPhase = Generator::Generate<Accumulate>(waveform, output, input, outputSize, frequencyNorm, _phaseIndex[key][Index].phase(), indexOffset, gain);
-        incrementPhaseIndex<Index>(key, nextPhase);
+        _phaseIndex[key][Index].setPhase(nextPhase);
     }
 
     /** @brief Modulate a waveform using runtime specialization */
@@ -55,14 +55,14 @@ public:
             const Key key, const float frequencyNorm, const std::uint32_t indexOffset, const DB gain) noexcept
     {
         const auto nextPhase = Generator::Modulate<Accumulate>(waveform, output, modulation, outputSize, frequencyNorm, _phaseIndex[key][Index].phase(), indexOffset, gain);
-        incrementPhaseIndex<Index>(key, nextPhase);
+        _phaseIndex[key][Index].setPhase(nextPhase);
     }
     template<bool Accumulate, unsigned Index = 0u, typename Type>
     void modulate(const Generator::Waveform waveform, Type *output, const Type *input, const Type *modulation, const std::size_t outputSize,
             const Key key, const float frequencyNorm, const std::uint32_t indexOffset, const DB gain) noexcept
     {
         const auto nextPhase = Generator::Modulate<Accumulate>(waveform, output, input, modulation, outputSize, frequencyNorm, _phaseIndex[key][Index].phase(), indexOffset, gain);
-        incrementPhaseIndex<Index>(key, nextPhase);
+        _phaseIndex[key][Index].setPhase(nextPhase);
     }
 
     /** @brief Modulate a waveform using runtime specialization */
@@ -71,14 +71,14 @@ public:
             const Key key, const float frequencyNorm, const std::uint32_t indexOffset, const DB gain) noexcept
     {
         const auto nextPhase = Generator::SemitoneShift<Accumulate>(waveform, output, semitone, outputSize, frequencyNorm, _phaseIndex[key][Index].phase(), indexOffset, gain);
-        incrementPhaseIndex<Index>(key, nextPhase);
+        _phaseIndex[key][Index].setPhase(nextPhase);
     }
     template<bool Accumulate, unsigned Index = 0u, typename Type>
     void semitoneShift(const Generator::Waveform waveform, Type *output, const Type *input, const Type *semitone, const std::size_t outputSize,
             const Key key, const float frequencyNorm, const std::uint32_t indexOffset, const DB gain) noexcept
     {
         const auto nextPhase = Generator::SemitoneShift<Accumulate>(waveform, output, input, semitone, outputSize, frequencyNorm, _phaseIndex[key][Index].phase(), indexOffset, gain);
-        incrementPhaseIndex<Index>(key, nextPhase);
+        _phaseIndex[key][Index].setPhase(nextPhase);
     }
 
     /** @brief Modulate a waveform using runtime specialization */
@@ -87,14 +87,14 @@ public:
             const Key key, const float frequencyNorm, const std::uint32_t indexOffset, const DB gain) noexcept
     {
         const auto nextPhase = Generator::ModulateSemitoneShift<Accumulate>(waveform, output, modulation, semitone, outputSize, frequencyNorm, _phaseIndex[key][Index].phase(), indexOffset, gain);
-        incrementPhaseIndex<Index>(key, nextPhase);
+        _phaseIndex[key][Index].setPhase(nextPhase);
     }
     template<bool Accumulate, unsigned Index = 0u, typename Type>
     void modulateSemitoneShift(const Generator::Waveform waveform, Type *output, const Type *input, const Type *modulation, const Type *semitone, const std::size_t outputSize,
             const Key key, const float frequencyNorm, const std::uint32_t indexOffset, const DB gain) noexcept
     {
         const auto nextPhase = Generator::ModulateSemitoneShift<Accumulate>(waveform, output, input, modulation, semitone, outputSize, frequencyNorm, _phaseIndex[key][Index].phase(), indexOffset, gain);
-        incrementPhaseIndex<Index>(key, nextPhase);
+        _phaseIndex[key][Index].setPhase(nextPhase);
     }
 
 private:
@@ -103,11 +103,9 @@ private:
     template<unsigned Index>
     void incrementPhaseIndex(const Key key, const float nextPhase) noexcept
     {
-        const float cycle = 2.0f * static_cast<float>(M_PI);
-
-        if (const float dt = nextPhase / cycle; dt >= 1.0f) {
-            _phaseIndex[key][Index].setPhase(nextPhase - static_cast<std::size_t>(dt) * cycle);
-        } else
-            _phaseIndex[key][Index].setPhase(nextPhase);
+        float phase = nextPhase;
+        while (phase >= Pi2F)
+            phase -= Pi2F;
+        _phaseIndex[key][Index].setPhase(phase);
     }
 };

@@ -67,7 +67,7 @@ inline void Audio::FMX::receiveAudio(BufferView output)
                 rootFrequency,
                 {
                     DSP::FM::Internal::Operator {
-                        Audio::DSP::Generator::Waveform::Sine,
+                        Audio::DSP::Generator::Waveform::Saw,
                         static_cast<float>(opAratio()),
                         static_cast<float>(opAattack()),
                         static_cast<float>(opAdecay()),
@@ -95,7 +95,7 @@ inline void Audio::FMX::receiveAudio(BufferView output)
                         static_cast<float>(opBkeyAmountRight()) / 100.0f + 1.0f
                     },
                     DSP::FM::Internal::Operator {
-                        Audio::DSP::Generator::Waveform::Sine,
+                        Audio::DSP::Generator::Waveform::Saw,
                         static_cast<float>(opCratio()),
                         static_cast<float>(opCattack()),
                         static_cast<float>(opCdecay()),
@@ -123,7 +123,7 @@ inline void Audio::FMX::receiveAudio(BufferView output)
                         static_cast<float>(opDkeyAmountRight()) / 100.0f + 1.0f
                     },
                     DSP::FM::Internal::Operator {
-                        Audio::DSP::Generator::Waveform::Sine,
+                        Audio::DSP::Generator::Waveform::Saw,
                         static_cast<float>(opEratio()),
                         static_cast<float>(opEattack()),
                         static_cast<float>(opEdecay()),
