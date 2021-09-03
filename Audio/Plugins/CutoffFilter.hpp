@@ -1,5 +1,5 @@
 /**
- * @file BasicFilter.hpp
+ * @file CutoffFilter.hpp
  * @brief Basic filter plugin using FIR method
  *
  * @author Pierre V
@@ -13,15 +13,15 @@
 
 namespace Audio
 {
-    class BasicFilter;
+    class CutoffFilter;
 }
 
-class Audio::BasicFilter final : public Audio::IPlugin
+class Audio::CutoffFilter final : public Audio::IPlugin
 {
     REGISTER_PLUGIN(
         /* Plugin's name */
         TR_TABLE(
-            TR(English, "BasicFilter"),
+            TR(English, "Cutoff Filter"),
             TR(French, "Filtre basique")
         ),
         /* Plugin description */
@@ -89,7 +89,7 @@ class Audio::BasicFilter final : public Audio::IPlugin
 
 public:
     /** @brief Plugin constructor */
-    BasicFilter(const IPluginFactory *factory) noexcept : IPlugin(factory) {}
+    CutoffFilter(const IPluginFactory *factory) noexcept : IPlugin(factory) {}
 
     virtual void sendAudio(const BufferViews &inputs);
     virtual void receiveAudio(BufferView output);
@@ -101,4 +101,4 @@ private:
     Buffer _cache;
 };
 
-#include "BasicFilter.ipp"
+#include "CutoffFilter.ipp"
