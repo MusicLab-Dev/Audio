@@ -112,13 +112,15 @@ inline bool Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, P
             }
             const Point *last = nullptr;
             for (const auto &point : automation) {
-                if (point.beat < beatRange.to)
+                if (point.beat < beatRange.from) {
                     last = &point;
-                else {
+                } else {
                     collectInterpolatedPoint(beatRange, paramID, last, point);
                     break;
                 }
             }
+            // if (last)
+            //     _controlStack.push(paramID, last->value);
             ++paramID;
         }
     }
@@ -136,7 +138,7 @@ inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, P
         case Point::CurveType::Linear:
         case Point::CurveType::Fast:
         case Point::CurveType::Slow:
-            value = ((right.value - left->value) / (right.beat - left->beat)) * (beatRange.to - beatRange.from);
+            value = ((right.value - left->value) / (right.beat - left->beat)) * (beatRange.from - left->beat) + left->value;
             break;
         default:
             break;
