@@ -61,27 +61,50 @@ inline void Audio::Piano::receiveAudio(BufferView output)
             const auto freq = GetNoteFrequency(key);
             const auto freqNorm = GetFrequencyNorm(freq, audioSpecs().sampleRate);
 
+
+            static constexpr DSP::Generator::Waveform PianoTypeWaveforms[3u][4u] = {
+                { DSP::Generator::Waveform::PulseThirdAnalog,   DSP::Generator::Waveform::SawAnalog,            DSP::Generator::Waveform::Triangle,     DSP::Generator::Waveform::PulseQuarterAnalog },
+                { DSP::Generator::Waveform::SquareAnalog,       DSP::Generator::Waveform::PulseQuarterAnalog,   DSP::Generator::Waveform::SquareAnalog, DSP::Generator::Waveform::SawAnalog },
+                { DSP::Generator::Waveform::SquareAnalog,       DSP::Generator::Waveform::PulseQuarterAnalog,   DSP::Generator::Waveform::SquareAnalog, DSP::Generator::Waveform::SawAnalog }
+            };
+
+            // Decay for each key: higher == shorter
+            static constexpr Key DecayDurationRootKey = 48u;    // C3
+            static constexpr float DefaultDecayDuration = 9.0f; // duration at DecayDurationRootKey
+            static constexpr float DecayDurationDelta = 1.5f;   // duration delta per octave up
+            constexpr auto GetKeyDecay = [](const Key key) -> float
+            {
+                const auto keyDelta = static_cast<float>(static_cast<int>(DecayDurationRootKey) - static_cast<int>(key));
+                const auto freqDelta = keyDelta / static_cast<float>(KeysPerOctave);
+                // std::cout << "  -dt: " << keyDelta << " - " << freqDelta << std::endl;
+                return freqDelta * DecayDurationDelta + DefaultDecayDuration;
+            };
+
+            const auto keyDecay = GetKeyDecay(key);
+            // std::cout << "Key: " << static_cast<int>(key) << " -> " << keyDecay << std::endl;
+
             // Generate envelope for osc
             constexpr auto DefaultAttack = 0.01f;
             constexpr auto DefaultDecay = 5.5f;
-            constexpr auto DefaultSustain = 0.0f;
-            constexpr auto DefaultRelease = 1.5f;
+            constexpr auto DefaultSustain = 0.01f;
+            // constexpr auto DefaultRelease = 1.5f;
             _noteManager.envelope().setSpecs<0u>(DSP::EnvelopeSpecs {
                 0.0f,
                 DefaultAttack, // A
                 1.0f,
                 0.0f,
-                DefaultDecay,// D
+                keyDecay / 1.0f,// D
                 DefaultSustain,// S
-                DefaultRelease,// R
+                keyDecay / 4.0f,// R
             });
             _noteManager.generateEnvelopeGains(key, readIndex, realOutSize);
             // Generate osc
-            const auto DetuneDelta = static_cast<float>(detuneAmount());
+            const auto DetuneDelta = static_cast<float>(detune() / 10.0);
             const auto DetuneFreqUp = GetNoteFrequencyDelta(freqNorm * 2.0f, 7.0f + DetuneDelta);
-            const auto DetuneFreqDown = GetNoteFrequencyDelta(freqNorm * 4.0f, 7.0f - DetuneDelta);
+            const auto DetuneFreqDown = GetNoteFrequencyDelta(freqNorm * 2.0f, 7.0f - DetuneDelta);
+            const auto pianoType = static_cast<std::uint32_t>(type());
             _oscillators.generate<false, 0u>(
-                DSP::Generator::Waveform::Saw,
+                PianoTypeWaveforms[0u][pianoType],
                 _cache.data<float>(),
                 _noteManager.envelopeGain().data(),
                 realOutSize,
@@ -96,7 +119,7 @@ inline void Audio::Piano::receiveAudio(BufferView output)
                 _oscillators.resetKey<2u>(key);
             }
             _oscillators.generate<true, 1u>(
-                DSP::Generator::Waveform::Saw,
+                PianoTypeWaveforms[1u][pianoType],
                 _cache.data<float>(),
                 _noteManager.envelopeGain().data(),
                 realOutSize,
@@ -106,30 +129,21 @@ inline void Audio::Piano::receiveAudio(BufferView output)
                 outGain / 2.0f
             );
             _oscillators.generate<true, 2u>(
-                DSP::Generator::Waveform::Saw,
+                PianoTypeWaveforms[2u][pianoType],
                 _cache.data<float>(),
                 _noteManager.envelopeGain().data(),
                 realOutSize,
                 key,
-                freqNorm * 4.0f,
+                DetuneFreqDown,
                 readIndex,
                 outGain / 2.0f
             );
 
-            // Get the real frequency according to: keyFollow, filterCutoff
-            const Key CenteredKey = 60u; // C4 (middle C)
-            const float CenteredKeyFreq = GetNoteFrequency(CenteredKey);
-            const float keyFreqDelta = GetNoteFrequency(key) / CenteredKeyFreq;
-            const auto keyFollowMultiplier = std::abs(static_cast<float>(filterKeyFollow()));
-            float freqRate { 1.0f };
-            if (keyFreqDelta >= 1.0f) {
-                freqRate = (keyFreqDelta - 1.0f) * keyFollowMultiplier + 1.0f;
-            } else {
-                freqRate = 1.0f / ((1.0f / keyFreqDelta - 1.0f) * keyFollowMultiplier + 1.0f);
-            }
-            if (filterKeyFollow() < 0.0f)
-                freqRate = 1.0f / freqRate;
-            freqRate *= static_cast<float>(filterCutoff());
+            // Get the real cutoff frequency
+            constexpr auto FilterCutOffMin = 400.0f;
+            constexpr auto FilterCutOffMax = 1000.0f;
+            constexpr auto FilterCutOffDelta = FilterCutOffMax - FilterCutOffMin;
+            const auto filterCutOff = static_cast<float>(color() * FilterCutOffDelta + FilterCutOffMin);
 
             // Generate envelope for filter
             _filterEnv.setSpecs<0u>(DSP::EnvelopeSpecs {
@@ -143,11 +157,11 @@ inline void Audio::Piano::receiveAudio(BufferView output)
             });
             // _filterEnv.generateEnvelopeGains(key, readIndex, realOutSize);
             float envF = 0.0f;
+            constexpr auto EnvAmountBrightScale = 15.0f;
+            const auto envAmount = static_cast<float>((1.0 - brightness()) * EnvAmountBrightScale);
             for (auto i = 0u; i < realOutSize; ++i) {
                 envF = _filterEnv.getGain(key, readIndex + i);
-                float cutOff = 1.0f / (envF * static_cast<float>(filterEnvAmount()) + 1.0f) * freqRate;
-                // float cutOff = static_cast<float>(filterCutoff());
-                // float cutOff = freqRate;
+                float cutOff = 1.0f / (envF * envAmount + 1.0f) * filterCutOff;
 
                 if (const auto max = static_cast<float>(audioSpecs().sampleRate) / 2.0f; cutOff > max)
                     cutOff = max;
@@ -156,7 +170,7 @@ inline void Audio::Piano::receiveAudio(BufferView output)
                     static_cast<float>(audioSpecs().sampleRate),
                     { cutOff, 0.0f },
                     1.0f,
-                    static_cast<float>(filterResonance() * 9.0 + 0.707)
+                    0.707f
                 });
                 realOut[i] += _filter.processSample(_cache.data<float>()[i], key, 1.0f);
             }

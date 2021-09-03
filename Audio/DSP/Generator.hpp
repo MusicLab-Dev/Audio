@@ -54,7 +54,11 @@ namespace Audio::DSP::Generator
         Saw,
         Noise,
         PulseThird,
-        PulseQuarter
+        PulseQuarter,
+        SquareAnalog,
+        SawAnalog,
+        PulseThirdAnalog,
+        PulseQuarterAnalog
     };
 
 
@@ -143,7 +147,7 @@ namespace Audio::DSP::Generator
             { return static_cast<Type>(std::cos(indexNorm) * gain); }
         template<typename Type>
         [[nodiscard]] Type GenerateSquareSample(const float indexNorm, const float, const std::uint32_t, const DB gain = 1.0f) noexcept
-            { return indexNorm > PiF ? gain : -gain; }
+            { return indexNorm > PiF ? static_cast<Type>(gain) : static_cast<Type>(-gain); }
         template<typename Type>
         [[nodiscard]] Type GenerateTriangleSample(const float indexNorm, const float, const std::uint32_t, const DB gain = 1.0f) noexcept
             { return static_cast<Type>((1.0f - std::acos(std::sin(indexNorm)) * static_cast<float>(M_2_PI)) * gain); }
@@ -153,11 +157,53 @@ namespace Audio::DSP::Generator
         template<typename Type>
         [[nodiscard]] Type GenerateNoiseSample(const float indexNorm, const float, const std::uint32_t index, const DB gain = 1.0f) noexcept;
         template<typename Type>
-        [[nodiscard]] Type GeneratePulseThirdSample(const float indexNorm, const float freqNorm, const std::uint32_t index, const DB gain = 1.0f) noexcept
-            { return static_cast<float>(GenerateSawSample<Type>(indexNorm, freqNorm, index) + 1.0f) > 4.0f / 3.0f ? gain : -gain; }
+        [[nodiscard]] Type GeneratePulseThirdSample(const float indexNorm, const float, const std::uint32_t, const DB gain = 1.0f) noexcept
+            { return indexNorm > Pi2F / 3.0f ? static_cast<Type>(gain) : static_cast<Type>(-gain); }
         template<typename Type>
-        [[nodiscard]] Type GeneratePulseQuarterSample(const float indexNorm, const float freqNorm, const std::uint32_t index, const DB gain = 1.0f) noexcept
-            { return  static_cast<float>(GenerateSawSample<Type>(indexNorm, freqNorm, index) + 1.0f) > 1.5f ? gain : -gain; }
+        [[nodiscard]] Type GeneratePulseQuarterSample(const float indexNorm, const float, const std::uint32_t, const DB gain = 1.0f) noexcept
+            { return indexNorm > PiF / 2.0f ? static_cast<Type>(gain) : static_cast<Type>(-gain); }
+
+        template<typename Type>
+        [[nodiscard]] Type GenerateSquareAnalogSample(const float indexNorm, const float freqNorm, const std::uint32_t index, const DB gain = 1.0f) noexcept
+        {
+            const float phaseCorrectionNorm = indexNorm / Pi2F;
+            const float freqCorrectionNorm = freqNorm / Pi2F;
+            float out = GenerateSquareSample<float>(indexNorm, freqNorm, index);
+
+            out -= AntiAlliasing::GetCorrection(phaseCorrectionNorm, freqCorrectionNorm);
+            out += AntiAlliasing::GetCorrection(std::fmod(phaseCorrectionNorm + 0.5f, 1.0f), freqCorrectionNorm);
+            return static_cast<Type>(out * gain);
+        }
+        template<typename Type>
+        [[nodiscard]] Type GeneratePulseThirdAnalogSample(const float indexNorm, const float freqNorm, const std::uint32_t index, const DB gain = 1.0f) noexcept
+        {
+            const float phaseCorrectionNorm = indexNorm / Pi2F;
+            const float freqCorrectionNorm = freqNorm / Pi2F;
+            float out = GeneratePulseThirdSample<float>(indexNorm, freqNorm, index);
+
+            out -= AntiAlliasing::GetCorrection(phaseCorrectionNorm, freqCorrectionNorm);
+            out += AntiAlliasing::GetCorrection(std::fmod(phaseCorrectionNorm + 2.0f / 3.0f, 1.0f), freqCorrectionNorm);
+            return static_cast<Type>(out * gain);
+        }
+        template<typename Type>
+        [[nodiscard]] Type GeneratePulseQuarterAnalogSample(const float indexNorm, const float freqNorm, const std::uint32_t index, const DB gain = 1.0f) noexcept
+        {
+            const float phaseCorrectionNorm = indexNorm / Pi2F;
+            const float freqCorrectionNorm = freqNorm / Pi2F;
+            float out = GeneratePulseQuarterSample<float>(indexNorm, freqNorm, index);
+
+            out -= AntiAlliasing::GetCorrection(phaseCorrectionNorm, freqCorrectionNorm);
+            out += AntiAlliasing::GetCorrection(std::fmod(phaseCorrectionNorm + 0.75f, 1.0f), freqCorrectionNorm);
+            return static_cast<Type>(out * gain);
+        }
+        template<typename Type>
+        [[nodiscard]] Type GenerateSawAnalogSample(const float indexNorm, const float freqNorm, const std::uint32_t index, const DB gain = 1.0f) noexcept
+        {
+            float out = GenerateSawSample<float>(indexNorm, freqNorm, index);
+
+            out -= AntiAlliasing::GetCorrection(indexNorm / Pi2F, freqNorm / Pi2F);
+            return static_cast<Type>(out * gain);
+        }
 
 
         /** @brief Waveform sample generation with input as frequency modulation */
@@ -181,10 +227,24 @@ namespace Audio::DSP::Generator
             { return GenerateNoiseSample<Type>(indexNorm, freqNorm, index, gain); }
         template<typename Type>
         [[nodiscard]] Type ModulatePulseThirdSample(const float indexNorm, const float freqNorm, const std::uint32_t index, const float modulation, const DB gain = 1.0f) noexcept
-            { return static_cast<float>(ModulateSawSample<Type>(indexNorm, freqNorm, index, modulation) + 1.0f) > 4.0f / 3.0f ? gain : -gain; }
+            { return static_cast<Type>(ModulateSawSample<float>(indexNorm, freqNorm, index, modulation) + 1.0f) > 4.0f / 3.0f ? gain : -gain; }
         template<typename Type>
         [[nodiscard]] Type ModulatePulseQuarterSample(const float indexNorm, const float freqNorm, const std::uint32_t index, const float modulation, const DB gain = 1.0f) noexcept
-            { return  static_cast<float>(ModulateSawSample<Type>(indexNorm, freqNorm, index, modulation) + 1.0f) > 1.5f ? gain : -gain; }
+            { return  static_cast<Type>(ModulateSawSample<float>(indexNorm, freqNorm, index, modulation) + 1.0f) > 1.5f ? gain : -gain; }
+
+        template<typename Type>
+        [[nodiscard]] Type ModulateSquareAnalogSample(const float indexNorm, const float freqNorm, const std::uint32_t index, const float modulation, const DB gain = 1.0f) noexcept
+            { return GenerateSquareAnalogSample<Type>(indexNorm + modulation, freqNorm, index, gain); }
+        template<typename Type>
+        [[nodiscard]] Type ModulateSawAnalogSample(const float indexNorm, const float freqNorm, const std::uint32_t index, const float modulation, const DB gain = 1.0f) noexcept
+            { return GenerateSawAnalogSample<Type>(indexNorm + modulation, freqNorm, index, gain); }
+        template<typename Type>
+        [[nodiscard]] Type ModulatePulseThirdAnalogSample(const float indexNorm, const float freqNorm, const std::uint32_t index, const float modulation, const DB gain = 1.0f) noexcept
+            { return GeneratePulseThirdAnalogSample<Type>(indexNorm + modulation, freqNorm, index, gain); }
+        template<typename Type>
+        [[nodiscard]] Type ModulatePulseQuarterAnalogSample(const float indexNorm, const float freqNorm, const std::uint32_t index, const float modulation, const DB gain = 1.0f) noexcept
+            { return GeneratePulseQuarterAnalogSample<Type>(indexNorm + modulation, freqNorm, index, gain); }
+
 
 
         /** @brief Helper used to generate a waveform function using runtime specialization */
@@ -268,6 +328,10 @@ namespace Audio::DSP::Generator
     GENERATOR_REGISTER_WAVEFORM(Noise)
     GENERATOR_REGISTER_WAVEFORM(PulseThird)
     GENERATOR_REGISTER_WAVEFORM(PulseQuarter)
+    GENERATOR_REGISTER_WAVEFORM(SquareAnalog)
+    GENERATOR_REGISTER_WAVEFORM(SawAnalog)
+    GENERATOR_REGISTER_WAVEFORM(PulseThirdAnalog)
+    GENERATOR_REGISTER_WAVEFORM(PulseQuarterAnalog)
 }
 
 #undef GENERATOR_REGISTER_WAVEFORM

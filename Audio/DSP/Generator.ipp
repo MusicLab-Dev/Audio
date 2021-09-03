@@ -191,6 +191,14 @@ inline float Audio::DSP::Generator::Internal::WaveformGenerateHelper(const Wavef
         return GeneratePulseThird<Accumulate>(std::forward<Args>(args)...);
     case Waveform::PulseQuarter:
         return GeneratePulseQuarter<Accumulate>(std::forward<Args>(args)...);
+    case Waveform::SquareAnalog:
+        return GenerateSquareAnalog<Accumulate>(std::forward<Args>(args)...);
+    case Waveform::SawAnalog:
+        return GenerateSawAnalog<Accumulate>(std::forward<Args>(args)...);
+    case Waveform::PulseThirdAnalog:
+        return GeneratePulseThirdAnalog<Accumulate>(std::forward<Args>(args)...);
+    case Waveform::PulseQuarterAnalog:
+        return GeneratePulseQuarterAnalog<Accumulate>(std::forward<Args>(args)...);
     default:
         return 0.0f;
     }
@@ -216,6 +224,14 @@ inline float Audio::DSP::Generator::Internal::WaveformModulateHelper(const Wavef
         return ModulatePulseThird<Accumulate>(std::forward<Args>(args)...);
     case Waveform::PulseQuarter:
         return ModulatePulseQuarter<Accumulate>(std::forward<Args>(args)...);
+    case Waveform::SquareAnalog:
+        return ModulateSquareAnalog<Accumulate>(std::forward<Args>(args)...);
+    case Waveform::SawAnalog:
+        return ModulateSawAnalog<Accumulate>(std::forward<Args>(args)...);
+    case Waveform::PulseThirdAnalog:
+        return ModulatePulseThirdAnalog<Accumulate>(std::forward<Args>(args)...);
+    case Waveform::PulseQuarterAnalog:
+        return ModulatePulseQuarterAnalog<Accumulate>(std::forward<Args>(args)...);
     default:
         return 0.0f;
     }
@@ -241,6 +257,14 @@ inline float Audio::DSP::Generator::Internal::WaveformSemitoneShiftHelper(const 
         return SemitoneShiftPulseThird<Accumulate>(std::forward<Args>(args)...);
     case Waveform::PulseQuarter:
         return SemitoneShiftPulseQuarter<Accumulate>(std::forward<Args>(args)...);
+    case Waveform::SquareAnalog:
+        return SemitoneShiftSquareAnalog<Accumulate>(std::forward<Args>(args)...);
+    case Waveform::SawAnalog:
+        return SemitoneShiftSawAnalog<Accumulate>(std::forward<Args>(args)...);
+    case Waveform::PulseThirdAnalog:
+        return SemitoneShiftPulseThirdAnalog<Accumulate>(std::forward<Args>(args)...);
+    case Waveform::PulseQuarterAnalog:
+        return SemitoneShiftPulseQuarterAnalog<Accumulate>(std::forward<Args>(args)...);
     default:
         return 0.0f;
     }
@@ -266,6 +290,14 @@ inline float Audio::DSP::Generator::Internal::WaveformModulateSemitoneShiftHelpe
         return ModulateSemitoneShiftPulseThird<Accumulate>(std::forward<Args>(args)...);
     case Waveform::PulseQuarter:
         return ModulateSemitoneShiftPulseQuarter<Accumulate>(std::forward<Args>(args)...);
+    case Waveform::SquareAnalog:
+        return ModulateSemitoneShiftSquareAnalog<Accumulate>(std::forward<Args>(args)...);
+    case Waveform::SawAnalog:
+        return ModulateSemitoneShiftSawAnalog<Accumulate>(std::forward<Args>(args)...);
+    case Waveform::PulseThirdAnalog:
+        return ModulateSemitoneShiftPulseThirdAnalog<Accumulate>(std::forward<Args>(args)...);
+    case Waveform::PulseQuarterAnalog:
+        return ModulateSemitoneShiftPulseQuarterAnalog<Accumulate>(std::forward<Args>(args)...);
     default:
         return 0.0f;
     }

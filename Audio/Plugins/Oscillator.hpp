@@ -58,33 +58,37 @@ class Audio::Oscillator final : public Audio::IPlugin
                     TR(French, "Cosinus")
                 ),
                 TR_TABLE(
-                    TR(English, "Square"),
-                    TR(French, "Carré")
+                    TR(English, "Square - Digital"),
+                    TR(French, "Carré - Digital")
                 ),
                 TR_TABLE(
                     TR(English, "Triangle"),
                     TR(French, "Triangle")
                 ),
                 TR_TABLE(
-                    TR(English, "Saw"),
-                    TR(French, "Scie")
+                    TR(English, "Saw - Digital"),
+                    TR(French, "Dent de scie - Digital")
                 ),
                 TR_TABLE(
                     TR(English, "Noise"),
                     TR(French, "Bruit")
                 ),
                 TR_TABLE(
-                    TR(English, "PulseThird"),
-                    TR(French, "Carré tiers")
+                    TR(English, "Pulse 1/3 - Digital"),
+                    TR(French, "Carré 1/3 - Digital")
                 ),
                 TR_TABLE(
-                    TR(English, "PulseQuarter"),
-                    TR(French, "Carré quart")
+                    TR(English, "Pulse 1/4 - Digital"),
+                    TR(French, "Carré 1/4 - Digital")
                 ),
-                // TR_TABLE(
-                //     TR(English, "Error"),
-                //     TR(French, "Error")
-                // )
+                TR_TABLE(
+                    TR(English, "Square - Analog"),
+                    TR(French, "Carré - Analog")
+                ),
+                TR_TABLE(
+                    TR(English, "Saw - Analog"),
+                    TR(French, "Dent de scie - Analog")
+                )
             ),
             /* Control name */
             TR_TABLE(

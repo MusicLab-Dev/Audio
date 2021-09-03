@@ -39,6 +39,60 @@ class Audio::Piano final : public Audio::IPlugin
             DefaultPluginOutputVolume,
             CONTROL_DEFAULT_OUTPUT_VOLUME_RANGE()
         ),
+        REGISTER_CONTROL_ENUM(
+            type,
+            CONTROL_ENUM_RANGE(
+                TR_TABLE(
+                    TR(English, "Default"),
+                    TR(French, "Défaut")
+                ),
+                TR_TABLE(
+                    TR(English, "Bright"),
+                    TR(French, "Brillant")
+                ),
+                TR_TABLE(
+                    TR(English, "Soft"),
+                    TR(French, "Doux")
+                ),
+                TR_TABLE(
+                    TR(English, "Extreme"),
+                    TR(French, "Extrème")
+                )
+            ),
+            /* Control name */
+            TR_TABLE(
+                TR(English, "Piano type"),
+                TR(French, "Type de piano")
+            ),
+            /* Control's description */
+            TR_TABLE(
+                TR(English, "Piano type"),
+                TR(French, "Type de piano")
+            ),
+            /* Control's short name */
+            TR_TABLE(
+                TR(English, "Type")
+            ),
+            /* Control's unit */
+            TR_TABLE(
+                TR(English, "")
+            )
+        ),
+        REGISTER_CONTROL_FLOATING(
+            color, 0.0, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
+            TR_TABLE(
+                TR(English, "Color"),
+            ),
+            TR_TABLE(
+                TR(English, "Color"),
+            ),
+            TR_TABLE(
+                TR(English, "Color")
+            ),
+            TR_TABLE(
+                TR(English, "%")
+            )
+        ),
         REGISTER_CONTROL_FLOATING(
             brightness, 0.0, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
             TR_TABLE(
@@ -55,100 +109,31 @@ class Audio::Piano final : public Audio::IPlugin
             )
         ),
         REGISTER_CONTROL_FLOATING(
-            filterCutoff, 1000.0, CONTROL_RANGE_STEP(20.0, 8000.0, 20.0),
-            /* Control name */
+            duration, 0.0, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
             TR_TABLE(
-                TR(English, "Filter frequency cutoff"),
-                TR(French, "Type d'onde de l'oscillateur")
+                TR(English, "Duration"),
             ),
-            /* Control's description */
             TR_TABLE(
-                TR(English, "Filter frequency cutoff"),
-                TR(French, "Type d'onde de l'oscillateur")
+                TR(English, "Duration"),
             ),
-            /* Control's short name */
             TR_TABLE(
-                TR(English, "Cut")
+                TR(English, "Dur")
             ),
-            /* Control's unit */
-            TR_TABLE(
-                TR(English, "")
-            )
-        ),
-        REGISTER_CONTROL_FLOATING(
-            filterEnvAmount, 0.0, CONTROL_RANGE_STEP(0.0, 17.0, 0.01),
-            /* Control name */
-            TR_TABLE(
-                TR(English, "Envelope amount to the filter cutoff"),
-                TR(French, "Type d'onde de l'oscillateur")
-            ),
-            /* Control's description */
-            TR_TABLE(
-                TR(English, "Envelope amount to the filter cutoff"),
-                TR(French, "Type d'onde de l'oscillateur")
-            ),
-            /* Control's short name */
-            TR_TABLE(
-                TR(English, "Env")
-            ),
-            /* Control's unit */
             TR_TABLE(
                 TR(English, "%")
             )
         ),
         REGISTER_CONTROL_FLOATING(
-            filterResonance, 0.0, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
+            detune, 0.0, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
             /* Control name */
             TR_TABLE(
-                TR(English, "Filter resonance amount"),
-                TR(French, "Type d'onde de l'oscillateur")
+                TR(English, "Detune amount"),
+                TR(French, "Déphasage")
             ),
             /* Control's description */
             TR_TABLE(
-                TR(English, "Filter resonance amount"),
-                TR(French, "Type d'onde de l'oscillateur")
-            ),
-            /* Control's short name */
-            TR_TABLE(
-                TR(English, "Q")
-            ),
-            /* Control's unit */
-            TR_TABLE(
-                TR(English, "%")
-            )
-        ),
-        REGISTER_CONTROL_FLOATING(
-            filterKeyFollow, 0.0, CONTROL_RANGE_STEP(-1.0, 1.0, 0.01),
-            /* Control name */
-            TR_TABLE(
-                TR(English, "Key folow amount to filter cutoff"),
-                TR(French, "Type d'onde de l'oscillateur")
-            ),
-            /* Control's description */
-            TR_TABLE(
-                TR(English, "Key folow amount to filter cutoff"),
-                TR(French, "Type d'onde de l'oscillateur")
-            ),
-            /* Control's short name */
-            TR_TABLE(
-                TR(English, "KeyFollow")
-            ),
-            /* Control's unit */
-            TR_TABLE(
-                TR(English, "%")
-            )
-        ),
-        REGISTER_CONTROL_FLOATING(
-            detuneAmount, 0.0, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
-            /* Control name */
-            TR_TABLE(
-                TR(English, "Detune osc amount"),
-                TR(French, "Type d'onde de l'oscillateur")
-            ),
-            /* Control's description */
-            TR_TABLE(
-                TR(English, "Detune osc amount"),
-                TR(French, "Type d'onde de l'oscillateur")
+                TR(English, "Detune amount"),
+                TR(French, "Déphasage")
             ),
             /* Control's short name */
             TR_TABLE(
