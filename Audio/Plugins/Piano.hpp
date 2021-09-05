@@ -167,10 +167,18 @@ public:
 private:
     NoteManagerDefault _noteManager {};
     DSP::Oscillator<3u> _oscillators;
-    DSP::Biquad::Filter<DSP::Biquad::Internal::Form::Transposed2> _filter;
-    DSP::EnvelopeDefaultLinear<DSP::EnvelopeType::ADSR, 1u> _filterEnv;
+    std::array<DSP::Biquad::Filter<DSP::Biquad::Internal::Form::Transposed2>, 2u> _filter;
+    std::array<DSP::EnvelopeDefaultLinear<DSP::EnvelopeType::ADSR, 1u>, 2u> _filterEnv;
 
     Buffer _cache;
+
+
+    static constexpr DSP::Generator::Waveform PianoTypeWaveforms[3u][4u]
+    {
+        { DSP::Generator::Waveform::PulseThirdAnalog,   DSP::Generator::Waveform::SawAnalog,            DSP::Generator::Waveform::Triangle,     DSP::Generator::Waveform::PulseQuarterAnalog },
+        { DSP::Generator::Waveform::SquareAnalog,       DSP::Generator::Waveform::PulseQuarterAnalog,   DSP::Generator::Waveform::SquareAnalog, DSP::Generator::Waveform::SawAnalog },
+        { DSP::Generator::Waveform::SquareAnalog,       DSP::Generator::Waveform::PulseQuarterAnalog,   DSP::Generator::Waveform::SquareAnalog, DSP::Generator::Waveform::SawAnalog }
+    };
 };
 
 #include "Piano.ipp"

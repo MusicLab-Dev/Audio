@@ -225,7 +225,8 @@ inline Audio::Beat Audio::AScheduler::ComputeBeatSize(const std::uint32_t sample
     const float beatsFloor = std::floor(beats);
     const float beatsCeil = std::ceil(beats);
 
-    if (auto ceilDt = beatsCeil - beats, floorDt = beats - beatsFloor; ceilDt < floorDt) {
+    // if (auto ceilDt = beatsCeil - beats, floorDt = beats - beatsFloor; ceilDt < floorDt) {
+    if (auto ceilDt = beatsCeil - beats, floorDt = beats - beatsFloor; true) {
         beatMissOffset = -ceilDt;
         return static_cast<Beat>(beatsCeil);
     } else {

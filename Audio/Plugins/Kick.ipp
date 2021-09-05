@@ -34,7 +34,8 @@ inline void Audio::Kick::sendNotes(const NoteEvents &notes, const BeatRange &ran
 inline void Audio::Kick::receiveAudio(BufferView output)
 {
     const DB outGain = ConvertDecibelToRatio(static_cast<float>(outputVolume()) + DefaultVoiceGain);
-    const auto outSize = static_cast<std::uint32_t>(output.size<float>());
+    const auto outSize = static_cast<std::uint32_t>(output.channelSampleCount());
+    const auto channels = static_cast<std::size_t>(output.channelArrangement());
     float *out = reinterpret_cast<float *>(output.byteData());
     // const bool noRelease = !enveloppeRelease();
     const bool noRelease = false;
@@ -126,10 +127,27 @@ inline void Audio::Kick::receiveAudio(BufferView output)
             return std::make_pair(realOutSize, 0u);
         }
     );
+
+    // Process overdrive in mono
     static constexpr float MaxDriveRatio = 5.0f;
-    // const DB outGainInvert = 1.0f / outGain;
     const float drive = static_cast<float>(overdrive()) * MaxDriveRatio + 1.0f;
     for (auto i = 0u; i < outSize; ++i) {
         out[i] = std::tanh(drive * out[i]) * outGain;
+    }
+
+    // Re-arrange the buffer in case of multiple channels
+    const auto channelsMinusOne = channels - 1u;
+    if (channelsMinusOne) {
+
+        // ABCD___ -> ABCDABCD
+        for (auto ch = 1u; ch < channels; ++ch)
+            std::memcpy(out + (ch * outSize), out, outSize * sizeof(float));
+
+        // ABCDABCD -> AABBCCDD
+        for (auto i = 0u; i < outSize; ++i) {
+            for (auto ch = 0u; ch < channels; ++ch) {
+                out[i * channels + ch] = out[i + channelsMinusOne * outSize];
+            }
+        }
     }
 }

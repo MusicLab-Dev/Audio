@@ -108,6 +108,39 @@ class Audio::Oscillator final : public Audio::IPlugin
             TR_TABLE(
                 TR(English, "")
             )
+        ),
+        REGISTER_CONTROL_FLOATING(
+            detune, 0.0, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
+            TR_TABLE(
+                TR(English, "Voice detune"),
+            ),
+            TR_TABLE(
+                TR(English, "Voice detune"),
+            ),
+            TR_TABLE(
+                TR(English, "Det")
+            ),
+            TR_TABLE(
+                TR(English, "%")
+            )
+        ),
+        REGISTER_CONTROL_FLOATING(
+            panning, 0.0, CONTROL_RANGE_STEP(-1.0, 1.0, 0.01),
+            TR_TABLE(
+                TR(English, "Stereo panning"),
+            ),
+            TR_TABLE(
+                TR(English, "Stereo panning"),
+            ),
+            TR_TABLE(
+                TR(English, "Pan")
+            ),
+            TR_TABLE(
+                TR(English, "L/R")
+            )
+        ),
+        REGISTER_CONTROL_EFFECT_BYPASS(
+            bypass
         )
     )
 
@@ -145,7 +178,7 @@ public:
 
 private:
     NoteManagerDefault _noteManager {};
-    DSP::Oscillator<1u> _oscillator;
+    DSP::Oscillator<3u> _oscillator;
 };
 
 #include "Oscillator.ipp"

@@ -131,7 +131,7 @@ public:
         }
     }
 
-    template<bool Accumulate, bool Modulate, bool IsCarrier, unsigned OperatorIndex>
+    template<bool Accumulate, ChannelArrangement Channels, bool Modulate, bool IsCarrier, unsigned OperatorIndex>
     inline void processOperator(
             const float *input, float *output, const std::uint32_t processSize, const float outputGain,
             const std::uint32_t phaseIndex, const float frequencyNorm, const Key key,
@@ -165,7 +165,7 @@ public:
         _envelopes.template generateGains<false, OperatorIndex>(key, phaseIndex, _envelopeGain.data(), processSize);
         if constexpr (PitchEnv) {
             if constexpr (Modulate) {
-                _oscillator.template modulateSemitoneShift<Accumulate, OperatorIndex>(
+                _oscillator.template modulateSemitoneShift<Accumulate, OperatorIndex, Channels>(
                     op.waveform,
                     output,
                     _envelopeGain.data(),
@@ -178,7 +178,7 @@ public:
                     outGain
                 );
             } else {
-                _oscillator.template semitoneShift<Accumulate, OperatorIndex>(
+                _oscillator.template semitoneShift<Accumulate, OperatorIndex, Channels>(
                     op.waveform,
                     output,
                     _envelopeGain.data(),
@@ -192,7 +192,7 @@ public:
             }
         } else {
             if constexpr (Modulate) {
-                _oscillator.template modulate<Accumulate, OperatorIndex>(
+                _oscillator.template modulate<Accumulate, OperatorIndex, Channels>(
                     op.waveform,
                     output,
                     _envelopeGain.data(),
@@ -204,7 +204,7 @@ public:
                     outGain
                 );
             } else {
-                _oscillator.template generate<Accumulate, OperatorIndex>(
+                _oscillator.template generate<Accumulate, OperatorIndex, Channels>(
                     op.waveform,
                     output,
                     _envelopeGain.data(),
@@ -236,7 +236,7 @@ public:
 
     void setSampleRate(const SampleRate sampleRate) noexcept { _sampleRate = sampleRate; _envelopes.setSampleRate(sampleRate); }
 
-    template<bool Accumulate>
+    template<bool Accumulate, ChannelArrangement Channels = ChannelArrangement::Mono>
     void process(
             float *output, const std::uint32_t processSize, const float outputGain,
             const std::uint32_t phaseIndex, const Key key, const float rootFrequency,
@@ -259,17 +259,17 @@ public:
 
         if constexpr (Algo == AlgorithmType::Default){
             if constexpr (OperatorCount == 2u) {
-                oneCarrierOneModulator<Accumulate>(output, processSize, outputGain, phaseIndex, key, freqNorm, operators);
+                oneCarrierOneModulator<Accumulate, Channels>(output, processSize, outputGain, phaseIndex, key, freqNorm, operators);
             } else if constexpr (OperatorCount == 4u) {
-                twoCM<Accumulate>(output, processSize, outputGain, phaseIndex, key, freqNorm, operators);
+                twoCM<Accumulate, Channels>(output, processSize, outputGain, phaseIndex, key, freqNorm, operators);
             } else if constexpr (OperatorCount == 6u) {
-                dx7_05<Accumulate>(output, processSize, outputGain, phaseIndex, key, freqNorm, operators);
+                dx7_05<Accumulate, Channels>(output, processSize, outputGain, phaseIndex, key, freqNorm, operators);
             }
         } else
-            processImpl<Accumulate>(output, processSize, outputGain, phaseIndex, key, freqNorm, operators);
+            processImpl<Accumulate, Channels>(output, processSize, outputGain, phaseIndex, key, freqNorm, operators);
 
     }
-    template<bool Accumulate>
+    template<bool Accumulate, ChannelArrangement Channels = ChannelArrangement::Mono>
     void processImpl(
             float *output, const std::uint32_t processSize, const float outputGain,
             const std::uint32_t phaseIndex, const Key key, const float freqNorm,
@@ -278,7 +278,7 @@ public:
     {
         if constexpr (Algo == AlgorithmType::KickDrum) {
             static_assert(OperatorCount == 4u, "Audio::DSP::FM::Schema<OperatorCount, KickDrum>::processImpl: OperatorCount must be equal to 4");
-            kickDrum_impl<Accumulate>(output, processSize, outputGain, phaseIndex, key, freqNorm, operators);
+            kickDrum_impl<Accumulate, Channels>(output, processSize, outputGain, phaseIndex, key, freqNorm, operators);
         } else if constexpr (Algo == AlgorithmType::Piano) {
 
         }
@@ -327,7 +327,7 @@ private:
         }
     }
 
-    template<bool Accumulate>
+    template<bool Accumulate, ChannelArrangement Channels = ChannelArrangement::Mono>
     void oneCarrierOneModulator(
             float *output, const std::uint32_t processSize, const float outputGain,
             const std::uint32_t phaseIndex, const Key key, const float rootFrequency,
@@ -339,21 +339,21 @@ private:
         // processOperator<Accumulate, true, 0>(_cache.data(), output, processSize, outputGain, phaseIndex, (rootFrequency * operators[0].frequencyDelta) / static_cast<float>(_sampleRate), key, operators[0]);
 
         // Op_0 only
-        processOperator<Accumulate, false, true, 0>(nullptr, output, processSize, outputGain, phaseIndex, (rootFrequency * operators[0].frequencyDelta) / static_cast<float>(_sampleRate), key, operators[0]);
+        processOperator<Accumulate, Channels, false, true, 0>(nullptr, output, processSize, outputGain, phaseIndex, (rootFrequency * operators[0].frequencyDelta) / static_cast<float>(_sampleRate), key, operators[0]);
     }
 
-    template<bool Accumulate>
+    template<bool Accumulate, ChannelArrangement Channels = ChannelArrangement::Mono>
     void twoCM(
             float *output, const std::uint32_t processSize, const float outputGain,
             const std::uint32_t phaseIndex, const Key key, const float rootFrequency,
             const Internal::OperatorArray<OperatorCount> &operators
     ) noexcept
     {
-        oneModulatorToCarrier_impl<Accumulate>(output, processSize, outputGain, phaseIndex, rootFrequency, key, operators);
+        oneModulatorToCarrier_impl<Accumulate, Channels>(output, processSize, outputGain, phaseIndex, rootFrequency, key, operators);
     }
 
 
-    template<bool Accumulate>
+    template<bool Accumulate, ChannelArrangement Channels = ChannelArrangement::Mono>
     void dx7_05(
             float *output, const std::uint32_t processSize, const float outputGain,
             const std::uint32_t phaseIndex, const Key key, const float rootFrequency,
@@ -363,10 +363,10 @@ private:
         constexpr auto CarrierCount = 3u;
         const auto realOutputGain = outputGain / static_cast<float>(CarrierCount);
 
-        oneModulatorToCarrier_impl<Accumulate>(output, processSize, realOutputGain, phaseIndex, rootFrequency, key, operators);
+        oneModulatorToCarrier_impl<Accumulate, Channels>(output, processSize, realOutputGain, phaseIndex, rootFrequency, key, operators);
     }
 
-    template<bool Accumulate, unsigned Index = 0u>
+    template<bool Accumulate, ChannelArrangement Channels = ChannelArrangement::Mono, unsigned Index = 0u>
     void oneModulatorToCarrier_impl(
             float *output, const std::uint32_t processSize, const float outputGain,
             const std::uint32_t phaseIndex, const float rootFrequency, const Key key,
@@ -377,13 +377,13 @@ private:
             constexpr auto CarrierIdx = Index;
             constexpr auto ModIdx = Index + 1;
 
-            processOperator<false, false, false, ModIdx>(nullptr, _cache.data(), processSize, 1.0f, phaseIndex, getDetuneFrequency(rootFrequency, operators[ModIdx]), key, operators[ModIdx]);
-            processOperator<Accumulate, true, true, CarrierIdx>(_cache.data(), output, processSize, outputGain, phaseIndex, getDetuneFrequency(rootFrequency, operators[CarrierIdx]), key, operators[CarrierIdx]);
-            oneModulatorToCarrier_impl<Accumulate, Index + 2>(output, processSize, outputGain, phaseIndex, rootFrequency, key, operators);
+            processOperator<false, Channels, false, false, ModIdx>(nullptr, _cache.data(), processSize, 1.0f, phaseIndex, getDetuneFrequency(rootFrequency, operators[ModIdx]), key, operators[ModIdx]);
+            processOperator<Accumulate, Channels, true, true, CarrierIdx>(_cache.data(), output, processSize, outputGain, phaseIndex, getDetuneFrequency(rootFrequency, operators[CarrierIdx]), key, operators[CarrierIdx]);
+            oneModulatorToCarrier_impl<Accumulate, Channels, Index + 2>(output, processSize, outputGain, phaseIndex, rootFrequency, key, operators);
         }
     }
 
-    template<bool Accumulate>
+    template<bool Accumulate, ChannelArrangement Channels = ChannelArrangement::Mono>
     void kickDrum_impl(
             float *output, const std::uint32_t processSize, const float outputGain,
             const std::uint32_t phaseIndex, const Key key, const float rootFrequency,
@@ -400,12 +400,12 @@ private:
         // processOperator<true, true, true, 1u>(_cache.data(), output, processSize, realOutputGain, phaseIndex, getDetuneFrequency(rootFrequency, operators[1u]), key, operators[1u]);
 
         // Noise (D) for clicking sound
-        processOperator<false, false, false, 3u>(nullptr, _cache.data(), processSize, 1.0f, phaseIndex, getDetuneFrequency(rootFrequency, operators[3u]), key, operators[3u]);
+        processOperator<false, Channels, false, false, 3u>(nullptr, _cache.data(), processSize, 1.0f, phaseIndex, getDetuneFrequency(rootFrequency, operators[3u]), key, operators[3u]);
         // Sub (A)
-        processOperator<Accumulate, true, true, 0u>(_cache.data(), output, processSize, realOutputGain, phaseIndex, getDetuneFrequency(rootFrequency, operators[0u]), key, operators[0u]);
+        processOperator<Accumulate, Channels, true, true, 0u>(_cache.data(), output, processSize, realOutputGain, phaseIndex, getDetuneFrequency(rootFrequency, operators[0u]), key, operators[0u]);
         // Color (C->B)
-        processOperator<false, false, false, 2u>(nullptr, _cache.data(), processSize, 1.0f, phaseIndex, getDetuneFrequency(rootFrequency, operators[2u]), key, operators[2u]);
-        processOperator<true, true, true, 1u>(_cache.data(), output, processSize, realOutputGain, phaseIndex, getDetuneFrequency(rootFrequency, operators[1u]), key, operators[1u]);
+        processOperator<false, Channels, false, false, 2u>(nullptr, _cache.data(), processSize, 1.0f, phaseIndex, getDetuneFrequency(rootFrequency, operators[2u]), key, operators[2u]);
+        processOperator<true, Channels, true, true, 1u>(_cache.data(), output, processSize, realOutputGain, phaseIndex, getDetuneFrequency(rootFrequency, operators[1u]), key, operators[1u]);
     }
 
 

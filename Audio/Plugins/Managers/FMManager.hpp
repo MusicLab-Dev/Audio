@@ -146,7 +146,7 @@ public:
     [[nodiscard]] const FMSchema &schema(void) const noexcept { return _schema; }
     [[nodiscard]] FMSchema &schema(void) noexcept { return _schema; }
 
-    template<bool Accumulate>
+    template<bool Accumulate, ChannelArrangement Channels = ChannelArrangement::Mono>
     void processSchema(
             float *output, const std::uint32_t processSize, const float outGain,
             const std::uint32_t phaseIndex, const Key key, const float rootFrequency,
@@ -155,7 +155,7 @@ public:
     ) noexcept
     {
         updateLongestEnvOperatorIndex(operators);
-        _schema.template process<Accumulate>(output, processSize, outGain, phaseIndex, key, rootFrequency, operators, pitchOperator);
+        _schema.template process<Accumulate, Channels>(output, processSize, outGain, phaseIndex, key, rootFrequency, operators, pitchOperator);
     }
 
 private:

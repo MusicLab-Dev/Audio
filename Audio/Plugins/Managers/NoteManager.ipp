@@ -11,7 +11,6 @@ inline void Audio::NoteManager<EnvelopeType>::feedNotes(const NoteEvents &notes)
     // std::cout << "NOTES> SEND NOTES " << notes.size() << std::endl;
 
     for (const auto &note : notes) {
-        // std::cout << "##" << static_cast<std::size_t>(note.key) << ": " << static_cast<std::size_t>(note.type) << " - " << note.sampleOffset << std::endl;
         auto &target = _cache.modifiers[note.key];
         switch (note.type) {
         case NoteEvent::EventType::On:

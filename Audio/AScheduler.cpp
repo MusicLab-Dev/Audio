@@ -53,16 +53,20 @@ void AScheduler::processBeatMiss(void) noexcept
     _beatMissCount += _beatMissOffset;
     if (_beatMissCount <= -1.0f) {
         _beatMissCount += 1.0f;
+        _beatMissShifted = true;
         range = {
             range.from,
             range.to - 1
         };
     } else if (_beatMissCount >= 1.0f) {
         _beatMissCount -= 1.0f;
+        _beatMissShifted = true;
         range = {
             range.from,
             range.to + 1
         };
+    } else {
+        _beatMissShifted = false;
     }
 }
 void AScheduler::processLooping(void) noexcept

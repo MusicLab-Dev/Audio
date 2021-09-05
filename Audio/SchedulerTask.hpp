@@ -70,13 +70,13 @@ private:
     [[nodiscard]] bool collectControls(const BeatRange &beatRange) noexcept;
 
     /** @brief Collect a single point from an interpolation */
-    void collectInterpolatedPoint(const BeatRange &beatRange, const ParamID paramID, const Point * const left, const Point &right);
+    void collectInterpolatedPoint(const BeatRange &beatRange, const ParamID paramID, const Point * const left, const Point &right, const ParamValue lastValue, const ParamValue controlStep);
 
     /** @brief Collect every notes of the current frame */
     [[nodiscard]] bool collectPartitions(const BeatRange &beatRange) noexcept;
 
     /** @brief Collect every notes within the current offset */
-    void collectPartition(const Partition &partition, const BeatRange &beatRange, const double beatToSampleRatio, const double beatMissOffset, const PartitionInstance &instance = PartitionInstance()) noexcept;
+    void collectPartition(const Partition &partition, const BeatRange &beatRange, const double beatToSampleRatio, const double beatMissCount, const double beatMissOffset, const bool rangeShifted, const PartitionInstance &instance = PartitionInstance()) noexcept;
 
     /** @brief Collect every cached children buffer of the current frame */
     bool collectBuffers(void) noexcept;

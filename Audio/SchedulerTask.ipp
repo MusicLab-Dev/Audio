@@ -105,6 +105,8 @@ inline bool Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, P
     }
     if constexpr (Playback == PlaybackMode::Production || Playback == PlaybackMode::Export) {
         ParamID paramID = 0u;
+        const ParamValue lastValue = node().plugin()->getControl(paramID);
+        const auto controlStep = node().plugin()->getMetaData().controls[paramID].rangeValues.step;
         for (const auto &automation : automations) {
             if (!automation.isSafe() || automation.headerCustomType().muted) {
                 ++paramID;
@@ -115,7 +117,7 @@ inline bool Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, P
                 if (point.beat < beatRange.from) {
                     last = &point;
                 } else {
-                    collectInterpolatedPoint(beatRange, paramID, last, point);
+                    collectInterpolatedPoint(beatRange, paramID, last, point, lastValue, controlStep);
                     break;
                 }
             }
@@ -129,20 +131,36 @@ inline bool Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, P
 
 template<Audio::IPlugin::Flags Flags, bool ProcessNotesAndControls, bool ProcessAudio, Audio::PlaybackMode Playback>
 inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, Playback>::collectInterpolatedPoint(
-        const BeatRange &beatRange, const ParamID paramID, const Point * const left, const Point &right)
+        const BeatRange &beatRange, const ParamID paramID, const Point * const left, const Point &right, const ParamValue lastValue, const ParamValue controlStep)
 {
     ParamValue value = right.value;
 
     if (left) {
+        const auto maxDt = 10.0f * controlStep;
+        float ramp = static_cast<float>(right.value - left->value) / static_cast<float>(right.beat - left->beat);
+
         switch (right.type) {
         case Point::CurveType::Linear:
+            break;
         case Point::CurveType::Fast:
         case Point::CurveType::Slow:
-            value = ((right.value - left->value) / (right.beat - left->beat)) * (beatRange.from - left->beat) + left->value;
+        {
+            ramp = std::pow(ramp / left->value, 2.0f) * left->value;
             break;
+        }
         default:
             break;
-    }
+        }
+        value = ramp * (beatRange.from - left->beat) + left->value;
+        // Test for smoothing values
+        // std::cout << lastValue << " -> " << value << std::endl;
+        // if (const auto dt = value - lastValue; dt > maxDt) {
+        //     std::cout << value << " -> down: " << lastValue - maxDt << std::endl;
+        //     value = lastValue - maxDt;
+        // } else if (-dt > maxDt) {
+        //     std::cout << value << " -> up: " << lastValue + maxDt << std::endl;
+        //     value = lastValue + maxDt;
+        // }
     }
     _controlStack.push(paramID, value);
 }
@@ -170,20 +188,21 @@ inline bool Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, P
                     continue;
                 else if (instance.range.from >= beatRange.to)
                     break;
-                collectPartition(partitions[instance.partitionIndex], beatRange, beatToSampleRatio, beatMissOffset, instance);
+                collectPartition(partitions[instance.partitionIndex], beatRange, beatToSampleRatio, static_cast<double>(_scheduler->beatMissCount()), static_cast<float>(_scheduler->beatMissOffset()), _scheduler->beatMissShifted(), instance);
             }
         }
     } else if constexpr (Playback == PlaybackMode::Partition) {
         if (&node() == _scheduler->partitionNode())
-            collectPartition(partitions[_scheduler->partitionIndex()], beatRange, beatToSampleRatio, beatMissOffset);
+            collectPartition(partitions[_scheduler->partitionIndex()], beatRange, beatToSampleRatio, static_cast<double>(_scheduler->beatMissCount()), static_cast<float>(_scheduler->beatMissOffset()), _scheduler->beatMissShifted());
     }
     return *_noteStack;
 }
 
 template<Audio::IPlugin::Flags Flags, bool ProcessNotesAndControls, bool ProcessAudio, Audio::PlaybackMode Playback>
 inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, Playback>::collectPartition(
-        const Partition &partition, const BeatRange &beatRange, const double beatToSampleRatio, const double beatMissOffset, const PartitionInstance &instance) noexcept
+        const Partition &partition, const BeatRange &beatRange, const double beatToSampleRatio, const double beatMissCount, const double beatMissOffset, const bool rangeShifted, const PartitionInstance &instance) noexcept
 {
+    const float shiftedDt = (rangeShifted ? (beatMissOffset < 0.0 ? -1.0f : 1.0f) : 0.0f);
     UNUSED(beatToSampleRatio);
     for (const auto &note : partition) {
         const auto noteFrom = (note.range.from + instance.range.from) - instance.offset; // Can overflow !
@@ -195,15 +214,16 @@ inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, P
         event.key = note.key;
         event.velocity = note.velocity;
         event.tuning = note.tuning;
+        const auto noteDt = (beatMissCount > 0.0f) ? beatRange.to - noteFrom : noteFrom - beatRange.from;
         if (noteFrom >= beatRange.from && noteTo <= beatRange.to) {
             event.type = NoteEvent::EventType::OnOff;
-            event.sampleOffset = noteFrom != beatRange.from ? static_cast<BlockSize>((static_cast<double>(noteFrom - beatRange.from) - beatMissOffset) * beatToSampleRatio) : 0u;
+            event.sampleOffset = static_cast<BlockSize>((static_cast<double>(noteDt) - (beatMissCount - beatMissOffset + shiftedDt)) * beatToSampleRatio);
         } else if (noteFrom >= beatRange.from) {
             event.type = NoteEvent::EventType::On;
-            event.sampleOffset = noteFrom != beatRange.from ? static_cast<BlockSize>((static_cast<double>(noteFrom - beatRange.from) - beatMissOffset) * beatToSampleRatio) : 0u;
+            event.sampleOffset = static_cast<BlockSize>((static_cast<double>(noteDt) - (beatMissCount - beatMissOffset + shiftedDt)) * beatToSampleRatio);
         } else { // if (noteTo <= beatRange.to) -> ensured by first check in loop
             event.type = NoteEvent::EventType::Off;
-            event.sampleOffset = static_cast<BlockSize>((static_cast<double>(noteTo - beatRange.from) - beatMissOffset) * beatToSampleRatio);
+            event.sampleOffset = static_cast<BlockSize>((static_cast<double>(noteTo - beatRange.from) - beatMissCount) * beatToSampleRatio);
         }
         _noteStack->push(event);
     }
