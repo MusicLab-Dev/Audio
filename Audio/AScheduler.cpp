@@ -33,6 +33,7 @@ bool AScheduler::setState(const State state) noexcept
                 return false;
         }
         _beatMissCount = 0.0f;
+        _beatMissShifted = false;
         _audioBlockBeatMissCount = 0.0f;
         _audioElapsedBeat = 0u;
         if (!graph().running()) {
@@ -59,7 +60,6 @@ void AScheduler::processBeatMiss(void) noexcept
             range.from,
             range.to + 1
         };
-        std::cout << "CROP BEAT MISS " << range << std::endl;
     }
 }
 
@@ -81,6 +81,7 @@ void AScheduler::processLooping(void) noexcept
             _loopBeatRange.from + _processBeatSize
         };
         _beatMissCount = 0.0f;
+        _beatMissShifted = false;
     }
 }
 
