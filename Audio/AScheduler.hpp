@@ -224,10 +224,10 @@ private:
     BlockSize _processBlockSize { 0u };
     bool _isLooping { false };
     bool _hasExitedGraph { true };
-    std::uint32_t _partitionIndex { 0 };
+    std::uint32_t _partitionIndex { 0u };
     Node *_partitionNode { nullptr };
-    float _beatMissCount { 0.0 };
-    float _beatMissOffset { 0.0 };
+    float _beatMissCount { 0.0f };
+    float _beatMissOffset { 0.0f };
     bool _beatMissShifted { false };
     std::uint32_t _processLoopCrop { 0u };
     BPM _bpm { 120.0f };
@@ -238,8 +238,8 @@ private:
     std::atomic<Beat> _audioBlockBeatSize { 0u }; // Used by the audio callback to determine how many beat elapsed
     BlockSize _audioBlockSize { 0u };
     std::uint32_t _cachedAudioFrames { 0u };
-    float _audioBlockBeatMissCount { 0.0 };
-    float _audioBlockBeatMissOffset { 0.0 };
+    float _audioBlockBeatMissCount { 0.0f };
+    float _audioBlockBeatMissOffset { 0.0f };
 
     /** @brief Audio callback queue */
     static inline Core::SPSCQueue<std::uint8_t> _AudioQueue {};

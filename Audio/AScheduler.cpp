@@ -32,8 +32,8 @@ bool AScheduler::setState(const State state) noexcept
             if (expected == State::Play)
                 return false;
         }
-        _beatMissCount = _beatMissOffset;
-        _audioBlockBeatMissCount = _beatMissOffset;
+        _beatMissCount = 0.0f;
+        _audioBlockBeatMissCount = 0.0f;
         _audioElapsedBeat = 0u;
         if (!graph().running()) {
             if (!graph().size())
@@ -50,25 +50,19 @@ void AScheduler::processBeatMiss(void) noexcept
 {
     auto &range = currentBeatRange();
 
+    _beatMissShifted = false;
     _beatMissCount += _beatMissOffset;
-    if (_beatMissCount <= -1.0f) {
-        _beatMissCount += 1.0f;
+    if (_beatMissCount >= 1.0f) {
         _beatMissShifted = true;
-        range = {
-            range.from,
-            range.to - 1
-        };
-    } else if (_beatMissCount >= 1.0f) {
         _beatMissCount -= 1.0f;
-        _beatMissShifted = true;
         range = {
             range.from,
             range.to + 1
         };
-    } else {
-        _beatMissShifted = false;
+        std::cout << "CROP BEAT MISS " << range << std::endl;
     }
 }
+
 void AScheduler::processLooping(void) noexcept
 {
     auto &range = currentBeatRange();
@@ -86,7 +80,7 @@ void AScheduler::processLooping(void) noexcept
             _loopBeatRange.from,
             _loopBeatRange.from + _processBeatSize
         };
-        _beatMissCount = _beatMissOffset;
+        _beatMissCount = 0.0f;
     }
 }
 
@@ -121,7 +115,7 @@ void AScheduler::setProcessParams(const BlockSize processBlockSize, const Sample
     _cachedAudioFrames = cachedAudioFrames;
     _processBeatSize = ComputeBeatSize(processBlockSize, newTempo, _sampleRate, _beatMissOffset);
     _audioBlockBeatSize = _processBeatSize;
-    _audioBlockBeatMissOffset = _beatMissOffset;
+    _audioBlockBeatMissOffset = 0.0f;
     _AudioQueue.resize(_cachedAudioFrames * _audioBlockSize * sizeof(float));
     currentBeatRange().to = currentBeatRange().from + _processBeatSize;
 }

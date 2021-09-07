@@ -223,16 +223,9 @@ inline Audio::Beat Audio::AScheduler::ComputeBeatSize(const std::uint32_t sample
 {
     const float beats = (static_cast<float>(sampleSize) / sampleRate) * tempo * Audio::BeatPrecision;
     const float beatsFloor = std::floor(beats);
-    const float beatsCeil = std::ceil(beats);
 
-    // if (auto ceilDt = beatsCeil - beats, floorDt = beats - beatsFloor; ceilDt < floorDt) {
-    if (auto ceilDt = beatsCeil - beats, floorDt = beats - beatsFloor; true) {
-        beatMissOffset = -ceilDt;
-        return static_cast<Beat>(beatsCeil);
-    } else {
-        beatMissOffset = floorDt;
-        return static_cast<Beat>(beatsFloor);
-    }
+    beatMissOffset = beats - beatsFloor;
+    return static_cast<Beat>(beatsFloor);
 }
 
 inline std::uint32_t Audio::AScheduler::ComputeSampleSize(const Beat beatSize, const Tempo tempo, const SampleRate sampleRate, const float beatMissOffset, const float beatMissCount) noexcept
