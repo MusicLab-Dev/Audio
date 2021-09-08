@@ -200,30 +200,39 @@ inline bool Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, P
 
 template<Audio::IPlugin::Flags Flags, bool ProcessNotesAndControls, bool ProcessAudio, Audio::PlaybackMode Playback>
 inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, Playback>::collectPartition(
-        const Partition &partition, const BeatRange &beatRange, const double beatToSampleRatio, const double beatMissCount, const double beatMissOffset, const bool rangeShifted, const PartitionInstance &instance) noexcept
+        const Partition &partition, const BeatRange &beatRange, const double beatToSampleRatio, const double beatMissCount, const double beatMissOffset, const bool beatMissShifted, const PartitionInstance &instance) noexcept
 {
-    const float shiftedDt = (rangeShifted ? (beatMissOffset < 0.0 ? -1.0f : 1.0f) : 0.0f);
+    const float shiftedDt = (beatMissShifted ? -1.0f : 0.0f);
+
     UNUSED(beatToSampleRatio);
     for (const auto &note : partition) {
         const auto noteFrom = (note.range.from + instance.range.from) - instance.offset; // Can overflow !
         const auto noteTo = (note.range.to + instance.range.from) - instance.offset; // Can overflow !
         // 'note.range.from < instance.offset' detects an overflow
-        if (note.range.from < instance.offset || noteTo <= beatRange.from || noteFrom >= beatRange.to || (noteFrom < beatRange.from && noteTo > beatRange.to))
+
+        //      012345678901234567890
+        //      |___||___||___||___||___|
+        // 2/4    oooooooo
+        // 4/6           xxxx   xxx
+        // 0/4  |___|
+        // 5/9       |___|
+
+
+        if (note.range.from < instance.offset || noteTo < beatRange.from || noteFrom > beatRange.to || (noteFrom < beatRange.from && noteTo > beatRange.to))
             continue;
         NoteEvent event;
         event.key = note.key;
         event.velocity = note.velocity;
         event.tuning = note.tuning;
-        const auto noteDt = (beatMissCount > 0.0f) ? beatRange.to - noteFrom : noteFrom - beatRange.from;
         if (noteFrom >= beatRange.from && noteTo <= beatRange.to) {
             event.type = NoteEvent::EventType::OnOff;
-            event.sampleOffset = static_cast<BlockSize>((static_cast<double>(noteDt) - (beatMissCount - beatMissOffset + shiftedDt)) * beatToSampleRatio);
+            event.sampleOffset = static_cast<BlockSize>((static_cast<double>(noteFrom - beatRange.from) - beatMissCount + shiftedDt) * beatToSampleRatio);
         } else if (noteFrom >= beatRange.from) {
             event.type = NoteEvent::EventType::On;
-            event.sampleOffset = static_cast<BlockSize>((static_cast<double>(noteDt) - (beatMissCount - beatMissOffset + shiftedDt)) * beatToSampleRatio);
+            event.sampleOffset = static_cast<BlockSize>((static_cast<double>(noteFrom - beatRange.from) - beatMissCount + shiftedDt) * beatToSampleRatio);
         } else { // if (noteTo <= beatRange.to) -> ensured by first check in loop
             event.type = NoteEvent::EventType::Off;
-            event.sampleOffset = static_cast<BlockSize>((static_cast<double>(noteTo - beatRange.from) - beatMissCount) * beatToSampleRatio);
+            event.sampleOffset = static_cast<BlockSize>((static_cast<double>(noteTo - beatRange.from) - beatMissCount + shiftedDt) * beatToSampleRatio);
         }
         _noteStack->push(event);
     }
