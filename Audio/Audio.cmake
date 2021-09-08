@@ -46,7 +46,7 @@ set(AudioPrecompiledHeaders
     ${AudioDir}/Project.hpp
     ${AudioDir}/UtilsMidi.hpp
     ${AudioDir}/Volume.hpp
-    )
+)
 
 set(AudioSources
     ${AudioPrecompiledHeaders}
