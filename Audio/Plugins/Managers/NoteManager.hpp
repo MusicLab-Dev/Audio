@@ -30,9 +30,9 @@ template<Audio::DSP::EnvelopeType EnvelopeType>
 class alignas_double_cacheline Audio::NoteManager
 {
 public:
-    using KeyList = Core::TinySmallVector<Key, Core::CacheLineQuarterSize>;
-    using IndexList = std::array<std::uint32_t, KeyCount>;
-    using TriggerList = std::array<bool, KeyCount>;
+    using IndexArray = std::array<std::uint32_t, KeyCount>;
+    using ActiveKeyList = Core::TinySmallVector<Key, Core::CacheLineQuarterSize>;
+    using KeyArray = Core::TinySmallVector<Key, Core::CacheLineQuarterSize>;
 
     using Envelope = DSP::EnvelopeClipExp<EnvelopeType, 1u>;
     using EnvelopeCache = Core::TinyVector<float>;
@@ -40,21 +40,22 @@ public:
     /** @brief Store the cache of a note */
     struct alignas_quarter_cacheline NoteCache
     {
+        NoteEvent::EventType type;
         NoteModifiers noteModifiers {};
-        NoteModifiers polyPressureModifiers {};
     };
 
-    static_assert_fit_quarter_cacheline(NoteCache);
+    // static_assert_fit_quarter_cacheline(NoteCache);
 
-    using ModifiersList = std::array<NoteCache, KeyCount>;
+    using NoteCacheList = Core::SmallVector<NoteCache, 2u, std::uint8_t>;
+    using NoteArray = std::array<NoteCacheList, KeyCount>;
 
     /** @brief Describe the internal cache */
     struct alignas_double_cacheline Cache
     {
-        KeyList actives {};
-        KeyList activesBlock {};
-        ModifiersList modifiers;
-        IndexList readIndexes;
+        ActiveKeyList actives {};
+        ActiveKeyList activesBlock {};
+        NoteArray modifiers;
+        IndexArray readIndexes;
     };
 
     static_assert_alignof_double_cacheline(Cache);
@@ -64,14 +65,19 @@ public:
     [[nodiscard]] std::uint32_t getActiveNoteSize(void) const noexcept { return _cache.actives.size(); }
     [[nodiscard]] std::uint32_t getActiveNoteBlockSize(void) const noexcept { return _cache.activesBlock.size(); }
 
-    [[nodiscard]] KeyList &getActiveNote(void) noexcept { return _cache.actives; }
-    [[nodiscard]] KeyList &getActiveNoteBlock(void) noexcept { return _cache.activesBlock; }
+    [[nodiscard]] ActiveKeyList &getActiveNote(void) noexcept { return _cache.actives; }
+    [[nodiscard]] ActiveKeyList &getActiveNoteBlock(void) noexcept { return _cache.activesBlock; }
 
-    [[nodiscard]] const KeyList &getActiveNote(void) const noexcept { return _cache.actives; }
-    [[nodiscard]] const KeyList &getActiveNoteBlock(void) const noexcept { return _cache.activesBlock; }
+    [[nodiscard]] const ActiveKeyList &getActiveNote(void) const noexcept { return _cache.actives; }
+    [[nodiscard]] const ActiveKeyList &getActiveNoteBlock(void) const noexcept { return _cache.activesBlock; }
 
-    template<typename Functor>
-    void processNotes(Functor &&functor) noexcept;
+    template<typename ProcessFunctor, typename ResetFunctor>
+    void processNotes(const std::uint32_t outSize, ProcessFunctor &&processFunctor, ResetFunctor &&resetFunctor) noexcept
+        { return processNotesImpl<ProcessFunctor, ResetFunctor, false>(outSize, std::move(processFunctor), std::move(resetFunctor)); }
+
+    template<typename ProcessFunctor, typename ResetFunctor>
+    void processNotesEnvelope(const std::uint32_t outSize, ProcessFunctor &&processFunctor, ResetFunctor &&resetFunctor) noexcept
+        { return processNotesImpl<ProcessFunctor, ResetFunctor, true>(outSize, std::move(processFunctor), std::move(resetFunctor)); }
 
 
     /** @brief Process a list of notes and update the internal cache */
@@ -120,14 +126,15 @@ public:
     void resetReadIndexes(void) noexcept;
 
     /** @brief Increment the read index of given key */
-    [[nodiscard]] bool incrementReadIndex(const Key key, const std::uint32_t maxIndex, std::uint32_t amount = 1u) noexcept;
+    template<typename ResetFunctor>
+    [[nodiscard]] bool incrementReadIndex(const Key key, const std::uint32_t maxIndex, std::uint32_t amount, ResetFunctor &&resetFunctor) noexcept;
 
 
     /** @brief Get the read index of given key */
     [[nodiscard]] std::uint32_t readIndex(const Key key) const noexcept { return _cache.readIndexes[key]; }
 
     /** @brief Set the read index of given key */
-    void setReadIndex(const Key key, const std::uint32_t index) noexcept { _cache.readIndexes[key] = key; }
+    void setReadIndex(const Key key, const std::uint32_t index) noexcept { _cache.readIndexes[key] = index; }
 
     /** @brief Reset the read index of given key */
     void resetReadIndex(const Key key) noexcept { _cache.readIndexes[key] = 0u; }
@@ -142,6 +149,8 @@ public:
     /** @brief Generate envelope gains in the internal cache */
     void generateEnvelopeGains(const Key key, const std::uint32_t index, const std::size_t outputSize) noexcept;
 
+    void setEnvelopeSpecs(const DSP::EnvelopeSpecs &specs) noexcept { _envelope.template setSpecs<0u>(specs); }
+
     [[nodiscard]] const Envelope &envelope(void) const noexcept { return _envelope; }
     [[nodiscard]] Envelope &envelope(void) noexcept { return _envelope; }
 
@@ -152,6 +161,12 @@ private:
     Cache _cache;
     Envelope _envelope;
     EnvelopeCache _envelopeGain;
+
+
+    template<typename ProcessFunctor, typename ResetFunctor, bool ProcessEnvelope>
+    void processNotesImpl(const std::uint32_t outSize, ProcessFunctor &&processFunctor, ResetFunctor &&resetFunctor) noexcept;
+
+
 };
 
 // static_assert_alignof_double_cacheline(Audio::NoteManager);

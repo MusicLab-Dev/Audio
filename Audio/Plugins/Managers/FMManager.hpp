@@ -28,7 +28,7 @@ class alignas_double_cacheline Audio::FMManager
 {
 public:
     using KeyList = Core::TinySmallVector<Key, Core::CacheLineQuarterSize>;
-    using IndexList = std::array<std::uint32_t, KeyCount>;
+    using IndexArray = std::array<std::uint32_t, KeyCount>;
     using TriggerList = std::array<bool, KeyCount>;
 
     using FMSchema = DSP::FM::Schema<OperatorCount, Algo, PitchEnv>;
@@ -43,15 +43,15 @@ public:
 
     static_assert_fit_quarter_cacheline(NoteCache);
 
-    using ModifiersList = std::array<NoteCache, KeyCount>;
+    using ModifiersArray = std::array<NoteCache, KeyCount>;
 
     /** @brief Describe the internal cache */
     struct alignas_double_cacheline Cache
     {
         KeyList actives {};
         KeyList activesBlock {};
-        ModifiersList modifiers;
-        IndexList readIndexes;
+        ModifiersArray modifiers;
+        IndexArray readIndexes;
         TriggerList triggers;
     };
 
@@ -146,16 +146,17 @@ public:
     [[nodiscard]] const FMSchema &schema(void) const noexcept { return _schema; }
     [[nodiscard]] FMSchema &schema(void) noexcept { return _schema; }
 
-    template<bool Accumulate, ChannelArrangement Channels = ChannelArrangement::Mono>
+    template<bool Accumulate>
     void processSchema(
             float *output, const std::uint32_t processSize, const float outGain,
             const std::uint32_t phaseIndex, const Key key, const float rootFrequency,
             const DSP::FM::Internal::OperatorArray<OperatorCount> &operators,
-            const DSP::FM::Internal::PitchOperator &pitchOperator = DSP::FM::Internal::PitchOperator()
+            const DSP::FM::Internal::PitchOperator &pitchOperator = DSP::FM::Internal::PitchOperator(),
+            const ChannelArrangement channels = ChannelArrangement::Mono
     ) noexcept
     {
         updateLongestEnvOperatorIndex(operators);
-        _schema.template process<Accumulate, Channels>(output, processSize, outGain, phaseIndex, key, rootFrequency, operators, pitchOperator);
+        _schema.template process<Accumulate>(output, processSize, outGain, phaseIndex, key, rootFrequency, operators, pitchOperator, channels);
     }
 
 private:

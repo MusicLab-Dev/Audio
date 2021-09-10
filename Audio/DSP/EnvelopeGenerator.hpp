@@ -70,12 +70,17 @@ public:
         std::uint32_t triggerIndex { 0u };
         float gain { 0.0f };
         float sustain { 0.0f };
+        float start { 0.0f };
     };
 
     using CacheList = std::array<std::array<KeyCache, Count>, KeyCount>;
     using EnvelopeSpecsCache = std::array<EnvelopeSpecs, Count>;
 
     EnvelopeBase(void) { resetKeys(); }
+
+    // REMOVE ME
+    template<unsigned Index = 0u>
+    KeyCache &keyCache(const Key key) noexcept { return _cache[key][Index]; }
 
     template<bool Accumulate, unsigned EnvelopeIndex = 0u>
     void generateGains(
@@ -198,21 +203,22 @@ private:
         return 1.0f;
     }
 
-    void processAttack(float &outGain, const std::uint32_t index, const std::uint32_t duration) noexcept
+    float processAttack(const std::uint32_t index, const std::uint32_t duration, const float start) noexcept
     {
-        outGain = static_cast<float>(index) / static_cast<float>(duration);
+        float outGain = static_cast<float>(index + 1u) / static_cast<float>(duration);
 
         if constexpr (AttackInterp == InterpolationType::Linear)
-            return;
+            return outGain;
         else if constexpr (AttackInterp == InterpolationType::Exp) {
             outGain = unrollExponential(outGain);
         } else if constexpr (AttackInterp == InterpolationType::ExpInverse) {
         }
+        return (1.0f - start) * outGain + start;
     }
 
-    void processDecay(float &outGain, const std::uint32_t index, const std::uint32_t duration, const float sustain) noexcept
+    float processDecay(const std::uint32_t index, const std::uint32_t duration, const float sustain) noexcept
     {
-        outGain = static_cast<float>(index) / static_cast<float>(duration);
+        float outGain = static_cast<float>(index) / static_cast<float>(duration);
 
         if constexpr (AttackInterp == InterpolationType::Linear)
             outGain = (1.0f - outGain) * (1.0f - sustain) + sustain;
@@ -223,11 +229,12 @@ private:
             outGain = unrollExponential(outGain);
             outGain = (1.0f - outGain) * (1.0f - sustain) + sustain;
         }
+        return outGain;
     }
 
-    void processRelease(float &outGain, const std::uint32_t index, const std::uint32_t duration, const float sustain) noexcept
+    float processRelease(const std::uint32_t index, const std::uint32_t duration, const float sustain) noexcept
     {
-        outGain = static_cast<float>(index) / static_cast<float>(duration);
+        float outGain = static_cast<float>(index) / static_cast<float>(duration);
 
         if constexpr (AttackInterp == InterpolationType::Linear)
             outGain = (1.0f - outGain) * sustain;
@@ -238,6 +245,7 @@ private:
             outGain = unrollExponential(outGain);
             outGain = (1.0f - outGain) * sustain;
         }
+        return outGain;
     }
 };
 

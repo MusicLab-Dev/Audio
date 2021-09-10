@@ -109,7 +109,7 @@ class Audio::Piano final : public Audio::IPlugin
             )
         ),
         REGISTER_CONTROL_FLOATING(
-            duration, 0.0, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
+            duration, 0.5, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
             TR_TABLE(
                 TR(English, "Duration"),
             ),
@@ -140,6 +140,21 @@ class Audio::Piano final : public Audio::IPlugin
                 TR(English, "Det")
             ),
             /* Control's unit */
+            TR_TABLE(
+                TR(English, "%")
+            )
+        ),
+        REGISTER_CONTROL_FLOATING(
+            impact, 0.5, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
+            TR_TABLE(
+                TR(English, "Impact"),
+            ),
+            TR_TABLE(
+                TR(English, "Impact"),
+            ),
+            TR_TABLE(
+                TR(English, "Impact")
+            ),
             TR_TABLE(
                 TR(English, "%")
             )

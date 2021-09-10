@@ -32,7 +32,8 @@ bool AScheduler::setState(const State state) noexcept
             if (expected == State::Play)
                 return false;
         }
-        _beatMissCount = 0.0f;
+        _beatMissCount = _beatMissOffset;
+        _beatMissCorrection = 0.0f;
         _beatMissShifted = false;
         _audioBlockBeatMissCount = 0.0f;
         _audioElapsedBeat = 0u;
@@ -53,8 +54,9 @@ void AScheduler::processBeatMiss(void) noexcept
 
     _beatMissShifted = false;
     _beatMissCount += _beatMissOffset;
+    _beatMissCorrection = _beatMissOffset - _beatMissCount;
     if (_beatMissCount >= 1.0f) {
-        _beatMissShifted = true;
+        // _beatMissCorrection -= 1.0f;
         _beatMissCount -= 1.0f;
         range = {
             range.from,
@@ -80,7 +82,8 @@ void AScheduler::processLooping(void) noexcept
             _loopBeatRange.from,
             _loopBeatRange.from + _processBeatSize
         };
-        _beatMissCount = 0.0f;
+        _beatMissCount = _beatMissOffset;
+        _beatMissCorrection = 0.0f;
         _beatMissShifted = false;
     }
 }

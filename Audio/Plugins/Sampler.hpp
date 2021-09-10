@@ -43,8 +43,8 @@ class Audio::Sampler final : public Audio::IPlugin
         ),
         /* Envelope controls (attack, release) */
         REGISTER_CONTROL_ENVELOPE_AR(
-            enveloppeAttack, 0.001, CONTROL_RANGE_STEP(0.0, 2.0, 0.001),
-            enveloppeRelease, 0.001, CONTROL_RANGE_STEP(0.0, 2.0, 0.001)
+            attack, 0.001, CONTROL_RANGE_STEP(0.0, 2.0, 0.001),
+            release, 0.001, CONTROL_RANGE_STEP(0.0, 2.0, 0.001)
         )
     )
 

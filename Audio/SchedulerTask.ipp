@@ -186,55 +186,56 @@ inline bool Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, P
             for (auto &instance : instances) {
                 if (instance.range.to <= beatRange.from)
                     continue;
-                else if (instance.range.from >= beatRange.to)
+                else if (instance.range.from > beatRange.to)
                     break;
-                collectPartition(partitions[instance.partitionIndex], beatRange, beatToSampleRatio, static_cast<double>(_scheduler->beatMissCount()), static_cast<float>(_scheduler->beatMissOffset()), _scheduler->beatMissShifted(), instance);
+                collectPartition(partitions[instance.partitionIndex], beatRange, beatToSampleRatio, instance);
             }
         }
     } else if constexpr (Playback == PlaybackMode::Partition) {
         if (&node() == _scheduler->partitionNode())
-            collectPartition(partitions[_scheduler->partitionIndex()], beatRange, beatToSampleRatio, static_cast<double>(_scheduler->beatMissCount()), static_cast<float>(_scheduler->beatMissOffset()), _scheduler->beatMissShifted());
+            collectPartition(partitions[_scheduler->partitionIndex()], beatRange, beatToSampleRatio);
     }
     return *_noteStack;
 }
 
 template<Audio::IPlugin::Flags Flags, bool ProcessNotesAndControls, bool ProcessAudio, Audio::PlaybackMode Playback>
 inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, Playback>::collectPartition(
-        const Partition &partition, const BeatRange &beatRange, const double beatToSampleRatio, const double beatMissCount, const double beatMissOffset, const bool beatMissShifted, const PartitionInstance &instance) noexcept
+        const Partition &partition, const BeatRange &beatRange, const double beatToSampleRatio, const PartitionInstance &instance) noexcept
 {
-    const float shiftedDt = (beatMissShifted ? -1.0f : 0.0f);
-
     UNUSED(beatToSampleRatio);
     for (const auto &note : partition) {
         const auto noteFrom = (note.range.from + instance.range.from) - instance.offset; // Can overflow !
         const auto noteTo = (note.range.to + instance.range.from) - instance.offset; // Can overflow !
         // 'note.range.from < instance.offset' detects an overflow
 
-        //      012345678901234567890
-        //      |___||___||___||___||___|
-        // 2/4    oooooooo
-        // 4/6           xxxx   xxx
-        // 0/4  |___|
-        // 5/9       |___|
-
-
         if (note.range.from < instance.offset || noteTo < beatRange.from || noteFrom > beatRange.to || (noteFrom < beatRange.from && noteTo > beatRange.to))
             continue;
+        const auto onDt = noteFrom - beatRange.from;
+        const auto offDt = noteTo - beatRange.from;
         NoteEvent event;
         event.key = note.key;
         event.velocity = note.velocity;
         event.tuning = note.tuning;
         if (noteFrom >= beatRange.from && noteTo <= beatRange.to) {
-            event.type = NoteEvent::EventType::OnOff;
-            event.sampleOffset = static_cast<BlockSize>((static_cast<double>(noteFrom - beatRange.from) - beatMissCount + shiftedDt) * beatToSampleRatio);
+            // On&Off in the same block -> generate two events
+            // On
+            event.type = NoteEvent::EventType::On;
+            event.sampleOffset = static_cast<BlockSize>((static_cast<double>(onDt) + _scheduler->beatMissCorrection()) * beatToSampleRatio);
+            if (event.sampleOffset < _scheduler->processBlockSize())
+                _noteStack->push(event);
+            // Off
+            event.type = NoteEvent::EventType::Off;
+            event.sampleOffset = static_cast<BlockSize>((static_cast<double>(offDt) + _scheduler->beatMissCorrection()) * beatToSampleRatio);
         } else if (noteFrom >= beatRange.from) {
             event.type = NoteEvent::EventType::On;
-            event.sampleOffset = static_cast<BlockSize>((static_cast<double>(noteFrom - beatRange.from) - beatMissCount + shiftedDt) * beatToSampleRatio);
+            event.sampleOffset = static_cast<BlockSize>((static_cast<double>(onDt) + _scheduler->beatMissCorrection()) * beatToSampleRatio);
         } else { // if (noteTo <= beatRange.to) -> ensured by first check in loop
             event.type = NoteEvent::EventType::Off;
-            event.sampleOffset = static_cast<BlockSize>((static_cast<double>(noteTo - beatRange.from) - beatMissCount + shiftedDt) * beatToSampleRatio);
+            event.sampleOffset = static_cast<BlockSize>((static_cast<double>(offDt) + _scheduler->beatMissCorrection()) * beatToSampleRatio);
         }
-        _noteStack->push(event);
+        if (event.sampleOffset < _scheduler->processBlockSize()) {
+            _noteStack->push(event);
+        }
     }
 }
 

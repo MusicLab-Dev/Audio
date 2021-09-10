@@ -265,45 +265,117 @@ namespace Audio::DSP::Generator
     }
 
     /** @brief Generate a waveform using runtime specialization */
-    template<bool Accumulate, ChannelArrangement Channels, typename Type>
-    inline float Generate(const Waveform waveform, Type *output, const std::size_t outputSize,
+    template<bool Accumulate, typename Type>
+    inline float Generate(const Waveform waveform, const ChannelArrangement channels, Type *output, const std::size_t outputSize,
             const float frequencyNorm, const float phaseOffset, const std::uint32_t indexOffset, const DB gain = 1.0f) noexcept
-        { return Internal::WaveformGenerateHelper<Accumulate, Channels>(waveform, output, outputSize, frequencyNorm, phaseOffset, indexOffset, gain); }
+    {
+        switch (channels) {
+        case ChannelArrangement::Mono:
+            return Internal::WaveformGenerateHelper<Accumulate, ChannelArrangement::Mono>(waveform, output, outputSize, frequencyNorm, phaseOffset, indexOffset, gain);
+        case ChannelArrangement::Stereo:
+            return Internal::WaveformGenerateHelper<Accumulate, ChannelArrangement::Stereo>(waveform, output, outputSize, frequencyNorm, phaseOffset, indexOffset, gain);
+        default:
+            return Internal::WaveformGenerateHelper<Accumulate, ChannelArrangement::Mono>(waveform, output, outputSize, frequencyNorm, phaseOffset, indexOffset, gain);
+        }
+    }
 
-    template<bool Accumulate, ChannelArrangement Channels, typename Type>
-    inline float Generate(const Waveform waveform, Type *output, const Type *input, const std::size_t outputSize,
+    template<bool Accumulate, typename Type>
+    inline float Generate(const Waveform waveform, const ChannelArrangement channels, Type *output, const Type *input, const std::size_t outputSize,
             const float frequencyNorm, const float phaseOffset, const std::uint32_t indexOffset, const DB gain = 1.0f) noexcept
-        { return Internal::WaveformGenerateHelper<Accumulate, Channels>(waveform, output, input, outputSize, frequencyNorm, phaseOffset, indexOffset, gain); }
-
-    /** @brief Modulate a waveform using runtime specialization */
-    template<bool Accumulate, ChannelArrangement Channels, typename Type>
-    inline float Modulate(const Waveform waveform, Type *output, const Type *modulation, const std::size_t outputSize,
-            const float frequencyNorm, const float phaseOffset, const std::uint32_t indexOffset, const DB gain = 1.0f) noexcept
-        { return Internal::WaveformModulateHelper<Accumulate, Channels>(waveform, output, modulation, outputSize, frequencyNorm, phaseOffset, indexOffset, gain); }
-    template<bool Accumulate, ChannelArrangement Channels, typename Type>
-    inline float Modulate(const Waveform waveform, Type *output, const Type *input, const Type *modulation, const std::size_t outputSize,
-            const float frequencyNorm, const float phaseOffset, const std::uint32_t indexOffset, const DB gain = 1.0f) noexcept
-        { return Internal::WaveformModulateHelper<Accumulate, Channels>(waveform, output, input, modulation, outputSize, frequencyNorm, phaseOffset, indexOffset, gain); }
-
-    /** @brief Modulate a waveform using runtime specialization */
-    template<bool Accumulate, ChannelArrangement Channels, typename Type>
-    inline float SemitoneShift(const Waveform waveform, Type *output, const Type *semitone, const std::size_t outputSize,
-            const float frequencyNorm, const float phaseOffset, const std::uint32_t indexOffset, const DB gain = 1.0f) noexcept
-        { return Internal::WaveformSemitoneShiftHelper<Accumulate, Channels>(waveform, output, semitone, outputSize, frequencyNorm, phaseOffset, indexOffset, gain); }
-    template<bool Accumulate, ChannelArrangement Channels, typename Type>
-    inline float SemitoneShift(const Waveform waveform, Type *output, const Type *input, const Type *semitone, const std::size_t outputSize,
-            const float frequencyNorm, const float phaseOffset, const std::uint32_t indexOffset, const DB gain = 1.0f) noexcept
-        { return Internal::WaveformSemitoneShiftHelper<Accumulate, Channels>(waveform, output, input, semitone, outputSize, frequencyNorm, phaseOffset, indexOffset, gain); }
+    {
+        switch (channels) {
+        case ChannelArrangement::Mono:
+            return Internal::WaveformGenerateHelper<Accumulate, ChannelArrangement::Mono>(waveform, output, input, outputSize, frequencyNorm, phaseOffset, indexOffset, gain);
+        case ChannelArrangement::Stereo:
+            return Internal::WaveformGenerateHelper<Accumulate, ChannelArrangement::Stereo>(waveform, output, input, outputSize, frequencyNorm, phaseOffset, indexOffset, gain);
+        default:
+            return Internal::WaveformGenerateHelper<Accumulate, ChannelArrangement::Mono>(waveform, output, input, outputSize, frequencyNorm, phaseOffset, indexOffset, gain);
+        }
+    }
 
     /** @brief Modulate a waveform using runtime specialization */
-    template<bool Accumulate, ChannelArrangement Channels, typename Type>
-    inline float ModulateSemitoneShift(const Waveform waveform, Type *output, const Type *modulation, const Type *semitone, const std::size_t outputSize,
+    template<bool Accumulate, typename Type>
+    inline float Modulate(const Waveform waveform, const ChannelArrangement channels, Type *output, const Type *modulation, const std::size_t outputSize,
             const float frequencyNorm, const float phaseOffset, const std::uint32_t indexOffset, const DB gain = 1.0f) noexcept
-        { return Internal::WaveformModulateSemitoneShiftHelper<Accumulate, Channels>(waveform, output, modulation, semitone, outputSize, frequencyNorm, phaseOffset, indexOffset, gain); }
-    template<bool Accumulate, ChannelArrangement Channels, typename Type>
-    inline float ModulateSemitoneShift(const Waveform waveform, Type *output, const Type *input, const Type *modulation, const Type *semitone, const std::size_t outputSize,
+    {
+        switch (channels) {
+        case ChannelArrangement::Mono:
+            return Internal::WaveformModulateHelper<Accumulate, ChannelArrangement::Mono>(waveform, output, modulation, outputSize, frequencyNorm, phaseOffset, indexOffset, gain);
+        case ChannelArrangement::Stereo:
+            return Internal::WaveformModulateHelper<Accumulate, ChannelArrangement::Stereo>(waveform, output, modulation, outputSize, frequencyNorm, phaseOffset, indexOffset, gain);
+        default:
+            return Internal::WaveformModulateHelper<Accumulate, ChannelArrangement::Mono>(waveform, output, modulation, outputSize, frequencyNorm, phaseOffset, indexOffset, gain);
+        }
+    }
+    template<bool Accumulate, typename Type>
+    inline float Modulate(const Waveform waveform, const ChannelArrangement channels, Type *output, const Type *input, const Type *modulation, const std::size_t outputSize,
             const float frequencyNorm, const float phaseOffset, const std::uint32_t indexOffset, const DB gain = 1.0f) noexcept
-        { return Internal::WaveformModulateSemitoneShiftHelper<Accumulate, Channels>(waveform, output, input, modulation, semitone, outputSize, frequencyNorm, phaseOffset, indexOffset, gain); }
+    {
+        switch (channels) {
+        case ChannelArrangement::Mono:
+            return Internal::WaveformModulateHelper<Accumulate, ChannelArrangement::Mono>(waveform, output, input, modulation, outputSize, frequencyNorm, phaseOffset, indexOffset, gain);
+        case ChannelArrangement::Stereo:
+            return Internal::WaveformModulateHelper<Accumulate, ChannelArrangement::Stereo>(waveform, output, input, modulation, outputSize, frequencyNorm, phaseOffset, indexOffset, gain);
+        default:
+            return Internal::WaveformModulateHelper<Accumulate, ChannelArrangement::Mono>(waveform, output, input, modulation, outputSize, frequencyNorm, phaseOffset, indexOffset, gain);
+        }
+    }
+
+    /** @brief Modulate a waveform using runtime specialization */
+    template<bool Accumulate, typename Type>
+    inline float SemitoneShift(const Waveform waveform, const ChannelArrangement channels, Type *output, const Type *semitone, const std::size_t outputSize,
+            const float frequencyNorm, const float phaseOffset, const std::uint32_t indexOffset, const DB gain = 1.0f) noexcept
+    {
+        switch (channels) {
+        case ChannelArrangement::Mono:
+            return Internal::WaveformSemitoneShiftHelper<Accumulate, ChannelArrangement::Mono>(waveform, output, semitone, outputSize, frequencyNorm, phaseOffset, indexOffset, gain);
+        case ChannelArrangement::Stereo:
+            return Internal::WaveformSemitoneShiftHelper<Accumulate, ChannelArrangement::Stereo>(waveform, output, semitone, outputSize, frequencyNorm, phaseOffset, indexOffset, gain);
+        default:
+            return Internal::WaveformSemitoneShiftHelper<Accumulate, ChannelArrangement::Mono>(waveform, output, semitone, outputSize, frequencyNorm, phaseOffset, indexOffset, gain);
+        }
+    }
+    template<bool Accumulate, typename Type>
+    inline float SemitoneShift(const Waveform waveform, const ChannelArrangement channels, Type *output, const Type *input, const Type *semitone, const std::size_t outputSize,
+            const float frequencyNorm, const float phaseOffset, const std::uint32_t indexOffset, const DB gain = 1.0f) noexcept
+    {
+        switch (channels) {
+        case ChannelArrangement::Mono:
+            return Internal::WaveformSemitoneShiftHelper<Accumulate, ChannelArrangement::Mono>(waveform, output, input, semitone, outputSize, frequencyNorm, phaseOffset, indexOffset, gain);
+        case ChannelArrangement::Stereo:
+            return Internal::WaveformSemitoneShiftHelper<Accumulate, ChannelArrangement::Stereo>(waveform, output, input, semitone, outputSize, frequencyNorm, phaseOffset, indexOffset, gain);
+        default:
+            return Internal::WaveformSemitoneShiftHelper<Accumulate, ChannelArrangement::Mono>(waveform, output, input, semitone, outputSize, frequencyNorm, phaseOffset, indexOffset, gain);
+        }
+    }
+
+    /** @brief Modulate a waveform using runtime specialization */
+    template<bool Accumulate, typename Type>
+    inline float ModulateSemitoneShift(const Waveform waveform, const ChannelArrangement channels, Type *output, const Type *modulation, const Type *semitone, const std::size_t outputSize,
+            const float frequencyNorm, const float phaseOffset, const std::uint32_t indexOffset, const DB gain = 1.0f) noexcept
+    {
+        switch (channels) {
+        case ChannelArrangement::Mono:
+            return Internal::WaveformModulateSemitoneShiftHelper<Accumulate, ChannelArrangement::Mono>(waveform, output, modulation, semitone, outputSize, frequencyNorm, phaseOffset, indexOffset, gain);
+        case ChannelArrangement::Stereo:
+            return Internal::WaveformModulateSemitoneShiftHelper<Accumulate, ChannelArrangement::Stereo>(waveform, output, modulation, semitone, outputSize, frequencyNorm, phaseOffset, indexOffset, gain);
+        default:
+            return Internal::WaveformModulateSemitoneShiftHelper<Accumulate, ChannelArrangement::Mono>(waveform, output, modulation, semitone, outputSize, frequencyNorm, phaseOffset, indexOffset, gain);
+        }
+    }
+    template<bool Accumulate, typename Type>
+    inline float ModulateSemitoneShift(const Waveform waveform, const ChannelArrangement channels, Type *output, const Type *input, const Type *modulation, const Type *semitone, const std::size_t outputSize,
+            const float frequencyNorm, const float phaseOffset, const std::uint32_t indexOffset, const DB gain = 1.0f) noexcept
+    {
+        switch (channels) {
+        case ChannelArrangement::Mono:
+            return Internal::WaveformModulateSemitoneShiftHelper<Accumulate, ChannelArrangement::Mono>(waveform, output, input, modulation, semitone, outputSize, frequencyNorm, phaseOffset, indexOffset, gain);
+        case ChannelArrangement::Stereo:
+            return Internal::WaveformModulateSemitoneShiftHelper<Accumulate, ChannelArrangement::Stereo>(waveform, output, input, modulation, semitone, outputSize, frequencyNorm, phaseOffset, indexOffset, gain);
+        default:
+            return Internal::WaveformModulateSemitoneShiftHelper<Accumulate, ChannelArrangement::Mono>(waveform, output, input, modulation, semitone, outputSize, frequencyNorm, phaseOffset, indexOffset, gain);
+        }
+    }
 
 
     /** @brief Generate the following functions for each waveform type (ex: Sine)

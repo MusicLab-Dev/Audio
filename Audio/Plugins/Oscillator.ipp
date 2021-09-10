@@ -3,8 +3,11 @@
  * @ Description: Oscillator implementation
  */
 
+static auto Frames = 1u;
+
 inline void Audio::Oscillator::onAudioGenerationStarted(const BeatRange &range)
 {
+    Frames = 1u;
     UNUSED(range);
     _noteManager.reset();
     _oscillator.reset();
@@ -24,24 +27,23 @@ inline void Audio::Oscillator::setExternalPaths(const ExternalPaths &paths)
 inline void Audio::Oscillator::sendNotes(const NoteEvents &notes, const BeatRange &range)
 {
     UNUSED(range);
-    // std::cout << "RANGE: " << range << " == " << range.to - range.from << std::endl;
     if (notes.size()) {
+        // std::cout << "RANGE: " << range << std::endl;
+        // std::cout << " ::" << Frames << " - " << (Frames - 1u) * audioSpecs().processBlockSize << std::endl;
         _noteManager.feedNotes(notes);
     }
 }
 
 inline void Audio::Oscillator::receiveAudio(BufferView output)
 {
-    // static auto Cpt = 1u;
-    // std::cout << " ::" << Cpt << " - " << (Cpt - 1u) * audioSpecs().processBlockSize << std::endl;
-    // ++Cpt;
+    ++Frames;
 
     const DB outGain = ConvertDecibelToRatio(static_cast<float>(outputVolume()) + DefaultVoiceGain);
     const auto outSize = static_cast<std::uint32_t>(output.channelSampleCount());
     float *out = reinterpret_cast<float *>(output.byteData());
-    const auto channels = static_cast<std::size_t>(output.channelArrangement());
+    const auto channels = output.channelArrangement();
 
-    _noteManager.envelope().setSpecs<0u>(DSP::EnvelopeSpecs {
+    _noteManager.setEnvelopeSpecs(DSP::EnvelopeSpecs {
         0.0f,
         static_cast<float>(envelopeAttack()),
         1.0f,
@@ -51,20 +53,20 @@ inline void Audio::Oscillator::receiveAudio(BufferView output)
         static_cast<float>(envelopeRelease()),
     });
     _noteManager.envelopeGain().resize(outSize);
-    _noteManager.processNotes(
-        [this, outGain, outSize, out, channels](const Key key, const std::uint32_t readIndex, const NoteModifiers &modifiers) -> std::pair<std::uint32_t, std::uint32_t>
+    _noteManager.processNotesEnvelope(
+        outSize,
+        [this, outGain, outSize, out, channels](const Key key, const std::uint32_t readIndex, const NoteModifiers &modifiers, const std::uint32_t realOutSize) -> std::pair<std::uint32_t, std::uint32_t>
         {
-            const auto channelsMinusOne = channels - 1u;
+            const auto channelCount = static_cast<std::size_t>(channels);
+            const auto channelsMinusOne = channelCount - 1u;
             const auto outGainNorm = channelsMinusOne ? outGain / 2.0f : outGain / 4.0f;
 
             auto realOutLeft = out;
             auto realOutRight = out + channelsMinusOne;
-            auto realOutSize = outSize;
             if (modifiers.sampleOffset && !readIndex) {
-                const auto dt = modifiers.sampleOffset * channels;
+                const auto dt = modifiers.sampleOffset * channelCount;
                 realOutLeft += dt;
                 realOutRight += dt;
-                realOutSize -= modifiers.sampleOffset;
             }
             const auto freq = GetNoteFrequency(key);
             const auto freqNorm = GetFrequencyNorm(freq, audioSpecs().sampleRate);
@@ -76,17 +78,17 @@ inline void Audio::Oscillator::receiveAudio(BufferView output)
             const DB gainR = pan >= 0.0f ? outGainNorm : (1.0f + pan) * outGainNorm;
 
             // Reset phase index -> move this shit
-            if (!readIndex)
-                _oscillator.resetKey<0u>(key);
+            // if (!readIndex)
+            //     _oscillator.resetKey<0u>(key);
             // Sync voices when no detune (unison)
             if (det == 0.0f) {
                 const auto rootPhase = _oscillator.phase<0u>(key);
                 _oscillator.setPhase<1u>(key, rootPhase);
                 _oscillator.setPhase<2u>(key, rootPhase);
             }
-            _noteManager.generateEnvelopeGains(key, readIndex, realOutSize);
-            _oscillator.generate<true, 0u, ChannelArrangement::Mono, false>(
+            _oscillator.generate<true, 0u, false>(
                 static_cast<DSP::Generator::Waveform>(waveform()),
+                channels,
                 realOutLeft,
                 _noteManager.envelopeGain().data(),
                 realOutSize,
@@ -95,8 +97,9 @@ inline void Audio::Oscillator::receiveAudio(BufferView output)
                 readIndex,
                 gainL
             );
-            _oscillator.generate<true, 0u, ChannelArrangement::Mono>(
+            _oscillator.generate<true, 0u>(
                 static_cast<DSP::Generator::Waveform>(waveform()),
+                channels,
                 realOutRight,
                 _noteManager.envelopeGain().data(),
                 realOutSize,
@@ -105,8 +108,9 @@ inline void Audio::Oscillator::receiveAudio(BufferView output)
                 readIndex,
                 gainR
             );
-            _oscillator.generate<true, 1u, ChannelArrangement::Mono>(
+            _oscillator.generate<true, 1u>(
                 static_cast<DSP::Generator::Waveform>(waveform()),
+                channels,
                 realOutLeft,
                 _noteManager.envelopeGain().data(),
                 realOutSize,
@@ -115,8 +119,9 @@ inline void Audio::Oscillator::receiveAudio(BufferView output)
                 readIndex,
                 gainL
             );
-            _oscillator.generate<true, 2u, ChannelArrangement::Mono>(
+            _oscillator.generate<true, 2u>(
                 static_cast<DSP::Generator::Waveform>(waveform()),
+                channels,
                 realOutRight,
                 _noteManager.envelopeGain().data(),
                 realOutSize,
@@ -127,20 +132,24 @@ inline void Audio::Oscillator::receiveAudio(BufferView output)
             );
 
             return std::make_pair(realOutSize, 0u);
+        },
+        [this] (const Key key)
+        {
+            _oscillator.resetKey(key);
         }
     );
 
-    // const auto channelsMinusOne = channels - 1u;
+    // const auto channelsMinusOne = channelCount - 1u;
     // if (channelsMinusOne) {
 
     //     // ABCD___ -> ABCDABCD
-    //     for (auto ch = 1u; ch < channels; ++ch)
+    //     for (auto ch = 1u; ch < channelCount; ++ch)
     //         std::memcpy(out + (ch * outSize), out, outSize * sizeof(float));
 
     //     // ABCDABCD -> AABBCCDD
     //     for (auto i = 0u; i < outSize; ++i) {
-    //         for (auto ch = 0u; ch < channels; ++ch) {
-    //             out[i * channels + ch] = out[i + channelsMinusOne * outSize];
+    //         for (auto ch = 0u; ch < channelCount; ++ch) {
+    //             out[i * channelCount + ch] = out[i + channelsMinusOne * outSize];
     //         }
     //     }
     // }

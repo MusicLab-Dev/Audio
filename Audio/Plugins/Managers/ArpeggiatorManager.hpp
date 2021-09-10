@@ -26,7 +26,7 @@ public:
     using KeyListActives = Core::SortedSmallVector<Key, 14u, NoteIndex>;
     using KeyListPending = Core::SortedSmallVector<Key, 30u, NoteIndex>;
     using KeyListOffs = Core::SortedSmallVector<Key, 30u, NoteIndex>;
-    using NoteModifiersList = std::array<NoteModifiers, KeyCount>;
+    using NoteModifiersArray = std::array<NoteModifiers, KeyCount>;
     using NoteTriggerList = std::array<bool, KeyCount>;
 
     enum class ArpMode : std::uint8_t

@@ -182,6 +182,7 @@ public:
     [[nodiscard]] float beatMissOffset(void) const noexcept { return _beatMissOffset; }
     [[nodiscard]] float beatMissCount(void) const noexcept { return _beatMissCount; }
     [[nodiscard]] bool beatMissShifted(void) const noexcept { return _beatMissShifted; }
+    [[nodiscard]] float beatMissCorrection(void) const noexcept { return _beatMissCorrection; }
 
 
     /** @brief Start the exportation of the project */
@@ -229,6 +230,7 @@ private:
     float _beatMissCount { 0.0f };
     float _beatMissOffset { 0.0f };
     bool _beatMissShifted { false };
+    float _beatMissCorrection { 0.0f };
     std::uint32_t _processLoopCrop { 0u };
     BPM _bpm { 120.0f };
     PlaybackGraph _graphCache {};

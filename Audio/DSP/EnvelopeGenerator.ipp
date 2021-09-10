@@ -82,15 +82,24 @@ inline void Audio::DSP::EnvelopeBase<Envelope, AttackInterp, DecayInterp, Releas
     static_assert(Index < Count,
         "Audio::DSP::EnvelopeBase::setTriggerIndex: Index must be less than Instance Count");
 
-    _cache[key][Index].triggerIndex = triggerIndex ? triggerIndex : 1u;
-    // _cache[key][Index].triggerIndex = triggerIndex;
+    // _cache[key][Index].triggerIndex = triggerIndex ? triggerIndex : 1u;
+    _cache[key][Index].triggerIndex = triggerIndex;
+    if (!triggerIndex) {
+        _cache[key][Index].start = _cache[key][Index].gain;
+        _cache[key][Index].sustain = 0.0f;
+    }
 }
 
 template<Audio::DSP::EnvelopeType Envelope, Audio::DSP::InterpolationType AttackInterp, Audio::DSP::InterpolationType DecayInterp, Audio::DSP::InterpolationType ReleaseInterp, bool Smooth, bool Clip, unsigned Count>
 inline void Audio::DSP::EnvelopeBase<Envelope, AttackInterp, DecayInterp, ReleaseInterp, Smooth, Clip, Count>::setTriggerIndex(const Key key, const std::uint32_t triggerIndex) noexcept
 {
-    for (auto &instance : _cache[key])
-        instance.triggerIndex = triggerIndex;
+    for (auto i = 0u; i < Count; ++i)  {
+        _cache[key][i].triggerIndex = triggerIndex;
+        if (!triggerIndex) {
+            _cache[key][i].start = _cache[key][i].gain;
+            _cache[key][i].sustain = 0.0f;
+        }
+    }
 }
 
 template<Audio::DSP::EnvelopeType Envelope, Audio::DSP::InterpolationType AttackInterp, Audio::DSP::InterpolationType DecayInterp, Audio::DSP::InterpolationType ReleaseInterp, bool Smooth, bool Clip, unsigned Count>
@@ -145,7 +154,29 @@ template<Audio::DSP::EnvelopeType Envelope, Audio::DSP::InterpolationType Attack
 template<unsigned Index>
 inline void Audio::DSP::EnvelopeBase<Envelope, AttackInterp, DecayInterp, ReleaseInterp, Smooth, Clip, Count>::setSpecs(const EnvelopeSpecs &specs) noexcept
 {
-    _specs[Index] = specs;
+    static constexpr auto GetClippedValue = [](const float value) -> float
+    {
+        if constexpr (Clip) {
+            if (value <= 0.0002f)
+                return 0.0002f;
+        }
+        return value;
+    };
+
+    static constexpr auto ConvertSpecs = [](const EnvelopeSpecs &specs) -> EnvelopeSpecs
+    {
+        return EnvelopeSpecs {
+            GetClippedValue(specs.delay),
+            GetClippedValue(specs.attack),
+            specs.peak,
+            GetClippedValue(specs.hold),
+            GetClippedValue(specs.decay),
+            specs.sustain,
+            GetClippedValue(specs.release)
+        };
+    };
+
+    _specs[Index] = ConvertSpecs(specs);
 }
 
 template<Audio::DSP::EnvelopeType Envelope, Audio::DSP::InterpolationType AttackInterp, Audio::DSP::InterpolationType DecayInterp, Audio::DSP::InterpolationType ReleaseInterp, bool Smooth, bool Clip, unsigned Count>
@@ -194,26 +225,34 @@ inline float Audio::DSP::EnvelopeBase<Envelope, AttackInterp, DecayInterp, Relea
     static_assert(Index < Count,
         "Audio::DSP::EnvelopeBase::attackRelease: Index must be less than Instance Count");
 
-    const std::uint32_t attackIdx = static_cast<std::uint32_t>(_specs[Index].attack * static_cast<float>(_sampleRate));
-    const std::uint32_t releaseIdx = static_cast<std::uint32_t>(_specs[Index].release * static_cast<float>(_sampleRate));
     float outGain { 1.0f };
     auto &keyCache = _cache[key][Index];
 
     if (!keyCache.triggerIndex || (index < keyCache.triggerIndex)) {
+        const std::uint32_t attackIdx = static_cast<std::uint32_t>(_specs[Index].attack * static_cast<float>(_sampleRate));
         if (index < attackIdx) {
-            outGain = static_cast<float>(index) / static_cast<float>(attackIdx);
+            // Attack
+            outGain = processAttack(index, attackIdx, keyCache.start);
         } else {
+            // Decay / Sustain
             outGain = 1.0f;
         }
     } else {
-        if (const auto releaseIndex = index - keyCache.triggerIndex; releaseIndex < releaseIdx) {
-            outGain = 1.0f - static_cast<float>(releaseIndex) / static_cast<float>(releaseIdx);
-        } else {
-            outGain = 0.f;
+        const std::uint32_t releaseIdx = static_cast<std::uint32_t>(_specs[Index].release * static_cast<float>(_sampleRate));
+        if (const std::uint32_t realIndex = index - keyCache.triggerIndex; realIndex < releaseIdx) {
+            // Release
+            if (!keyCache.sustain) {
+                keyCache.sustain = keyCache.gain;
+            }
+            outGain = processRelease(realIndex, releaseIdx, keyCache.sustain);
+        }
+        else {
+            // End of the enveloppe
+            keyCache.sustain = 0.0f;
+            outGain = 0.0f;
         }
     }
-    keyCache.gain = outGain;
-    return outGain;
+    return smoothGain(keyCache, outGain);
 }
 
 template<Audio::DSP::EnvelopeType Envelope, Audio::DSP::InterpolationType AttackInterp, Audio::DSP::InterpolationType DecayInterp, Audio::DSP::InterpolationType ReleaseInterp, bool Smooth, bool Clip, unsigned Count>
@@ -241,6 +280,7 @@ inline float Audio::DSP::EnvelopeBase<Envelope, AttackInterp, DecayInterp, Relea
     return outGain;
 }
 
+
 template<Audio::DSP::EnvelopeType Envelope, Audio::DSP::InterpolationType AttackInterp, Audio::DSP::InterpolationType DecayInterp, Audio::DSP::InterpolationType ReleaseInterp, bool Smooth, bool Clip, unsigned Count>
 template<unsigned Index>
 inline float Audio::DSP::EnvelopeBase<Envelope, AttackInterp, DecayInterp, ReleaseInterp, Smooth, Clip, Count>::adsr(
@@ -254,45 +294,38 @@ inline float Audio::DSP::EnvelopeBase<Envelope, AttackInterp, DecayInterp, Relea
 
     if (!keyCache.triggerIndex || (index < keyCache.triggerIndex)) {
         const std::uint32_t attackIdx = static_cast<std::uint32_t>(_specs[Index].attack * static_cast<float>(_sampleRate));
-        // Attack
         if (index < attackIdx) {
-
-            // outGain = keyCache.sustain + static_cast<float>(index) / static_cast<float>(attackIdx);
-            processAttack(outGain, index, attackIdx);
-        // Decay
+            // Attack
+            outGain = processAttack(index, attackIdx, keyCache.start);
         } else if (const std::uint32_t decayIdx = static_cast<std::uint32_t>(_specs[Index].decay * static_cast<float>(_sampleRate)); index < (decayIdx + attackIdx)) {
+            // Decay
             // Sustain max -> no decay
             if (_specs[Index].sustain == 1.0f)
                 outGain = 1.0f;
             else
-                // outGain = (1.0f - static_cast<float>(index - attackIdx) / static_cast<float>(decayIdx)) * OneMinusSustain + _specs[Index].sustain;
-                processDecay(outGain, index - attackIdx, decayIdx, _specs[Index].sustain);
+                outGain = processDecay(index - attackIdx, decayIdx, _specs[Index].sustain);
         } else {
-            // std::cout << keyCache.triggerIndex << std::endl;
             // Sustain
             keyCache.sustain = 0.0f;
             outGain = _specs[Index].sustain;
         }
     } else {
-        // std::cout << index << " - " << keyCache.triggerIndex << std::endl;
         // Release
-        // const std::uint32_t releaseIdx = ((keyCache.gain < sustain) ? keyCache.gain : release) * static_cast<float>(_sampleRate);
         const std::uint32_t releaseIdx = static_cast<std::uint32_t>(_specs[Index].release * static_cast<float>(_sampleRate));
         if (const std::uint32_t realIndex = index - keyCache.triggerIndex; realIndex < releaseIdx) {
+            // First time in release stage, save the starting point of the release ramp
             if (!keyCache.sustain) {
                 keyCache.sustain = keyCache.gain;
             }
-            // outGain = (1.0f - static_cast<float>(realIndex) / static_cast<float>(releaseIdx)) * keyCache.sustain;
-            processRelease(outGain, realIndex, releaseIdx, keyCache.sustain);
+            outGain = processRelease(realIndex, releaseIdx, keyCache.sustain);
         }
-        // End of the enveloppe
         else {
+            // End of the enveloppe
             keyCache.sustain = 0.0f;
             outGain = 0.0f;
         }
     }
-    // if (outGain && outGain != 1.0f)
-    //     std::cout << outGain << std::endl;
+
     return smoothGain(keyCache, outGain);
 }
 
@@ -304,57 +337,43 @@ inline float Audio::DSP::EnvelopeBase<Envelope, AttackInterp, DecayInterp, Relea
     static_assert(Index < Count,
         "Audio::DSP::EnvelopeBase::adsr: Index must be less than Instance Count");
 
-    const float OneMinusSustain = 1.0f - _specs[Index].sustain;
     float outGain { 1.0f };
     auto &keyCache = _cache[key][Index];
 
-    if (const std::uint32_t delayIdx = static_cast<std::uint32_t>(_specs[Index].delay * static_cast<float>(_sampleRate)); index < delayIdx) {
-        outGain = 0.0f;
-    }
-    else if (!keyCache.triggerIndex || (index < keyCache.triggerIndex)) {
+    if (!keyCache.triggerIndex || (index < keyCache.triggerIndex)) {
         const std::uint32_t attackIdx = static_cast<std::uint32_t>(_specs[Index].attack * static_cast<float>(_sampleRate));
-        // Attack
         if (index < attackIdx) {
-            // if (!keyCache.sustain && keyCache.gain) {
-            //     // std::cout << "sustain reset: " << (1.0f - keyCache.gain) / static_cast<float>(attackIdx) << std::en
-            //     keyCache.sustain = keyCache.gain;
-            // }
-            // outGain = keyCache.sustain + static_cast<float>(index) * (1.0f - keyCache.sustain) / static_cast<float>(attackIdx);
-
-            outGain = keyCache.sustain + static_cast<float>(index) / static_cast<float>(attackIdx);
-        }
-        // Decay
-        else if (const std::uint32_t decayIdx = static_cast<std::uint32_t>(_specs[Index].decay * static_cast<float>(_sampleRate)); index < (decayIdx + attackIdx)) {
+            // Attack
+            outGain = processAttack(index, attackIdx, keyCache.start);
+        } else if (const std::uint32_t decayIdx = static_cast<std::uint32_t>(_specs[Index].decay * static_cast<float>(_sampleRate)); index < (decayIdx + attackIdx)) {
+            // Decay
             // Sustain max -> no decay
             if (_specs[Index].sustain == 1.0f)
                 outGain = 1.0f;
             else
-                outGain = (1.0f - static_cast<float>(index - attackIdx) / static_cast<float>(decayIdx)) * OneMinusSustain + _specs[Index].sustain;
+                outGain = processDecay(index - attackIdx, decayIdx, _specs[Index].sustain);
         } else {
-            // std::cout << keyCache.triggerIndex << std::endl;
             // Sustain
             keyCache.sustain = 0.0f;
             outGain = _specs[Index].sustain;
         }
     } else {
-        // std::cout << index << " - " << keyCache.triggerIndex << std::endl;
         // Release
-        // const std::uint32_t releaseIdx = ((keyCache.gain < sustain) ? keyCache.gain : release) * static_cast<float>(_sampleRate);
         const std::uint32_t releaseIdx = static_cast<std::uint32_t>(_specs[Index].release * static_cast<float>(_sampleRate));
         if (const std::uint32_t realIndex = index - keyCache.triggerIndex; realIndex < releaseIdx) {
+            // First time in release stage, save the starting point of the release ramp
             if (!keyCache.sustain) {
                 keyCache.sustain = keyCache.gain;
             }
-            outGain = (1.0f - static_cast<float>(realIndex) / static_cast<float>(releaseIdx)) * keyCache.sustain;
+            outGain = processRelease(realIndex, releaseIdx, keyCache.sustain);
         }
-        // End of the enveloppe
         else {
+            // End of the enveloppe
             keyCache.sustain = 0.0f;
             outGain = 0.0f;
         }
     }
-    // if (outGain && outGain != 1.0f)
-    //     std::cout << outGain << std::endl;
+
     return smoothGain(keyCache, outGain);
 }
 
@@ -375,6 +394,12 @@ inline float Audio::DSP::EnvelopeBase<Envelope, AttackInterp, DecayInterp, Relea
     //     // Go up (0 -> 1)
     //     keyCache.gain = nextGain;
     // }
+
+    // Update starting point used if the key is retrigger
+    if (!nextGain) {
+        keyCache.start = 0.0f;
+    }
+
     keyCache.gain = nextGain;
     return keyCache.gain;
 }
