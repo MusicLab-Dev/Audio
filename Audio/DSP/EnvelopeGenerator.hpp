@@ -207,9 +207,8 @@ private:
     {
         float outGain = static_cast<float>(index + 1u) / static_cast<float>(duration);
 
-        if constexpr (AttackInterp == InterpolationType::Linear)
-            return outGain;
-        else if constexpr (AttackInterp == InterpolationType::Exp) {
+        if constexpr (AttackInterp == InterpolationType::Linear) {
+        } else if constexpr (AttackInterp == InterpolationType::Exp) {
             outGain = unrollExponential(outGain);
         } else if constexpr (AttackInterp == InterpolationType::ExpInverse) {
         }
@@ -220,9 +219,9 @@ private:
     {
         float outGain = static_cast<float>(index) / static_cast<float>(duration);
 
-        if constexpr (AttackInterp == InterpolationType::Linear)
+        if constexpr (AttackInterp == InterpolationType::Linear) {
             outGain = (1.0f - outGain) * (1.0f - sustain) + sustain;
-        else if constexpr (DecayInterp == InterpolationType::Exp) {
+        } else if constexpr (DecayInterp == InterpolationType::Exp) {
             outGain = unrollExponential(1.0f - outGain);
             outGain = outGain * (1.0f - sustain) + sustain;
         } else if constexpr (DecayInterp == InterpolationType::ExpInverse) {
