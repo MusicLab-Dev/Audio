@@ -20,63 +20,83 @@ TEST(EnvelopeGenerator, Simple_AttackDecayReleaseSustain)
     Key key { 69u };
     DSP::EnvelopeSpecs specs {
         0.0f, // delay
-        0.1f, // attack
+        0.5f, // attack     -> 5
         1.0f, // peak
         0.0f, // hold
-        0.1f, // decay
-        0.5f, // sustain
-        0.1f // release
+        0.2f, // decay      -> 1
+        0.0f, // sustain
+        0.2f // release     -> 1
     };
-    env.setSpecs<0u>(specs);
-    env.setSampleRate(100u);
 
-    auto i = 0u;
-    for (; i < 30u; ++i) {
-        auto gain = env.adsr(key, i);
-        UNUSED(gain);
-        // std::cout << "i: " << i << " -> " << gain << std::endl;
-    }
-    env.setTriggerIndex(key, i);
-    for (; i < 40u; ++i) {
-        auto gain = env.adsr(key, i);
-        // std::cout << "i: " << i << " -> " << gain << std::endl;
-        UNUSED(gain);
-    }
-    UNUSED(env);
-}
-
-
-TEST(EnvelopeGenerator, NoCliping)
-{
-    DSP::EnvelopeDefaultLinear<DSP::EnvelopeType::ADSR, 1u> env;
-
-    Key key { 69u };
-    const SampleRate sampleRate { 44100u };
-
-    DSP::EnvelopeSpecs specs {
-        0.0f, // delay
-        0.0f, // attack
-        1.0f, // peak
-        0.0f, // hold
-        1.0f, // decay
-        0.2f, // sustain
-        1.0f // release
+    static constexpr auto DebugEnv = [] (const float gain)
+    {
+        const auto CharCount = 10u;
+        const auto lim = static_cast<std::size_t>(gain * static_cast<float>(CharCount));
+        std::cout << "[";
+        auto i = 0u;
+        for (; i < lim; ++i)
+            std::cout << "#";
+        for (; i < CharCount; ++i)
+            std::cout << " ";
+        std::cout << "] " << gain << std::endl;;
     };
 
     env.setSpecs<0u>(specs);
-    env.setSampleRate(sampleRate);
+    env.setSampleRate(10u);
 
     auto i = 0u;
-    for (; i < 30u; ++i) {
-        auto gain = env.getGain(key, i);
-        UNUSED(gain);
-        // std::cout << "i: " << i << " -> " << gain << std::endl;
+    for (; i < 3u; ++i) {
+        auto gain = env.adsr(key, i);
+        std::cout << env.keyCache(key).start << "\t";
+        DebugEnv(gain);
     }
-    env.setTriggerIndex(key, i);
-    for (; i < 40u; ++i) {
-        auto gain = env.getGain(key, i);
-        UNUSED(gain);
-        // std::cout << "i: " << i << " -> " << gain << std::endl;
+
+    std::cout << "TRIGGER" << std::endl;
+    // Re On
+    i = 0u;
+    env.setTriggerIndex<0u>(key, i);
+
+    // Off
+    // env.setTriggerIndex(key, i + 1);
+    for (; i < 20u; ++i) {
+        auto gain = env.adsr(key, i);
+        std::cout << env.keyCache(key).start << "\t";
+        DebugEnv(gain);
     }
-    UNUSED(env);
 }
+
+
+// TEST(EnvelopeGenerator, NoCliping)
+// {
+//     DSP::EnvelopeDefaultLinear<DSP::EnvelopeType::ADSR, 1u> env;
+
+//     Key key { 69u };
+//     const SampleRate sampleRate { 44100u };
+
+//     DSP::EnvelopeSpecs specs {
+//         0.0f, // delay
+//         0.0f, // attack
+//         1.0f, // peak
+//         0.0f, // hold
+//         1.0f, // decay
+//         0.2f, // sustain
+//         1.0f // release
+//     };
+
+//     env.setSpecs<0u>(specs);
+//     env.setSampleRate(sampleRate);
+
+//     auto i = 0u;
+//     for (; i < 30u; ++i) {
+//         auto gain = env.getGain(key, i);
+//         UNUSED(gain);
+//         // std::cout << "i: " << i << " -> " << gain << std::endl;
+//     }
+//     env.setTriggerIndex(key, i);
+//     for (; i < 40u; ++i) {
+//         auto gain = env.getGain(key, i);
+//         UNUSED(gain);
+//         // std::cout << "i: " << i << " -> " << gain << std::endl;
+//     }
+//     UNUSED(env);
+// }
