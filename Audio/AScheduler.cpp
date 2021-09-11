@@ -34,7 +34,6 @@ bool AScheduler::setState(const State state) noexcept
         }
         _beatMissCount = _beatMissOffset;
         _beatMissCorrection = 0.0f;
-        _beatMissShifted = false;
         _audioBlockBeatMissCount = 0.0f;
         _audioElapsedBeat = 0u;
         if (!graph().running()) {
@@ -52,7 +51,6 @@ void AScheduler::processBeatMiss(void) noexcept
 {
     auto &range = currentBeatRange();
 
-    _beatMissShifted = false;
     _beatMissCount += _beatMissOffset;
     _beatMissCorrection = _beatMissOffset - _beatMissCount;
     if (_beatMissCount >= 1.0f) {
@@ -84,7 +82,6 @@ void AScheduler::processLooping(void) noexcept
         };
         _beatMissCount = _beatMissOffset;
         _beatMissCorrection = 0.0f;
-        _beatMissShifted = false;
     }
 }
 
