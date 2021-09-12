@@ -83,7 +83,7 @@ inline bool Audio::NoteManager<EnvelopeType>::incrementReadIndex(const Key key, 
     // std::cout << "increment: " << readIndex << " -> " << readIndex + amount << std::endl;
     readIndex += amount;
     if ((maxIndex && readIndex >= maxIndex) || testFunctor(key)) {
-        std::cout << "RESET KEY !!!" << std::endl;
+        // std::cout << "RESET KEY !!!" << std::endl;
         readIndex = 0u;
         envelope().resetKey(key);
         resetFunctor(key);
