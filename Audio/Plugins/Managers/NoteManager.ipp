@@ -20,46 +20,33 @@ inline void Audio::NoteManager<EnvelopeType>::feedNotes(const NoteEvents &notes)
                 note.sampleOffset
             }
         });
-        switch (note.type) {
-        case NoteEvent::EventType::On:
-        {
-            const auto it = _cache.actives.find(note.key);
-            if (it == _cache.actives.end())
+        if (note.type == NoteEvent::EventType::On) {
+            if (const auto it = _cache.actives.find(note.key); it == _cache.actives.end())
                 _cache.actives.push(note.key);
-            // _cache.readIndexes[note.key] = 0u;
-            // envelope().resetKey(note.key);
-            // target.noteModifiers.velocity = note.velocity;
-            // target.noteModifiers.tuning = note.tuning;
-            // target.noteModifiers.sampleOffset = note.sampleOffset;
-            break;
         }
-        case NoteEvent::EventType::Off:
-        {
-            // const auto it = _cache.actives.find(note.key);
-            // if (it != _cache.actives.end()) {
-            //     // Reset
-            //     envelope().setTriggerIndex(note.key, _cache.readIndexes[note.key] + note.sampleOffset);
-            //     // envelope().setTriggerIndex(note.key, _cache.readIndexes[note.key]);
-            //     // target.noteModifiers.sampleOffset = note.sampleOffset;
-            // }
-        } break;
-        case NoteEvent::EventType::OnOff:
-            // _cache.activesBlock.push(note.key);
-            // _cache.readIndexes[note.key] = 0u;
-            // envelope().resetTriggerIndex(note.key);
-            // envelope().resetInternalGain(note.key);
-            // // target.noteModifiers.velocity = note.velocity;
-            // // target.noteModifiers.tuning = note.tuning;
-            // // target.noteModifiers.sampleOffset = note.sampleOffset;
-            // break;
-        case NoteEvent::EventType::PolyPressure:
-            // target.polyPressureModifiers.velocity = note.velocity;
-            // target.polyPressureModifiers.tuning = note.tuning;
-            // target.noteModifiers.sampleOffset = note.sampleOffset;
-            break;
-        default:
-            break;
-        };
+    }
+}
+
+template<Audio::DSP::EnvelopeType EnvelopeType>
+template<typename ResetFunctor>
+inline void Audio::NoteManager<EnvelopeType>::feedNotesRetrigger(const NoteEvents &notes, ResetFunctor &&resetFunctor) noexcept
+{
+    // std::cout << "NOTES> SEND NOTES " << notes.size() << std::endl;
+    for (const auto &note : notes) {
+        auto &target = _cache.modifiers[note.key];
+        target.push(NoteCache {
+            note.type,
+            NoteModifiers {
+                note.velocity,
+                note.tuning,
+                note.sampleOffset
+            }
+        });
+        if (note.type == NoteEvent::EventType::On) {
+            if (const auto it = _cache.actives.find(note.key); it == _cache.actives.end())
+                _cache.actives.push(note.key);
+            resetFunctor(note.key);
+        }
     }
 }
 
@@ -88,15 +75,15 @@ inline void Audio::NoteManager<EnvelopeType>::resetAllModifiers(void) noexcept
 }
 
 template<Audio::DSP::EnvelopeType EnvelopeType>
-template<typename ResetFunctor>
-inline bool Audio::NoteManager<EnvelopeType>::incrementReadIndex(const Key key, const std::uint32_t maxIndex, std::uint32_t amount, ResetFunctor &&resetFunctor) noexcept
+template<typename TestFunctor, typename ResetFunctor>
+inline bool Audio::NoteManager<EnvelopeType>::incrementReadIndex(const Key key, const std::uint32_t maxIndex, std::uint32_t amount, TestFunctor &&testFunctor, ResetFunctor &&resetFunctor) noexcept
 {
     auto &readIndex = _cache.readIndexes[key];
 
     // std::cout << "increment: " << readIndex << " -> " << readIndex + amount << std::endl;
     readIndex += amount;
-    if ((maxIndex && readIndex >= maxIndex) || !envelope().lastGain(key)) {
-        // std::cout << "RESET KEY !!!" << std::endl;
+    if ((maxIndex && readIndex >= maxIndex) || testFunctor(key)) {
+        std::cout << "RESET KEY !!!" << std::endl;
         readIndex = 0u;
         envelope().resetKey(key);
         resetFunctor(key);
@@ -114,9 +101,9 @@ inline void Audio::NoteManager<EnvelopeType>::generateEnvelopeGains(const Key ke
 }
 
 template<Audio::DSP::EnvelopeType EnvelopeType>
-template<typename ProcessFunctor, typename ResetFunctor, bool ProcessEnvelope>
+template<typename ProcessFunctor, typename TestFunctor, typename ResetFunctor, bool ProcessEnvelope>
 bool Audio::NoteManager<EnvelopeType>::processOneNoteImpl(
-        ProcessFunctor &&processFunctor, ResetFunctor &&resetFunctor,
+        ProcessFunctor &&processFunctor, TestFunctor &&testFunctor, ResetFunctor &&resetFunctor,
         const Key key, const std::uint32_t readIndex, const NoteModifiers &modifiers,
         float *realOutput, const std::uint32_t realOutSize, const std::size_t channelCount
 ) noexcept
@@ -129,12 +116,12 @@ bool Audio::NoteManager<EnvelopeType>::processOneNoteImpl(
         realOutput += modifiers.sampleOffset * channelCount;
     }
     const auto pair = processFunctor(key, readIndex, modifiers, realOutput, realOutSize, channelCount);
-    return incrementReadIndex(key, pair.second, pair.first, resetFunctor);
+    return incrementReadIndex(key, pair.second, pair.first, testFunctor, resetFunctor);
 }
 
 template<Audio::DSP::EnvelopeType EnvelopeType>
-template<typename ProcessFunctor, typename ResetFunctor, bool ProcessEnvelope>
-void Audio::NoteManager<EnvelopeType>::processNotesImpl(BufferView outputFrame, ProcessFunctor &&processFunctor, ResetFunctor &&resetFunctor) noexcept
+template<typename ProcessFunctor, typename TestFunctor, typename ResetFunctor, bool ProcessEnvelope>
+void Audio::NoteManager<EnvelopeType>::processNotesImpl(BufferView outputFrame, ProcessFunctor &&processFunctor, TestFunctor &&testFunctor, ResetFunctor &&resetFunctor) noexcept
 {
     const auto outSize = static_cast<std::uint32_t>(outputFrame.size<float>());
     const auto channelCount = static_cast<std::size_t>(outputFrame.channelArrangement());
@@ -142,7 +129,7 @@ void Audio::NoteManager<EnvelopeType>::processNotesImpl(BufferView outputFrame, 
 
     // Process the active notes
     auto itActive = std::remove_if(_cache.actives.begin(), _cache.actives.end(),
-        [this, realOutput, outSize, channelCount, &processFunctor, &resetFunctor] (const auto key)
+        [this, realOutput, outSize, channelCount, &processFunctor, &testFunctor, &resetFunctor] (const auto key)
         {
             // std::cout << "EVENTS: " << static_cast<std::size_t>(_cache.modifiers[key].size()) << std::endl;
             const auto evtCount = _cache.modifiers[key].size();
@@ -152,7 +139,7 @@ void Audio::NoteManager<EnvelopeType>::processNotesImpl(BufferView outputFrame, 
                 // Process the active key (no event)
                 const auto idx = readIndex(key);
                 // std::cout << "___NoEvent Process: idx: " << idx << ", size: " << outSize << std::endl;
-                ended = processOneNoteImpl<ProcessFunctor, ResetFunctor, ProcessEnvelope>(std::move(processFunctor), std::move(resetFunctor), key, idx, NoteModifiers(), realOutput, outSize, channelCount);
+                ended = processOneNoteImpl<ProcessFunctor, TestFunctor, ResetFunctor, ProcessEnvelope>(std::move(processFunctor), std::move(testFunctor), std::move(resetFunctor), key, idx, NoteModifiers(), realOutput, outSize, channelCount);
                 // if constexpr (ProcessEnvelope) {
                 //     _envelopeGain.clear();
                 //     generateEnvelopeGains(key, idx, outSize);
@@ -175,7 +162,7 @@ void Audio::NoteManager<EnvelopeType>::processNotesImpl(BufferView outputFrame, 
                         if (process) {
                             realOutSize -= (outSize - evt.noteModifiers.sampleOffset);
                             // std::cout << "process(BEGIN): " << idx << ", offset: " << processModifiers.sampleOffset << ", size: " << realOutSize << std::endl;
-                            ended = processOneNoteImpl<ProcessFunctor, ResetFunctor, ProcessEnvelope>(std::move(processFunctor), std::move(resetFunctor), key, idx, processModifiers, realOutput, realOutSize, channelCount);
+                            ended = processOneNoteImpl<ProcessFunctor, TestFunctor, ResetFunctor, ProcessEnvelope>(std::move(processFunctor), std::move(testFunctor), std::move(resetFunctor), key, idx, processModifiers, realOutput, realOutSize, channelCount);
                             // if constexpr (ProcessEnvelope) {
                             //     _envelopeGain.clear();
                             //     generateEnvelopeGains(key, idx, realOutSize);
@@ -201,7 +188,7 @@ void Audio::NoteManager<EnvelopeType>::processNotesImpl(BufferView outputFrame, 
                 //
                 if (process) {
                     // std::cout << "process(END): " << idx << ", offset: " << processModifiers.sampleOffset << ", size: " << realOutSize << std::endl;
-                    ended = processOneNoteImpl<ProcessFunctor, ResetFunctor, ProcessEnvelope>(std::move(processFunctor), std::move(resetFunctor), key, idx, processModifiers, realOutput, realOutSize, channelCount);
+                    ended = processOneNoteImpl<ProcessFunctor, TestFunctor, ResetFunctor, ProcessEnvelope>(std::move(processFunctor), std::move(testFunctor), std::move(resetFunctor), key, idx, processModifiers, realOutput, realOutSize, channelCount);
                     // if constexpr (ProcessEnvelope) {
                     //     _envelopeGain.clear();
                     //     generateEnvelopeGains(key, idx, realOutSize);

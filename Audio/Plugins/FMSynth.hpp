@@ -11,7 +11,7 @@
 // #include <Audio/Volume.hpp>
 // #include <Audio/Modifier.hpp>
 
-#include "Managers/FMManager.hpp"
+#include "Managers/NoteManager.hpp"
 
 namespace Audio
 {

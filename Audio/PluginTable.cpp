@@ -56,20 +56,22 @@ void Audio::PluginTable::decrementRefCount(IPlugin *plugin) noexcept_ndebug
 #include <Audio/Plugins/SimpleReverb.hpp>
 #include <Audio/Plugins/Arpeggiator.hpp>
 #include <Audio/Plugins/Chords.hpp>
-#include <Audio/Plugins/FMSynth.hpp>
+// #include <Audio/Plugins/FMSynth.hpp>
 #include <Audio/Plugins/Piano.hpp>
-#include <Audio/Plugins/Drums.hpp>
+// #include <Audio/Plugins/Drums.hpp>
 #include <Audio/Plugins/Kick.hpp>
+// #include <Audio/Plugins/Snare.hpp>
 
 Audio::PluginTable::PluginTable(void)
 {
     registerFactory<Audio::Mixer>();
-    registerFactory<Audio::FMX>();
+    // registerFactory<Audio::FMX>();
     registerFactory<Audio::Piano>();
-    registerFactory<Audio::Drums>();
+    // registerFactory<Audio::Drums>();
     registerFactory<Audio::Arpeggiator>();
 //    registerFactory<Audio::Chords>();
     registerFactory<Audio::Kick>();
+    // registerFactory<Audio::Snare>();
     registerFactory<Audio::Sampler>();
     registerFactory<Audio::Oscillator>();
     registerFactory<Audio::BandFilter>();

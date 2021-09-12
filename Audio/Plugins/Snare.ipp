@@ -1,77 +1,64 @@
 /**
  * @ Author: Pierre Veysseyre
- * @ Description: Kick implementation
+ * @ Description: Snare implementation
  */
 
 #include <iomanip>
 
-inline void Audio::Kick::onAudioGenerationStarted(const BeatRange &range)
+inline void Audio::Snare::onAudioGenerationStarted(const BeatRange &range)
 {
     UNUSED(range);
-    _noteManager.reset();
-    _fm.reset();
+    _fmManager.reset();
 }
 
-inline void Audio::Kick::onAudioParametersChanged(void)
+inline void Audio::Snare::onAudioParametersChanged(void)
 {
-    _noteManager.reset();
-    _noteManager.envelope().setSampleRate(audioSpecs().sampleRate);
-    _fm.reset();
-    _fm.setSampleRate(audioSpecs().sampleRate);
+    _fmManager.reset();
+    _fmManager.schema().setSampleRate(audioSpecs().sampleRate);
 }
 
-inline void Audio::Kick::setExternalPaths(const ExternalPaths &paths)
+inline void Audio::Snare::setExternalPaths(const ExternalPaths &paths)
 {
     UNUSED(paths);
 }
 
-inline void Audio::Kick::sendNotes(const NoteEvents &notes, const BeatRange &range)
+inline void Audio::Snare::sendNotes(const NoteEvents &notes, const BeatRange &range)
 {
     UNUSED(range);
     if (notes.size()) {
         // std::cout << range << std::endl;
-        _noteManager.feedNotesRetrigger(notes,
-            [this] (const Key key) -> void
-            {
-                _fm.resetKey(key);
-            }
-        );
+        _fmManager.feedNotes(notes);
     }
 }
 
-inline void Audio::Kick::receiveAudio(BufferView output)
+inline void Audio::Snare::receiveAudio(BufferView output)
 {
     const DB outGain = ConvertDecibelToRatio(static_cast<float>(outputVolume()) + DefaultVoiceGain);
     const auto outSize = static_cast<std::uint32_t>(output.channelSampleCount());
     const auto channels = static_cast<std::size_t>(output.channelArrangement());
     float *out = reinterpret_cast<float *>(output.byteData());
 
-    _noteManager.envelopeGain().resize(outSize);
-    _noteManager.setEnvelopeSpecs(DSP::EnvelopeSpecs {
-        0.0f,
-        0.0f, // A
-        1.0f,
-        0.0f,
-        0.0f,// D
-        1.0f,// S
-        1.5f,// R
-    });
-
-
-    _noteManager.processNotes(
-        output,
-        [this, outGain, channels](const Key key, const std::uint32_t readIndex, const NoteModifiers &modifiers, float *realOutput, const std::uint32_t realOutSize, const std::size_t channelCount) -> std::pair<std::uint32_t, std::uint32_t>
+    _fmManager.processNotes(
+        [this, outGain, outSize, out](const Key key, const std::uint32_t readIndex, const NoteModifiers &modifiers) -> std::pair<std::uint32_t, std::uint32_t>
         {
             const float rootFrequency = std::pow(2.f, static_cast<float>(static_cast<int>(key) - RootKey) / KeysPerOctave) * RootKeyFrequency;
+            auto realOut = out;
+            auto realOutSize = outSize;
+            if (modifiers.sampleOffset && !readIndex) {
+                realOut += modifiers.sampleOffset;
+                realOutSize -= modifiers.sampleOffset;
+            }
             UNUSED(readIndex);
             UNUSED(rootFrequency);
             UNUSED(modifiers);
 
-            _noteManager.generateEnvelopeGains(key, readIndex, realOutSize);
-            _fm.process<true>(realOutput, realOutSize, 1.0f, readIndex, key, rootFrequency, {
+            const auto pitchDecay = static_cast<float>(sweepDuration() * 0.1 + 0.01);
+            const auto pitchRelease = static_cast<float>(sweepImpact() * 0.9 + 0.1);
+
+            _fmManager.processSchema<true>(realOut, realOutSize, 1.0f, readIndex, key, rootFrequency, {
                DSP::FM::Internal::Operator {
-                    DSP::Generator::Waveform::Sine,
-                    0.5f,
+                    DSP::Generator::Waveform::Triangle,
+                    1.0f,
                     0.0f,
                     static_cast<float>(duration()),
                     0.0f,
@@ -85,7 +72,7 @@ inline void Audio::Kick::receiveAudio(BufferView output)
                },
                DSP::FM::Internal::Operator {
                     boost() ? DSP::Generator::Waveform::Triangle : DSP::Generator::Waveform::Sine,
-                    0.5f,
+                    1.0f,
                     0.0f,
                     static_cast<float>(duration()),
                     0.0f,
@@ -129,20 +116,12 @@ inline void Audio::Kick::receiveAudio(BufferView output)
             DSP::FM::Internal::PitchOperator {
                 0.0f, // Attack
                 1.0f, // peak
-                static_cast<float>(sweepDuration() * 0.1 + 0.01),
+                pitchDecay,
                 0.0f,
                 0.01f,
-                static_cast<float>(sweepImpact() * 0.9 + 0.1)
+                pitchRelease
             });
             return std::make_pair(realOutSize, 0u);
-        },
-        [this] (const Key key) -> bool
-        {
-            return _fm.isKeyEnded(key);
-        },
-        [this] (const Key key) -> void
-        {
-            _fm.resetKey(key);
         }
     );
 

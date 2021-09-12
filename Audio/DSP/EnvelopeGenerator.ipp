@@ -152,6 +152,13 @@ inline bool Audio::DSP::EnvelopeBase<Envelope, AttackInterp, DecayInterp, Releas
 
 template<Audio::DSP::EnvelopeType Envelope, Audio::DSP::InterpolationType AttackInterp, Audio::DSP::InterpolationType DecayInterp, Audio::DSP::InterpolationType ReleaseInterp, bool Smooth, bool Clip, unsigned Count>
 template<unsigned Index>
+inline bool Audio::DSP::EnvelopeBase<Envelope, AttackInterp, DecayInterp, ReleaseInterp, Smooth, Clip, Count>::isGainEnded(const Key key) const noexcept
+{
+    return !_cache[key][Index].gain;
+}
+
+template<Audio::DSP::EnvelopeType Envelope, Audio::DSP::InterpolationType AttackInterp, Audio::DSP::InterpolationType DecayInterp, Audio::DSP::InterpolationType ReleaseInterp, bool Smooth, bool Clip, unsigned Count>
+template<unsigned Index>
 inline void Audio::DSP::EnvelopeBase<Envelope, AttackInterp, DecayInterp, ReleaseInterp, Smooth, Clip, Count>::setSpecs(const EnvelopeSpecs &specs) noexcept
 {
     static constexpr auto GetClippedValue = [](const float value) -> float

@@ -61,11 +61,7 @@ inline void Audio::Oscillator::receiveAudio(BufferView output)
 
             auto realOutLeft = realOutput;
             auto realOutRight = realOutput + channelsMinusOne;
-            if (modifiers.sampleOffset && !readIndex) {
-                const auto dt = modifiers.sampleOffset * channelCount;
-                realOutLeft += dt;
-                realOutRight += dt;
-            }
+
             const auto freq = GetNoteFrequency(key);
             const auto freqNorm = GetFrequencyNorm(freq, audioSpecs().sampleRate);
 
@@ -131,7 +127,11 @@ inline void Audio::Oscillator::receiveAudio(BufferView output)
 
             return std::make_pair(realOutSize, 0u);
         },
-        [this] (const Key key)
+        [this] (const Key key) -> bool
+        {
+            return !_noteManager.envelope().lastGain(key);
+        },
+        [this] (const Key key) -> void
         {
             _oscillator.resetKey(key);
         }

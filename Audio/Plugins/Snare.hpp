@@ -1,6 +1,6 @@
 /**
  * @ Author: Pierre Veysseyre
- * @ Description: Kick
+ * @ Description: Snare
  */
 
 #pragma once
@@ -9,27 +9,27 @@
 
 #include <Audio/PluginUtilsControlsFM.hpp>
 #include <Audio/PluginUtilsControlsMapping.hpp>
-#include <Audio/DSP/FM.hpp>
+
 
 #include "Managers/NoteManager.hpp"
 
 namespace Audio
 {
-    class Kick;
+    class Snare;
 }
 
-class Audio::Kick final : public Audio::IPlugin
+class Audio::Snare final : public Audio::IPlugin
 {
     REGISTER_PLUGIN(
         /* Plugin's name */
         TR_TABLE(
-            TR(English, "Kick"),
-            TR(French, "Kick")
+            TR(English, "Snare"),
+            TR(French, "Snare")
         ),
         /* Plugin description */
         TR_TABLE(
-            TR(English, "Kick allow to generate spicy kicks"),
-            TR(French, "Kick allow to generate spicy kicks")
+            TR(English, "Snare allow to generate spicy kicks"),
+            TR(French, "Snare allow to generate spicy kicks")
         ),
         /* Plugin flags */
         FLAGS(AudioOutput, NoteInput, NoChildren),
@@ -150,7 +150,7 @@ class Audio::Kick final : public Audio::IPlugin
 
 public:
     /** @brief Plugin constructor */
-    Kick(const IPluginFactory *factory) noexcept : IPlugin(factory) {}
+    Snare(const IPluginFactory *factory) noexcept : IPlugin(factory) {}
 
     virtual void receiveAudio(BufferView output);
 
@@ -166,9 +166,7 @@ public:
     virtual void onAudioGenerationStarted(const BeatRange &range);
 
 private:
-    NoteManagerDefault _noteManager {};
-    DSP::FM::Schema<4u, DSP::FM::AlgorithmType::KickDrum, true> _fm {};
-    // FMManager<DSP::EnvelopeType::ADSR, 4u, DSP::FM::AlgorithmType::KickDrum, true> _fmManager {};
+    FMManager<DSP::EnvelopeType::DADSR, 4u, DSP::FM::AlgorithmType::KickDrum, true> _fmManager {};
 };
 
-#include "Kick.ipp"
+#include "Snare.ipp"

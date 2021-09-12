@@ -10,8 +10,7 @@
 #include <Audio/PluginUtilsControlsFM.hpp>
 #include <Audio/PluginUtilsControlsMapping.hpp>
 
-
-#include "Managers/FMManager.hpp"
+#include "Managers/NoteManager.hpp"
 
 namespace Audio
 {

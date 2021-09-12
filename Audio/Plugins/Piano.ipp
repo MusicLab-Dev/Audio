@@ -229,7 +229,11 @@ inline void Audio::Piano::receiveAudio(BufferView output)
             }
             return std::make_pair(realOutSize, 0u);
         },
-        [this] (const Key key)
+        [this] (const Key key) -> bool
+        {
+            return !_noteManager.envelope().lastGain(key);
+        },
+        [this] (const Key key) -> void
         {
             _oscillators.resetKey(key);
             _filter[0u].resetKey(key);

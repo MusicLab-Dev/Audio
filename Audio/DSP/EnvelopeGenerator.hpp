@@ -151,9 +151,12 @@ public:
     /** @brief Check if the gain is null for a specific key */
     [[nodiscard]] bool isGainEnded(const Key key) const noexcept;
 
+    template<unsigned Index>
+    [[nodiscard]] bool isGainEnded(const Key key) const noexcept;
+
     /** @brief Get the last gain of a specific instance at a specific key */
     template<unsigned Index = 0u>
-    [[nodiscard]] float lastGain(const Key key) noexcept { return _cache[key][Index].gain; }
+    [[nodiscard]] float lastGain(const Key key) const noexcept { return _cache[key][Index].gain; }
 
     /** @brief Get the enveloppe gain */
     template<unsigned Index = 0u>

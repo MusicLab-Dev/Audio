@@ -66,17 +66,21 @@ public:
 
     [[nodiscard]] const ActiveKeyList &getActiveNote(void) const noexcept { return _cache.actives; }
 
-    template<typename ProcessFunctor, typename ResetFunctor>
-    void processNotes(BufferView outputFrame, ProcessFunctor &&processFunctor, ResetFunctor &&resetFunctor) noexcept
-        { return processNotesImpl<ProcessFunctor, ResetFunctor, false>(outputFrame, std::move(processFunctor), std::move(resetFunctor)); }
+    template<typename ProcessFunctor, typename TestFunctor, typename ResetFunctor>
+    void processNotes(BufferView outputFrame, ProcessFunctor &&processFunctor, TestFunctor &&testFunctor, ResetFunctor &&resetFunctor) noexcept
+        { return processNotesImpl<ProcessFunctor, TestFunctor, ResetFunctor, false>(outputFrame, std::move(processFunctor), std::move(testFunctor), std::move(resetFunctor)); }
 
-    template<typename ProcessFunctor, typename ResetFunctor>
-    void processNotesEnvelope(BufferView outputFrame, ProcessFunctor &&processFunctor, ResetFunctor &&resetFunctor) noexcept
-        { return processNotesImpl<ProcessFunctor, ResetFunctor, true>(outputFrame, std::move(processFunctor), std::move(resetFunctor)); }
+    template<typename ProcessFunctor, typename TestFunctor, typename ResetFunctor>
+    void processNotesEnvelope(BufferView outputFrame, ProcessFunctor &&processFunctor, TestFunctor &&testFunctor, ResetFunctor &&resetFunctor) noexcept
+        { return processNotesImpl<ProcessFunctor, TestFunctor, ResetFunctor, true>(outputFrame, std::move(processFunctor), std::move(testFunctor), std::move(resetFunctor)); }
 
 
     /** @brief Process a list of notes and update the internal cache */
     void feedNotes(const NoteEvents &notes) noexcept;
+
+    /** @brief Process a list of notes and update the internal cache - reset a key if its event is ON */
+    template<typename ResetFunctor>
+    void feedNotesRetrigger(const NoteEvents &notes, ResetFunctor &&resetFunctor) noexcept;
 
     /** @brief Reset all */
     void reset(void)
@@ -107,8 +111,8 @@ public:
     void resetReadIndexes(void) noexcept;
 
     /** @brief Increment the read index of given key */
-    template<typename ResetFunctor>
-    [[nodiscard]] bool incrementReadIndex(const Key key, const std::uint32_t maxIndex, std::uint32_t amount, ResetFunctor &&resetFunctor) noexcept;
+    template<typename TestFunctor, typename ResetFunctor>
+    [[nodiscard]] bool incrementReadIndex(const Key key, const std::uint32_t maxIndex, std::uint32_t amount, TestFunctor &&testFunctor, ResetFunctor &&resetFunctor) noexcept;
 
 
     /** @brief Get the read index of given key */
@@ -143,12 +147,12 @@ private:
     Envelope _envelope;
     EnvelopeCache _envelopeGain;
 
-    template<typename ProcessFunctor, typename ResetFunctor, bool ProcessEnvelope>
-    void processNotesImpl(BufferView outputFrame, ProcessFunctor &&processFunctor, ResetFunctor &&resetFunctor) noexcept;
+    template<typename ProcessFunctor, typename TestFunctor, typename ResetFunctor, bool ProcessEnvelope>
+    void processNotesImpl(BufferView outputFrame, ProcessFunctor &&processFunctor, TestFunctor &&testFunctor, ResetFunctor &&resetFunctor) noexcept;
 
-    template<typename ProcessFunctor, typename ResetFunctor, bool ProcessEnvelope>
+    template<typename ProcessFunctor, typename TestFunctor, typename ResetFunctor, bool ProcessEnvelope>
     bool processOneNoteImpl(
-            ProcessFunctor &&processFunctor, ResetFunctor &&resetFunctor,
+            ProcessFunctor &&processFunctor, TestFunctor &&testFunctor, ResetFunctor &&resetFunctor,
             const Key key, const std::uint32_t readIndex, const NoteModifiers &modifiers,
             float *realOutput, const std::uint32_t realOutSize, const std::size_t channelCount
     ) noexcept;

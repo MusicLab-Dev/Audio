@@ -106,7 +106,11 @@ inline void Audio::Sampler::receiveAudio(BufferView output)
                 return std::make_pair(usedOutSize, resampleSize);
             }
         },
-        [this] (const Key key)
+        [this] (const Key key) -> bool
+        {
+            return !_noteManager.envelope().lastGain(key);
+        },
+        [this] (const Key key) -> void
         {
             UNUSED(key);
         }

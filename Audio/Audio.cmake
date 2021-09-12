@@ -111,6 +111,8 @@ set(AudioPluginsSources
     ${AudioPluginsDir}/Drums.ipp
     ${AudioPluginsDir}/Kick.hpp
     ${AudioPluginsDir}/Kick.ipp
+    ${AudioPluginsDir}/Snare.hpp
+    ${AudioPluginsDir}/Snare.ipp
 )
 
 set(AudioPluginManagerDir ${AudioPluginsDir}/Managers)
@@ -120,8 +122,6 @@ set(AudioSampleFileDir ${AudioDir}/SampleFile)
 set(AudioPluginManagersSources
     ${AudioPluginManagerDir}/NoteManager.hpp
     ${AudioPluginManagerDir}/NoteManager.ipp
-    ${AudioPluginManagerDir}/FMManager.hpp
-    ${AudioPluginManagerDir}/FMManager.ipp
     ${AudioPluginManagerDir}/ArpeggiatorManager.hpp
     ${AudioPluginManagerDir}/ArpeggiatorManager.ipp
     ${AudioPluginManagerDir}/ChordsManager.hpp

@@ -138,9 +138,6 @@ class Audio::Oscillator final : public Audio::IPlugin
             TR_TABLE(
                 TR(English, "L/R")
             )
-        ),
-        REGISTER_CONTROL_EFFECT_BYPASS(
-            bypass
         )
     )
 
