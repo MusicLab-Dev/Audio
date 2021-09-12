@@ -72,6 +72,7 @@ inline void Audio::Piano::receiveAudio(BufferView output)
         output,
         [this, outGain, channels](const Key key, const std::uint32_t readIndex, const NoteModifiers &modifiers, float *realOutput, const std::uint32_t realOutSize, const std::size_t channelCount) -> std::pair<std::uint32_t, std::uint32_t>
         {
+            UNUSED(modifiers);
             const auto channelsMinusOne = channelCount - 1u;
             auto outGainNorm = channelsMinusOne ? outGain / 2.0f : outGain / 4.0f;
             if (static_cast<std::uint32_t>(type()) == 2u)
@@ -79,7 +80,6 @@ inline void Audio::Piano::receiveAudio(BufferView output)
 
             auto cacheLeft = _cache.data<float>();
             auto cacheRight = _cache.data<float>() + channelsMinusOne;
-            UNUSED(modifiers);
             const auto freq = GetNoteFrequency(key);
             const auto freqNorm = GetFrequencyNorm(freq, audioSpecs().sampleRate);
 
@@ -207,7 +207,7 @@ inline void Audio::Piano::receiveAudio(BufferView output)
                 });
 
                 auto k = 0u;
-                for (auto i = 0u; i < realOutSize; ++i, k += (channelCount)) {
+                for (auto i = 0u; i < realOutSize; ++i, k += static_cast<std::uint32_t>(channelCount)) {
                     envF = _filterEnv[ch].getGain(key, readIndex + i);
                     float cutOff = 1.0f / (envF * envAmount + 1.0f) * filterCutOff;
 

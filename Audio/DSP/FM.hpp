@@ -72,7 +72,7 @@ namespace Audio::DSP::FM
     enum class AlgorithmType : std::uint8_t {
         Default,
         Piano,
-        KickDrum
+        Drum
     };
 
     template<unsigned OperatorCount, AlgorithmType Algo, bool PitchEnv>
@@ -291,7 +291,7 @@ private:
     }
 
     template<bool Accumulate>
-    void kickDrum_impl(
+    void drum_impl(
             float *output, const std::uint32_t processSize, const float outputGain,
             const std::uint32_t phaseIndex, const Key key, const float rootFrequency,
             const Internal::OperatorArray<OperatorCount> &operators,
@@ -308,9 +308,9 @@ private:
         // processOperator<true, true, true, 1u>(_cache.data(), output, processSize, realOutputGain, phaseIndex, getDetuneFrequency(rootFrequency, operators[1u]), key, operators[1u], channels);
 
         // Noise (D) for clicking sound
-        processOperator<false, false, false, 3u>(nullptr, _cache.data(), processSize, 1.0f, phaseIndex, getDetuneFrequency(rootFrequency, operators[3u]), key, operators[3u], channels);
+        processOperator<Accumulate, false, false, 3u>(nullptr, output, processSize, realOutputGain, phaseIndex, getDetuneFrequency(rootFrequency, operators[3u]), key, operators[3u], channels);
         // Sub (A)
-        processOperator<Accumulate, true, true, 0u>(_cache.data(), output, processSize, realOutputGain, phaseIndex, getDetuneFrequency(rootFrequency, operators[0u]), key, operators[0u], channels);
+        processOperator<true, false, true, 0u>(nullptr, output, processSize, realOutputGain, phaseIndex, getDetuneFrequency(rootFrequency, operators[0u]), key, operators[0u], channels);
         // Color (C->B)
         processOperator<false, false, false, 2u>(nullptr, _cache.data(), processSize, 1.0f, phaseIndex, getDetuneFrequency(rootFrequency, operators[2u]), key, operators[2u], channels);
         processOperator<true, true, true, 1u>(_cache.data(), output, processSize, realOutputGain, phaseIndex, getDetuneFrequency(rootFrequency, operators[1u]), key, operators[1u], channels);

@@ -50,9 +50,9 @@ inline void Audio::DSP::FM::Schema<OperatorCount, Algo, PitchEnv>::processImpl(
         const ChannelArrangement channels
 ) noexcept
 {
-    if constexpr (Algo == AlgorithmType::KickDrum) {
-        static_assert(OperatorCount == 4u, "Audio::DSP::FM::Schema<OperatorCount, KickDrum>::processImpl: OperatorCount must be equal to 4");
-        kickDrum_impl<Accumulate>(output, processSize, outputGain, phaseIndex, key, freqNorm, operators, channels);
+    if constexpr (Algo == AlgorithmType::Drum) {
+        static_assert(OperatorCount == 4u, "Audio::DSP::FM::Schema<OperatorCount, Drum>::processImpl: OperatorCount must be equal to 4");
+        drum_impl<Accumulate>(output, processSize, outputGain, phaseIndex, key, freqNorm, operators, channels);
     } else if constexpr (Algo == AlgorithmType::Piano) {
 
     }
@@ -61,8 +61,9 @@ inline void Audio::DSP::FM::Schema<OperatorCount, Algo, PitchEnv>::processImpl(
 template<unsigned OperatorCount, Audio::DSP::FM::AlgorithmType Algo, bool PitchEnv>
 inline bool Audio::DSP::FM::Schema<OperatorCount, Algo, PitchEnv>::isKeyEnded(const Key key) const noexcept
 {
-    if constexpr (Algo == AlgorithmType::KickDrum) {
-        return isKeyEnded<0u>(key) && isKeyEnded<1u>(key);
+    if constexpr (Algo == AlgorithmType::Drum) {
+        // 0: sub, 1: transient 3: noise
+        return isKeyEnded<0u>(key) && isKeyEnded<1u>(key) && isKeyEnded<3u>(key);
     }
 }
 

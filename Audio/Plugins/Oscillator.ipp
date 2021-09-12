@@ -56,6 +56,7 @@ inline void Audio::Oscillator::receiveAudio(BufferView output)
         output,
         [this, outGain, channels](const Key key, const std::uint32_t readIndex, const NoteModifiers &modifiers, float *realOutput, const std::uint32_t realOutSize, const std::size_t channelCount) -> std::pair<std::uint32_t, std::uint32_t>
         {
+            UNUSED(modifiers);
             const auto channelsMinusOne = channelCount - 1u;
             const auto outGainNorm = channelsMinusOne ? outGain / 2.0f : outGain / 4.0f;
 

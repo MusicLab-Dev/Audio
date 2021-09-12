@@ -72,78 +72,78 @@ class Audio::Snare final : public Audio::IPlugin
             )
         ),
         REGISTER_CONTROL_FLOATING(
-            sweepDuration, 0.1, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
+            snapLevel, 0.5, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
             TR_TABLE(
-                TR(English, "Sweep duration"),
+                TR(English, "Snap level"),
             ),
             TR_TABLE(
-                TR(English, "Sweep duration"),
+                TR(English, "Snap level"),
             ),
             TR_TABLE(
-                TR(English, "Sweep")
-            ),
-            TR_TABLE(
-                TR(English, "%")
-            )
-        ),
-        REGISTER_CONTROL_FLOATING(
-            sweepImpact, 0.25, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
-            TR_TABLE(
-                TR(English, "Sweep impact"),
-            ),
-            TR_TABLE(
-                TR(English, "Sweep impact"),
-            ),
-            TR_TABLE(
-                TR(English, "Impact")
+                TR(English, "S. Lvl")
             ),
             TR_TABLE(
                 TR(English, "%")
             )
         ),
         REGISTER_CONTROL_FLOATING(
-            clic, 0.2, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
+            snapDuration, 0.25, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
             TR_TABLE(
-                TR(English, "Clic"),
+                TR(English, "Snap duration"),
             ),
             TR_TABLE(
-                TR(English, "Clic"),
+                TR(English, "Snap duration"),
             ),
             TR_TABLE(
-                TR(English, "Clc")
+                TR(English, "S. Dec")
             ),
             TR_TABLE(
                 TR(English, "%")
             )
         ),
         REGISTER_CONTROL_FLOATING(
-            overdrive, 0.15, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
+            snapTone, 0.25, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
             TR_TABLE(
-                TR(English, "Overdrive"),
+                TR(English, "Snap tone"),
             ),
             TR_TABLE(
-                TR(English, "Overdrive"),
+                TR(English, "Snap tone"),
             ),
             TR_TABLE(
-                TR(English, "Drv")
+                TR(English, "S. Tone")
             ),
             TR_TABLE(
                 TR(English, "%")
             )
         ),
-        REGISTER_CONTROL_BOOLEAN(
-            boost, 0.0,
+        REGISTER_CONTROL_FLOATING(
+            pitchDecay, 0.003, CONTROL_RANGE_STEP(0.0, 0.01, 0.0001),
             TR_TABLE(
-                TR(English, "Boost"),
+                TR(English, "Pitch decay"),
             ),
             TR_TABLE(
-                TR(English, "Boost"),
+                TR(English, "Pitch decay"),
             ),
             TR_TABLE(
-                TR(English, "Boost")
+                TR(English, "P. dec")
             ),
             TR_TABLE(
-                TR(English, "")
+                TR(English, "%")
+            )
+        ),
+        REGISTER_CONTROL_FLOATING(
+            pitchLevel, 0.6, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
+            TR_TABLE(
+                TR(English, "Pitch level"),
+            ),
+            TR_TABLE(
+                TR(English, "Pitch level"),
+            ),
+            TR_TABLE(
+                TR(English, "P. lvl")
+            ),
+            TR_TABLE(
+                TR(English, "%")
             )
         )
     )
@@ -166,7 +166,8 @@ public:
     virtual void onAudioGenerationStarted(const BeatRange &range);
 
 private:
-    FMManager<DSP::EnvelopeType::DADSR, 4u, DSP::FM::AlgorithmType::KickDrum, true> _fmManager {};
+    NoteManagerDefault _noteManager {};
+    DSP::FM::Schema<4u, DSP::FM::AlgorithmType::Drum, true> _fm {};
 };
 
 #include "Snare.ipp"

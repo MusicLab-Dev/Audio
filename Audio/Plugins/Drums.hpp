@@ -66,7 +66,7 @@ public:
 
 public:
 private:
-    FMManager<DSP::EnvelopeType::DADSR, 4u, DSP::FM::AlgorithmType::KickDrum, true> _fmManager {};
+    FMManager<DSP::EnvelopeType::DADSR, 4u, DSP::FM::AlgorithmType::Drum, true> _fmManager {};
 };
 
 #include "Drums.ipp"

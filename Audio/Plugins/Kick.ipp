@@ -47,25 +47,24 @@ inline void Audio::Kick::receiveAudio(BufferView output)
     float *out = reinterpret_cast<float *>(output.byteData());
 
     _noteManager.envelopeGain().resize(outSize);
-    _noteManager.setEnvelopeSpecs(DSP::EnvelopeSpecs {
-        0.0f,
-        0.0f, // A
-        1.0f,
-        0.0f,
-        0.0f,// D
-        1.0f,// S
-        1.5f,// R
-    });
+    // _noteManager.setEnvelopeSpecs(DSP::EnvelopeSpecs {
+    //     0.0f,
+    //     0.0f, // A
+    //     1.0f,
+    //     0.0f,
+    //     0.0f,// D
+    //     1.0f,// S
+    //     1.5f,// R
+    // });
 
 
     _noteManager.processNotes(
         output,
         [this, outGain, channels](const Key key, const std::uint32_t readIndex, const NoteModifiers &modifiers, float *realOutput, const std::uint32_t realOutSize, const std::size_t channelCount) -> std::pair<std::uint32_t, std::uint32_t>
         {
-            const float rootFrequency = std::pow(2.f, static_cast<float>(static_cast<int>(key) - RootKey) / KeysPerOctave) * RootKeyFrequency;
-            UNUSED(readIndex);
-            UNUSED(rootFrequency);
             UNUSED(modifiers);
+            UNUSED(channelCount);
+            const float rootFrequency = std::pow(2.f, static_cast<float>(static_cast<int>(key) - RootKey) / KeysPerOctave) * RootKeyFrequency;
 
             _noteManager.generateEnvelopeGains(key, readIndex, realOutSize);
             _fm.process<true>(realOutput, realOutSize, 1.0f, readIndex, key, rootFrequency, {

@@ -167,8 +167,8 @@ public:
 
 private:
     NoteManagerDefault _noteManager {};
-    DSP::FM::Schema<4u, DSP::FM::AlgorithmType::KickDrum, true> _fm {};
-    // FMManager<DSP::EnvelopeType::ADSR, 4u, DSP::FM::AlgorithmType::KickDrum, true> _fmManager {};
+    DSP::FM::Schema<4u, DSP::FM::AlgorithmType::Drum, true> _fm {};
+    // FMManager<DSP::EnvelopeType::ADSR, 4u, DSP::FM::AlgorithmType::Drum, true> _fmManager {};
 };
 
 #include "Kick.ipp"
