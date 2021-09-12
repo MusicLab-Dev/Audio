@@ -54,9 +54,7 @@ public:
 
 private:
     Core::TinyVector<Type> _filterCache;
-    Core::TinyVector<Type> _interpolationCache;
-    Core::TinyVector<Type> _produceCache;
-
+    Core::TinyVector<Type> _inputCache;
 };
 
 #include "Resampler.ipp"

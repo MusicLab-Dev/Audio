@@ -105,18 +105,17 @@ inline void Audio::Buffer::copyRange(const Internal::BufferBase &target, const s
 template<typename Type>
 inline void Audio::Buffer::resample(const SampleRate newSampleRate) noexcept
 {
-    // if (!newSampleRate || newSampleRate == sampleRate())
-    //     return;
-    // const auto newSize = DSP::GetResamplingSizeSampleRate(size<Type>(), sampleRate(), newSampleRate) * static_cast<std::size_t>(channelArrangement());
-    // std::cout << "size: " << channelByteSize() << std::endl;
-    // std::cout << "new size: " << newSize << std::endl;
-    // std::cout << "capacity: " << capacity<Type>() << std::endl;
-    // // Check if the resampled buffer fit in the actual one
-    // if (newSampleRate > sampleRate() && (capacity<Type>() < newSize)) {
-    //     std::cout << "RESIZE\n";
-    //     resize(newSize * sizeof(Type), newSampleRate, channelArrangement(), format());
-    // }
-    // return DSP::Resampler<Type>::ResampleOctave(data<Type>)
+    if (!newSampleRate || newSampleRate == sampleRate())
+        return;
+
+    const auto actualSize = size<Type>();
+    const auto newSize = DSP::Resampler<Type>::GetResampleSampleRateBufferSize(actualSize, sampleRate(), newSampleRate);
+    DSP::Resampler<Type> resampler;
+
+    grow(newSize);
+    resampler.resampleSampleRate(data<Type>(), data<Type>(), actualSize, sampleRate(), newSampleRate);
+    _header->sampleRate = newSampleRate;
+    return;
 }
 
 template<typename Type>
