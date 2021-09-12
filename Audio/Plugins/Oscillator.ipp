@@ -40,7 +40,6 @@ inline void Audio::Oscillator::receiveAudio(BufferView output)
 
     const DB outGain = ConvertDecibelToRatio(static_cast<float>(outputVolume()) + DefaultVoiceGain);
     const auto outSize = static_cast<std::uint32_t>(output.channelSampleCount());
-    float *out = reinterpret_cast<float *>(output.byteData());
     const auto channels = output.channelArrangement();
 
     _noteManager.setEnvelopeSpecs(DSP::EnvelopeSpecs {
@@ -54,15 +53,14 @@ inline void Audio::Oscillator::receiveAudio(BufferView output)
     });
     _noteManager.envelopeGain().resize(outSize);
     _noteManager.processNotesEnvelope(
-        outSize,
-        [this, outGain, outSize, out, channels](const Key key, const std::uint32_t readIndex, const NoteModifiers &modifiers, const std::uint32_t realOutSize) -> std::pair<std::uint32_t, std::uint32_t>
+        output,
+        [this, outGain, channels](const Key key, const std::uint32_t readIndex, const NoteModifiers &modifiers, float *realOutput, const std::uint32_t realOutSize, const std::size_t channelCount) -> std::pair<std::uint32_t, std::uint32_t>
         {
-            const auto channelCount = static_cast<std::size_t>(channels);
             const auto channelsMinusOne = channelCount - 1u;
             const auto outGainNorm = channelsMinusOne ? outGain / 2.0f : outGain / 4.0f;
 
-            auto realOutLeft = out;
-            auto realOutRight = out + channelsMinusOne;
+            auto realOutLeft = realOutput;
+            auto realOutRight = realOutput + channelsMinusOne;
             if (modifiers.sampleOffset && !readIndex) {
                 const auto dt = modifiers.sampleOffset * channelCount;
                 realOutLeft += dt;
@@ -144,19 +142,15 @@ inline void Audio::Oscillator::receiveAudio(BufferView output)
 
     //     // ABCD___ -> ABCDABCD
     //     for (auto ch = 1u; ch < channelCount; ++ch)
-    //         std::memcpy(out + (ch * outSize), out, outSize * sizeof(float));
+    //         std::memcpy(realOutput + (ch * outSize), realOutput, outSize * sizeof(float));
 
     //     // ABCDABCD -> AABBCCDD
     //     for (auto i = 0u; i < outSize; ++i) {
     //         for (auto ch = 0u; ch < channelCount; ++ch) {
-    //             out[i * channelCount + ch] = out[i + channelsMinusOne * outSize];
+    //             realOutput[i * channelCount + ch] = realOutput[i + channelsMinusOne * outSize];
     //         }
     //     }
     // }
-
-    // std::cout << std::endl;
-    // std::cout << _noteManager.getActiveNoteSize() << std::endl;
-    // std::cout << _noteManager.getActiveNoteBlockSize() << std::endl;
 
     // To benchmark, must be slower
     // Modifier<float>::ApplyIndexFunctor(outLeft, outSize, 0u, [&, outGain](const std::size_t index) -> float {

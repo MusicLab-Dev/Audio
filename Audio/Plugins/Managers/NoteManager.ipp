@@ -64,29 +64,6 @@ inline void Audio::NoteManager<EnvelopeType>::feedNotes(const NoteEvents &notes)
 }
 
 template<Audio::DSP::EnvelopeType EnvelopeType>
-inline void Audio::NoteManager<EnvelopeType>::resetCache(void) noexcept
-{
-    _cache.actives.clear();
-    resetBlockCache();
-}
-
-template<Audio::DSP::EnvelopeType EnvelopeType>
-inline void Audio::NoteManager<EnvelopeType>::clearEnvelopeCache(void) noexcept
-{
-    _envelopeGain.clear();
-}
-
-template<Audio::DSP::EnvelopeType EnvelopeType>
-inline void Audio::NoteManager<EnvelopeType>::resetBlockCache(void) noexcept
-{
-    for (const auto &note : _cache.activesBlock) {
-        if (const auto it = _cache.actives.find(note); it != _cache.actives.end())
-            _cache.activesBlock.erase(it);
-    }
-    _cache.activesBlock.clear();
-}
-
-template<Audio::DSP::EnvelopeType EnvelopeType>
 inline void Audio::NoteManager<EnvelopeType>::resetReadIndexes(void) noexcept
 {
     _cache.readIndexes.fill(0u);
@@ -138,30 +115,50 @@ inline void Audio::NoteManager<EnvelopeType>::generateEnvelopeGains(const Key ke
 
 template<Audio::DSP::EnvelopeType EnvelopeType>
 template<typename ProcessFunctor, typename ResetFunctor, bool ProcessEnvelope>
-void Audio::NoteManager<EnvelopeType>::processNotesImpl(const std::uint32_t outSize, ProcessFunctor &&processFunctor, ResetFunctor &&resetFunctor) noexcept
+bool Audio::NoteManager<EnvelopeType>::processOneNoteImpl(
+        ProcessFunctor &&processFunctor, ResetFunctor &&resetFunctor,
+        const Key key, const std::uint32_t readIndex, const NoteModifiers &modifiers,
+        float *realOutput, const std::uint32_t realOutSize, const std::size_t channelCount
+) noexcept
 {
+    if constexpr (ProcessEnvelope) {
+        _envelopeGain.clear();
+        generateEnvelopeGains(key, readIndex, realOutSize);
+    }
+    if (modifiers.sampleOffset && !readIndex) {
+        realOutput += modifiers.sampleOffset * channelCount;
+    }
+    const auto pair = processFunctor(key, readIndex, modifiers, realOutput, realOutSize, channelCount);
+    return incrementReadIndex(key, pair.second, pair.first, resetFunctor);
+}
+
+template<Audio::DSP::EnvelopeType EnvelopeType>
+template<typename ProcessFunctor, typename ResetFunctor, bool ProcessEnvelope>
+void Audio::NoteManager<EnvelopeType>::processNotesImpl(BufferView outputFrame, ProcessFunctor &&processFunctor, ResetFunctor &&resetFunctor) noexcept
+{
+    const auto outSize = static_cast<std::uint32_t>(outputFrame.size<float>());
+    const auto channelCount = static_cast<std::size_t>(outputFrame.channelArrangement());
+    float *realOutput = outputFrame.data<float>();
+
     // Process the active notes
     auto itActive = std::remove_if(_cache.actives.begin(), _cache.actives.end(),
-        [this, outSize, &processFunctor, &resetFunctor](const auto key) {
-            // if (!_cache.modifiers[key].empty())
-                // std::cout << "EVENTS: " << static_cast<std::size_t>(_cache.modifiers[key].size()) << std::endl;
-
-            // auto realOutSize = outSize;
-            bool ended = false;
-
+        [this, realOutput, outSize, channelCount, &processFunctor, &resetFunctor] (const auto key)
+        {
+            // std::cout << "EVENTS: " << static_cast<std::size_t>(_cache.modifiers[key].size()) << std::endl;
             const auto evtCount = _cache.modifiers[key].size();
-            // const auto evtCountMinusOne = evtCount - 1u;
+            bool ended = false;
 
             if (!evtCount) {
                 // Process the active key (no event)
                 const auto idx = readIndex(key);
                 // std::cout << "___NoEvent Process: idx: " << idx << ", size: " << outSize << std::endl;
-                if constexpr (ProcessEnvelope) {
-                    _envelopeGain.clear();
-                    generateEnvelopeGains(key, idx, outSize);
-                }
-                const auto pair = processFunctor(key, idx, NoteModifiers(), outSize);
-                ended = incrementReadIndex(key, pair.second, pair.first, resetFunctor);
+                ended = processOneNoteImpl<ProcessFunctor, ResetFunctor, ProcessEnvelope>(std::move(processFunctor), std::move(resetFunctor), key, idx, NoteModifiers(), realOutput, outSize, channelCount);
+                // if constexpr (ProcessEnvelope) {
+                //     _envelopeGain.clear();
+                //     generateEnvelopeGains(key, idx, outSize);
+                // }
+                // const auto pair = processFunctor(key, idx, NoteModifiers(), outSize);
+                // ended = incrementReadIndex(key, pair.second, pair.first, resetFunctor);
                 // std::cout << "end: " << ended << ", " << pair.second << "; " << pair.first << std::endl;
             } else {
                 // Process the active key with different events
@@ -170,24 +167,23 @@ void Audio::NoteManager<EnvelopeType>::processNotesImpl(const std::uint32_t outS
                 bool process = idx;
                 auto i = 0u;
                 NoteModifiers processModifiers {};
+
                 for (; i < evtCount; ++i) {
                     auto &evt = _cache.modifiers[key][static_cast<std::uint8_t>(i)];
-                    // const bool hasNextEvt = i < evtCountMinusOne;
 
                     if (evt.type == NoteEvent::EventType::On) {
                         if (process) {
                             realOutSize -= (outSize - evt.noteModifiers.sampleOffset);
-                            if constexpr (ProcessEnvelope) {
-                                _envelopeGain.clear();
-                                generateEnvelopeGains(key, idx, realOutSize);
-                            }
                             // std::cout << "process(BEGIN): " << idx << ", offset: " << processModifiers.sampleOffset << ", size: " << realOutSize << std::endl;
-                            const auto pair = processFunctor(key, idx, processModifiers, realOutSize);
-                            // evt.noteModifiers.sampleOffset = 0u;
-                            ended = incrementReadIndex(key, pair.second, pair.first, resetFunctor);
+                            ended = processOneNoteImpl<ProcessFunctor, ResetFunctor, ProcessEnvelope>(std::move(processFunctor), std::move(resetFunctor), key, idx, processModifiers, realOutput, realOutSize, channelCount);
+                            // if constexpr (ProcessEnvelope) {
+                            //     _envelopeGain.clear();
+                            //     generateEnvelopeGains(key, idx, realOutSize);
+                            // }
+                            // const auto pair = processFunctor(key, idx, processModifiers, realOutSize);
+                            // ended = incrementReadIndex(key, pair.second, pair.first, resetFunctor);
                             // std::cout << "end: " << ended << ", " << pair.second << "; " << pair.first << std::endl;
                         }
-
                         // std::cout << "___ON " << evt.noteModifiers.sampleOffset << std::endl;
                         processModifiers = evt.noteModifiers;
                         envelope().template setTriggerIndex<0u>(key, 0u);
@@ -200,62 +196,26 @@ void Audio::NoteManager<EnvelopeType>::processNotesImpl(const std::uint32_t outS
                         envelope().setTriggerIndex(key, _cache.readIndexes[key] + realOffset);
                         // std::cout << "___OFF idx:" << _cache.readIndexes[key] << ", offset" << evt.noteModifiers.sampleOffset << std::endl;
                         // std::cout << "_____setTriggerIndex " << _cache.readIndexes[key] + evt.noteModifiers.sampleOffset << std::endl;
-                        // process = envelope().lastGain(key);
                     }
                 }
                 //
                 if (process) {
                     // std::cout << "process(END): " << idx << ", offset: " << processModifiers.sampleOffset << ", size: " << realOutSize << std::endl;
-                    if constexpr (ProcessEnvelope) {
-                        _envelopeGain.clear();
-                        generateEnvelopeGains(key, idx, realOutSize);
-                    }
-                    const auto pair = processFunctor(key, idx, processModifiers, realOutSize);
-                    // evt.noteModifiers.sampleOffset = 0u;
-                    ended = incrementReadIndex(key, pair.second, pair.first, resetFunctor);
-                    // std::cout << "end: " << ended << ", " << pair.second << "; " << pair.first << std::endl;
+                    ended = processOneNoteImpl<ProcessFunctor, ResetFunctor, ProcessEnvelope>(std::move(processFunctor), std::move(resetFunctor), key, idx, processModifiers, realOutput, realOutSize, channelCount);
+                    // if constexpr (ProcessEnvelope) {
+                    //     _envelopeGain.clear();
+                    //     generateEnvelopeGains(key, idx, realOutSize);
+                    // }
+                    // const auto pair = processFunctor(key, idx, processModifiers, realOutSize);
+                    // ended = incrementReadIndex(key, pair.second, pair.first, resetFunctor);
+                    // // std::cout << "end: " << ended << ", " << pair.second << "; " << pair.first << std::endl;
                 }
             }
-            // _cache.modifiers[key].erase(_cache.modifiers[key].begin(), evtCountMinusOne);
             _cache.modifiers[key].clear();
-
-            // auto &modifiers = _cache.modifiers[key][0u].noteModifiers;
-            // const auto realOutSize = (modifiers.sampleOffset && !idx) ? outSize - modifiers.sampleOffset : outSize;
-            // Generate envelope for the given key
-            // generateEnvelopeGains(key, idx, realOutSize);
-
-            // Compute the processing functor
-            // const auto pair = processFunctor(key, idx, modifiers, realOutSize);
-            // modifiers.sampleOffset = 0u;
-
-            // Increment internal read index (may remove the key of active list)
-
             return ended;
         }
     );
     // Actually delete the concerned notes
     if (itActive != _cache.actives.end())
         _cache.actives.erase(itActive, _cache.actives.end());
-
-    // Process the active block notes
-    auto itActiveBlock = std::remove_if(_cache.activesBlock.begin(), _cache.activesBlock.end(),
-        [this, outSize, &processFunctor, &resetFunctor](const auto key) {
-            const auto idx = readIndex(key);
-            auto &modifiers = _cache.modifiers[key][0u].noteModifiers;
-            const auto realOutSize = (modifiers.sampleOffset && !idx) ? outSize - modifiers.sampleOffset : outSize;
-            generateEnvelopeGains(key, idx, realOutSize);
-            const auto pair = processFunctor(key, idx, modifiers, realOutSize);
-            modifiers.sampleOffset = 0u;
-            const bool ended = incrementReadIndex(key, pair.second, pair.first, resetFunctor);
-
-            // Reset the note
-            if (!ended) {
-                envelope().setTriggerIndex(key, _cache.readIndexes[key]);
-            }
-            return ended;
-        }
-    );
-    // Actually delete the concerned notes
-    if (itActiveBlock != _cache.activesBlock.end())
-        _cache.activesBlock.erase(itActiveBlock, _cache.activesBlock.end());
 }

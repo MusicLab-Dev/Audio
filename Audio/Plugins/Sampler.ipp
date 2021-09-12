@@ -54,8 +54,11 @@ inline void Audio::Sampler::receiveAudio(BufferView output)
     });
     _noteManager.envelopeGain().resize(outSize);
     _noteManager.processNotesEnvelope(
-        outSize,
-        [this, outGain, outSize, out](const Key key, const std::uint32_t readIndex, const NoteModifiers &modifiers, const std::uint32_t realOutSize) -> std::pair<std::uint32_t, std::uint32_t> {
+        output,
+        [this, outGain, outSize, out](const Key key, const std::uint32_t readIndex, const NoteModifiers &modifiers, float *realOutput, const std::uint32_t realOutSize, const std::size_t channelCount) -> std::pair<std::uint32_t, std::uint32_t>
+        {
+            UNUSED(modifiers);
+            UNUSED(channelCount);
             const std::int32_t realKeyIdx = static_cast<std::int32_t>(key) % KeysPerOctave;
             const std::int32_t realOctave = static_cast<std::int32_t>(key) / KeysPerOctave;
             std::int32_t bufferKeyIdx = realKeyIdx - OctaveRootKey + 1;
@@ -70,15 +73,6 @@ inline void Audio::Sampler::receiveAudio(BufferView output)
 
             auto * const sampleBuffer = _buffers[bufferKeyIdx].data<float>();
             const auto sampleSize = static_cast<std::uint32_t>(_buffers[bufferKeyIdx].size<float>());
-            auto realOut = out;
-
-            // Generate envelope gains
-            // _noteManager.generateEnvelopeGains(key, readIndex, realOutSize);
-
-            // Handle note end
-            if (modifiers.sampleOffset && !readIndex) {
-                realOut += modifiers.sampleOffset;
-            }
 
             auto usedOutSize = realOutSize;
             // The key is already cached
@@ -88,7 +82,7 @@ inline void Audio::Sampler::receiveAudio(BufferView output)
                 usedOutSize = std::min(samplesLeft, usedOutSize);
                 // Apply enveloppe
                 for (auto i = 0u, j = readIndex; i < usedOutSize; ++i, ++j) {
-                    realOut[i] += sampleBuffer[j] * _noteManager.envelopeGain()[i] * outGain;
+                    realOutput[i] += sampleBuffer[j] * _noteManager.envelopeGain()[i] * outGain;
                 }
                 return std::make_pair(usedOutSize, sampleSize);
             // The key need an octave shift
@@ -102,12 +96,12 @@ inline void Audio::Sampler::receiveAudio(BufferView output)
                 usedOutSize = std::min(resamplesLeft, usedOutSize);
                 const std::uint32_t sampleReadSize = static_cast<std::uint32_t>(static_cast<float>(usedOutSize) * bufferOctaveReverseShift);
                 // Create resampled version of the base octave
-                DSP::Resampler<float>().resampleOctave<true, 8u>(sampleBuffer, realOut, sampleReadSize, audioSpecs().sampleRate, bufferOctave, sampleOffset);
+                DSP::Resampler<float>().resampleOctave<true, 8u>(sampleBuffer, realOutput, sampleReadSize, audioSpecs().sampleRate, bufferOctave, sampleOffset);
 
                 /** @warning FIX PROBLEMS */
                 // Apply enveloppe
                 for (auto i = 0u, j = readIndex; i < usedOutSize; ++i, ++j) {
-                    realOut[i] *= _noteManager.envelopeGain()[i] * outGain;
+                    realOutput[i] *= _noteManager.envelopeGain()[i] * outGain;
                 }
                 return std::make_pair(usedOutSize, resampleSize);
             }

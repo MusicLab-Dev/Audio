@@ -53,7 +53,6 @@ public:
     struct alignas_double_cacheline Cache
     {
         ActiveKeyList actives {};
-        ActiveKeyList activesBlock {};
         NoteArray modifiers;
         IndexArray readIndexes;
     };
@@ -61,23 +60,19 @@ public:
     static_assert_alignof_double_cacheline(Cache);
 
 
-    [[nodiscard]] std::uint32_t getAllActiveNoteSize(void) const noexcept { return getActiveNoteSize() + getActiveNoteBlockSize(); }
     [[nodiscard]] std::uint32_t getActiveNoteSize(void) const noexcept { return _cache.actives.size(); }
-    [[nodiscard]] std::uint32_t getActiveNoteBlockSize(void) const noexcept { return _cache.activesBlock.size(); }
 
     [[nodiscard]] ActiveKeyList &getActiveNote(void) noexcept { return _cache.actives; }
-    [[nodiscard]] ActiveKeyList &getActiveNoteBlock(void) noexcept { return _cache.activesBlock; }
 
     [[nodiscard]] const ActiveKeyList &getActiveNote(void) const noexcept { return _cache.actives; }
-    [[nodiscard]] const ActiveKeyList &getActiveNoteBlock(void) const noexcept { return _cache.activesBlock; }
 
     template<typename ProcessFunctor, typename ResetFunctor>
-    void processNotes(const std::uint32_t outSize, ProcessFunctor &&processFunctor, ResetFunctor &&resetFunctor) noexcept
-        { return processNotesImpl<ProcessFunctor, ResetFunctor, false>(outSize, std::move(processFunctor), std::move(resetFunctor)); }
+    void processNotes(BufferView outputFrame, ProcessFunctor &&processFunctor, ResetFunctor &&resetFunctor) noexcept
+        { return processNotesImpl<ProcessFunctor, ResetFunctor, false>(outputFrame, std::move(processFunctor), std::move(resetFunctor)); }
 
     template<typename ProcessFunctor, typename ResetFunctor>
-    void processNotesEnvelope(const std::uint32_t outSize, ProcessFunctor &&processFunctor, ResetFunctor &&resetFunctor) noexcept
-        { return processNotesImpl<ProcessFunctor, ResetFunctor, true>(outSize, std::move(processFunctor), std::move(resetFunctor)); }
+    void processNotesEnvelope(BufferView outputFrame, ProcessFunctor &&processFunctor, ResetFunctor &&resetFunctor) noexcept
+        { return processNotesImpl<ProcessFunctor, ResetFunctor, true>(outputFrame, std::move(processFunctor), std::move(resetFunctor)); }
 
 
     /** @brief Process a list of notes and update the internal cache */
@@ -86,7 +81,7 @@ public:
     /** @brief Reset all */
     void reset(void)
     {
-        resetCache();
+        resetNoteCache();
         clearEnvelopeCache();
         resetAllModifiers();
         resetReadIndexes();
@@ -94,14 +89,10 @@ public:
     }
 
     /** @brief Reset the internal cache. All notes are turned off */
-    void resetCache(void) noexcept;
+    void resetNoteCache(void) noexcept { _cache.actives.clear(); }
 
     /** @brief Clear the internal envelope cache. */
-    void clearEnvelopeCache(void) noexcept;
-
-    /** @brief Reset the internal cache for this block. On&Off notes are turned off */
-    void resetBlockCache(void) noexcept;
-
+    void clearEnvelopeCache(void) noexcept { _envelopeGain.clear(); }
 
     /** @brief Reset the internal note modifiers */
     void resetNoteModifiers(void) noexcept;
@@ -111,16 +102,6 @@ public:
 
     /** @brief Reset the internal modifiers. Both note and poly pressure modifiers are reset */
     void resetAllModifiers(void) noexcept;
-
-
-    // /** @brief Reset the internal triggers */
-    // void resetTriggers(void) noexcept;
-
-    // /** @brief Get a trigger state by Key */
-    // [[nodiscard]] bool trigger(const Key key) const noexcept { return _cache.triggers[key]; }
-
-    // /** @brief Set a trigger state by Key. Return true if the trigger state changed */
-    // bool setTrigger(const Key key, const bool state) noexcept;
 
     /** @brief Reset all read indexes */
     void resetReadIndexes(void) noexcept;
@@ -162,11 +143,15 @@ private:
     Envelope _envelope;
     EnvelopeCache _envelopeGain;
 
+    template<typename ProcessFunctor, typename ResetFunctor, bool ProcessEnvelope>
+    void processNotesImpl(BufferView outputFrame, ProcessFunctor &&processFunctor, ResetFunctor &&resetFunctor) noexcept;
 
     template<typename ProcessFunctor, typename ResetFunctor, bool ProcessEnvelope>
-    void processNotesImpl(const std::uint32_t outSize, ProcessFunctor &&processFunctor, ResetFunctor &&resetFunctor) noexcept;
-
-
+    bool processOneNoteImpl(
+            ProcessFunctor &&processFunctor, ResetFunctor &&resetFunctor,
+            const Key key, const std::uint32_t readIndex, const NoteModifiers &modifiers,
+            float *realOutput, const std::uint32_t realOutSize, const std::size_t channelCount
+    ) noexcept;
 };
 
 // static_assert_alignof_double_cacheline(Audio::NoteManager);

@@ -54,39 +54,31 @@ inline void Audio::Piano::sendNotes(const NoteEvents &notes, const BeatRange &ra
 inline void Audio::Piano::receiveAudio(BufferView output)
 {
     const DB outGain = ConvertDecibelToRatio(static_cast<float>(outputVolume()) + DefaultVoiceGain);
-    const auto outSize = static_cast<std::uint32_t>(output.channelSampleCount());
-    float *out = reinterpret_cast<float *>(output.byteData());
     const auto channels = output.channelArrangement();
 
-    _noteManager.setEnvelopeSpecs(DSP::EnvelopeSpecs {
-        0.0f,
-        0.005f, // A
-        1.0f,
-        0.0f,
-        1.5f,// D
-        0.0f,// S
-        1.5f,// R
-    });
+    const auto outSize = static_cast<std::uint32_t>(output.channelSampleCount());
     _noteManager.envelopeGain().resize(outSize);
+    // _noteManager.setEnvelopeSpecs(DSP::EnvelopeSpecs {
+    //     0.0f,
+    //     0.005f, // A
+    //     1.0f,
+    //     0.0f,
+    //     1.5f,// D
+    //     0.0f,// S
+    //     1.5f,// R
+    // });
+
     _noteManager.processNotes(
-        outSize,
-        [this, outGain, outSize, out, channels](const Key key, const std::uint32_t readIndex, const NoteModifiers &modifiers, const std::uint32_t realOutSize) -> std::pair<std::uint32_t, std::uint32_t>
+        output,
+        [this, outGain, channels](const Key key, const std::uint32_t readIndex, const NoteModifiers &modifiers, float *realOutput, const std::uint32_t realOutSize, const std::size_t channelCount) -> std::pair<std::uint32_t, std::uint32_t>
         {
-            const auto channelCount = static_cast<std::size_t>(channels);
             const auto channelsMinusOne = channelCount - 1u;
             auto outGainNorm = channelsMinusOne ? outGain / 2.0f : outGain / 4.0f;
             if (static_cast<std::uint32_t>(type()) == 2u)
                 outGainNorm *= 1.5f;
 
-            auto realOut = out;
             auto cacheLeft = _cache.data<float>();
             auto cacheRight = _cache.data<float>() + channelsMinusOne;
-            if (modifiers.sampleOffset && !readIndex) {
-                const auto dt = modifiers.sampleOffset * channelCount;
-                realOut += dt;
-                cacheLeft += dt;
-                cacheRight += dt;
-            }
             UNUSED(modifiers);
             const auto freq = GetNoteFrequency(key);
             const auto freqNorm = GetFrequencyNorm(freq, audioSpecs().sampleRate);
@@ -214,7 +206,7 @@ inline void Audio::Piano::receiveAudio(BufferView output)
                     1.0f,// R
                 });
 
-                auto k = modifiers.sampleOffset * ch;
+                auto k = 0u;
                 for (auto i = 0u; i < realOutSize; ++i, k += (channelCount)) {
                     envF = _filterEnv[ch].getGain(key, readIndex + i);
                     float cutOff = 1.0f / (envF * envAmount + 1.0f) * filterCutOff;
@@ -228,7 +220,7 @@ inline void Audio::Piano::receiveAudio(BufferView output)
                         1.0f,
                         0.707f
                     });
-                    realOut[k] += _filter[ch].processSample(cacheLeft[k], key, 1.0f);
+                    realOutput[k] += _filter[ch].processSample(cacheLeft[k], key, 1.0f);
                 }
                 // Reset filter envelope cache if last gain is zero
                 // if (!envF) {
