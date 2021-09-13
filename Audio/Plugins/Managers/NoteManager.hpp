@@ -68,11 +68,11 @@ public:
 
     template<typename ProcessFunctor, typename TestFunctor, typename ResetFunctor>
     void processNotes(BufferView outputFrame, ProcessFunctor &&processFunctor, TestFunctor &&testFunctor, ResetFunctor &&resetFunctor) noexcept
-        { return processNotesImpl<ProcessFunctor, TestFunctor, ResetFunctor, false>(outputFrame, std::move(processFunctor), std::move(testFunctor), std::move(resetFunctor)); }
+        { return processNotesImpl<false, ProcessFunctor, TestFunctor, ResetFunctor>(outputFrame, std::forward<ProcessFunctor>(processFunctor), std::forward<TestFunctor>(testFunctor), std::forward<ResetFunctor>(resetFunctor)); }
 
     template<typename ProcessFunctor, typename TestFunctor, typename ResetFunctor>
     void processNotesEnvelope(BufferView outputFrame, ProcessFunctor &&processFunctor, TestFunctor &&testFunctor, ResetFunctor &&resetFunctor) noexcept
-        { return processNotesImpl<ProcessFunctor, TestFunctor, ResetFunctor, true>(outputFrame, std::move(processFunctor), std::move(testFunctor), std::move(resetFunctor)); }
+        { return processNotesImpl<true, ProcessFunctor, TestFunctor, ResetFunctor>(outputFrame, std::forward<ProcessFunctor>(processFunctor), std::forward<TestFunctor>(testFunctor), std::forward<ResetFunctor>(resetFunctor)); }
 
 
     /** @brief Process a list of notes and update the internal cache */
@@ -147,10 +147,10 @@ private:
     Envelope _envelope;
     EnvelopeCache _envelopeGain;
 
-    template<typename ProcessFunctor, typename TestFunctor, typename ResetFunctor, bool ProcessEnvelope>
+    template<bool ProcessEnvelope, typename ProcessFunctor, typename TestFunctor, typename ResetFunctor>
     void processNotesImpl(BufferView outputFrame, ProcessFunctor &&processFunctor, TestFunctor &&testFunctor, ResetFunctor &&resetFunctor) noexcept;
 
-    template<typename ProcessFunctor, typename TestFunctor, typename ResetFunctor, bool ProcessEnvelope>
+    template<bool ProcessEnvelope, typename ProcessFunctor, typename TestFunctor, typename ResetFunctor>
     bool processOneNoteImpl(
             ProcessFunctor &&processFunctor, TestFunctor &&testFunctor, ResetFunctor &&resetFunctor,
             const Key key, const std::uint32_t readIndex, const NoteModifiers &modifiers,

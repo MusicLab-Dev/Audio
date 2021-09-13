@@ -101,7 +101,7 @@ inline void Audio::NoteManager<EnvelopeType>::generateEnvelopeGains(const Key ke
 }
 
 template<Audio::DSP::EnvelopeType EnvelopeType>
-template<typename ProcessFunctor, typename TestFunctor, typename ResetFunctor, bool ProcessEnvelope>
+template<bool ProcessEnvelope, typename ProcessFunctor, typename TestFunctor, typename ResetFunctor>
 bool Audio::NoteManager<EnvelopeType>::processOneNoteImpl(
         ProcessFunctor &&processFunctor, TestFunctor &&testFunctor, ResetFunctor &&resetFunctor,
         const Key key, const std::uint32_t readIndex, const NoteModifiers &modifiers,
@@ -120,7 +120,7 @@ bool Audio::NoteManager<EnvelopeType>::processOneNoteImpl(
 }
 
 template<Audio::DSP::EnvelopeType EnvelopeType>
-template<typename ProcessFunctor, typename TestFunctor, typename ResetFunctor, bool ProcessEnvelope>
+template<bool ProcessEnvelope, typename ProcessFunctor, typename TestFunctor, typename ResetFunctor>
 void Audio::NoteManager<EnvelopeType>::processNotesImpl(BufferView outputFrame, ProcessFunctor &&processFunctor, TestFunctor &&testFunctor, ResetFunctor &&resetFunctor) noexcept
 {
     const auto outSize = static_cast<std::uint32_t>(outputFrame.size<float>());
@@ -139,7 +139,7 @@ void Audio::NoteManager<EnvelopeType>::processNotesImpl(BufferView outputFrame, 
                 // Process the active key (no event)
                 const auto idx = readIndex(key);
                 // std::cout << "___NoEvent Process: idx: " << idx << ", size: " << outSize << std::endl;
-                ended = processOneNoteImpl<ProcessFunctor, TestFunctor, ResetFunctor, ProcessEnvelope>(std::move(processFunctor), std::move(testFunctor), std::move(resetFunctor), key, idx, NoteModifiers(), realOutput, outSize, channelCount);
+                ended = processOneNoteImpl<ProcessEnvelope>(processFunctor, testFunctor, resetFunctor, key, idx, NoteModifiers(), realOutput, outSize, channelCount);
                 // if constexpr (ProcessEnvelope) {
                 //     _envelopeGain.clear();
                 //     generateEnvelopeGains(key, idx, outSize);
@@ -162,7 +162,7 @@ void Audio::NoteManager<EnvelopeType>::processNotesImpl(BufferView outputFrame, 
                         if (process) {
                             realOutSize -= (outSize - evt.noteModifiers.sampleOffset);
                             // std::cout << "process(BEGIN): " << idx << ", offset: " << processModifiers.sampleOffset << ", size: " << realOutSize << std::endl;
-                            ended = processOneNoteImpl<ProcessFunctor, TestFunctor, ResetFunctor, ProcessEnvelope>(std::move(processFunctor), std::move(testFunctor), std::move(resetFunctor), key, idx, processModifiers, realOutput, realOutSize, channelCount);
+                            ended = processOneNoteImpl<ProcessEnvelope>(processFunctor, testFunctor, resetFunctor, key, idx, processModifiers, realOutput, realOutSize, channelCount);
                             // if constexpr (ProcessEnvelope) {
                             //     _envelopeGain.clear();
                             //     generateEnvelopeGains(key, idx, realOutSize);
@@ -188,7 +188,7 @@ void Audio::NoteManager<EnvelopeType>::processNotesImpl(BufferView outputFrame, 
                 //
                 if (process) {
                     // std::cout << "process(END): " << idx << ", offset: " << processModifiers.sampleOffset << ", size: " << realOutSize << std::endl;
-                    ended = processOneNoteImpl<ProcessFunctor, TestFunctor, ResetFunctor, ProcessEnvelope>(std::move(processFunctor), std::move(testFunctor), std::move(resetFunctor), key, idx, processModifiers, realOutput, realOutSize, channelCount);
+                    ended = processOneNoteImpl<ProcessEnvelope>(processFunctor, testFunctor, resetFunctor, key, idx, processModifiers, realOutput, realOutSize, channelCount);
                     // if constexpr (ProcessEnvelope) {
                     //     _envelopeGain.clear();
                     //     generateEnvelopeGains(key, idx, realOutSize);
