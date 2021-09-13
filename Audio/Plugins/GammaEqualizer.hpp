@@ -31,7 +31,7 @@ public:
             TR(French, "L'équaliseur permet de filtrer des plages de fréquences de l'audio")
         ),
         FLAGS(AudioInput, AudioOutput),
-        TAGS(EQ),
+        TAGS(Filter),
         REGISTER_CONTROL_INPUT_GAIN(
             inputGain, 0.0,
             CONTROL_DEFAULT_INPUT_GAIN_RANGE()

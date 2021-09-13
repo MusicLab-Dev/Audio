@@ -30,7 +30,7 @@ class Audio::SimpleReverb final : public Audio::IPlugin
         /* Plugin flags */
         FLAGS(AudioInput, AudioOutput),
         /* Plugin tags */
-        TAGS(Delay),
+        TAGS(Reverb),
         /* Control list */
         REGISTER_CONTROL_INPUT_GAIN(
             inputGain,

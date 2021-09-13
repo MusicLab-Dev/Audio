@@ -39,30 +39,24 @@ public:
 
     enum class Tags : std::uint32_t {
         None            = 0,
-        Effect          = 1,
-        Analyzer        = 1 << 1,
-        Delay           = 1 << 2,
-        Distortion      = 1 << 3,
-        Dynamics        = 1 << 4,
-        EQ              = 1 << 5,
-        Filter          = 1 << 6,
-        Spatial         = 1 << 7,
-        Generator       = 1 << 8,
-        Mastering       = 1 << 9,
-        Modulation      = 1 << 10,
-        PitchShift      = 1 << 11,
-        Restoration     = 1 << 12,
-        Reverb          = 1 << 13,
-        Surround        = 1 << 14,
-        Tools           = 1 << 15,
-        Network         = 1 << 16,
-        Drum            = 1 << 17,
-        Instrument      = 1 << 18,
-        Piano           = 1 << 20,
-        Sampler         = 1 << 21,
-        Synth           = 1 << 22,
-        External        = 1 << 23,
-        Sequencer       = 1 << 24
+
+        // Groups
+        Group           = 1,
+        Mastering       = static_cast<int>(Group) | 1 << 1,
+        Sequencer       = static_cast<int>(Group) | 1 << 2,
+
+        // Instruments
+        Instrument      = 1 << 10,
+        Synth           = static_cast<int>(Instrument) | 1 << 11,
+        Drum            = static_cast<int>(Instrument) | 1 << 12,
+        Sampler         = static_cast<int>(Instrument) | 1 << 13,
+
+        // Effects
+        Effect          = 1 << 20,
+        Filter          = static_cast<int>(Effect) | 1 << 21,
+        Reverb          = static_cast<int>(Effect) | 1 << 22,
+        Delay           = static_cast<int>(Effect) | 1 << 23,
+        Distortion      = static_cast<int>(Effect) | 1 << 24,
     };
 
     static constexpr std::string_view DefaultLang = "EN";

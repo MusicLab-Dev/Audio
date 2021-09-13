@@ -34,7 +34,7 @@ class Audio::Kick final : public Audio::IPlugin
         /* Plugin flags */
         FLAGS(AudioOutput, NoteInput, NoChildren),
         /* Plugin tags */
-        TAGS(Synth),
+        TAGS(Drum),
         /* Control list */
         REGISTER_CONTROL_OUTPUT_VOLUME(
             outputVolume,

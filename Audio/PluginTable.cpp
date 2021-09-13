@@ -64,21 +64,26 @@ void Audio::PluginTable::decrementRefCount(IPlugin *plugin) noexcept_ndebug
 
 Audio::PluginTable::PluginTable(void)
 {
+    // Groups
     registerFactory<Audio::Mixer>();
-    // registerFactory<Audio::FMX>();
-    registerFactory<Audio::Piano>();
-    // registerFactory<Audio::Drums>();
     registerFactory<Audio::Arpeggiator>();
-//    registerFactory<Audio::Chords>();
+
+    // Instruments
+    registerFactory<Audio::Oscillator>();
+    registerFactory<Audio::Sampler>();
+    registerFactory<Audio::Piano>();
     registerFactory<Audio::Kick>();
     registerFactory<Audio::Snare>();
-    registerFactory<Audio::Sampler>();
-    registerFactory<Audio::Oscillator>();
-    registerFactory<Audio::BandFilter>();
-    registerFactory<Audio::CutoffFilter>();
+    // registerFactory<Audio::FMX>();
+    // registerFactory<Audio::Drums>();
+    // registerFactory<Audio::Chords>();
+
+    // Effects
     registerFactory<Audio::SimpleDelay>();
     registerFactory<Audio::SimpleReverb>();
+    registerFactory<Audio::CutoffFilter>();
+    registerFactory<Audio::BandFilter>();
     registerFactory<Audio::GammaEqualizer>();
-    // registerFactory<Audio::LambdaFilter>();
     registerFactory<Audio::SigmaFilter>();
+    // registerFactory<Audio::LambdaFilter>();
 }

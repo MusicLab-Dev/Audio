@@ -111,6 +111,7 @@ class Audio::IPlugin
 {
 public:
     using Flags = IPluginFactory::Flags;
+    using Tags = IPluginFactory::Tags;
 
     /** @brief Plugin constructor */
     IPlugin(const IPluginFactory *factory) noexcept : _factory(factory) {}
@@ -152,6 +153,9 @@ public:
 
     /** @brief  */
     [[nodiscard]] Flags getFlags(void) const noexcept { return getMetaData().flags; };
+
+    /** @brief  */
+    [[nodiscard]] Tags getTags(void) const noexcept { return getMetaData().tags; };
 
 
     /** @brief  */
