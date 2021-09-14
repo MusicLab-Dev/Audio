@@ -84,6 +84,6 @@ Audio::PluginTable::PluginTable(void)
     registerFactory<Audio::CutoffFilter>();
     registerFactory<Audio::BandFilter>();
     registerFactory<Audio::GammaEqualizer>();
-    registerFactory<Audio::SigmaFilter>();
+    // registerFactory<Audio::SigmaFilter>();
     // registerFactory<Audio::LambdaFilter>();
 }
