@@ -83,8 +83,8 @@ template<unsigned OperatorCount, Audio::DSP::FM::AlgorithmType Algo, bool PitchE
 class Audio::DSP::FM::Schema
 {
 public:
-    // using EnvelopeList = EnvelopeDefaultExp<EnvelopeType::ADSR, OperatorCount + PitchEnv>;
-    using EnvelopeList = EnvelopeDefaultLinear<EnvelopeType::ADSR, OperatorCount + PitchEnv>;
+    using EnvelopeList = EnvelopeDefaultExp<EnvelopeType::ADSR, OperatorCount + PitchEnv>;
+    // using EnvelopeList = EnvelopeDefaultLinear<EnvelopeType::ADSR, OperatorCount + PitchEnv>;
     using EnvelopeCache = Core::TinyVector<float>;
 
     void reset(void) noexcept
@@ -112,7 +112,7 @@ public:
     void envelopeResetTriggerIndex(const Key key) noexcept { _envelopes.resetTriggerIndex(key); }
     void envelopeResetInternalGain(const Key key) noexcept { _envelopes.resetInternalGain(key); }
 
-    bool isKeyEnded(const Key key) const noexcept;
+    [[nodiscard]] bool isKeyEnded(const Key key) const noexcept;
 
     template<bool Accumulate>
     void process(
@@ -123,6 +123,7 @@ public:
             const ChannelArrangement channels = ChannelArrangement::Mono
     ) noexcept;
 
+    [[nodiscard]] DSP::Oscillator<OperatorCount> &osc(void) noexcept { return _oscillator; }
 private:
     // Internal operators envelope
     EnvelopeList _envelopes;
@@ -142,7 +143,7 @@ private:
     DSP::Oscillator<OperatorCount> _oscillator;
 
     template<unsigned Index>
-    bool isKeyEnded(const Key key) const noexcept;
+    [[nodiscard]] bool isKeyEnded(const Key key) const noexcept;
 
     template<bool Accumulate>
     void processImpl(

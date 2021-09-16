@@ -101,11 +101,7 @@ inline void Audio::DSP::FM::Schema<OperatorCount, Algo, PitchEnv>::processOperat
 
     const DB outGain = op.volume * outputGain * keyAmount;
 
-    if (!outGain) {
-        std::fill(output, output + processSize, 0.0f);
-        return;
-    }
-
+    _envelopeGain.clear();
     _envelopes.template generateGains<false, OperatorIndex>(key, phaseIndex, _envelopeGain.data(), processSize);
     if constexpr (PitchEnv) {
         if constexpr (Modulate) {
