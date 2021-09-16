@@ -145,8 +145,22 @@ class Audio::Snare final : public Audio::IPlugin
             TR_TABLE(
                 TR(English, "%")
             )
-        )
-    )
+        ),
+        REGISTER_CONTROL_FLOATING(
+            attack, 0.0035, CONTROL_RANGE_STEP(0.0, 0.1, 0.001),
+            TR_TABLE(
+                TR(English, "Attack"),
+            ),
+            TR_TABLE(
+                TR(English, "Attack"),
+            ),
+            TR_TABLE(
+                TR(English, "Atck")
+            ),
+            TR_TABLE(
+                TR(English, "%")
+            )
+        )    )
 
 public:
     /** @brief Plugin constructor */

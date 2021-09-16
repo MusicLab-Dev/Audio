@@ -37,24 +37,15 @@ inline void Audio::FMX::receiveAudio(BufferView output)
     const auto outSize = static_cast<std::uint32_t>(output.size<float>());
     float *out = reinterpret_cast<float *>(output.byteData());
     const auto channels = output.channelArrangement();
-    // const bool noRelease = !enveloppeRelease();
-    const bool noRelease = false;
-
 
 
     _fmManager.processNotes(
-        [this, outGain, outSize, out, noRelease, channels](const Key key, const bool trigger, const std::uint32_t readIndex, const NoteModifiers &modifiers) -> std::pair<std::uint32_t, std::uint32_t> {
+        output,
+        [this, outGain, channels](const Key key, const std::uint32_t readIndex, const NoteModifiers &modifiers, float *realOutput, const std::uint32_t realOutSize, const std::size_t channelCount) -> std::pair<std::uint32_t, std::uint32_t>
             const float rootFrequency = std::pow(2.f, static_cast<float>(static_cast<int>(key) - RootKey) / KeysPerOctave) * RootKeyFrequency;
             auto realOut = out;
             auto realOutSize = outSize;
-            if (modifiers.sampleOffset) {
-                if (trigger) {
-                    realOut += modifiers.sampleOffset;
-                    realOutSize -= modifiers.sampleOffset;
-                } else if (noRelease) {
-                    realOutSize = modifiers.sampleOffset;
-                }
-            }
+
             UNUSED(readIndex);
             UNUSED(rootFrequency);
             UNUSED(modifiers);

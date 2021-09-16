@@ -46,18 +46,16 @@ inline void Audio::Kick::receiveAudio(BufferView output)
     const auto channels = static_cast<std::size_t>(output.channelArrangement());
     float *out = reinterpret_cast<float *>(output.byteData());
 
+    _noteManager.setEnvelopeSpecs(DSP::EnvelopeSpecs {
+        0.0f,
+        0.0f, // A
+        1.0f,
+        0.0f,
+        static_cast<float>(duration()), // D
+        0.8f,// S
+        static_cast<float>(duration()) // R
+    });
     _noteManager.envelopeGain().resize(outSize);
-    // _noteManager.setEnvelopeSpecs(DSP::EnvelopeSpecs {
-    //     0.0f,
-    //     0.0f, // A
-    //     1.0f,
-    //     0.0f,
-    //     0.0f,// D
-    //     1.0f,// S
-    //     1.5f,// R
-    // });
-
-
     _noteManager.processNotes(
         output,
         [this, outGain, channels](const Key key, const std::uint32_t readIndex, const NoteModifiers &modifiers, float *realOutput, const std::uint32_t realOutSize, const std::size_t channelCount) -> std::pair<std::uint32_t, std::uint32_t>
@@ -73,7 +71,7 @@ inline void Audio::Kick::receiveAudio(BufferView output)
                     0.5f,
                     0.0f,
                     static_cast<float>(duration()),
-                    0.0f,
+                    0.8f,
                     static_cast<float>(duration()),
                     1.0f,
                     0.0f,
@@ -87,7 +85,7 @@ inline void Audio::Kick::receiveAudio(BufferView output)
                     0.5f,
                     0.0f,
                     static_cast<float>(duration()),
-                    0.0f,
+                    0.8f,
                     static_cast<float>(duration()),
                     1.0f,
                     0.0f,
@@ -138,6 +136,7 @@ inline void Audio::Kick::receiveAudio(BufferView output)
         [this] (const Key key) -> bool
         {
             return _fm.isKeyEnded(key);
+            // return !_noteManager.envelope().lastGain(key);
         },
         [this] (const Key key) -> void
         {

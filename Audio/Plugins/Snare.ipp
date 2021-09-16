@@ -69,17 +69,31 @@ inline void Audio::Snare::receiveAudio(BufferView output)
             const auto globalDuration = static_cast<float>(duration());
             const auto snapLvl = static_cast<float>(snapLevel());
             const auto snapDec = static_cast<float>(snapDuration());
-            const auto snapColor = static_cast<float>(snapTone());
+            const auto snapTn = static_cast<float>(snapTone());
             const auto pitchDec = static_cast<float>(pitchDecay());
             const auto pitchLvl = static_cast<float>(pitchLevel());
 
-            UNUSED(snapColor);
+            UNUSED(snapTn);
             _noteManager.generateEnvelopeGains(key, readIndex, realOutSize);
             _fm.process<true>(realOutput, realOutSize, outGain, readIndex, key, rootFrequency, {
                DSP::FM::Internal::Operator {
                     DSP::Generator::Waveform::Triangle,
                     1.0f,
                     0.0f,
+                    static_cast<float>(attack() * 2.0f),
+                    0.0f,
+                    static_cast<float>(attack() * 2.0f),
+                    1.0f,
+                    0.0f,
+                    0u,
+                    static_cast<Key>(69u),
+                    0.0f,
+                    0.0f
+               },
+               DSP::FM::Internal::Operator {
+                    DSP::Generator::Waveform::Sine,
+                    1.0f,
+                    static_cast<float>(attack()),
                     globalDuration,
                     0.0f,
                     globalDuration,
@@ -93,21 +107,7 @@ inline void Audio::Snare::receiveAudio(BufferView output)
                DSP::FM::Internal::Operator {
                     DSP::Generator::Waveform::Sine,
                     1.0f,
-                    0.0f,
-                    globalDuration,
-                    0.0f,
-                    globalDuration,
-                    1.0f,
-                    0.0f,
-                    0u,
-                    static_cast<Key>(69u),
-                    0.0f,
-                    0.0f
-               },
-               DSP::FM::Internal::Operator {
-                    DSP::Generator::Waveform::Sine,
-                    1.0f,
-                    0.0f,
+                    static_cast<float>(attack()),
                     globalDuration * 2.0f,
                     0.0f,
                     globalDuration * 2.0f,
@@ -121,7 +121,7 @@ inline void Audio::Snare::receiveAudio(BufferView output)
                DSP::FM::Internal::Operator {
                     DSP::Generator::Waveform::Noise,
                     1.0f,
-                    pitchDec * 1.5f,
+                    static_cast<float>(attack()),
                     snapDec,
                     0.0f,
                     0.001f,
