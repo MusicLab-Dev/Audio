@@ -192,7 +192,7 @@ inline bool Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, P
             }
         }
     } else if constexpr (Playback == PlaybackMode::Partition) {
-        if (&node() == _scheduler->partitionNode())
+        if (&node() == _scheduler->partitionNode() && _scheduler->partitionIndex() != std::numeric_limits<std::uint32_t>::max())
             collectPartition(partitions[_scheduler->partitionIndex()], beatRange, beatToSampleRatio);
     }
     return *_noteStack;
