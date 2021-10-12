@@ -47,7 +47,7 @@ inline void Audio::AScheduler::invalidateGraph(void)
     if constexpr (Playback == PlaybackMode::Partition || Playback == PlaybackMode::OnTheFly) {
         if (!_partitionNode)
             throw std::logic_error("AScheduler::invalidateGraph: Scheduler has no linked partition node");
-        if (_partitionIndex >= _partitionNode->partitions().size())
+        if (_partitionIndex != std::numeric_limits<std::uint32_t>::max() && _partitionIndex >= _partitionNode->partitions().size())
             throw std::logic_error("AScheduler::invalidateGraph: Partition node doesn't have a partition at given index");
     }
     if constexpr (Playback == PlaybackMode::Export)
