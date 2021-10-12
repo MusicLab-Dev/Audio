@@ -53,8 +53,10 @@ inline void Audio::DSP::FM::Schema<OperatorCount, Algo, PitchEnv>::processImpl(
     if constexpr (Algo == AlgorithmType::Drum) {
         static_assert(OperatorCount == 4u, "Audio::DSP::FM::Schema<OperatorCount, Drum>::processImpl: OperatorCount must be equal to 4");
         drum_impl<Accumulate>(output, processSize, outputGain, phaseIndex, key, freqNorm, operators, channels);
+    } else if constexpr (Algo == AlgorithmType::Hat) {
+        static_assert(OperatorCount == Internal::HelperSpecs[static_cast<unsigned>(Algo)], "Audio::DSP::FM::Schema<OperatorCount, Hat>::processImpl: OperatorCount must be equal to 2");
+        hat_impl<Accumulate>(output, processSize, outputGain, phaseIndex, key, freqNorm, operators, channels);
     } else if constexpr (Algo == AlgorithmType::Piano) {
-
     }
 }
 

@@ -113,6 +113,8 @@ set(AudioPluginsSources
     ${AudioPluginsDir}/Kick.ipp
     ${AudioPluginsDir}/Snare.hpp
     ${AudioPluginsDir}/Snare.ipp
+    ${AudioPluginsDir}/Hat.hpp
+    ${AudioPluginsDir}/Hat.ipp
 )
 
 set(AudioPluginManagerDir ${AudioPluginsDir}/Managers)

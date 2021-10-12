@@ -62,21 +62,26 @@ namespace Audio::DSP::FM
         template<unsigned InstanceCount>
         using OperatorArray = std::array<Internal::Operator, InstanceCount>;
 
-        class Specs
-        {
-
+        static constexpr unsigned HelperSpecs[] = {
+            1u,
+            4u,
+            4u,
+            6u
         };
-
     }
 
     enum class AlgorithmType : std::uint8_t {
-        Default,
+        Default = 0u,
         Piano,
-        Drum
+        Drum,
+        Hat
     };
 
     template<unsigned OperatorCount, AlgorithmType Algo, bool PitchEnv>
     class Schema;
+
+    template<AlgorithmType Algo, bool PitchEnv>
+    using SchemaHelper = Schema<Internal::HelperSpecs[static_cast<unsigned>(Algo)], Algo, PitchEnv>;
 }
 
 template<unsigned OperatorCount, Audio::DSP::FM::AlgorithmType Algo, bool PitchEnv = false>
@@ -316,6 +321,24 @@ private:
         processOperator<false, false, false, 2u>(nullptr, _cache.data(), processSize, 1.0f, phaseIndex, getDetuneFrequency(rootFrequency, operators[2u]), key, operators[2u], channels);
         processOperator<true, true, true, 1u>(_cache.data(), output, processSize, realOutputGain, phaseIndex, getDetuneFrequency(rootFrequency, operators[1u]), key, operators[1u], channels);
     }
-};
+
+    template<bool Accumulate>
+    void hat_impl(
+            float *output, const std::uint32_t processSize, const float outputGain,
+            const std::uint32_t phaseIndex, const Key key, const float rootFrequency,
+            const Internal::OperatorArray<OperatorCount> &operators,
+            const ChannelArrangement channels
+    ) noexcept
+    {
+        const auto defOutGain = outputGain / 2.0f;
+        const auto oscOutGain = defOutGain / static_cast<float>(Internal::HelperSpecs[static_cast<unsigned>(Algo)] - 1u);
+
+        processOperator<true, false, true, 0u>(nullptr, output, processSize, defOutGain, phaseIndex, getDetuneFrequency(rootFrequency, operators[0u]), key, operators[0u], channels);
+        processOperator<true, false, true, 1u>(nullptr, output, processSize, oscOutGain, phaseIndex, getDetuneFrequency(rootFrequency, operators[1u]), key, operators[1u], channels);
+        processOperator<true, false, true, 2u>(nullptr, output, processSize, oscOutGain, phaseIndex, getDetuneFrequency(rootFrequency, operators[2u]), key, operators[2u], channels);
+        processOperator<true, false, true, 3u>(nullptr, output, processSize, oscOutGain, phaseIndex, getDetuneFrequency(rootFrequency, operators[3u]), key, operators[3u], channels);
+        processOperator<true, false, true, 4u>(nullptr, output, processSize, oscOutGain, phaseIndex, getDetuneFrequency(rootFrequency, operators[4u]), key, operators[4u], channels);
+        processOperator<true, false, true, 5u>(nullptr, output, processSize, oscOutGain, phaseIndex, getDetuneFrequency(rootFrequency, operators[5u]), key, operators[5u], channels);
+    }};
 
 #include "FM.ipp"
