@@ -66,6 +66,8 @@ inline bool Audio::DSP::FM::Schema<OperatorCount, Algo, PitchEnv>::isKeyEnded(co
     if constexpr (Algo == AlgorithmType::Drum) {
         // 0: sub, 1: transient 3: noise
         return isKeyEnded<0u>(key) && isKeyEnded<1u>(key) && isKeyEnded<3u>(key);
+    } else if constexpr (Algo == AlgorithmType::Hat) {
+        return isKeyEnded<0u>(key);
     }
 }
 

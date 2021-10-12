@@ -162,7 +162,7 @@ inline void Audio::Hat::receiveAudio(BufferView output)
         }
     );
 
-    _combFilter.setInputAmount(1.0f);
+    _combFilter.setInputAmount(0.0f);
     _combFilter.setDelayAmount(static_cast<float>(combLevel()));
     _combFilter.setDelayTime(static_cast<float>(audioSpecs().sampleRate), static_cast<float>(combSpread()));
 
