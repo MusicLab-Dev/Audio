@@ -174,19 +174,19 @@ inline void Audio::AScheduler::buildGraph(void)
     auto audioTask = MakeSchedulerTask<Playback, false, true>(graph(), parent->flags(), this, parent, nullptr);
     audioTask.first.setName(parent->name() + "_audio");
 
-    // If master is the only node, connect his tasks
+    // If target doesn't have children, connect his tasks
     if (parent->children().empty()) {
         noteTask.first.precede(audioTask.first);
-        if (!parent->parent())
-            return;
     } else {
         for (auto &child : parent->children()) {
             buildNodeTask<Playback>(child.get(), noteTask, audioTask);
         }
     }
     if constexpr (Playback == PlaybackMode::Partition || Playback == PlaybackMode::OnTheFly) {
+        std::cout << "!! BUilding " << parent->name().toStdView() << std::string(parent ? " true" : " false")<< std::endl;
         parent = parent->parent();
         while (parent) {
+            std::cout << "!! BUilding parent " << parent->name().toStdView() << std::endl;
             auto parentAudioTask = MakeSchedulerTask<Playback, false, true>(graph(), parent->flags(), this, parent, nullptr);
             parentAudioTask.first.setName(parent->name() + "_audio");
             parentAudioTask.first.succeed(audioTask.first);
