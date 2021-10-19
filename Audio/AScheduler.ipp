@@ -3,8 +3,6 @@
  * @ Description: AScheduler
  */
 
-#include <iostream>
-
 inline Audio::AScheduler::AScheduler(ProjectPtr &&project)
     : AScheduler()
 {
@@ -183,10 +181,8 @@ inline void Audio::AScheduler::buildGraph(void)
         }
     }
     if constexpr (Playback == PlaybackMode::Partition || Playback == PlaybackMode::OnTheFly) {
-        std::cout << "!! BUilding " << parent->name().toStdView() << std::string(parent ? " true" : " false")<< std::endl;
         parent = parent->parent();
         while (parent) {
-            std::cout << "!! BUilding parent " << parent->name().toStdView() << std::endl;
             auto parentAudioTask = MakeSchedulerTask<Playback, false, true>(graph(), parent->flags(), this, parent, nullptr);
             parentAudioTask.first.setName(parent->name() + "_audio");
             parentAudioTask.first.succeed(audioTask.first);
