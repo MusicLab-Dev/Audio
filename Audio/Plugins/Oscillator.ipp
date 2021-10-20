@@ -11,6 +11,15 @@ inline void Audio::Oscillator::onAudioGenerationStarted(const BeatRange &range)
     UNUSED(range);
     _noteManager.reset();
     _oscillator.reset();
+
+    // _filter.setup(DSP::Biquad::Internal::Specs {
+    //     DSP::Filter::AdvancedType::LowPass,
+    //     static_cast<float>(audioSpecs().sampleRate),
+    //     { static_cast<float>(filterCutoff()), 0.0f },
+    //     1.0f,
+    //     static_cast<float>(filterResonance()) * 0.707f
+    // });
+    // _filter.reset();
 }
 
 inline void Audio::Oscillator::onAudioParametersChanged(void)
@@ -76,7 +85,7 @@ inline void Audio::Oscillator::receiveAudio(BufferView output)
             // if (!readIndex)
             //     _oscillator.resetKey<0u>(key);
             // Sync voices when no detune (unison)
-            if (det == 0.0f) {
+            if (det == 0.0f && !readIndex) {
                 const auto rootPhase = _oscillator.phase<0u>(key);
                 _oscillator.setPhase<1u>(key, rootPhase);
                 _oscillator.setPhase<2u>(key, rootPhase);
