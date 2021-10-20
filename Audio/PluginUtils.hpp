@@ -213,20 +213,24 @@ private:
         UnitName, \
         Audio::ParamType::Boolean, \
         Value, \
-        {}, \
+        { 0.0 , 1.0 }, \
         {} \
     }
 
 #define _REGISTER_METADATA_CONTROL_ENUM(Variable, Range, Name, Description, ShortName, UnitName) \
-    Audio::ControlMetaData { \
-        Audio::TranslationMetaData { Name, Description }, \
-        ShortName, \
-        UnitName, \
-        Audio::ParamType::Enum, \
-        0.0, \
-        {}, \
-        Range \
-    }
+    [](void) -> Audio::ControlMetaData { \
+        auto range = Range; \
+        const auto rangeSize = range.size(); \
+        return Audio::ControlMetaData { \
+            Audio::TranslationMetaData { Name, Description }, \
+            ShortName, \
+            UnitName, \
+            Audio::ParamType::Enum, \
+            0.0, \
+            { 0.0, static_cast<ParamValue>(rangeSize), 1.0 }, \
+            std::move(range) \
+        }; \
+    }()
 
 #define _INIT_CONTROL_FLOATING(Variable, Value, Range, Name, Description, ShortName, UnitName) Value
 #define _INIT_CONTROL_INTEGER(Variable, Value, Range, Name, Description, ShortName, UnitName) Value

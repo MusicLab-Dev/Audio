@@ -233,7 +233,7 @@ private:
     float _beatMissOffset { 0.0f };
     float _beatMissCorrection { 0.0f };
     std::uint32_t _processLoopCrop { 0u };
-    BPM _bpm { 120.0f };
+    BPM _bpm { 0.0f };
     PlaybackGraph _graphCache {};
 
     // Cacheline 3 - High frequency atomic read / write

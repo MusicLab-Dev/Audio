@@ -30,7 +30,7 @@ class Audio::Piano final : public Audio::IPlugin
             TR(French, "Piano allow to generate audio waveforms and play them as notes")
         ),
         /* Plugin flags */
-        FLAGS(AudioOutput, NoteInput),
+        FLAGS(AudioOutput, NoteInput, NoChildren),
         /* Plugin tags */
         TAGS(Synth),
         /* Control list */
