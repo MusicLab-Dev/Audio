@@ -171,6 +171,7 @@ inline bool Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, P
     const double beatToSampleRatio = static_cast<double>(_scheduler->sampleRate())
             / (static_cast<double>(_scheduler->tempo()) * static_cast<double>(Audio::BeatPrecision));
     const double beatMissOffset = std::fabs(_scheduler->beatMissOffset());
+    const bool loopCorrection = scheduler().loopCropSize();
 
     auto &partitions = node().partitions();
 
@@ -188,19 +189,19 @@ inline bool Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, P
                     continue;
                 else if (instance.range.from > beatRange.to)
                     break;
-                collectPartition(partitions[instance.partitionIndex], beatRange, beatToSampleRatio, instance);
+                collectPartition(partitions[instance.partitionIndex], beatRange, beatToSampleRatio, static_cast<Beat>(loopCorrection), instance);
             }
         }
     } else if constexpr (Playback == PlaybackMode::Partition) {
         if (&node() == _scheduler->partitionNode() && _scheduler->partitionIndex() != std::numeric_limits<std::uint32_t>::max())
-            collectPartition(partitions[_scheduler->partitionIndex()], beatRange, beatToSampleRatio);
+            collectPartition(partitions[_scheduler->partitionIndex()], beatRange, beatToSampleRatio, static_cast<Beat>(loopCorrection));
     }
     return *_noteStack;
 }
 
 template<Audio::IPlugin::Flags Flags, bool ProcessNotesAndControls, bool ProcessAudio, Audio::PlaybackMode Playback>
 inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, Playback>::collectPartition(
-        const Partition &partition, const BeatRange &beatRange, const double beatToSampleRatio, const PartitionInstance &instance) noexcept
+        const Partition &partition, const BeatRange &beatRange, const double beatToSampleRatio, const Beat loopCorrection, const PartitionInstance &instance) noexcept
 {
     UNUSED(beatToSampleRatio);
     for (const auto &note : partition) {
@@ -208,7 +209,12 @@ inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, P
         const auto noteTo = (note.range.to + instance.range.from) - instance.offset; // Can overflow !
         // 'note.range.from < instance.offset' detects an overflow
 
-        if (note.range.from < instance.offset || noteTo < beatRange.from || noteFrom > beatRange.to || (noteFrom < beatRange.from && noteTo > beatRange.to))
+        if (note.range.from < instance.offset ||
+            noteTo < beatRange.from ||
+            noteFrom > (beatRange.to - loopCorrection) ||
+            noteFrom >= instance.range.to ||
+            (noteFrom < beatRange.from && noteTo > (beatRange.to - loopCorrection))
+        )
             continue;
         const auto onDt = noteFrom - beatRange.from;
         const auto offDt = noteTo - beatRange.from;

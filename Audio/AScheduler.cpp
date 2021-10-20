@@ -66,16 +66,15 @@ void AScheduler::processBeatMiss(void) noexcept
 void AScheduler::processLooping(void) noexcept
 {
     auto &range = currentBeatRange();
+    const double beatToSampleRatio = static_cast<double>(sampleRate())
+        / (static_cast<double>(tempo()) * static_cast<double>(Audio::BeatPrecision));
 
     if (range.from < _loopBeatRange.to && range.to > _loopBeatRange.to) {
-        _processLoopCrop = _processBlockSize - ComputeSampleSize(
-            _processBeatSize - (range.to - _loopBeatRange.to),
-            tempo(),
-            _sampleRate,
-            _beatMissOffset,
-            _beatMissCount
-        );
+        const auto dt = _loopBeatRange.to - range.from;
+        _processLoopCrop = _processBlockSize - static_cast<std::uint32_t>((static_cast<float>(dt) + _beatMissCorrection) * beatToSampleRatio);
+        range.to = range.from + dt;
     } else if (range.to > _loopBeatRange.to || range.from < _loopBeatRange.from) {
+        _processLoopCrop = 0u;
         range = {
             _loopBeatRange.from,
             _loopBeatRange.from + _processBeatSize
@@ -143,9 +142,11 @@ bool AScheduler::onPlaybackGraphCompleted(void) noexcept
     bool exited = false;
     currentBeatRange().increment(_processBeatSize);
     processBeatMiss();
+    // Get the crop size before its update @processLooping()
+    const std::size_t cropSize = _processLoopCrop;
     if (isLooping())
         processLooping();
-    if (produceAudioData(_project->master()->cache())) {
+    if (produceAudioData(_project->master()->cache(), cropSize)) {
         exited = onAudioBlockGenerated();
     } else {
         do {

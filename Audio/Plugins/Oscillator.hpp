@@ -88,6 +88,14 @@ class Audio::Oscillator final : public Audio::IPlugin
                 TR_TABLE(
                     TR(English, "Saw - Analog"),
                     TR(French, "Dent de scie - Analog")
+                ),
+                TR_TABLE(
+                    TR(English, "Pulse 1/3 - Analog"),
+                    TR(French, "Carré 1/3 - Analog")
+                ),
+                TR_TABLE(
+                    TR(English, "Pulse 1/4 - Analog"),
+                    TR(French, "Carré 1/4 - Analog")
                 )
             ),
             /* Control name */

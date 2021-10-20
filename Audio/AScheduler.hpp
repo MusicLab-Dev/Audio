@@ -75,6 +75,9 @@ public:
     /** @brief Get the process block size */
     [[nodiscard]] BlockSize processBlockSize(void) const noexcept { return _processBlockSize; }
 
+    /** @brief Get the loop crop size */
+    [[nodiscard]] BlockSize loopCropSize(void) const noexcept { return _processLoopCrop; }
+
 
     /** @brief Get / Set the loop beat range */
     [[nodiscard]] BeatRange loopBeatRange(void) const noexcept { return _loopBeatRange; }
@@ -255,7 +258,7 @@ private:
 
 
     /** @brief Will feed audio data into the global queue */
-    [[nodiscard]] bool produceAudioData(const BufferView output);
+    [[nodiscard]] bool produceAudioData(const BufferView output, const std::size_t cropSize);
 
     /** @brief Tries to flush to overflow cache */
     [[nodiscard]] bool flushOverflowCache(void);

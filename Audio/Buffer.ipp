@@ -90,7 +90,7 @@ inline void Audio::Buffer::copyRange(const Internal::BufferBase &target, const s
 {
     const auto newSize = to - from;
     if (*this && newSize <= capacity()) {
-        header()->size = GetFormatByteLength(target.format()) * newSize;
+        header()->size = static_cast<std::size_t>(target.header()->channelArrangement) * newSize;
         header()->channelByteSize = newSize;
         header()->sampleRate = target.header()->sampleRate;
         header()->channelArrangement = target.header()->channelArrangement;

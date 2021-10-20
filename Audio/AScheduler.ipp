@@ -118,20 +118,19 @@ inline void Audio::AScheduler::onAudioProcessStarted(const BeatRange &beatRange)
     _project->onAudioGenerationStarted(beatRange);
 }
 
-inline bool Audio::AScheduler::produceAudioData(const BufferView output)
+inline bool Audio::AScheduler::produceAudioData(const BufferView output, const std::size_t cropSize)
 {
+    const auto realSize = output.size<std::uint8_t>() - cropSize * sizeof(float);
     const bool ok = _AudioQueue.tryPushRange(
         output.byteData(),
-        output.byteData() + output.size<std::uint8_t>() - _processLoopCrop * sizeof(float)
+        output.byteData() + realSize
     );
 
     if (!ok) {
-        _overflowCache.copy(output);
-        // std::cout << " - produce audio failed\n";
+        _overflowCache.copyRange(output, 0u, realSize);
         return false;
     } else {
-       _processLoopCrop = 0u;
-        // std::cout << " - produce audio success\n";
+    //    _processLoopCrop = 0u;
         return true;
     }
 }
@@ -140,10 +139,10 @@ inline bool Audio::AScheduler::flushOverflowCache(void)
 {
     const auto res = _AudioQueue.tryPushRange(
         _overflowCache.byteData(),
-        _overflowCache.byteData() + _overflowCache.size<std::uint8_t>() - _processLoopCrop * sizeof(float)
+        _overflowCache.byteData() + _overflowCache.size<std::uint8_t>()
     );
-    if (res)
-        _processLoopCrop = 0u;
+    // if (res)
+        // _processLoopCrop = 0u;
     return res;
 }
 
