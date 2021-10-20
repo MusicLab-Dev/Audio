@@ -208,13 +208,11 @@ inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, P
         const auto noteFrom = (note.range.from + instance.range.from) - instance.offset; // Can overflow !
         const auto noteTo = (note.range.to + instance.range.from) - instance.offset; // Can overflow !
         // 'note.range.from < instance.offset' detects an overflow
+        const bool skip = noteTo < beatRange.from || noteFrom > (beatRange.to - loopCorrection) ||
+                (noteFrom < beatRange.from && noteTo > (beatRange.to - loopCorrection)) ||
+                (instance.range.from != instance.range.to && (note.range.from < instance.offset || noteFrom >= instance.range.to));
 
-        if (note.range.from < instance.offset ||
-            noteTo < beatRange.from ||
-            noteFrom > (beatRange.to - loopCorrection) ||
-            noteFrom >= instance.range.to ||
-            (noteFrom < beatRange.from && noteTo > (beatRange.to - loopCorrection))
-        )
+        if (skip)
             continue;
         const auto onDt = noteFrom - beatRange.from;
         const auto offDt = noteTo - beatRange.from;
