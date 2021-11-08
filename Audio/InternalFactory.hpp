@@ -18,7 +18,7 @@ class Audio::InternalFactory final : public Audio::IPluginFactory
 {
 public:
     static inline const std::string Path = [] {
-        return std::string("__internal__:/") += Plugin::MetaData().translations.getName("EN");
+        return std::string("__internal__:/") += Plugin::MetaData().translations.getName(Audio::English);
     }();
 
     InternalFactory(void) = default;
