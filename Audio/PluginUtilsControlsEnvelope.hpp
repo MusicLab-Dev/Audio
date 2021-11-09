@@ -11,7 +11,7 @@
  * @brief Helper for enveloppe generator controls
  */
 #define REGISTER_CONTROL_ENVELOPE_DELAY(Name, Value, Range) \
-    REGISTER_CONTROL_FLOATING( \
+    REGISTER_CONTROL_NUMERIC( \
         Name, Value, Range, \
         TR_TABLE( \
             TR(English, "Envelope delay"), \
@@ -30,7 +30,7 @@
     )
 
 #define REGISTER_CONTROL_ENVELOPE_ATTACK(Name, Value, Range) \
-    REGISTER_CONTROL_FLOATING( \
+    REGISTER_CONTROL_NUMERIC( \
         Name, Value, Range, \
         TR_TABLE( \
             TR(English, "Envelope attack"), \
@@ -49,7 +49,7 @@
     )
 
 #define REGISTER_CONTROL_ENVELOPE_PEAK(Name, Value, Range) \
-    REGISTER_CONTROL_FLOATING( \
+    REGISTER_CONTROL_NUMERIC( \
         Name, Value, Range, \
         TR_TABLE( \
             TR(English, "Envelope peak"), \
@@ -68,7 +68,7 @@
     )
 
 #define REGISTER_CONTROL_ENVELOPE_DECAY(Name, Value, Range) \
-    REGISTER_CONTROL_FLOATING( \
+    REGISTER_CONTROL_NUMERIC( \
         Name, Value, Range, \
         TR_TABLE( \
             TR(English, "Envelope decay"), \
@@ -87,7 +87,7 @@
     )
 
 #define REGISTER_CONTROL_ENVELOPE_SUSTAIN(Name, Value, Range) \
-    REGISTER_CONTROL_FLOATING( \
+    REGISTER_CONTROL_NUMERIC( \
         Name, Value, Range, \
         TR_TABLE( \
             TR(English, "Envelope sustain"), \
@@ -106,7 +106,7 @@
     )
 
 #define REGISTER_CONTROL_ENVELOPE_RELEASE(Name, Value, Range) \
-    REGISTER_CONTROL_FLOATING( \
+    REGISTER_CONTROL_NUMERIC( \
         Name, Value, Range, \
         TR_TABLE( \
             TR(English, "Envelope release"), \

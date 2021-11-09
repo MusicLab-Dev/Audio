@@ -41,7 +41,7 @@ class Audio::Snare final : public Audio::IPlugin
             DefaultPluginOutputVolume,
             CONTROL_DEFAULT_OUTPUT_VOLUME_RANGE()
         ),
-        REGISTER_CONTROL_FLOATING(
+        REGISTER_CONTROL_NUMERIC(
             duration, 0.3, CONTROL_RANGE_STEP(0.0, 1.0, 0.001),
             TR_TABLE(
                 TR(English, "Duration"),
@@ -56,7 +56,7 @@ class Audio::Snare final : public Audio::IPlugin
                 TR(English, "s")
             )
         ),
-        REGISTER_CONTROL_FLOATING(
+        REGISTER_CONTROL_NUMERIC(
             color, 0.0, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
             TR_TABLE(
                 TR(English, "Color"),
@@ -71,7 +71,7 @@ class Audio::Snare final : public Audio::IPlugin
                 TR(English, "%")
             )
         ),
-        REGISTER_CONTROL_FLOATING(
+        REGISTER_CONTROL_NUMERIC(
             snapLevel, 0.5, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
             TR_TABLE(
                 TR(English, "Snap level"),
@@ -86,7 +86,7 @@ class Audio::Snare final : public Audio::IPlugin
                 TR(English, "%")
             )
         ),
-        REGISTER_CONTROL_FLOATING(
+        REGISTER_CONTROL_NUMERIC(
             snapDuration, 0.25, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
             TR_TABLE(
                 TR(English, "Snap duration"),
@@ -101,7 +101,7 @@ class Audio::Snare final : public Audio::IPlugin
                 TR(English, "%")
             )
         ),
-        REGISTER_CONTROL_FLOATING(
+        REGISTER_CONTROL_NUMERIC(
             snapTone, 0.25, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
             TR_TABLE(
                 TR(English, "Snap tone"),
@@ -116,7 +116,7 @@ class Audio::Snare final : public Audio::IPlugin
                 TR(English, "%")
             )
         ),
-        REGISTER_CONTROL_FLOATING(
+        REGISTER_CONTROL_NUMERIC(
             pitchDecay, 0.003, CONTROL_RANGE_STEP(0.0, 0.01, 0.0001),
             TR_TABLE(
                 TR(English, "Pitch decay"),
@@ -131,7 +131,7 @@ class Audio::Snare final : public Audio::IPlugin
                 TR(English, "%")
             )
         ),
-        REGISTER_CONTROL_FLOATING(
+        REGISTER_CONTROL_NUMERIC(
             pitchLevel, 0.6, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
             TR_TABLE(
                 TR(English, "Pitch level"),
@@ -146,7 +146,7 @@ class Audio::Snare final : public Audio::IPlugin
                 TR(English, "%")
             )
         ),
-        REGISTER_CONTROL_FLOATING(
+        REGISTER_CONTROL_NUMERIC(
             attack, 0.0035, CONTROL_RANGE_STEP(0.0, 0.1, 0.001),
             TR_TABLE(
                 TR(English, "Attack"),

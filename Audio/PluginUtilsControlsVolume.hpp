@@ -14,7 +14,7 @@
 #define CONTROL_DEFAULT_INPUT_GAIN_RANGE() CONTROL_RANGE_STEP(-48.0, 6.0, 0.1)
 
 #define REGISTER_CONTROL_OUTPUT_VOLUME(Name, Value, Range) \
-    REGISTER_CONTROL_FLOATING( \
+    REGISTER_CONTROL_NUMERIC( \
         Name, Value, Range, \
         TR_TABLE( \
             TR(English, "Output volume"), \
@@ -33,7 +33,7 @@
     )
 
 #define REGISTER_CONTROL_INPUT_GAIN(Name, Value, Range) \
-    REGISTER_CONTROL_FLOATING( \
+    REGISTER_CONTROL_NUMERIC( \
         Name, Value, Range, \
         TR_TABLE( \
             TR(English, "Input gain"), \

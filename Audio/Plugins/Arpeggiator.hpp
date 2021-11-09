@@ -120,7 +120,7 @@ class Audio::Arpeggiator final : public Audio::IPlugin
                 TR(English, "")
             )
         ),
-        REGISTER_CONTROL_INTEGER(
+        REGISTER_CONTROL_NUMERIC(
             noteCount,
             3,
             CONTROL_RANGE_STEP(1, 8, 1),

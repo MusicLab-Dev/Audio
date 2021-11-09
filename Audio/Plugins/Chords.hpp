@@ -71,7 +71,7 @@ class Audio::Chords final : public Audio::IPlugin
                 TR(English, "")
             )
         ),
-        REGISTER_CONTROL_INTEGER(
+        REGISTER_CONTROL_NUMERIC(
             noteOffset,
             0,
             CONTROL_RANGE_STEP(-12, 12, 1),

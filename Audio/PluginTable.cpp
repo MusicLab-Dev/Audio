@@ -63,6 +63,8 @@ void Audio::PluginTable::decrementRefCount(IPlugin *plugin) noexcept_ndebug
 #include <Audio/Plugins/Snare.hpp>
 #include <Audio/Plugins/Hat.hpp>
 
+#include <Audio/Plugins/Compressor.hpp>
+
 Audio::PluginTable::PluginTable(void)
 {
     // Groups
@@ -88,4 +90,7 @@ Audio::PluginTable::PluginTable(void)
     registerFactory<Audio::GammaEqualizer>();
     // registerFactory<Audio::SigmaFilter>();
     // registerFactory<Audio::LambdaFilter>();
+
+    // Mixing
+    registerFactory<Audio::Compressor>();
 }

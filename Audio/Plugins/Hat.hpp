@@ -45,7 +45,7 @@ class Audio::Hat final : public Audio::IPlugin
             DefaultPluginOutputVolume,
             CONTROL_DEFAULT_OUTPUT_VOLUME_RANGE()
         ),
-        REGISTER_CONTROL_FLOATING(
+        REGISTER_CONTROL_NUMERIC(
             attack, 0.0, CONTROL_RANGE_STEP(0.0, 0.1, 0.001),
             TR_TABLE(
                 TR(English, "Attack"),
@@ -60,7 +60,7 @@ class Audio::Hat final : public Audio::IPlugin
                 TR(English, "%")
             )
         ),
-        REGISTER_CONTROL_FLOATING(
+        REGISTER_CONTROL_NUMERIC(
             duration, 0.120, CONTROL_RANGE_STEP(0.01, 0.6, 0.001),
             TR_TABLE(
                 TR(English, "Duration"),
@@ -75,7 +75,7 @@ class Audio::Hat final : public Audio::IPlugin
                 TR(English, "s")
             )
         ),
-        REGISTER_CONTROL_FLOATING(
+        REGISTER_CONTROL_NUMERIC(
             bandFreq, 6'000.0, CONTROL_RANGE_STEP(1'000, 20'000, 100.0),
             TR_TABLE(
                 TR(English, "BandPass"),
@@ -90,7 +90,7 @@ class Audio::Hat final : public Audio::IPlugin
                 TR(English, "%")
             )
         ),
-        REGISTER_CONTROL_FLOATING(
+        REGISTER_CONTROL_NUMERIC(
             highFreq, 4'000.0, CONTROL_RANGE_STEP(1'000, 20'000, 100.0),
             TR_TABLE(
                 TR(English, "HighPass"),
@@ -105,7 +105,7 @@ class Audio::Hat final : public Audio::IPlugin
                 TR(English, "%")
             )
         ),
-        REGISTER_CONTROL_FLOATING(
+        REGISTER_CONTROL_NUMERIC(
             combLevel, 0.1, CONTROL_RANGE_STEP(0.0, 0.707, 0.01),
             TR_TABLE(
                 TR(English, "Spice"),
@@ -120,7 +120,7 @@ class Audio::Hat final : public Audio::IPlugin
                 TR(English, "%")
             )
         ),
-        REGISTER_CONTROL_FLOATING(
+        REGISTER_CONTROL_NUMERIC(
             combSpread, 0.0, CONTROL_RANGE_STEP(0.0, 0.02, 0.0001),
             TR_TABLE(
                 TR(English, "Spread"),

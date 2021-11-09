@@ -78,7 +78,7 @@ class Audio::Piano final : public Audio::IPlugin
                 TR(English, "")
             )
         ),
-        REGISTER_CONTROL_FLOATING(
+        REGISTER_CONTROL_NUMERIC(
             color, 0.0, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
             TR_TABLE(
                 TR(English, "Color"),
@@ -93,7 +93,7 @@ class Audio::Piano final : public Audio::IPlugin
                 TR(English, "%")
             )
         ),
-        REGISTER_CONTROL_FLOATING(
+        REGISTER_CONTROL_NUMERIC(
             brightness, 0.0, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
             TR_TABLE(
                 TR(English, "Brightness"),
@@ -108,7 +108,7 @@ class Audio::Piano final : public Audio::IPlugin
                 TR(English, "%")
             )
         ),
-        REGISTER_CONTROL_FLOATING(
+        REGISTER_CONTROL_NUMERIC(
             duration, 0.5, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
             TR_TABLE(
                 TR(English, "Duration"),
@@ -123,7 +123,7 @@ class Audio::Piano final : public Audio::IPlugin
                 TR(English, "%")
             )
         ),
-        REGISTER_CONTROL_FLOATING(
+        REGISTER_CONTROL_NUMERIC(
             detune, 0.0, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
             /* Control name */
             TR_TABLE(
@@ -144,7 +144,7 @@ class Audio::Piano final : public Audio::IPlugin
                 TR(English, "%")
             )
         ),
-        REGISTER_CONTROL_FLOATING(
+        REGISTER_CONTROL_NUMERIC(
             impact, 0.5, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
             TR_TABLE(
                 TR(English, "Impact"),

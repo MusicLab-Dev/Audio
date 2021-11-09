@@ -44,7 +44,7 @@ class Audio::SimpleDelay final : public Audio::IPlugin
         REGISTER_CONTROL_EFFECT_BYPASS(
             bypass
         ),
-        REGISTER_CONTROL_FLOATING(
+        REGISTER_CONTROL_NUMERIC(
             delayTime,
             0.2 ,
             // CONTROL_RANGE_STEP(0.0, 0.001, 0.0001),
@@ -67,7 +67,7 @@ class Audio::SimpleDelay final : public Audio::IPlugin
         REGISTER_CONTROL_EFFECT_SYNC_TEMPO(
             sync
         ),
-        REGISTER_CONTROL_FLOATING(
+        REGISTER_CONTROL_NUMERIC(
             feedbackAmount,
             0.0,
             CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
@@ -86,7 +86,7 @@ class Audio::SimpleDelay final : public Audio::IPlugin
                 TR(English, "%")
             )
         ),
-        REGISTER_CONTROL_FLOATING(
+        REGISTER_CONTROL_NUMERIC(
             mixRate,
             0.5,
             CONTROL_RANGE_STEP(0.0, 1.0, 0.01),

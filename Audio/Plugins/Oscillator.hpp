@@ -118,7 +118,7 @@ class Audio::Oscillator final : public Audio::IPlugin
                 TR(English, "")
             )
         ),
-        REGISTER_CONTROL_FLOATING(
+        REGISTER_CONTROL_NUMERIC(
             detune, 0.0, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
             TR_TABLE(
                 TR(English, "Voice detune"),
@@ -133,7 +133,7 @@ class Audio::Oscillator final : public Audio::IPlugin
                 TR(English, "%")
             )
         ),
-        // REGISTER_CONTROL_FLOATING(
+        // REGISTER_CONTROL_NUMERIC(
         //     filterCutoff, 100.0, CONTROL_RANGE_STEP(20.0, 20'000.0, 2.0),
         //     TR_TABLE(
         //         TR(English, "Filter cutoff"),
@@ -148,7 +148,7 @@ class Audio::Oscillator final : public Audio::IPlugin
         //         TR(English, "Hz")
         //     )
         // ),
-        // REGISTER_CONTROL_FLOATING(
+        // REGISTER_CONTROL_NUMERIC(
         //     filterResonance, 0.5, CONTROL_RANGE_STEP(0.0, 5.0, 0.1),
         //     TR_TABLE(
         //         TR(English, "Filter resonance"),
@@ -163,7 +163,7 @@ class Audio::Oscillator final : public Audio::IPlugin
         //         TR(English, "%")
         //     )
         // ),
-        // REGISTER_CONTROL_FLOATING(
+        // REGISTER_CONTROL_NUMERIC(
         //     filterEnv, 0.5, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
         //     TR_TABLE(
         //         TR(English, "Filter envelope"),
@@ -178,7 +178,7 @@ class Audio::Oscillator final : public Audio::IPlugin
         //         TR(English, "%")
         //     )
         // ),
-        REGISTER_CONTROL_FLOATING(
+        REGISTER_CONTROL_NUMERIC(
             panning, 0.0, CONTROL_RANGE_STEP(-1.0, 1.0, 0.01),
             TR_TABLE(
                 TR(English, "Stereo panning"),

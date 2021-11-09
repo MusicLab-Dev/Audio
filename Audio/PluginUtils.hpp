@@ -179,28 +179,16 @@ public: \
 private:
 
 
-#define REGISTER_CONTROL_FLOATING(Variable, Value, Range, Name, Description, ShortName, UnitName) CONTROL_FLOATING(Variable, Value, Range, Name, Description, ShortName, UnitName)
-#define REGISTER_CONTROL_INTEGER(Variable, Value, Range, Name, Description, ShortName, UnitName) CONTROL_INTEGER(Variable, Value, Range, Name, Description, ShortName, UnitName)
+#define REGISTER_CONTROL_NUMERIC(Variable, Value, Range, Name, Description, ShortName, UnitName) CONTROL_NUMERIC(Variable, Value, Range, Name, Description, ShortName, UnitName)
 #define REGISTER_CONTROL_BOOLEAN(Variable, Value, Name, Description, ShortName, UnitName) CONTROL_BOOLEAN(Variable, Value, Name, Description, ShortName, UnitName)
 #define REGISTER_CONTROL_ENUM(Variable, Range, Name, Description, ShortName, UnitName) CONTROL_ENUM(Variable, Range, Name, Description, ShortName, UnitName)
 
-#define _REGISTER_METADATA_CONTROL_FLOATING(Variable, Value, Range, Name, Description, ShortName, UnitName) \
+#define _REGISTER_METADATA_CONTROL_NUMERIC(Variable, Value, Range, Name, Description, ShortName, UnitName) \
     Audio::ControlMetaData { \
         Audio::TranslationMetaData { Name, Description }, \
         ShortName, \
         UnitName, \
-        Audio::ParamType::Floating, \
-        Value, \
-        Range, \
-        {} \
-    }
-
-#define _REGISTER_METADATA_CONTROL_INTEGER(Variable, Value, Range, Name, Description, ShortName, UnitName) \
-    Audio::ControlMetaData { \
-        Audio::TranslationMetaData { Name, Description }, \
-        ShortName, \
-        UnitName, \
-        Audio::ParamType::Integer, \
+        Audio::ParamType::Numeric, \
         Value, \
         Range, \
         {} \
@@ -232,22 +220,15 @@ private:
         }; \
     }()
 
-#define _INIT_CONTROL_FLOATING(Variable, Value, Range, Name, Description, ShortName, UnitName) Value
-#define _INIT_CONTROL_INTEGER(Variable, Value, Range, Name, Description, ShortName, UnitName) Value
+#define _INIT_CONTROL_NUMERIC(Variable, Value, Range, Name, Description, ShortName, UnitName) Value
 #define _INIT_CONTROL_BOOLEAN(Variable, Value, Name, Description, ShortName, UnitName) Value
 #define _INIT_CONTROL_ENUM(Variable, Range, Name, Description, ShortName, UnitName) 0.0
 
-#define _REGISTER_GETTER_CONTROL_FLOATING(Variable, Value, Range, Name, Description, ShortName, UnitName) \
+#define _REGISTER_GETTER_CONTROL_NUMERIC(Variable, Value, Range, Name, Description, ShortName, UnitName) \
     [[nodiscard]] Audio::ParamValue Variable(void) const noexcept { return (_controls
 
-#define _REGISTER_SETTER_CONTROL_FLOATING(Variable, Value, Range, Name, Description, ShortName, UnitName) \
+#define _REGISTER_SETTER_CONTROL_NUMERIC(Variable, Value, Range, Name, Description, ShortName, UnitName) \
     void Variable(const Audio::ParamValue value) noexcept { _controls
-
-#define _REGISTER_GETTER_CONTROL_INTEGER(Variable, Value, Range, Name, Description, ShortName, UnitName) \
-    [[nodiscard]] std::int64_t Variable(void) const noexcept { return static_cast<std::int64_t>(_controls
-
-#define _REGISTER_SETTER_CONTROL_INTEGER(Variable, Value, Range, Name, Description, ShortName, UnitName) \
-    void Variable(const std::int64_t value) noexcept { _controls
 
 #define _REGISTER_GETTER_CONTROL_BOOLEAN(Variable, Value, Name, Description, ShortName, UnitName) \
     [[nodiscard]] bool Variable(void) const noexcept { return static_cast<bool>(_controls
@@ -275,7 +256,7 @@ private:
 #define FLAGS(...) (Audio::IPluginFactory::Flags { Audio::MakeFlags<Audio::IPluginFactory::Flags, std::uint32_t>(FOR_COMMA_EACH(_FORWARD_FLAG, __VA_ARGS__)) })
 
 #define _TR_DUMMY_TABLE TR_TABLE(TR({},{}))
-#define _REGISTER_DUMMY_CONTROL REGISTER_CONTROL(Floating, dummy, 0.0, CONTROL_RANGE(0, 1), _TR_DUMMY_TABLE, _TR_DUMMY_TABLE)
+#define _REGISTER_DUMMY_CONTROL REGISTER_CONTROL(Numeric, dummy, 0.0, CONTROL_RANGE(0, 1), _TR_DUMMY_TABLE, _TR_DUMMY_TABLE)
 #define _REGISTER_DUMMY_PLUGIN REGISTER_PLUGIN(_TR_DUMMY_TABLE, _TR_DUMMY_TABLE, None, None, _REGISTER_DUMMY_CONTROL)
 
 #define REGISTER_CONTROL_EFFECT_BYPASS(Name) \

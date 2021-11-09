@@ -45,7 +45,7 @@ class Audio::SimpleReverb final : public Audio::IPlugin
         REGISTER_CONTROL_EFFECT_BYPASS(
             bypass
         ),
-        REGISTER_CONTROL_FLOATING(
+        REGISTER_CONTROL_NUMERIC(
             reverbTime,
             1.0,
             CONTROL_RANGE_STEP(0.0, 5.0, 0.01),
@@ -64,7 +64,7 @@ class Audio::SimpleReverb final : public Audio::IPlugin
                 TR(English, "seconds")
             )
         ),
-        REGISTER_CONTROL_FLOATING(
+        REGISTER_CONTROL_NUMERIC(
             mixRate,
             0.5,
             CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
@@ -83,7 +83,7 @@ class Audio::SimpleReverb final : public Audio::IPlugin
                 TR(English, "%")
             )
         ),
-        REGISTER_CONTROL_FLOATING(
+        REGISTER_CONTROL_NUMERIC(
             preDelayTime,
             0.08,
             CONTROL_RANGE_STEP(0.0, 0.5, 0.001),

@@ -115,6 +115,8 @@ set(AudioPluginsSources
     ${AudioPluginsDir}/Snare.ipp
     ${AudioPluginsDir}/Hat.hpp
     ${AudioPluginsDir}/Hat.ipp
+    ${AudioPluginsDir}/Compressor.hpp
+    ${AudioPluginsDir}/Compressor.ipp
 )
 
 set(AudioPluginManagerDir ${AudioPluginsDir}/Managers)

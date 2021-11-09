@@ -24,6 +24,7 @@ set(AudioTestsSources
     # ${AudioTestsDir}/tests_RandomGenerator.cpp
 
     ${AudioTestsDir}/tests_Biquad.cpp
+    ${AudioTestsDir}/tests_LogarithmInterpolation.cpp
 
     # ${AudioTestsDir}/tests_SchedulerTask.cpp
     # ${AudioTestsDir}/tests_Device.cpp

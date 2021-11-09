@@ -11,7 +11,7 @@
  * @brief Helper for equalizer controls
  */
 #define REGISTER_CONTROL_EQUALIZER_BAND_VOLUME(Name, Value, Range) \
-    REGISTER_CONTROL_FLOATING( \
+    REGISTER_CONTROL_NUMERIC( \
         Name, Value, Range, \
         TR_TABLE( \
             TR(English, "Volume"), \

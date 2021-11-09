@@ -8,9 +8,10 @@
 
 #pragma once
 
+#include <cmath>
+
 namespace Audio
 {
-
     /** @brief Key of a note */
     using Key = std::uint8_t;
 
@@ -42,6 +43,27 @@ namespace Audio
     /** @brief Note pitch tuning */
     using Tuning = std::uint16_t;
 
+    static constexpr float MinFrequency = 20.0f;
+    static constexpr float MaxFrequency = 20'000.0f;
+
+    static constexpr float MinFrequencyLog = std::log2(MinFrequency);
+    static constexpr float MaxFrequencyLog = std::log2(MaxFrequency);
+
+    [[nodiscard]] inline float Lerp(const float x, const float a, const float b) noexcept
+    {
+        return a + x * (b - a);
+    }
+
+    [[nodiscard]] inline float GetFrequencyRatio(const float x) noexcept
+    {
+        return std::pow(2.0f, Lerp(x, MinFrequencyLog, MaxFrequencyLog));
+    }
+
+    /** @brief Get the frequency between freqMin & freqMax for a given rate in [0:1] */
+    // [[nodiscard]] inline float GetFrequencyRatio(const float x, const float freqMin, const float freqMax) noexcept
+    // {
+    //     return std::pow(2.0f, static_cast<float>(x * freqMax)) * freqMin;
+    // }
 
     /** @brief Get the frequency of a key */
     [[nodiscard]] inline float GetNoteFrequency(const Key key) noexcept

@@ -67,7 +67,7 @@
 /**
 #define CONTROL_FM_OPERATOR_OUTPUT_VOLUME_RATIO_RANGE() CONTROL_RANGE_STEP(1.0, 10.0, 0.1)
 #define _REGISTER_CONTROL_FM_OUTPUT_VOLUME_RATIO(Name, Value, Range) \
-    REGISTER_CONTROL_FLOATING( \
+    REGISTER_CONTROL_NUMERIC( \
         Name, Value, Range, \
         TR_TABLE( \
             TR(English, "Operator volume ratio"), \
@@ -87,7 +87,7 @@
 **/
 
 #define _REGISTER_CONTROL_FM_PITCH_VOLUME(Name, Value, Range) \
-    REGISTER_CONTROL_FLOATING( \
+    REGISTER_CONTROL_NUMERIC( \
         Name, Value, Range, \
         TR_TABLE( \
             TR(English, "Pitch envelope volume"), \
@@ -107,7 +107,7 @@
 
 #define CONTROL_FM_OPERATOR_OUTPUT_VOLUME_RANGE() CONTROL_RANGE_STEP(-70.0, 12.0, 0.1)
 #define _REGISTER_CONTROL_FM_OUTPUT_VOLUME(Name, Value, Range) \
-    REGISTER_CONTROL_FLOATING( \
+    REGISTER_CONTROL_NUMERIC( \
         Name, Value, Range, \
         TR_TABLE( \
             TR(English, "Operator volume"), \
@@ -128,7 +128,7 @@
 #define CONTROL_FM_RATIO_DEFAULT_RANGE() CONTROL_RANGE_STEP(0.5, 15.0, 0.01)
 #define CONTROL_FM_RATIO_DEFAULT_VALUE() 1.0
 #define _REGISTER_CONTROL_FM_RATIO(Name, Value, Range) \
-    REGISTER_CONTROL_FLOATING( \
+    REGISTER_CONTROL_NUMERIC( \
         Name, Value, Range, \
         TR_TABLE( \
             TR(English, "ratio"), \
@@ -149,7 +149,7 @@
 #define CONTROL_FM_DETUNE_DEFAULT_RANGE() CONTROL_RANGE_STEP(-100.0, 100.0, 0.1)
 #define CONTROL_FM_DETUNE_DEFAULT_VALUE() 0.0
 #define _REGISTER_CONTROL_FM_DETUNE(Name, Value, Range) \
-    REGISTER_CONTROL_FLOATING(Name, Value, Range, \
+    REGISTER_CONTROL_NUMERIC(Name, Value, Range, \
         TR_TABLE( \
             TR(English, "Detune"), \
             TR(French, "Detune") \
@@ -168,7 +168,7 @@
 
 #define CONTROL_FM_OPERATOR_FEEDBACK_RANGE() CONTROL_RANGE_STEP(0.0, 8.0, 1.0)
 #define _REGISTER_CONTROL_FM_FEEDBACK(Name, Value, Range) \
-    REGISTER_CONTROL_INTEGER( \
+    REGISTER_CONTROL_NUMERIC( \
         Name, Value, Range, \
         TR_TABLE( \
             TR(English, #Name " feedback"), \
@@ -188,7 +188,7 @@
 
 #define CONTROL_FM_OPERATOR_KEY_FOLLOW_RANGE() CONTROL_RANGE_STEP(-100, 100, 1)
 #define _REGISTER_CONTROL_FM_KEY_FOLLOW(Name, Value, Range) \
-    REGISTER_CONTROL_INTEGER( \
+    REGISTER_CONTROL_NUMERIC( \
         Name, Value, Range, \
         TR_TABLE( \
             TR(English, #Name " key follow"), \
