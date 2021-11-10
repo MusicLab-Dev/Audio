@@ -9,7 +9,7 @@
 #include <cstdint>
 #include <limits>
 
-#include <Flow/Core/Core/Utils.hpp>
+#include <Core/Utils.hpp>
 
 namespace Audio
 {

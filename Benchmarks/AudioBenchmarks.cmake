@@ -8,6 +8,7 @@ set(AudioBenchmarksSources
     ${AudioBenchmarksDir}/Main.cpp
     # ${AudioBenchmarksDir}/bench_Trigonometry.cpp
     ${AudioBenchmarksDir}/bench_BoundsPi.cpp
+    ${AudioBenchmarksDir}/bench_InterpolatePtr.cpp
 
     # ${AudioBenchmarksDir}/bench_Math.cpp
     # ${AudioBenchmarksDir}/bench_Biquad.cpp
