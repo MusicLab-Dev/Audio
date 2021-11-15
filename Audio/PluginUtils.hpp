@@ -213,7 +213,7 @@ private:
         UnitName, \
         Audio::ParamType::Boolean, \
         Value, \
-        { 0.0 , 1.0 }, \
+        { 0.0 , 1.0, 1.0 }, \
         {} \
     }
 
