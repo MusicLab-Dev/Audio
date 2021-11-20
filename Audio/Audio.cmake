@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 project(Audio)
 
-find_package(SDL2 REQUIRED)
+find_package(SDL2 CONFIG REQUIRED)
 if(${SDL2_FOUND})
     message(STATUS "SDL2_FOUND: " ${SDL2_FOUND})
     message(STATUS "SDL2_INCLUDE_DIRS:" ${SDL2_INCLUDE_DIRS})
