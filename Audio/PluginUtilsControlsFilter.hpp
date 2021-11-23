@@ -15,7 +15,7 @@
 #define CONTROL_EQUALIZER_BAND_DEFAULT_VALUE() 0.0
 
 #define REGISTER_CONTROL_FILTER_CUTOFF(Name, Value, Range) \
-    REGISTER_CONTROL_FLOATING( \
+    REGISTER_CONTROL_FLOATING_LOG( \
         Name, Value, Range, \
         TR_TABLE( \
             TR(English, "Cutoff frequency"), \

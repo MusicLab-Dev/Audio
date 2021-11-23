@@ -150,7 +150,15 @@
 #define REGISTER_SEND_CONTROL(...) \
     virtual void sendControls(const Audio::ControlEvents &controls) noexcept { \
         for (auto &control : controls) { \
-            _controls[control.paramID] = control.value; \
+            _controlsNext[control.paramID] = control.value; \
+        } \
+    } \
+    virtual void updateControls(void) noexcept { \
+        for (auto i = 0u; i < ControlCount; ++i) { \
+            const auto controlTo = _controlsNext[i]; \
+            std::cout << "__" << _controls[i] << " -> " << controlTo << std::endl; \
+            _controls[i] = (_controls[i] + controlTo) / 2.0f; \
+            std::cout << _controls[i] << std::endl; \
         } \
     }
 
@@ -166,6 +174,7 @@ private: \
         }; \
     }(); \
     std::array<Audio::ParamValue, VA_ARGC(__VA_ARGS__)> _controls { ADD_PREFIX_COMMA_EACH(_INIT_, __VA_ARGS__) }; \
+    std::array<Audio::ParamValue, VA_ARGC(__VA_ARGS__)> _controlsNext { ADD_PREFIX_COMMA_EACH(_INIT_, __VA_ARGS__) }; \
 public: \
     static const Audio::PluginMetaData &MetaData(void) noexcept { return _MetaData; } \
     static constexpr std::size_t ControlCount = VA_ARGC(__VA_ARGS__); \
@@ -180,6 +189,7 @@ private:
 
 
 #define REGISTER_CONTROL_FLOATING(Variable, Value, Range, Name, Description, ShortName, UnitName) CONTROL_FLOATING(Variable, Value, Range, Name, Description, ShortName, UnitName)
+#define REGISTER_CONTROL_FLOATING_LOG(Variable, Value, Range, Name, Description, ShortName, UnitName) CONTROL_FLOATING_LOG(Variable, Value, Range, Name, Description, ShortName, UnitName)
 #define REGISTER_CONTROL_INTEGER(Variable, Value, Range, Name, Description, ShortName, UnitName) CONTROL_INTEGER(Variable, Value, Range, Name, Description, ShortName, UnitName)
 #define REGISTER_CONTROL_BOOLEAN(Variable, Value, Name, Description, ShortName, UnitName) CONTROL_BOOLEAN(Variable, Value, Name, Description, ShortName, UnitName)
 #define REGISTER_CONTROL_ENUM(Variable, Range, Name, Description, ShortName, UnitName) CONTROL_ENUM(Variable, Range, Name, Description, ShortName, UnitName)
@@ -190,6 +200,19 @@ private:
         ShortName, \
         UnitName, \
         Audio::ParamType::Floating, \
+        Audio::ParamInterpType::Linear, \
+        Value, \
+        Range, \
+        {} \
+    }
+
+#define _REGISTER_METADATA_CONTROL_FLOATING_LOG(Variable, Value, Range, Name, Description, ShortName, UnitName) \
+    Audio::ControlMetaData { \
+        Audio::TranslationMetaData { Name, Description }, \
+        ShortName, \
+        UnitName, \
+        Audio::ParamType::Floating, \
+        Audio::ParamInterpType::Log, \
         Value, \
         Range, \
         {} \
@@ -201,6 +224,7 @@ private:
         ShortName, \
         UnitName, \
         Audio::ParamType::Integer, \
+        Audio::ParamInterpType::Linear, \
         Value, \
         Range, \
         {} \
@@ -212,6 +236,7 @@ private:
         ShortName, \
         UnitName, \
         Audio::ParamType::Boolean, \
+        Audio::ParamInterpType::Linear, \
         Value, \
         { 0.0 , 1.0, 1.0 }, \
         {} \
@@ -226,6 +251,7 @@ private:
             ShortName, \
             UnitName, \
             Audio::ParamType::Enum, \
+            Audio::ParamInterpType::Linear, \
             0.0, \
             { 0.0, static_cast<ParamValue>(rangeSize), 1.0 }, \
             std::move(range) \
@@ -233,6 +259,7 @@ private:
     }()
 
 #define _INIT_CONTROL_FLOATING(Variable, Value, Range, Name, Description, ShortName, UnitName) Value
+#define _INIT_CONTROL_FLOATING_LOG(Variable, Value, Range, Name, Description, ShortName, UnitName) Value
 #define _INIT_CONTROL_INTEGER(Variable, Value, Range, Name, Description, ShortName, UnitName) Value
 #define _INIT_CONTROL_BOOLEAN(Variable, Value, Name, Description, ShortName, UnitName) Value
 #define _INIT_CONTROL_ENUM(Variable, Range, Name, Description, ShortName, UnitName) 0.0
@@ -241,6 +268,12 @@ private:
     [[nodiscard]] Audio::ParamValue Variable(void) const noexcept { return (_controls
 
 #define _REGISTER_SETTER_CONTROL_FLOATING(Variable, Value, Range, Name, Description, ShortName, UnitName) \
+    void Variable(const Audio::ParamValue value) noexcept { _controls
+
+#define _REGISTER_GETTER_CONTROL_FLOATING_LOG(Variable, Value, Range, Name, Description, ShortName, UnitName) \
+    [[nodiscard]] Audio::ParamValue Variable(void) const noexcept { return (_controls
+
+#define _REGISTER_SETTER_CONTROL_FLOATING_LOG(Variable, Value, Range, Name, Description, ShortName, UnitName) \
     void Variable(const Audio::ParamValue value) noexcept { _controls
 
 #define _REGISTER_GETTER_CONTROL_INTEGER(Variable, Value, Range, Name, Description, ShortName, UnitName) \

@@ -71,6 +71,7 @@ inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, P
         if constexpr (HasNoteOutput) {
             plugin.receiveNotes(*_noteStack);
         }
+        plugin.updateControls();
     }
     if constexpr (ProcessAudio) {
         if (collectBuffers() && HasAudioInput) {

@@ -7,6 +7,8 @@
 
 #include <Audio/DSP/Biquad.hpp>
 
+#include <Audio/Math.hpp>
+
 #include <iostream>
 
 using namespace Audio::DSP;
@@ -29,5 +31,9 @@ TEST(Biquad, Instantiation)
     UNUSED(filterD2);
     UNUSED(filterT1);
     UNUSED(filterT2);
+
+
+    EXPECT_FLOAT_EQ(Audio::Utils::Log2<20, 200>::GetLog(0.0f), 20.0f);
+    EXPECT_FLOAT_EQ(Audio::Utils::Log2<20, 200>::GetLog(1.0f), 200.0f);
 
 }

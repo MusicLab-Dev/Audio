@@ -37,13 +37,15 @@ inline void Audio::CutoffFilter::receiveAudio(BufferView output)
     const DB outGain = ConvertDecibelToRatio(static_cast<float>(outputVolume()));
 
     // _filter._setGain(ConvertDecibelToRatio(static_cast<DB>(toto())));
+    const float cutoffRate = static_cast<float>((cutoffFrequency() - 50.0) / 22'000.0);
     _filter.setSpecs(
         DSP::Filter::FIRSpecs(
             static_cast<DSP::Filter::BasicType>(filterType()),
             DSP::Filter::WindowType::Default,
             33ul,
             static_cast<float>(audioSpecs().sampleRate),
-            static_cast<float>(cutoffFrequency()),
+            // static_cast<float>(cutoffFrequency()),
+            Utils::Log2<50, 22'000>::GetLog(cutoffRate),
             0.0f,
             1.0f
         )

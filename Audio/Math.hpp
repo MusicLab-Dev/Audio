@@ -15,6 +15,19 @@
 
 namespace Audio::Utils
 {
+    template<unsigned From, unsigned To>
+    struct Log2
+    {
+        static constexpr float FromF = std::log2f(static_cast<float>(From));
+        static constexpr float ToF = std::log2f(static_cast<float>(To));
+
+        [[nodiscard]] static inline float GetLog(const float x) noexcept
+        {
+            return std::lerp(FromF, ToF, x);
+        }
+    };
+
+
     struct RandomDataSet
     {
         static constexpr std::size_t Size = 65'536u;

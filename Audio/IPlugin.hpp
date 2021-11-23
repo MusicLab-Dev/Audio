@@ -89,6 +89,7 @@ namespace Audio
         TranslationTable shortNames {};
         TranslationTable unitNames {};
         ParamType type {};
+        ParamInterpType interpType {};
         ParamValue defaultValue {};
         RangeValues rangeValues {};
         RangeNames rangeNames {};
@@ -173,6 +174,8 @@ public:
     /** @brief  */
     virtual void sendControls(const ControlEvents &controls) { UNUSED(controls); throw std::runtime_error("IPlugin::sendControls: Not implemented"); }
 
+    /** @brief  */
+    virtual void updateControls(void) { throw std::runtime_error("IPlugin::updateControls: Not implemented"); }
 
     /** @brief Get / Set a plugin's external paths (if flag SingleExternalInput or MultipleExternalInputs is set) */
     virtual const ExternalPaths &getExternalPaths(void) const { throw std::runtime_error("IPlugin::getExternalPaths: Not implemented"); }

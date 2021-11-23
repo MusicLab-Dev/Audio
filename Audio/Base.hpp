@@ -49,6 +49,12 @@ namespace Audio
         Enum
     };
 
+    /** @brief Parameter interpolation type */
+    enum class ParamInterpType : int {
+        Linear,     // Default one
+        Log         // Used for frequencies
+    };
+
     /** @brief Parameter value */
     using ParamValue = double;
 
