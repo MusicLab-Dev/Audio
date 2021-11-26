@@ -133,7 +133,7 @@ class Audio::Oscillator final : public Audio::IPlugin
                 TR(English, "%")
             )
         ),
-        // REGISTER_CONTROL_FLOATING(
+        // REGISTER_CONTROL_FLOATING_LOG(
         //     filterCutoff, 100.0, CONTROL_RANGE_STEP(20.0, 20'000.0, 2.0),
         //     TR_TABLE(
         //         TR(English, "Filter cutoff"),

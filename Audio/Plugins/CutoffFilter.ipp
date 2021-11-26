@@ -6,6 +6,7 @@
  * @date 2021-04-23
  */
 
+#include <Audio/DSP/Gain.hpp>
 #include <Audio/DSP/Merge.hpp>
 
 inline void Audio::CutoffFilter::onAudioGenerationStarted(const BeatRange &range)
@@ -28,13 +29,17 @@ inline void Audio::CutoffFilter::onAudioGenerationStarted(const BeatRange &range
 
 inline void Audio::CutoffFilter::receiveAudio(BufferView output)
 {
+    const float *in = _cache.data<float>();
     float *out = output.data<float>();
+    const auto outSize = output.size<float>();
+    const float outGainFrom = ConvertDecibelToRatio(static_cast<float>(getControlPrev((0u))));
+    const float outGainTo = ConvertDecibelToRatio(static_cast<float>(outputVolume()));
+
     if (static_cast<bool>(bypass())) {
-        std::memcpy(out, _cache.data<float>(), output.size<std::uint8_t>());
+        std::memcpy(out, in, output.size<std::uint8_t>());
+        DSP::Gain::Apply<float>(out, outSize, outGainFrom, outGainTo);
         return;
     }
-
-    const DB outGain = ConvertDecibelToRatio(static_cast<float>(outputVolume()));
 
     // _filter._setGain(ConvertDecibelToRatio(static_cast<DB>(toto())));
     const float cutoffRate = static_cast<float>((cutoffFrequency() - 50.0) / 22'000.0);
@@ -50,15 +55,18 @@ inline void Audio::CutoffFilter::receiveAudio(BufferView output)
             1.0f
         )
     );
-    _filter.filter(_cache.data<float>(), audioSpecs().processBlockSize, out, outGain);
+    _filter.filter(_cache.data<float>(), audioSpecs().processBlockSize, out);
+    DSP::Gain::Apply<float>(out, outSize, outGainFrom, outGainTo);
 }
 
 inline void Audio::CutoffFilter::sendAudio(const BufferViews &inputs)
 {
     if (!inputs.size())
         return;
-    const DB inGain = ConvertDecibelToRatio(static_cast<float>(
-        static_cast<bool>(bypass()) ? inputGain() + outputVolume() : inputGain()
-    ));
-    DSP::Merge<float>(inputs, _cache, inGain, true);
+    DSP::Merge<float>(inputs, _cache, 1.0f, false);
+
+    const float inGainFrom = ConvertDecibelToRatio(static_cast<float>(getControlPrev(1u)));
+    const float inGainTo = ConvertDecibelToRatio(static_cast<float>(inputGain()));
+
+    DSP::Gain::Apply<float>(_cache.data<float>(), _cache.size<float>(), inGainFrom, inGainTo);
 }

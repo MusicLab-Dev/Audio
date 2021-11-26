@@ -6,6 +6,7 @@
 #pragma once
 
 #include <cstdint>
+#include <limits>
 
 namespace Audio
 {
@@ -51,6 +52,20 @@ namespace Audio
             return 0;
         }
     }
+
+    /** @brief Get the max value of a specific format */
+    template<typename Type>
+    struct FormatHandler
+    {
+        static constexpr Type MaxValue = std::is_floating_point_v<Type>
+                ? 1.0 : std::numeric_limits<Type>::max();
+        static constexpr Type MinValue = std::is_floating_point_v<Type>
+                ? -1.0 : std::numeric_limits<Type>::min();
+        static constexpr Type CenterValue = std::is_signed_v<Type>
+                ? 0 : std::numeric_limits<Type>::max() / 2;
+    };
+
+
 
     /** @brief Sample per second */
     using SampleRate = std::uint32_t;

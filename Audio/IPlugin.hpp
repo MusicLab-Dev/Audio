@@ -196,6 +196,7 @@ public: // See REGISTER_PLUGIN in PluginUtils
     /** @brief Get a control value by serial ID (DO NOT REIMPLEMENT MANUALLY, see REGISTER_PLUGIN !) */
     [[nodiscard]] virtual ParamValue &getControl(const ParamID id) noexcept = 0;
     [[nodiscard]] virtual ParamValue getControl(const ParamID id) const noexcept = 0;
+    [[nodiscard]] virtual ParamValue getControlPrev(const ParamID id) const noexcept = 0;
 
     /** @brief Get static meta-data about the plugin (DO NOT REIMPLEMENT MANUALLY, see REGISTER_PLUGIN !) */
     [[nodiscard]] virtual const PluginMetaData &getMetaData(void) const noexcept = 0;

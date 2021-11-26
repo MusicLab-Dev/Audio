@@ -18,6 +18,7 @@ set(AudioPrecompiledHeaders
     ${AudioDir}/SchedulerTask.hpp
     ${AudioDir}/Automation.hpp
     ${AudioDir}/Base.hpp
+    ${AudioDir}/BaseConcepts.hpp
     ${AudioDir}/BaseVolume.hpp
     ${AudioDir}/BaseNote.hpp
     ${AudioDir}/BaseDevice.hpp

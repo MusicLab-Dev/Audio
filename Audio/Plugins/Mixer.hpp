@@ -52,7 +52,7 @@ public:
     virtual void onAudioGenerationStarted(const BeatRange &range);
 
 private:
-    BufferViews _cache;
+    Buffer _cache;
 };
 
 #include "Mixer.ipp"

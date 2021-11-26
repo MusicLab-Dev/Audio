@@ -150,16 +150,11 @@
 #define REGISTER_SEND_CONTROL(...) \
     virtual void sendControls(const Audio::ControlEvents &controls) noexcept { \
         for (auto &control : controls) { \
-            _controlsNext[control.paramID] = control.value; \
+            _controls[control.paramID] = control.value; \
         } \
     } \
     virtual void updateControls(void) noexcept { \
-        for (auto i = 0u; i < ControlCount; ++i) { \
-            const auto controlTo = _controlsNext[i]; \
-            std::cout << "__" << _controls[i] << " -> " << controlTo << std::endl; \
-            _controls[i] = (_controls[i] + controlTo) / 2.0f; \
-            std::cout << _controls[i] << std::endl; \
-        } \
+        _controlsPrev = _controls; \
     }
 
 
@@ -174,7 +169,7 @@ private: \
         }; \
     }(); \
     std::array<Audio::ParamValue, VA_ARGC(__VA_ARGS__)> _controls { ADD_PREFIX_COMMA_EACH(_INIT_, __VA_ARGS__) }; \
-    std::array<Audio::ParamValue, VA_ARGC(__VA_ARGS__)> _controlsNext { ADD_PREFIX_COMMA_EACH(_INIT_, __VA_ARGS__) }; \
+    std::array<Audio::ParamValue, VA_ARGC(__VA_ARGS__)> _controlsPrev { ADD_PREFIX_COMMA_EACH(_INIT_, __VA_ARGS__) }; \
 public: \
     static const Audio::PluginMetaData &MetaData(void) noexcept { return _MetaData; } \
     static constexpr std::size_t ControlCount = VA_ARGC(__VA_ARGS__); \
@@ -182,6 +177,7 @@ public: \
     [[nodiscard]] const Audio::PluginMetaData &getMetaData(void) const noexcept final { return GetMetaData(); } \
     [[nodiscard]] Audio::ParamValue &getControl(const Audio::ParamID id) noexcept final { return _controls[id]; } \
     [[nodiscard]] Audio::ParamValue getControl(const Audio::ParamID id) const noexcept final { return _controls[id]; } \
+    [[nodiscard]] Audio::ParamValue getControlPrev(const Audio::ParamID id) const noexcept final { return _controlsPrev[id]; } \
     REGISTER_GETTER_CONTROL_EACH(__VA_ARGS__) \
     REGISTER_SETTER_CONTROL_EACH(__VA_ARGS__) \
     REGISTER_SEND_CONTROL(__VA_ARGS__) \

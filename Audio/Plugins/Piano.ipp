@@ -3,7 +3,7 @@
  * @ Description: Piano implementation
  */
 
-#include <iomanip>
+#include <Audio/DSP/Gain.hpp>
 
 inline void Audio::Piano::onAudioGenerationStarted(const BeatRange &range)
 {
@@ -53,7 +53,7 @@ inline void Audio::Piano::sendNotes(const NoteEvents &notes, const BeatRange &ra
 
 inline void Audio::Piano::receiveAudio(BufferView output)
 {
-    const DB outGain = ConvertDecibelToRatio(static_cast<float>(outputVolume()) + DefaultVoiceGain);
+    const DB outGain = ConvertDecibelToRatio(DefaultVoiceGain);
     const auto channels = output.channelArrangement();
 
     const auto outSize = static_cast<std::uint32_t>(output.channelSampleCount());
@@ -243,5 +243,8 @@ inline void Audio::Piano::receiveAudio(BufferView output)
         }
     );
 
+    const float gainFrom = ConvertDecibelToRatio(static_cast<float>(getControlPrev((0u))));
+    const float gainTo = ConvertDecibelToRatio(static_cast<float>(outputVolume()));
 
+    DSP::Gain::Apply<float>(output.data<float>(), output.size<float>(), gainFrom, gainTo);
 }

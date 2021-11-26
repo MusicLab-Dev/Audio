@@ -16,6 +16,7 @@
 #include <Core/FlatString.hpp>
 #include <Core/SortedFlatVector.hpp>
 
+#include "BaseConcepts.hpp"
 #include "BaseDevice.hpp"
 #include "BaseIndex.hpp"
 #include "BaseVolume.hpp"

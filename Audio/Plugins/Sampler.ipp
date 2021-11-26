@@ -7,6 +7,7 @@
 #include <Audio/SampleFile/SampleManager.hpp>
 
 #include <Audio/DSP/FIR.hpp>
+#include <Audio/DSP/Gain.hpp>
 
 inline void Audio::Sampler::onAudioGenerationStarted(const BeatRange &)
 {
@@ -39,7 +40,8 @@ inline void Audio::Sampler::receiveAudio(BufferView output)
     if (_externalPaths.empty())
         return;
 
-    const DB outGain = ConvertDecibelToRatio(static_cast<float>(outputVolume()));
+    const DB outGain = ConvertDecibelToRatio(DefaultVoiceGain);
+    // const DB outGain = ConvertDecibelToRatio(static_cast<float>(outputVolume()));
     const std::uint32_t outSize = static_cast<std::uint32_t>(output.size<float>());
     float * const out = reinterpret_cast<float *>(output.byteData());
 
@@ -115,6 +117,12 @@ inline void Audio::Sampler::receiveAudio(BufferView output)
             UNUSED(key);
         }
     );
+
+    const float gainFrom = ConvertDecibelToRatio(static_cast<float>(getControlPrev((0u))));
+    const float gainTo = ConvertDecibelToRatio(static_cast<float>(outputVolume()));
+
+    DSP::Gain::Apply<float>(output.data<float>(), output.size<float>(), gainFrom, gainTo);
+
 }
 
 template<typename Type>
@@ -128,6 +136,10 @@ inline void Audio::Sampler::loadSample(const std::string_view &path)
         0u
     };
     _buffers[OctaveRootKey] = SampleManager<Type>::LoadSampleFile(std::string(path), desiredSpecs, fileSpecs);
+    // Normalize
+    const auto size = _buffers[OctaveRootKey].size<Type>();
+    Type *buffer = _buffers[OctaveRootKey].data<Type>();
+    DSP::Gain::Normalize<Type>(buffer, size);
 
     GenerateOctave<Type>(_buffers[OctaveRootKey], _buffers);
 

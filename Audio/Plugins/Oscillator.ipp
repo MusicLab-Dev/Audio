@@ -3,11 +3,10 @@
  * @ Description: Oscillator implementation
  */
 
-static auto Frames = 1u;
+#include <Audio/DSP/Gain.hpp>
 
 inline void Audio::Oscillator::onAudioGenerationStarted(const BeatRange &range)
 {
-    Frames = 1u;
     UNUSED(range);
     _noteManager.reset();
     _oscillator.reset();
@@ -38,16 +37,13 @@ inline void Audio::Oscillator::sendNotes(const NoteEvents &notes, const BeatRang
     UNUSED(range);
     if (notes.size()) {
         // std::cout << "RANGE: " << range << std::endl;
-        // std::cout << " ::" << Frames << " - " << (Frames - 1u) * audioSpecs().processBlockSize << std::endl;
         _noteManager.feedNotes(notes);
     }
 }
 
 inline void Audio::Oscillator::receiveAudio(BufferView output)
 {
-    ++Frames;
-
-    const DB outGain = ConvertDecibelToRatio(static_cast<float>(outputVolume()) + DefaultVoiceGain);
+    const DB outGain = ConvertDecibelToRatio(DefaultVoiceGain);
     const auto outSize = static_cast<std::uint32_t>(output.channelSampleCount());
     const auto channels = output.channelArrangement();
 
@@ -135,6 +131,29 @@ inline void Audio::Oscillator::receiveAudio(BufferView output)
                 gainR
             );
 
+
+            /** @brief Envelope filter */
+            // const float cutoffRate = static_cast<float>((filterCutoff() - 50.0) / 22'000.0);
+            // constexpr auto EnvMaxRate = 4.0f; // In octave
+            // constexpr auto EnvRateNorm = std::pow(2.0f, EnvMaxRate) - 1.0f; // In octave
+            // const auto cut = Utils::LogFrequency2::GetLog(cutoffRate);
+            // const auto env = _noteManager.envelopeGain().data();
+            // const auto res = static_cast<float>(filterResonance() + 1.0f) * 0.707f;
+            // const auto sr = static_cast<float>(audioSpecs().sampleRate);
+            // const auto amount = static_cast<float>(filterEnv());
+
+            // for (auto i = 0u; i < realOutSize; ++i) {
+            //     _filter.setup(DSP::Biquad::Internal::Specs {
+            //         DSP::Filter::AdvancedType::LowPass,
+            //         sr,
+            //         { (amount * env[i] + 1.0f) * cut, 0.0f },
+            //         1.0f,
+            //         res
+            //     });
+            //     realOutLeft[i] = _filter.processSample(realOutLeft[i], key, 1.0f);
+            // }
+
+
             return std::make_pair(realOutSize, 0u);
         },
         [this] (const Key key) -> bool
@@ -143,9 +162,17 @@ inline void Audio::Oscillator::receiveAudio(BufferView output)
         },
         [this] (const Key key) -> void
         {
+            _filter.resetKey(key);
             _oscillator.resetKey(key);
         }
     );
+
+    const float gainFrom = ConvertDecibelToRatio(static_cast<float>(getControlPrev((0u))));
+    const float gainTo = ConvertDecibelToRatio(static_cast<float>(outputVolume()));
+
+    // _filter.filterBlock(output.data<float>(), output.size<float>(), output.data<float>(), 0u, 1.0f);
+    DSP::Gain::Apply<float>(output.data<float>(), output.size<float>(), gainFrom, gainTo);
+
 
     // const auto channelsMinusOne = channelCount - 1u;
     // if (channelsMinusOne) {

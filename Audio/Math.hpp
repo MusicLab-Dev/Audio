@@ -21,11 +21,14 @@ namespace Audio::Utils
         static constexpr float FromF = std::log2f(static_cast<float>(From));
         static constexpr float ToF = std::log2f(static_cast<float>(To));
 
-        [[nodiscard]] static inline float GetLog(const float x) noexcept
+        [[nodiscard]] static constexpr float GetLog(const float x) noexcept
         {
-            return std::lerp(FromF, ToF, x);
+            return std::exp2f(std::lerp(FromF, ToF, x));
         }
     };
+
+    using LogFrequency = Log2<20, 20'000>;
+    using LogFrequency2 = Log2<50, 22'000>;
 
 
     struct RandomDataSet

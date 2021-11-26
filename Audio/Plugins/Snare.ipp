@@ -3,7 +3,7 @@
  * @ Description: Snare implementation
  */
 
-#include <iomanip>
+#include <Audio/DSP/Gain.hpp>
 
 inline void Audio::Snare::onAudioGenerationStarted(const BeatRange &range)
 {
@@ -41,7 +41,7 @@ inline void Audio::Snare::sendNotes(const NoteEvents &notes, const BeatRange &ra
 
 inline void Audio::Snare::receiveAudio(BufferView output)
 {
-    const DB outGain = ConvertDecibelToRatio(static_cast<float>(outputVolume()) + DefaultVoiceGain);
+    const DB outGain = ConvertDecibelToRatio(DefaultVoiceGain);
     const auto outSize = static_cast<std::uint32_t>(output.channelSampleCount());
     const auto channels = static_cast<std::size_t>(output.channelArrangement());
     float *out = reinterpret_cast<float *>(output.byteData());
@@ -157,8 +157,13 @@ inline void Audio::Snare::receiveAudio(BufferView output)
     // static constexpr float MaxDriveRatio = 5.0f;
     // const float drive = static_cast<float>(overdrive()) * MaxDriveRatio + 1.0f;
     // for (auto i = 0u; i < outSize; ++i) {
-    //     out[i] = std::tanh(drive * out[i]) * outGain;
+    //     out[i] = std::tanh(drive * out[i]);
     // }
+
+    const float gainFrom = ConvertDecibelToRatio(static_cast<float>(getControlPrev((0u))));
+    const float gainTo = ConvertDecibelToRatio(static_cast<float>(outputVolume()));
+
+    DSP::Gain::Apply<float>(output.data<float>(), output.size<float>(), gainFrom, gainTo);
 
     // Re-arrange the buffer in case of multiple channels
     const auto channelsMinusOne = channels - 1u;

@@ -71,7 +71,6 @@ inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, P
         if constexpr (HasNoteOutput) {
             plugin.receiveNotes(*_noteStack);
         }
-        plugin.updateControls();
     }
     if constexpr (ProcessAudio) {
         if (collectBuffers() && HasAudioInput) {
@@ -89,6 +88,8 @@ inline void Audio::SchedulerTask<Flags, ProcessNotesAndControls, ProcessAudio, P
         }
         if (node().analysisRequestCount())
             node().cache().template updateVolumeCache<float>();
+        // Temp controls update (from & to values)
+        plugin.updateControls();
     }
 }
 
