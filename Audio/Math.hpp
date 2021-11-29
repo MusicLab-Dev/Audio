@@ -10,6 +10,7 @@
 #include <cmath>
 
 #include <array>
+#include <limits>
 
 #include "MathConstants.hpp"
 
@@ -18,18 +19,20 @@ namespace Audio::Utils
     template<unsigned From, unsigned To>
     struct Log2
     {
-        static constexpr float FromF = std::log2f(static_cast<float>(From));
-        static constexpr float ToF = std::log2f(static_cast<float>(To));
+        static_assert(From == 50 && To == 22'000, "Sorry we are lazy | Fuck MSVC standard implementation");
+
+        // static constexpr float FromF = std::log2f(static_cast<float>(From));
+        // static constexpr float ToF = std::log2f(static_cast<float>(To));
 
         [[nodiscard]] static constexpr float GetLog(const float x) noexcept
         {
-            return std::exp2f(std::lerp(FromF, ToF, x));
+            /** @todo: Use from / to to optimize further lerp */
+            return std::exp2f(std::lerp(5.64385618977f, 14.4252159033f, x));
+            // return std::exp2f(std::lerp(FromF, ToF, x));
         }
     };
 
-    using LogFrequency = Log2<20, 20'000>;
-    using LogFrequency2 = Log2<50, 22'000>;
-
+    using LogFrequency = Log2<50, 22'000>;
 
     struct RandomDataSet
     {

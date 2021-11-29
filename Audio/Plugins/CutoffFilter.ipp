@@ -50,7 +50,7 @@ inline void Audio::CutoffFilter::receiveAudio(BufferView output)
             33ul,
             static_cast<float>(audioSpecs().sampleRate),
             // static_cast<float>(cutoffFrequency()),
-            Utils::Log2<50, 22'000>::GetLog(cutoffRate),
+            Utils::LogFrequency::GetLog(cutoffRate),
             0.0f,
             1.0f
         )
