@@ -136,7 +136,7 @@ inline void Audio::Oscillator::receiveAudio(BufferView output)
             // const float cutoffRate = static_cast<float>((filterCutoff() - 50.0) / 22'000.0);
             // constexpr auto EnvMaxRate = 4.0f; // In octave
             // constexpr auto EnvRateNorm = std::pow(2.0f, EnvMaxRate) - 1.0f; // In octave
-            // const auto cut = Utils::LogFrequency2::GetLog(cutoffRate);
+            // const auto cut = Utils::LogFrequency::GetLog(cutoffRate);
             // const auto env = _noteManager.envelopeGain().data();
             // const auto res = static_cast<float>(filterResonance() + 1.0f) * 0.707f;
             // const auto sr = static_cast<float>(audioSpecs().sampleRate);

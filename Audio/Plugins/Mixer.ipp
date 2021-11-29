@@ -6,7 +6,6 @@
 #include <iomanip>
 
 #include <Audio/DSP/Merge.hpp>
-#include <Audio/DSP/FIR.hpp>
 #include <Audio/DSP/Gain.hpp>
 
 inline void Audio::Mixer::onAudioGenerationStarted(const BeatRange &range)

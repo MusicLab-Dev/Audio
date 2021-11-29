@@ -28,6 +28,7 @@ inline void Audio::DSP::DelayLineBase<Type, Design, Count>::reset(const AudioSpe
 
     const auto delayCacheSize = static_cast<std::uint32_t>(maxDelayDuration * static_cast<float>(audioSpecs.sampleRate));
     _cache[Index].cache.resize(delayCacheSize);
+    _cache[Index].cache.clear();
 
     _cache[Index].index = 0u;
 

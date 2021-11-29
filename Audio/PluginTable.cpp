@@ -63,11 +63,14 @@ void Audio::PluginTable::decrementRefCount(IPlugin *plugin) noexcept_ndebug
 #include <Audio/Plugins/Snare.hpp>
 #include <Audio/Plugins/Hat.hpp>
 
+#include <Audio/Plugins/Compressor.hpp>
+
 Audio::PluginTable::PluginTable(void)
 {
     // Groups
     registerFactory<Audio::Mixer>();
     registerFactory<Audio::Arpeggiator>();
+    registerFactory<Audio::Compressor>();
 
     // Instruments
     registerFactory<Audio::Oscillator>();
