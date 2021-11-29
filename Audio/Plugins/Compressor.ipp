@@ -64,8 +64,8 @@ inline void Audio::Compressor::receiveAudio(BufferView output)
             out[i] = _levels[i];
     }
     // std::cout << "\r" << _lastLevel << std::flush;
-    if (std::abs(_lastLevel) >= 0.001)
-        std::cout << std::setprecision(2) << _lastLevel << std::endl;
+    // if (std::abs(_lastLevel) >= 0.001)
+    //     std::cout << std::setprecision(2) << _lastLevel << std::endl;
 
     // auto bar = "[" + std::string(2, '#')
 
