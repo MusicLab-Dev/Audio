@@ -9,66 +9,79 @@
 
 #include <Audio/DSP/Biquad.hpp>
 
-using namespace DSP;
+using namespace Audio;
 
-static void BlockProcessBasic(benchmark::State &state)
+static void FilterBufferIIR(benchmark::State &state)
 {
-    // std::cout << (static_cast<float>(state.range(1)) / state.range(0) * 1'000'000.f) << " ns" << std::endl;
-    // auto filter = BiquadFactory<>::CreateFilter<BiquadParam::BasicType::LowPass, BiquadParam::FormType::Inversed>(static_cast<double>(state.range()), 0.25, 0.0, 0.707);
+    DSP::Biquad::Filter<DSP::Biquad::Internal::Form::Transposed2> filter1;
+    filter1.setup(DSP::Biquad::Internal::Specs {
+        DSP::Filter::AdvancedType::LowPass,
+        44'100.0f,
+        { 0.22937f, 0.0f },
+        1.0f,
+        0.707f
+    });
+    filter1.reset();
 
-    // auto filter = Biquad<BiquadParam::BiquadForm::DirectForm1, BiquadParam::BasicType::LowPass>();
-    // auto filter = BiquadMaker<BiquadParam::Optimization::Optimized, float>::MakeBiquad(state.range(0), 0.2, 0);
-    auto filter = BiquadMaker<BiquadParam::Optimization::Optimized, float>::MakeBiquad(state.range(0), 0.2, 0);
-    // filter.
+    auto size = state.range(0);
+    std::vector<float> buf(size);
+    std::iota(buf.begin(), buf.end(), 0.0f);
 
-    benchmark::DoNotOptimize(filter);
     for (auto _ : state) {
-        float buf[state.range(1)];
-        // benchmark::DoNotOptimize(*buf);
-        filter.processBlock(buf, state.range(1));
+        filter1.filterBlock(buf.data(), size, buf.data(), 0u, 1.0f);
     }
+    benchmark::DoNotOptimize(filter1);
+    benchmark::DoNotOptimize(buf);
 }
 
-BENCHMARK(BlockProcessBasic)
-    ->Args({ 44100, 512 })
-    ->Args({ 44100, 1024 })
-    ->Args({ 44100, 2048 })
-    ->Args({ 44100, 4096 })
-
-    // ->Args({ 48000, 512 })
-    // ->Args({ 48000, 1024 })
-    // ->Args({ 48000, 2048 })
-    // ->Args({ 48000, 4096 })
-
-    // ->Args({ 92000, 512 })
-    // ->Args({ 92000, 1024 })
-    // ->Args({ 92000, 2048 })
-    // ->Args({ 92000, 4096 })
+BENCHMARK(FilterBufferIIR)
+    ->Arg(512)
+    ->Arg(1024)
+    ->Arg(2048)
+    ->Arg(4096)
+    ->Arg(8192)
+    ->Arg(8192 * 2)
 ;
 
-static void BlockProcessBasicFMA(benchmark::State &state)
+static void FilterBufferIIRx2(benchmark::State &state)
 {
-    auto filter = BiquadMaker<BiquadParam::Optimization::Optimized, float>::MakeBiquad(state.range(0), 0.2, 0);
-    benchmark::DoNotOptimize(filter);
+    DSP::Biquad::Filter<DSP::Biquad::Internal::Form::Transposed2> filter1;
+    filter1.setup(DSP::Biquad::Internal::Specs {
+        DSP::Filter::AdvancedType::LowPass,
+        44'100.0f,
+        { 0.22937f, 0.0f },
+        1.0f,
+        0.707f
+    });
+    filter1.reset();
+    DSP::Biquad::Filter<DSP::Biquad::Internal::Form::Transposed2> filter2;
+    filter2.setup(DSP::Biquad::Internal::Specs {
+        DSP::Filter::AdvancedType::LowPass,
+        44'100.0f,
+        { 0.22937f, 0.0f },
+        1.0f,
+        0.707f
+    });
+    filter2.reset();
+
+    auto size = state.range(0);
+    std::vector<float> buf(size);
+    std::iota(buf.begin(), buf.end(), 0.0f);
+
     for (auto _ : state) {
-        float buf[state.range(1)];
-        filter.processBlock1(buf, state.range(1));
+        filter1.filterBlock(buf.data(), size, buf.data(), 0u, 1.0f);
+        filter2.filterBlock(buf.data(), size, buf.data(), 0u, 1.0f);
     }
+    benchmark::DoNotOptimize(filter1);
+    benchmark::DoNotOptimize(filter2);
+    benchmark::DoNotOptimize(buf);
 }
 
-BENCHMARK(BlockProcessBasicFMA)
-    ->Args({ 44100, 512 })
-    ->Args({ 44100, 1024 })
-    ->Args({ 44100, 2048 })
-    ->Args({ 44100, 4096 })
-
-    // ->Args({ 48000, 512 })
-    // ->Args({ 48000, 1024 })
-    // ->Args({ 48000, 2048 })
-    // ->Args({ 48000, 4096 })
-
-    // ->Args({ 92000, 512 })
-    // ->Args({ 92000, 1024 })
-    // ->Args({ 92000, 2048 })
-    // ->Args({ 92000, 4096 })
+BENCHMARK(FilterBufferIIRx2)
+    ->Arg(512)
+    ->Arg(1024)
+    ->Arg(2048)
+    ->Arg(4096)
+    ->Arg(8192)
+    ->Arg(8192 * 2)
 ;
