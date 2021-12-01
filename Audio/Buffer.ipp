@@ -114,7 +114,7 @@ inline void Audio::Buffer::resample(const SampleRate newSampleRate) noexcept
 
     grow(newSize);
     resampler.resampleSampleRate(data<Type>(), data<Type>(), actualSize, sampleRate(), newSampleRate);
-    _header->sampleRate = newSampleRate;
+    header()->sampleRate = newSampleRate;
     return;
 }
 
