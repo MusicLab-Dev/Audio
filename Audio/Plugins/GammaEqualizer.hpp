@@ -27,8 +27,8 @@ public:
             TR(French, "Equaliseur")
         ),
         TR_TABLE(
-            TR(English, "Equalizer allow to filter frequencies bands of an audio signal"),
-            TR(French, "L'équaliseur permet de filtrer des plages de fréquences de l'audio")
+            TR(English, "Filter frequencies bands of an audio signal"),
+            TR(French, "Filtre l'audio sur différentes plages de fréquence")
         ),
         FLAGS(AudioInput, AudioOutput),
         TAGS(Filter),

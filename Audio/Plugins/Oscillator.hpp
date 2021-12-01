@@ -27,8 +27,8 @@ class Audio::Oscillator final : public Audio::IPlugin
         ),
         /* Plugin description */
         TR_TABLE(
-            TR(English, "Oscillator allow to generate audio waveforms and play them as notes"),
-            TR(French, "Le Oscillateur permet de générer des formes d'ondes audio et de les jouer comme des notes")
+            TR(English, "Audio waveforms synthesizer"),
+            TR(French, "Synthétiseur de formes d'onde")
         ),
         /* Plugin flags */
         FLAGS(AudioOutput, NoteInput, NoChildren),
@@ -101,13 +101,13 @@ class Audio::Oscillator final : public Audio::IPlugin
             ),
             /* Control name */
             TR_TABLE(
-                TR(English, "Oscillator waveform"),
-                TR(French, "Type d'onde de l'oscillateur")
+                TR(English, "Waveform"),
+                TR(French, "Forme d'onde")
             ),
             /* Control's description */
             TR_TABLE(
-                TR(English, "Oscillator waveform"),
-                TR(French, "Type d'onde de l'oscillateur")
+                TR(English, "Waveform"),
+                TR(French, "Forme d'onde")
             ),
             /* Control's short name */
             TR_TABLE(
@@ -121,10 +121,12 @@ class Audio::Oscillator final : public Audio::IPlugin
         REGISTER_CONTROL_FLOATING(
             detune, 0.0, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
             TR_TABLE(
-                TR(English, "Voice detune"),
+                TR(English, "Detune"),
+                TR(French, "Désaccordage")
             ),
             TR_TABLE(
-                TR(English, "Voice detune"),
+                TR(English, "Internal oscillator detune"),
+                TR(French, "Désaccordage entres les oscillateurs interne")
             ),
             TR_TABLE(
                 TR(English, "Det")
@@ -181,10 +183,12 @@ class Audio::Oscillator final : public Audio::IPlugin
         REGISTER_CONTROL_FLOATING(
             panning, 0.0, CONTROL_RANGE_STEP(-1.0, 1.0, 0.01),
             TR_TABLE(
-                TR(English, "Stereo panning"),
+                TR(English, "Panning"),
+                TR(French, "Panoramique"),
             ),
             TR_TABLE(
                 TR(English, "Stereo panning"),
+                TR(English, "Panoramique stéréo"),
             ),
             TR_TABLE(
                 TR(English, "Pan")

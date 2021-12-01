@@ -44,7 +44,7 @@
             TR(English, "Atk") \
         ), \
         TR_TABLE( \
-            TR(English, "seconds") \
+            TR(English, "s") \
         ) \
     )
 
@@ -56,11 +56,11 @@
             TR(French, "Niveau maximum de l'enveloppe") \
         ), \
         TR_TABLE( \
-            TR(English, "Peak level used by the enveloppe to determine volume gain"), \
-            TR(French, "Volume maximum utilisé tant qu'une note est jouée") \
+            TR(English, "Peak level used by the envelope when a key is played"), \
+            TR(French, "Volume maximum utilisé par l'enveloppe lorsqu'une note est jouée") \
         ), \
         TR_TABLE( \
-            TR(English, "Pk") \
+            TR(English, "Peak") \
         ), \
         TR_TABLE( \
             TR(English, "%") \
@@ -75,8 +75,8 @@
             TR(French, "Chute de l'enveloppe") \
         ), \
         TR_TABLE( \
-            TR(English, "Decay duration used by the enveloppe to determine volume gain"), \
-            TR(French, "Durée pour atteindre le volume intermédiaire (sustain)") \
+            TR(English, "Decay duration used by the enveloppe to reach the sustain level"), \
+            TR(French, "Durée pour atteindre le volume intermédiaire") \
         ), \
         TR_TABLE( \
             TR(English, "Dec") \
@@ -94,7 +94,7 @@
             TR(French, "Niveau intermédiaire de l'enveloppe") \
         ), \
         TR_TABLE( \
-            TR(English, "Sustain level used by the enveloppe to determine volume gain"), \
+            TR(English, "Sustain level used by the enveloppe while a key is holded"), \
             TR(French, "Volume intermédiaire utilisé tant qu'une note est jouée") \
         ), \
         TR_TABLE( \
@@ -113,14 +113,14 @@
             TR(French, "Extinction de l'enveloppe") \
         ), \
         TR_TABLE( \
-            TR(English, "Release duration used by the enveloppe to determine volume gain"), \
+            TR(English, "Release duration used by the enveloppe when a key stopped to reach a null level"), \
             TR(French, "Durée pour atteindre un volume nul utilisée lorsqu'une note s'arrête de jouer") \
         ), \
         TR_TABLE( \
             TR(English, "Rel") \
         ), \
         TR_TABLE( \
-            TR(English, "seconds") \
+            TR(English, "s") \
         ) \
     )
 

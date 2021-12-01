@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 project(Audio)
 
-find_package(SDL2 CONFIG REQUIRED)
+find_package(SDL2 REQUIRED)
 if(${SDL2_FOUND})
     message(STATUS "SDL2_FOUND: " ${SDL2_FOUND})
     message(STATUS "SDL2_INCLUDE_DIRS:" ${SDL2_INCLUDE_DIRS})
@@ -18,7 +18,6 @@ set(AudioPrecompiledHeaders
     ${AudioDir}/SchedulerTask.hpp
     ${AudioDir}/Automation.hpp
     ${AudioDir}/Base.hpp
-    ${AudioDir}/BaseConcepts.hpp
     ${AudioDir}/BaseVolume.hpp
     ${AudioDir}/BaseNote.hpp
     ${AudioDir}/BaseDevice.hpp
@@ -196,8 +195,9 @@ target_link_libraries(${PROJECT_NAME} PUBLIC Core Flow)
 if(MSVC)
     target_link_libraries(${PROJECT_NAME} PUBLIC SDL2::SDL2)
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "Apple")
-    target_link_libraries(${PROJECT_NAME} PUBLIC ${SDL2_LIBRARIES})
-    target_include_directories(${PROJECT_NAME} PUBLIC ${SDL2_INCLUDE_DIRS})
+    target_link_libraries(${PROJECT_NAME} PUBLIC SDL2::SDL2main SDL2::SDL2-static)
+#    target_link_libraries(${PROJECT_NAME} PUBLIC ${SDL2_LIBRARIES})
+#    target_include_directories(${PROJECT_NAME} PUBLIC ${SDL2_INCLUDE_DIRS})
 else()
     target_link_libraries(${PROJECT_NAME} PUBLIC SDL2)
 endif()

@@ -24,8 +24,8 @@ class Audio::SimpleReverb final : public Audio::IPlugin
         ),
         /* Plugin description */
         TR_TABLE(
-            TR(English, "SimpleReverb allow to mix multiple audio source"),
-            TR(French, "Le mixeur permet de mixer plusieurs sources sonore")
+            TR(English, "Add reverberation to audio"),
+            TR(French, "Ajoute de la reverbération à l'audio")
         ),
         /* Plugin flags */
         FLAGS(AudioInput, AudioOutput),

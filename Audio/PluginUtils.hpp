@@ -311,15 +311,15 @@ private:
     REGISTER_CONTROL_BOOLEAN( \
         Name, 0, \
         TR_TABLE( \
-            TR(English, "By-pass the effect"), \
-            TR(French, "Désactive l'effet") \
+            TR(English, "Bypass"), \
+            TR(French, "Désactiver") \
         ), \
         TR_TABLE( \
-            TR(English, "By-pass the effect"), \
-            TR(French, "Désactive l'effet") \
+            TR(English, "Bypass the plugin"), \
+            TR(French, "Désactive le plugin") \
         ), \
         TR_TABLE( \
-            TR(English, "Byp") \
+            TR(English, "BP") \
         ), \
         TR_TABLE() \
     )
@@ -328,12 +328,12 @@ private:
     REGISTER_CONTROL_BOOLEAN( \
         Name, 0, \
         TR_TABLE( \
-            TR(English, "Sync with the beat"), \
-            TR(French, "Syncroniser avec le tempo") \
+            TR(English, "Sync tempo"), \
+            TR(French, "Syncroniser le tempo") \
         ), \
         TR_TABLE( \
-            TR(English, "Sync with the beat"), \
-            TR(French, "Syncroniser avec le tempo") \
+            TR(English, "Syncronize the plugin with the tempo"), \
+            TR(French, "Syncroniser le plugin avec le tempo") \
         ), \
         TR_TABLE( \
             TR(English, "Sync") \
