@@ -16,6 +16,10 @@ namespace Audio
     template<IPlugin::Flags Flags, bool ProcessNotesAndControls, bool ProcessAudio, Audio::PlaybackMode Playback>
     class SchedulerTask;
 
+
+    class StereoArrangementTask;
+
+
     /** @brief Make a task from a runtime flags */
     template<Audio::PlaybackMode Playback, bool ProcessNotesAndControls, bool ProcessAudio, IPlugin::Flags Deduced = IPlugin::Flags::None,
             IPlugin::Flags Begin = IPlugin::Flags::AudioInput, IPlugin::Flags End = IPlugin::Flags::NoteOutput>
@@ -80,4 +84,21 @@ private:
 
     /** @brief Collect every cached children buffer of the current frame */
     bool collectBuffers(void) noexcept;
+};
+
+
+class alignas_cacheline Audio::StereoArrangementTask
+{
+public:
+    StereoArrangementTask(const AScheduler *scheduler, Node *node) noexcept
+        : _scheduler(scheduler), _node(node) {}
+
+    StereoArrangementTask(StereoArrangementTask &&other) noexcept = default;
+    StereoArrangementTask &operator=(StereoArrangementTask &&other) noexcept = default;
+    void operator()(void) noexcept;
+
+private:
+    const AScheduler *_scheduler { nullptr };
+    Node *_node { nullptr };
+    Buffer _cache;
 };

@@ -82,6 +82,8 @@ void AScheduler::processLooping(void) noexcept
         _beatMissCount = _beatMissOffset;
         _beatMissCorrection = 0.0f;
     }
+    // For stereo
+    // _processLoopCrop *= 2u;
 }
 
 

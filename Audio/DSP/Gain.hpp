@@ -34,14 +34,29 @@ struct Audio::DSP::Gain
     }
 
 
-    template<typename Type>
-        requires(IsFloating<Type>)
+    template<std::floating_point Type>
     static void Apply(Type *data, const std::size_t size, const Type gainFrom, const Type gainTo) noexcept
     {
         const auto gainRamp = (gainTo - gainFrom) / static_cast<float>(size + 1u);
 
         Type iF = 0.0;
         for (auto i = 0u; i < size; ++i, ++iF) {
+            data[i] *= (iF * gainRamp + gainFrom);
+        }
+    }
+
+    template<std::floating_point Type>
+    static void ApplyStereo(Type *data, const std::size_t channelSize, const std::size_t channelCount, const Type gainFrom, const Type gainTo) noexcept
+    {
+        const auto fullSize = channelSize * channelCount;
+        const auto gainRamp = (gainTo - gainFrom) / static_cast<float>(channelSize + 1u);
+
+        Type iF = 0.0;
+        auto i = 0u;
+        for (; i < channelSize; ++i, ++iF) {
+            data[i] *= (iF * gainRamp + gainFrom);
+        }
+        for (iF = 0.0f; i < fullSize; ++i, ++iF) {
             data[i] *= (iF * gainRamp + gainFrom);
         }
     }

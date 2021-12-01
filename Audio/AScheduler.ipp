@@ -179,6 +179,10 @@ inline void Audio::AScheduler::buildGraph(void)
             buildNodeTask<Playback>(child.get(), noteTask, audioTask);
         }
     }
+
+    auto masterAudioTask = audioTask;
+    Node *master = parent;
+
     if constexpr (Playback == PlaybackMode::Partition || Playback == PlaybackMode::OnTheFly) {
         parent = parent->parent();
         while (parent) {
@@ -186,9 +190,16 @@ inline void Audio::AScheduler::buildGraph(void)
             parentAudioTask.first.setName(parent->name() + "_audio");
             parentAudioTask.first.succeed(audioTask.first);
             audioTask = parentAudioTask;
+            master = parent;
             parent = parent->parent();
         }
     }
+    std::pair<Flow::Task, const Audio::NoteEvents *> stereoTask = {
+        graph().emplace(StereoArrangementTask(this, master)),
+        nullptr
+    };
+    stereoTask.first.setName("Stereo stride: LLRR -> LRLR");
+    audioTask.first.precede(stereoTask.first);
 }
 
 template<Audio::PlaybackMode Playback>

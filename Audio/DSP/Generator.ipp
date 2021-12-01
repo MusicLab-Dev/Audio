@@ -26,148 +26,112 @@ inline Type Audio::DSP::Generator::Internal::GenerateNoiseSample(const float ind
     }
 }
 
-template<bool Accumulate, Audio::ChannelArrangement Channels, auto ComputeFunc, typename Type>
+template<bool Accumulate, auto ComputeFunc, typename Type>
 inline float Audio::DSP::Generator::Internal::GenerateImpl(Type *output, const std::size_t outputSize,
         const float frequencyNorm, const float phaseOffset, const std::uint32_t indexOffset, const DB gain) noexcept
 {
-    constexpr auto Stride = Channels == ChannelArrangement::All ? static_cast<std::size_t>(ChannelArrangement::Stereo) : static_cast<std::size_t>(Channels);
-
     float phase = phaseOffset;
     auto k = indexOffset;
 
-    for (auto i = 0ul; i < outputSize; ++i, ++k, output += Stride) {
+    for (auto i = 0ul; i < outputSize; ++i, ++k, ++output) {
         if constexpr (Accumulate) {
             *output += ComputeFunc(phase, frequencyNorm, k, gain);
-            if constexpr (Channels == ChannelArrangement::All)
-                *(output + 1u) += *output;
         } else {
             *output = ComputeFunc(phase, frequencyNorm, k, gain);
-            if constexpr (Channels == ChannelArrangement::All)
-                *(output + 1u) = *output;
         }
         phase = IncrementPhase(phase, frequencyNorm);
     }
     return phase;
 }
 
-template<bool Accumulate, Audio::ChannelArrangement Channels, auto ComputeFunc, typename Type>
+template<bool Accumulate, auto ComputeFunc, typename Type>
 inline float Audio::DSP::Generator::Internal::GenerateImpl(Type *output, const Type *input, const std::size_t outputSize,
         const float frequencyNorm, const float phaseOffset, const std::uint32_t indexOffset, const DB gain) noexcept
 {
-    constexpr auto Stride = Channels == ChannelArrangement::All ? static_cast<std::size_t>(ChannelArrangement::Stereo) : static_cast<std::size_t>(Channels);
-
     float phase = phaseOffset;
     auto k = indexOffset;
 
-    for (auto i = 0ul; i < outputSize; ++i, ++k, output += Stride) {
+    for (auto i = 0ul; i < outputSize; ++i, ++k, ++output) {
         if constexpr (Accumulate) {
             *output += input[i] * ComputeFunc(phase, frequencyNorm, k, gain);
-            if constexpr (Channels == ChannelArrangement::All)
-                *(output + 1u) += *output;
         } else {
             *output = input[i] * ComputeFunc(phase, frequencyNorm, k, gain);
-            if constexpr (Channels == ChannelArrangement::All)
-                *(output + 1u) = *output;
         }
         phase = IncrementPhase(phase, frequencyNorm);
     }
     return phase;
 }
 
-template<bool Accumulate, Audio::ChannelArrangement Channels, auto ComputeFunc, typename Type>
+template<bool Accumulate, auto ComputeFunc, typename Type>
 inline float Audio::DSP::Generator::Internal::ModulateImpl(
         Type *output, const Type *modulation, const std::size_t outputSize,
         const float frequencyNorm, const float phaseOffset, const std::uint32_t indexOffset, const DB gain) noexcept
 {
-    constexpr auto Stride = Channels == ChannelArrangement::All ? static_cast<std::size_t>(ChannelArrangement::Stereo) : static_cast<std::size_t>(Channels);
-
     float phase = phaseOffset;
     auto k = indexOffset;
 
-    for (auto i = 0ul; i < outputSize; ++i, ++k, output += Stride) {
+    for (auto i = 0ul; i < outputSize; ++i, ++k, ++output) {
         if constexpr (Accumulate) {
             *output += ComputeFunc(phase, frequencyNorm, k, modulation[i], gain);
-            if constexpr (Channels == ChannelArrangement::All)
-                *(output + 1u) += *output;
         } else {
             *output = ComputeFunc(phase, frequencyNorm, k, modulation[i], gain);
-            if constexpr (Channels == ChannelArrangement::All)
-                *(output + 1u) = *output;
         }
         phase = IncrementPhase(phase, frequencyNorm);
     }
     return phase;
 }
 
-template<bool Accumulate, Audio::ChannelArrangement Channels, auto ComputeFunc, typename Type>
+template<bool Accumulate, auto ComputeFunc, typename Type>
 inline float Audio::DSP::Generator::Internal::ModulateImpl(
         Type *output, const Type *input, const Type *modulation, const std::size_t outputSize,
         const float frequencyNorm, const float phaseOffset, const std::uint32_t indexOffset, const DB gain) noexcept
 {
-    constexpr auto Stride = Channels == ChannelArrangement::All ? static_cast<std::size_t>(ChannelArrangement::Stereo) : static_cast<std::size_t>(Channels);
-
     float phase = phaseOffset;
     auto k = indexOffset;
 
-    for (auto i = 0ul; i < outputSize; ++i, ++k, output += Stride) {
+    for (auto i = 0ul; i < outputSize; ++i, ++k, ++output) {
         if constexpr (Accumulate) {
             *output += input[i] * ComputeFunc(phase, frequencyNorm, k, modulation[i], gain);
-            if constexpr (Channels == ChannelArrangement::All)
-                *(output + 1u) += *output;
         } else {
             *output = input[i] * ComputeFunc(phase, frequencyNorm, k, modulation[i], gain);
-            if constexpr (Channels == ChannelArrangement::All)
-                *(output + 1u) = *output;
         }
         phase = IncrementPhase(phase, frequencyNorm);
     }
     return phase;
 }
 
-template<bool Accumulate, Audio::ChannelArrangement Channels, auto ComputeFunc, typename Type>
+template<bool Accumulate, auto ComputeFunc, typename Type>
 inline float Audio::DSP::Generator::Internal::SemitoneShiftImpl(
         Type *output, const Type *semitone, const std::size_t outputSize,
         const float frequencyNorm, const float phaseOffset, const std::uint32_t indexOffset, const DB gain) noexcept
 {
-    constexpr auto Stride = Channels == ChannelArrangement::All ? static_cast<std::size_t>(ChannelArrangement::Stereo) : static_cast<std::size_t>(Channels);
-
     float phase = phaseOffset;
     auto k = indexOffset;
 
-    for (auto i = 0ul; i < outputSize; ++i, ++k, output += Stride) {
+    for (auto i = 0ul; i < outputSize; ++i, ++k, ++output) {
         if constexpr (Accumulate) {
             *output += ComputeFunc(phase, frequencyNorm, k, gain);
-            if constexpr (Channels == ChannelArrangement::All)
-                *(output + 1u) += *output;
         } else {
             *output = ComputeFunc(phase, frequencyNorm, k, gain);
-            if constexpr (Channels == ChannelArrangement::All)
-                *(output + 1u) = *output;
         }
         phase = IncrementPhase(phase, GetNoteFrequencyDelta(frequencyNorm, semitone[i]));
     }
     return phase;
 }
 
-template<bool Accumulate, Audio::ChannelArrangement Channels, auto ComputeFunc, typename Type>
+template<bool Accumulate, auto ComputeFunc, typename Type>
 inline float Audio::DSP::Generator::Internal::SemitoneShiftImpl(
         Type *output, const Type *input, const Type *semitone, const std::size_t outputSize,
         const float frequencyNorm, const float phaseOffset, const std::uint32_t indexOffset, const DB gain) noexcept
 {
-    constexpr auto Stride = Channels == ChannelArrangement::All ? static_cast<std::size_t>(ChannelArrangement::Stereo) : static_cast<std::size_t>(Channels);
-
     float phase = phaseOffset;
     auto k = indexOffset;
 
-    for (auto i = 0ul; i < outputSize; ++i, ++k, output += Stride) {
+    for (auto i = 0ul; i < outputSize; ++i, ++k, ++output) {
         if constexpr (Accumulate) {
             *output += input[i] * ComputeFunc(phase, frequencyNorm, k, gain);
-            if constexpr (Channels == ChannelArrangement::All)
-                *(output + 1u) += *output;
         } else {
             *output = input[i] * ComputeFunc(phase, frequencyNorm, k, gain);
-            if constexpr (Channels == ChannelArrangement::All)
-                *(output + 1u) = *output;
         }
         phase = IncrementPhase(phase, GetNoteFrequencyDelta(frequencyNorm, semitone[i]));
     }
@@ -175,50 +139,38 @@ inline float Audio::DSP::Generator::Internal::SemitoneShiftImpl(
 }
 
 
-template<bool Accumulate, Audio::ChannelArrangement Channels, auto ComputeFunc, typename Type>
+template<bool Accumulate, auto ComputeFunc, typename Type>
 inline float Audio::DSP::Generator::Internal::ModulateSemitoneShiftImpl(
         Type *output, const Type *modulation, const Type *semitone, const std::size_t outputSize,
         const float frequencyNorm, const float phaseOffset, const std::uint32_t indexOffset, const DB gain) noexcept
 {
-    constexpr auto Stride = Channels == ChannelArrangement::All ? static_cast<std::size_t>(ChannelArrangement::Stereo) : static_cast<std::size_t>(Channels);
-
     float phase = phaseOffset;
     auto k = indexOffset;
 
-    for (auto i = 0ul; i < outputSize; ++i, ++k, output += Stride) {
+    for (auto i = 0ul; i < outputSize; ++i, ++k, ++output) {
         if constexpr (Accumulate) {
             *output += ComputeFunc(phase, frequencyNorm, k, modulation[i], gain);
-            if constexpr (Channels == ChannelArrangement::All)
-                *(output + 1u) += *output;
         } else {
             *output = ComputeFunc(phase, frequencyNorm, k, modulation[i], gain);
-            if constexpr (Channels == ChannelArrangement::All)
-                *(output + 1u) = *output;
         }
         phase = IncrementPhase(phase, GetNoteFrequencyDelta(frequencyNorm, semitone[i]));
     }
     return phase;
 }
 
-template<bool Accumulate, Audio::ChannelArrangement Channels, auto ComputeFunc, typename Type>
+template<bool Accumulate, auto ComputeFunc, typename Type>
 inline float Audio::DSP::Generator::Internal::ModulateSemitoneShiftImpl(
         Type *output, const Type *input, const Type *modulation, const Type *semitone, const std::size_t outputSize,
         const float frequencyNorm, const float phaseOffset, const std::uint32_t indexOffset, const DB gain) noexcept
 {
-    constexpr auto Stride = Channels == ChannelArrangement::All ? static_cast<std::size_t>(ChannelArrangement::Stereo) : static_cast<std::size_t>(Channels);
-
     float phase = phaseOffset;
     auto k = indexOffset;
 
-    for (auto i = 0ul; i < outputSize; ++i, ++k, output += Stride) {
+    for (auto i = 0ul; i < outputSize; ++i, ++k, ++output) {
         if constexpr (Accumulate) {
             *output += input[i] * ComputeFunc(phase, frequencyNorm, k, modulation[i], gain);
-            if constexpr (Channels == ChannelArrangement::All)
-                *(output + 1u) += *output;
         } else {
             *output = input[i] * ComputeFunc(phase, frequencyNorm, k, modulation[i], gain);
-            if constexpr (Channels == ChannelArrangement::All)
-                *(output + 1u) = *output;
         }
         phase = IncrementPhase(phase, GetNoteFrequencyDelta(frequencyNorm, semitone[i]));
     }
@@ -227,133 +179,133 @@ inline float Audio::DSP::Generator::Internal::ModulateSemitoneShiftImpl(
 
 
 
-template<bool Accumulate, Audio::ChannelArrangement Channels, typename ...Args>
+template<bool Accumulate, typename ...Args>
 inline float Audio::DSP::Generator::Internal::WaveformGenerateHelper(const Waveform waveform, Args &&...args)
 {
     switch (waveform) {
     case Waveform::Sine:
-        return GenerateSine<Accumulate, Channels>(std::forward<Args>(args)...);
+        return GenerateSine<Accumulate>(std::forward<Args>(args)...);
     case Waveform::Cosine:
-        return GenerateCosine<Accumulate, Channels>(std::forward<Args>(args)...);
+        return GenerateCosine<Accumulate>(std::forward<Args>(args)...);
     case Waveform::Square:
-        return GenerateSquare<Accumulate, Channels>(std::forward<Args>(args)...);
+        return GenerateSquare<Accumulate>(std::forward<Args>(args)...);
     case Waveform::Triangle:
-        return GenerateTriangle<Accumulate, Channels>(std::forward<Args>(args)...);
+        return GenerateTriangle<Accumulate>(std::forward<Args>(args)...);
     case Waveform::Saw:
-        return GenerateSaw<Accumulate, Channels>(std::forward<Args>(args)...);
+        return GenerateSaw<Accumulate>(std::forward<Args>(args)...);
     case Waveform::Noise:
-        return GenerateNoise<Accumulate, Channels>(std::forward<Args>(args)...);
+        return GenerateNoise<Accumulate>(std::forward<Args>(args)...);
     case Waveform::PulseThird:
-        return GeneratePulseThird<Accumulate, Channels>(std::forward<Args>(args)...);
+        return GeneratePulseThird<Accumulate>(std::forward<Args>(args)...);
     case Waveform::PulseQuarter:
-        return GeneratePulseQuarter<Accumulate, Channels>(std::forward<Args>(args)...);
+        return GeneratePulseQuarter<Accumulate>(std::forward<Args>(args)...);
     case Waveform::SquareAnalog:
-        return GenerateSquareAnalog<Accumulate, Channels>(std::forward<Args>(args)...);
+        return GenerateSquareAnalog<Accumulate>(std::forward<Args>(args)...);
     case Waveform::SawAnalog:
-        return GenerateSawAnalog<Accumulate, Channels>(std::forward<Args>(args)...);
+        return GenerateSawAnalog<Accumulate>(std::forward<Args>(args)...);
     case Waveform::PulseThirdAnalog:
-        return GeneratePulseThirdAnalog<Accumulate, Channels>(std::forward<Args>(args)...);
+        return GeneratePulseThirdAnalog<Accumulate>(std::forward<Args>(args)...);
     case Waveform::PulseQuarterAnalog:
-        return GeneratePulseQuarterAnalog<Accumulate, Channels>(std::forward<Args>(args)...);
+        return GeneratePulseQuarterAnalog<Accumulate>(std::forward<Args>(args)...);
     default:
         return 0.0f;
     }
 }
 
-template<bool Accumulate, Audio::ChannelArrangement Channels, typename ...Args>
+template<bool Accumulate, typename ...Args>
 inline float Audio::DSP::Generator::Internal::WaveformModulateHelper(const Waveform waveform, Args &&...args)
 {
     switch (waveform) {
     case Waveform::Sine:
-        return ModulateSine<Accumulate, Channels>(std::forward<Args>(args)...);
+        return ModulateSine<Accumulate>(std::forward<Args>(args)...);
     case Waveform::Cosine:
-        return ModulateCosine<Accumulate, Channels>(std::forward<Args>(args)...);
+        return ModulateCosine<Accumulate>(std::forward<Args>(args)...);
     case Waveform::Square:
-        return ModulateSquare<Accumulate, Channels>(std::forward<Args>(args)...);
+        return ModulateSquare<Accumulate>(std::forward<Args>(args)...);
     case Waveform::Triangle:
-        return ModulateTriangle<Accumulate, Channels>(std::forward<Args>(args)...);
+        return ModulateTriangle<Accumulate>(std::forward<Args>(args)...);
     case Waveform::Saw:
-        return ModulateSaw<Accumulate, Channels>(std::forward<Args>(args)...);
+        return ModulateSaw<Accumulate>(std::forward<Args>(args)...);
     case Waveform::Noise:
-        return ModulateNoise<Accumulate, Channels>(std::forward<Args>(args)...);
+        return ModulateNoise<Accumulate>(std::forward<Args>(args)...);
     case Waveform::PulseThird:
-        return ModulatePulseThird<Accumulate, Channels>(std::forward<Args>(args)...);
+        return ModulatePulseThird<Accumulate>(std::forward<Args>(args)...);
     case Waveform::PulseQuarter:
-        return ModulatePulseQuarter<Accumulate, Channels>(std::forward<Args>(args)...);
+        return ModulatePulseQuarter<Accumulate>(std::forward<Args>(args)...);
     case Waveform::SquareAnalog:
-        return ModulateSquareAnalog<Accumulate, Channels>(std::forward<Args>(args)...);
+        return ModulateSquareAnalog<Accumulate>(std::forward<Args>(args)...);
     case Waveform::SawAnalog:
-        return ModulateSawAnalog<Accumulate, Channels>(std::forward<Args>(args)...);
+        return ModulateSawAnalog<Accumulate>(std::forward<Args>(args)...);
     case Waveform::PulseThirdAnalog:
-        return ModulatePulseThirdAnalog<Accumulate, Channels>(std::forward<Args>(args)...);
+        return ModulatePulseThirdAnalog<Accumulate>(std::forward<Args>(args)...);
     case Waveform::PulseQuarterAnalog:
-        return ModulatePulseQuarterAnalog<Accumulate, Channels>(std::forward<Args>(args)...);
+        return ModulatePulseQuarterAnalog<Accumulate>(std::forward<Args>(args)...);
     default:
         return 0.0f;
     }
 }
 
-template<bool Accumulate, Audio::ChannelArrangement Channels, typename ...Args>
+template<bool Accumulate, typename ...Args>
 inline float Audio::DSP::Generator::Internal::WaveformSemitoneShiftHelper(const Waveform waveform, Args &&...args)
 {
     switch (waveform) {
     case Waveform::Sine:
-        return SemitoneShiftSine<Accumulate, Channels>(std::forward<Args>(args)...);
+        return SemitoneShiftSine<Accumulate>(std::forward<Args>(args)...);
     case Waveform::Cosine:
-        return SemitoneShiftCosine<Accumulate, Channels>(std::forward<Args>(args)...);
+        return SemitoneShiftCosine<Accumulate>(std::forward<Args>(args)...);
     case Waveform::Square:
-        return SemitoneShiftSquare<Accumulate, Channels>(std::forward<Args>(args)...);
+        return SemitoneShiftSquare<Accumulate>(std::forward<Args>(args)...);
     case Waveform::Triangle:
-        return SemitoneShiftTriangle<Accumulate, Channels>(std::forward<Args>(args)...);
+        return SemitoneShiftTriangle<Accumulate>(std::forward<Args>(args)...);
     case Waveform::Saw:
-        return SemitoneShiftSaw<Accumulate, Channels>(std::forward<Args>(args)...);
+        return SemitoneShiftSaw<Accumulate>(std::forward<Args>(args)...);
     case Waveform::Noise:
-        return SemitoneShiftNoise<Accumulate, Channels>(std::forward<Args>(args)...);
+        return SemitoneShiftNoise<Accumulate>(std::forward<Args>(args)...);
     case Waveform::PulseThird:
-        return SemitoneShiftPulseThird<Accumulate, Channels>(std::forward<Args>(args)...);
+        return SemitoneShiftPulseThird<Accumulate>(std::forward<Args>(args)...);
     case Waveform::PulseQuarter:
-        return SemitoneShiftPulseQuarter<Accumulate, Channels>(std::forward<Args>(args)...);
+        return SemitoneShiftPulseQuarter<Accumulate>(std::forward<Args>(args)...);
     case Waveform::SquareAnalog:
-        return SemitoneShiftSquareAnalog<Accumulate, Channels>(std::forward<Args>(args)...);
+        return SemitoneShiftSquareAnalog<Accumulate>(std::forward<Args>(args)...);
     case Waveform::SawAnalog:
-        return SemitoneShiftSawAnalog<Accumulate, Channels>(std::forward<Args>(args)...);
+        return SemitoneShiftSawAnalog<Accumulate>(std::forward<Args>(args)...);
     case Waveform::PulseThirdAnalog:
-        return SemitoneShiftPulseThirdAnalog<Accumulate, Channels>(std::forward<Args>(args)...);
+        return SemitoneShiftPulseThirdAnalog<Accumulate>(std::forward<Args>(args)...);
     case Waveform::PulseQuarterAnalog:
-        return SemitoneShiftPulseQuarterAnalog<Accumulate, Channels>(std::forward<Args>(args)...);
+        return SemitoneShiftPulseQuarterAnalog<Accumulate>(std::forward<Args>(args)...);
     default:
         return 0.0f;
     }
 }
 
-template<bool Accumulate, Audio::ChannelArrangement Channels, typename ...Args>
+template<bool Accumulate, typename ...Args>
 inline float Audio::DSP::Generator::Internal::WaveformModulateSemitoneShiftHelper(const Waveform waveform, Args &&...args)
 {
     switch (waveform) {
     case Waveform::Sine:
-        return ModulateSemitoneShiftSine<Accumulate, Channels>(std::forward<Args>(args)...);
+        return ModulateSemitoneShiftSine<Accumulate>(std::forward<Args>(args)...);
     case Waveform::Cosine:
-        return ModulateSemitoneShiftCosine<Accumulate, Channels>(std::forward<Args>(args)...);
+        return ModulateSemitoneShiftCosine<Accumulate>(std::forward<Args>(args)...);
     case Waveform::Square:
-        return ModulateSemitoneShiftSquare<Accumulate, Channels>(std::forward<Args>(args)...);
+        return ModulateSemitoneShiftSquare<Accumulate>(std::forward<Args>(args)...);
     case Waveform::Triangle:
-        return ModulateSemitoneShiftTriangle<Accumulate, Channels>(std::forward<Args>(args)...);
+        return ModulateSemitoneShiftTriangle<Accumulate>(std::forward<Args>(args)...);
     case Waveform::Saw:
-        return ModulateSemitoneShiftSaw<Accumulate, Channels>(std::forward<Args>(args)...);
+        return ModulateSemitoneShiftSaw<Accumulate>(std::forward<Args>(args)...);
     case Waveform::Noise:
-        return ModulateSemitoneShiftNoise<Accumulate, Channels>(std::forward<Args>(args)...);
+        return ModulateSemitoneShiftNoise<Accumulate>(std::forward<Args>(args)...);
     case Waveform::PulseThird:
-        return ModulateSemitoneShiftPulseThird<Accumulate, Channels>(std::forward<Args>(args)...);
+        return ModulateSemitoneShiftPulseThird<Accumulate>(std::forward<Args>(args)...);
     case Waveform::PulseQuarter:
-        return ModulateSemitoneShiftPulseQuarter<Accumulate, Channels>(std::forward<Args>(args)...);
+        return ModulateSemitoneShiftPulseQuarter<Accumulate>(std::forward<Args>(args)...);
     case Waveform::SquareAnalog:
-        return ModulateSemitoneShiftSquareAnalog<Accumulate, Channels>(std::forward<Args>(args)...);
+        return ModulateSemitoneShiftSquareAnalog<Accumulate>(std::forward<Args>(args)...);
     case Waveform::SawAnalog:
-        return ModulateSemitoneShiftSawAnalog<Accumulate, Channels>(std::forward<Args>(args)...);
+        return ModulateSemitoneShiftSawAnalog<Accumulate>(std::forward<Args>(args)...);
     case Waveform::PulseThirdAnalog:
-        return ModulateSemitoneShiftPulseThirdAnalog<Accumulate, Channels>(std::forward<Args>(args)...);
+        return ModulateSemitoneShiftPulseThirdAnalog<Accumulate>(std::forward<Args>(args)...);
     case Waveform::PulseQuarterAnalog:
-        return ModulateSemitoneShiftPulseQuarterAnalog<Accumulate, Channels>(std::forward<Args>(args)...);
+        return ModulateSemitoneShiftPulseQuarterAnalog<Accumulate>(std::forward<Args>(args)...);
     default:
         return 0.0f;
     }

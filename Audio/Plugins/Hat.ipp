@@ -71,12 +71,7 @@ inline void Audio::Hat::sendNotes(const NoteEvents &notes, const BeatRange &rang
     UNUSED(range);
     if (notes.size()) {
         // std::cout << range << std::endl;
-        _noteManager.feedNotesRetrigger(notes,
-            [this] (const Key key) -> void
-            {
-                _fm.resetKey(key);
-            }
-        );
+        _noteManager.feedNotes(notes);
     }
 }
 
@@ -89,11 +84,11 @@ inline Audio::DSP::FM::Internal::Operator MakeOperator(Audio::DSP::FM::Internal:
 inline void Audio::Hat::receiveAudio(BufferView output)
 {
     const DB outGain = ConvertDecibelToRatio(static_cast<float>(outputVolume()));
-    const auto outSize = static_cast<std::uint32_t>(output.channelSampleCount());
-    const auto channels = static_cast<std::size_t>(output.channelArrangement());
+    const auto channels = static_cast<std::size_t>(audioSpecs().channelArrangement);
+    const auto outChannelSize = audioSpecs().processBlockSize;
     float *out = reinterpret_cast<float *>(output.byteData());
 
-    _noteManager.envelopeGain().resize(outSize);
+    _noteManager.envelopeGain().resize(outChannelSize);
     _noteManager.setEnvelopeSpecs(DSP::EnvelopeSpecs {
         0.0f,
         static_cast<float>(attack()), // A
@@ -105,9 +100,9 @@ inline void Audio::Hat::receiveAudio(BufferView output)
     });
 
 
-    _noteManager.processNotes(
+    _noteManager.processRetriggerNotes(
         output,
-        [this, outGain, channels](const Key key, const std::uint32_t readIndex, const NoteModifiers &modifiers, float *realOutput, const std::uint32_t realOutSize, const std::size_t channelCount) -> std::pair<std::uint32_t, std::uint32_t>
+        [this, outGain](const Key key, const std::uint32_t readIndex, const NoteModifiers &modifiers, float *realOutput, const std::uint32_t realOutSize, const std::size_t channelCount) -> std::pair<std::uint32_t, std::uint32_t>
         {
             UNUSED(modifiers);
             UNUSED(channelCount);
@@ -167,8 +162,8 @@ inline void Audio::Hat::receiveAudio(BufferView output)
     _combFilter.setDelayTime(static_cast<float>(audioSpecs().sampleRate), static_cast<float>(combSpread()));
 
     float *cache = _cache.data<float>();
-    std::memcpy(cache, out, sizeof(float) * outSize);
-    _combFilter.process<0u, false>(_cache.data<float>(), out, outSize);
+    std::memcpy(cache, out, sizeof(float) * outChannelSize);
+    _combFilter.process<0u, false>(_cache.data<float>(), out, outChannelSize);
 
 
     _bandPassFilter.setup(DSP::Biquad::Internal::Specs {
@@ -189,19 +184,11 @@ inline void Audio::Hat::receiveAudio(BufferView output)
     });
     _highPassFilter.filterBlock(out, audioSpecs().processBlockSize, out, 0u, 1.0f);
 
-    // Re-arrange the buffer in case of multiple channels
-    const auto channelsMinusOne = channels - 1u;
-    if (channelsMinusOne) {
+    const float gainFrom = ConvertDecibelToRatio(static_cast<float>(getControlPrev((0u))));
+    const float gainTo = ConvertDecibelToRatio(static_cast<float>(outputVolume()));
 
-        // ABCD___ -> ABCDABCD
-        for (auto ch = 1u; ch < channels; ++ch)
-            std::memcpy(out + (ch * outSize), out, outSize * sizeof(float));
-
-        // ABCDABCD -> AABBCCDD
-        for (auto i = 0u; i < outSize; ++i) {
-            for (auto ch = 0u; ch < channels; ++ch) {
-                out[i * channels + ch] = out[i + channelsMinusOne * outSize];
-            }
-        }
+    DSP::Gain::Apply<float>(out, outChannelSize, gainFrom, gainTo);
+    if (channels - 1u) {
+        std::memcpy(out + outChannelSize, out, outChannelSize * sizeof(float));
     }
 }

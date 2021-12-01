@@ -118,6 +118,8 @@ public:
     /** @brief Initialize the internal filter specs */
     void init(const DSP::Filter::FIRSpecs &specs) noexcept;
 
+    Internal::Cache<Type> &lastInput(void) noexcept { return _instance.lastInput(); }
+
 
     bool _setGain(const DB gain) noexcept;
     /** @brief Set the internal specs. It will recompute the instance coefficients */

@@ -16,7 +16,7 @@ inline void Audio::CutoffFilter::onAudioGenerationStarted(const BeatRange &range
         DSP::Filter::FIRSpecs(
             static_cast<DSP::Filter::BasicType>(filterType()),
             DSP::Filter::WindowType::Hanning,
-            33ul,
+            FilterSize,
             static_cast<float>(audioSpecs().sampleRate),
             static_cast<float>(cutoffFrequency()),
             0.0f,
@@ -25,19 +25,23 @@ inline void Audio::CutoffFilter::onAudioGenerationStarted(const BeatRange &range
     );
     _cache.resize(GetFormatByteLength(audioSpecs().format) * audioSpecs().processBlockSize, audioSpecs().sampleRate, audioSpecs().channelArrangement, audioSpecs().format);
     _cache.clear();
+
+    _cacheStereoFilter.resize(FilterSize - 1u);
+    _cacheStereoFilter.clear();
 }
 
 inline void Audio::CutoffFilter::receiveAudio(BufferView output)
 {
     const float *in = _cache.data<float>();
     float *out = output.data<float>();
-    const auto outSize = output.size<float>();
+    const auto channels = static_cast<std::size_t>(audioSpecs().channelArrangement);
+    const auto outChannelSize = audioSpecs().processBlockSize;
     const float outGainFrom = ConvertDecibelToRatio(static_cast<float>(getControlPrev((0u))));
     const float outGainTo = ConvertDecibelToRatio(static_cast<float>(outputVolume()));
 
     if (static_cast<bool>(bypass())) {
-        std::memcpy(out, in, output.size<std::uint8_t>());
-        DSP::Gain::Apply<float>(out, outSize, outGainFrom, outGainTo);
+        std::memcpy(out, in, outChannelSize * channels * sizeof(float));
+        DSP::Gain::ApplyStereo<float>(out, outChannelSize, channels, outGainFrom, outGainTo);
         return;
     }
 
@@ -47,16 +51,24 @@ inline void Audio::CutoffFilter::receiveAudio(BufferView output)
         DSP::Filter::FIRSpecs(
             static_cast<DSP::Filter::BasicType>(filterType()),
             DSP::Filter::WindowType::Default,
-            33ul,
+            FilterSize,
             static_cast<float>(audioSpecs().sampleRate),
-            // static_cast<float>(cutoffFrequency()),
             Utils::LogFrequency::GetLog(cutoffRate),
             0.0f,
             1.0f
         )
     );
-    _filter.filter(_cache.data<float>(), audioSpecs().processBlockSize, out);
-    DSP::Gain::Apply<float>(out, outSize, outGainFrom, outGainTo);
+
+    // Left
+    _filter.filter(in, outChannelSize, out);
+
+    // Right
+    if (channels - 1u) {
+        std::swap(_cacheStereoFilter, _filter.lastInput());
+        _filter.filter(in + outChannelSize, outChannelSize, out + outChannelSize);
+        std::swap(_cacheStereoFilter, _filter.lastInput());
+    }
+    DSP::Gain::ApplyStereo<float>(out, outChannelSize, channels, outGainFrom, outGainTo);
 }
 
 inline void Audio::CutoffFilter::sendAudio(const BufferViews &inputs)
@@ -68,5 +80,11 @@ inline void Audio::CutoffFilter::sendAudio(const BufferViews &inputs)
     const float inGainFrom = ConvertDecibelToRatio(static_cast<float>(getControlPrev(1u)));
     const float inGainTo = ConvertDecibelToRatio(static_cast<float>(inputGain()));
 
-    DSP::Gain::Apply<float>(_cache.data<float>(), _cache.size<float>(), inGainFrom, inGainTo);
+    DSP::Gain::ApplyStereo<float>(
+        _cache.data<float>(),
+        audioSpecs().processBlockSize,
+        static_cast<std::size_t>(audioSpecs().channelArrangement),
+        inGainFrom,
+        inGainTo
+    );
 }

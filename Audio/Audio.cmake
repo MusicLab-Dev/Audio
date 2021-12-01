@@ -61,6 +61,7 @@ set(AudioSources
     ${AudioDir}/PluginUtilsControlsVolume.hpp
     ${AudioDir}/AScheduler.ipp
     ${AudioDir}/AScheduler.cpp
+    ${AudioDir}/SchedulerTask.cpp
     ${AudioDir}/SchedulerTask.ipp
     ${AudioDir}/Math.cpp
     ${AudioDir}/BaseIndex.cpp

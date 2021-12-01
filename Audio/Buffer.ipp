@@ -89,15 +89,16 @@ inline void Audio::Buffer::copy(const Internal::BufferBase &target)
 inline void Audio::Buffer::copyRange(const Internal::BufferBase &target, const std::size_t from, const std::size_t to)
 {
     const auto newSize = to - from;
+    const auto channelArr = target.channelArrangement();
     if (*this && newSize <= capacity()) {
-        header()->size = static_cast<std::size_t>(target.header()->channelArrangement) * newSize;
-        header()->channelByteSize = newSize;
+        header()->size = newSize;
+        header()->channelByteSize = newSize / static_cast<std::size_t>(channelArr);
         header()->sampleRate = target.header()->sampleRate;
-        header()->channelArrangement = target.header()->channelArrangement;
+        header()->channelArrangement = channelArr;
         header()->format = target.header()->format;
         std::memcpy(byteData(), target.byteData() + from, newSize);
     } else {
-        *this = Buffer(newSize, target.sampleRate(), target.channelArrangement(), target.format());
+        *this = Buffer(newSize / static_cast<std::size_t>(channelArr), target.sampleRate(), channelArr, target.format());
         std::memcpy(byteData(), target.byteData() + from, newSize);
     }
 }

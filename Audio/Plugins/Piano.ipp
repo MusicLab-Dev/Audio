@@ -54,10 +54,10 @@ inline void Audio::Piano::sendNotes(const NoteEvents &notes, const BeatRange &ra
 inline void Audio::Piano::receiveAudio(BufferView output)
 {
     const DB outGain = ConvertDecibelToRatio(DefaultVoiceGain);
-    const auto channels = output.channelArrangement();
+    const auto outChannelSize = audioSpecs().processBlockSize;
+    const auto channels = static_cast<std::size_t>(audioSpecs().channelArrangement);
 
-    const auto outSize = static_cast<std::uint32_t>(output.channelSampleCount());
-    _noteManager.envelopeGain().resize(outSize);
+    _noteManager.envelopeGain().resize(outChannelSize);
     // _noteManager.setEnvelopeSpecs(DSP::EnvelopeSpecs {
     //     0.0f,
     //     0.005f, // A
@@ -70,7 +70,7 @@ inline void Audio::Piano::receiveAudio(BufferView output)
 
     _noteManager.processNotes(
         output,
-        [this, outGain, channels](const Key key, const std::uint32_t readIndex, const NoteModifiers &modifiers, float *realOutput, const std::uint32_t realOutSize, const std::size_t channelCount) -> std::pair<std::uint32_t, std::uint32_t>
+        [this, outGain, outChannelSize](const Key key, const std::uint32_t readIndex, const NoteModifiers &modifiers, float *realOutput, const std::uint32_t realOutSize, const std::size_t channelCount) -> std::pair<std::uint32_t, std::uint32_t>
         {
             UNUSED(modifiers);
             const auto channelsMinusOne = channelCount - 1u;
@@ -141,7 +141,6 @@ inline void Audio::Piano::receiveAudio(BufferView output)
             _cache.clear();
             _oscillators.generate<true, 0u, false>(
                 PianoTypeWaveforms[0u][pianoType],
-                channels,
                 cacheLeft,
                 _noteManager.envelopeGain().data(),
                 realOutSize,
@@ -152,7 +151,6 @@ inline void Audio::Piano::receiveAudio(BufferView output)
             );
             _oscillators.generate<true, 0u>(
                 PianoTypeWaveforms[0u][pianoType],
-                channels,
                 cacheRight,
                 _noteManager.envelopeGain().data(),
                 realOutSize,
@@ -163,7 +161,6 @@ inline void Audio::Piano::receiveAudio(BufferView output)
             );
             _oscillators.generate<true, 1u>(
                 PianoTypeWaveforms[1u][pianoType],
-                channels,
                 cacheLeft,
                 _noteManager.envelopeGain().data(),
                 realOutSize,
@@ -174,7 +171,6 @@ inline void Audio::Piano::receiveAudio(BufferView output)
             );
             _oscillators.generate<true, 2u>(
                 PianoTypeWaveforms[2u][pianoType],
-                channels,
                 cacheRight,
                 _noteManager.envelopeGain().data(),
                 realOutSize,
@@ -207,7 +203,7 @@ inline void Audio::Piano::receiveAudio(BufferView output)
                 });
 
                 auto k = 0u;
-                for (auto i = 0u; i < realOutSize; ++i, k += static_cast<std::uint32_t>(channelCount)) {
+                for (auto i = 0u; i < realOutSize; ++i, ++k) {
                     envF = _filterEnv[ch].getGain(key, readIndex + i);
                     float cutOff = 1.0f / (envF * envAmount + 1.0f) * filterCutOff;
 
@@ -220,7 +216,7 @@ inline void Audio::Piano::receiveAudio(BufferView output)
                         1.0f,
                         0.707f
                     });
-                    realOutput[k] += _filter[ch].processSample(cacheLeft[k], key, 1.0f);
+                    realOutput[i + ch * outChannelSize] += _filter[ch].processSample(cacheLeft[i], key, 1.0f);
                 }
                 // Reset filter envelope cache if last gain is zero
                 // if (!envF) {
@@ -246,5 +242,11 @@ inline void Audio::Piano::receiveAudio(BufferView output)
     const float gainFrom = ConvertDecibelToRatio(static_cast<float>(getControlPrev((0u))));
     const float gainTo = ConvertDecibelToRatio(static_cast<float>(outputVolume()));
 
-    DSP::Gain::Apply<float>(output.data<float>(), output.size<float>(), gainFrom, gainTo);
+    DSP::Gain::ApplyStereo<float>(
+        output.data<float>(),
+        outChannelSize,
+        channels,
+        gainFrom,
+        gainTo
+    );
 }

@@ -72,7 +72,7 @@ class Audio::Kick final : public Audio::IPlugin
             )
         ),
         REGISTER_CONTROL_FLOATING(
-            sweepDuration, 0.1, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
+            sweepDuration, 0.5, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
             TR_TABLE(
                 TR(English, "Sweep duration"),
             ),
@@ -87,7 +87,7 @@ class Audio::Kick final : public Audio::IPlugin
             )
         ),
         REGISTER_CONTROL_FLOATING(
-            sweepImpact, 0.25, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
+            sweepImpact, 0.75, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
             TR_TABLE(
                 TR(English, "Sweep impact"),
             ),
@@ -102,7 +102,7 @@ class Audio::Kick final : public Audio::IPlugin
             )
         ),
         REGISTER_CONTROL_FLOATING(
-            clic, 0.2, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
+            clic, 0.05, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
             TR_TABLE(
                 TR(English, "Clic"),
             ),
@@ -117,7 +117,7 @@ class Audio::Kick final : public Audio::IPlugin
             )
         ),
         REGISTER_CONTROL_FLOATING(
-            overdrive, 0.15, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
+            overdrive, 0.1, CONTROL_RANGE_STEP(0.0, 1.0, 0.01),
             TR_TABLE(
                 TR(English, "Overdrive"),
             ),

@@ -68,19 +68,25 @@ public:
 
     template<typename ProcessFunctor, typename TestFunctor, typename ResetFunctor>
     void processNotes(BufferView outputFrame, ProcessFunctor &&processFunctor, TestFunctor &&testFunctor, ResetFunctor &&resetFunctor) noexcept
-        { return processNotesImpl<false, ProcessFunctor, TestFunctor, ResetFunctor>(outputFrame, std::forward<ProcessFunctor>(processFunctor), std::forward<TestFunctor>(testFunctor), std::forward<ResetFunctor>(resetFunctor)); }
+        { return processNotesImpl<false, false, ProcessFunctor, TestFunctor, ResetFunctor>(outputFrame, std::forward<ProcessFunctor>(processFunctor), std::forward<TestFunctor>(testFunctor), std::forward<ResetFunctor>(resetFunctor)); }
+
+    template<typename ProcessFunctor, typename TestFunctor, typename ResetFunctor>
+    void processRetriggerNotes(BufferView outputFrame, ProcessFunctor &&processFunctor, TestFunctor &&testFunctor, ResetFunctor &&resetFunctor) noexcept
+        { return processNotesImpl<false, true, ProcessFunctor, TestFunctor, ResetFunctor>(outputFrame, std::forward<ProcessFunctor>(processFunctor), std::forward<TestFunctor>(testFunctor), std::forward<ResetFunctor>(resetFunctor)); }
 
     template<typename ProcessFunctor, typename TestFunctor, typename ResetFunctor>
     void processNotesEnvelope(BufferView outputFrame, ProcessFunctor &&processFunctor, TestFunctor &&testFunctor, ResetFunctor &&resetFunctor) noexcept
-        { return processNotesImpl<true, ProcessFunctor, TestFunctor, ResetFunctor>(outputFrame, std::forward<ProcessFunctor>(processFunctor), std::forward<TestFunctor>(testFunctor), std::forward<ResetFunctor>(resetFunctor)); }
+        { return processNotesImpl<true, false, ProcessFunctor, TestFunctor, ResetFunctor>(outputFrame, std::forward<ProcessFunctor>(processFunctor), std::forward<TestFunctor>(testFunctor), std::forward<ResetFunctor>(resetFunctor)); }
+
+    template<typename ProcessFunctor, typename TestFunctor, typename ResetFunctor>
+    void processRetriggerNotesEnvelope(BufferView outputFrame, ProcessFunctor &&processFunctor, TestFunctor &&testFunctor, ResetFunctor &&resetFunctor) noexcept
+        { return processNotesImpl<true, true, ProcessFunctor, TestFunctor, ResetFunctor>(outputFrame, std::forward<ProcessFunctor>(processFunctor), std::forward<TestFunctor>(testFunctor), std::forward<ResetFunctor>(resetFunctor)); }
 
 
     /** @brief Process a list of notes and update the internal cache */
     void feedNotes(const NoteEvents &notes) noexcept;
-
     /** @brief Process a list of notes and update the internal cache - reset a key if its event is ON */
-    template<typename ResetFunctor>
-    void feedNotesRetrigger(const NoteEvents &notes, ResetFunctor &&resetFunctor) noexcept;
+
 
     /** @brief Reset all */
     void reset(void)
@@ -147,10 +153,10 @@ private:
     Envelope _envelope;
     EnvelopeCache _envelopeGain;
 
-    template<bool ProcessEnvelope, typename ProcessFunctor, typename TestFunctor, typename ResetFunctor>
+    template<bool ProcessEnvelope, bool Retrigger, typename ProcessFunctor, typename TestFunctor, typename ResetFunctor>
     void processNotesImpl(BufferView outputFrame, ProcessFunctor &&processFunctor, TestFunctor &&testFunctor, ResetFunctor &&resetFunctor) noexcept;
 
-    template<bool ProcessEnvelope, typename ProcessFunctor, typename TestFunctor, typename ResetFunctor>
+    template<bool ProcessEnvelope, bool Retrigger, typename ProcessFunctor, typename TestFunctor, typename ResetFunctor>
     bool processOneNoteImpl(
             ProcessFunctor &&processFunctor, TestFunctor &&testFunctor, ResetFunctor &&resetFunctor,
             const Key key, const std::uint32_t readIndex, const NoteModifiers &modifiers,

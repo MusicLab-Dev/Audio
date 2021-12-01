@@ -30,23 +30,18 @@ inline void Audio::Snare::sendNotes(const NoteEvents &notes, const BeatRange &ra
     UNUSED(range);
     if (notes.size()) {
         // std::cout << range << std::endl;
-        _noteManager.feedNotesRetrigger(notes,
-            [this] (const Key key) -> void
-            {
-                _fm.resetKey(key);
-            }
-        );
+        _noteManager.feedNotes(notes);
     }
 }
 
 inline void Audio::Snare::receiveAudio(BufferView output)
 {
     const DB outGain = ConvertDecibelToRatio(DefaultVoiceGain);
-    const auto outSize = static_cast<std::uint32_t>(output.channelSampleCount());
-    const auto channels = static_cast<std::size_t>(output.channelArrangement());
+    const auto channels = static_cast<std::size_t>(audioSpecs().channelArrangement);
+    const auto outChannelSize = audioSpecs().processBlockSize;
     float *out = reinterpret_cast<float *>(output.byteData());
 
-    _noteManager.envelopeGain().resize(outSize);
+    _noteManager.envelopeGain().resize(outChannelSize);
     // _noteManager.setEnvelopeSpecs(DSP::EnvelopeSpecs {
     //     0.0f,
     //     0.0f, // A
@@ -58,9 +53,9 @@ inline void Audio::Snare::receiveAudio(BufferView output)
     // });
 
 
-    _noteManager.processNotes(
+    _noteManager.processRetriggerNotes(
         output,
-        [this, outGain, channels](const Key key, const std::uint32_t readIndex, const NoteModifiers &modifiers, float *realOutput, const std::uint32_t realOutSize, const std::size_t channelCount) -> std::pair<std::uint32_t, std::uint32_t>
+        [this, outGain](const Key key, const std::uint32_t readIndex, const NoteModifiers &modifiers, float *realOutput, const std::uint32_t realOutSize, const std::size_t channelCount) -> std::pair<std::uint32_t, std::uint32_t>
         {
             UNUSED(modifiers);
             UNUSED(channelCount);
@@ -163,21 +158,10 @@ inline void Audio::Snare::receiveAudio(BufferView output)
     const float gainFrom = ConvertDecibelToRatio(static_cast<float>(getControlPrev((0u))));
     const float gainTo = ConvertDecibelToRatio(static_cast<float>(outputVolume()));
 
-    DSP::Gain::Apply<float>(output.data<float>(), output.size<float>(), gainFrom, gainTo);
 
-    // Re-arrange the buffer in case of multiple channels
-    const auto channelsMinusOne = channels - 1u;
-    if (channelsMinusOne) {
-
-        // ABCD___ -> ABCDABCD
-        for (auto ch = 1u; ch < channels; ++ch)
-            std::memcpy(out + (ch * outSize), out, outSize * sizeof(float));
-
-        // ABCDABCD -> AABBCCDD
-        for (auto i = 0u; i < outSize; ++i) {
-            for (auto ch = 0u; ch < channels; ++ch) {
-                out[i * channels + ch] = out[i + channelsMinusOne * outSize];
-            }
-        }
+    DSP::Gain::Apply<float>(out, outChannelSize, gainFrom, gainTo);
+    if (channels - 1u) {
+        std::memcpy(out + outChannelSize, out, outChannelSize * sizeof(float));
     }
+
 }

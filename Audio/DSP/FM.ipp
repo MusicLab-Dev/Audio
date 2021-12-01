@@ -12,8 +12,7 @@ inline void Audio::DSP::FM::Schema<OperatorCount, Algo, PitchEnv>::process(
         float *output, const std::uint32_t processSize, const float outputGain,
         const std::uint32_t phaseIndex, const Key key, const float rootFrequency,
         const Internal::OperatorArray<OperatorCount> &operators,
-        const Internal::PitchOperator &pitchOp,
-        const ChannelArrangement channels
+        const Internal::PitchOperator &pitchOp
 ) noexcept
 {
     const auto freqNorm = Audio::GetFrequencyNorm(rootFrequency, _sampleRate);
@@ -21,6 +20,7 @@ inline void Audio::DSP::FM::Schema<OperatorCount, Algo, PitchEnv>::process(
     _random.setLast(0u);
     if (_cache.capacity() != processSize)
         _cache.resize(processSize);
+    std::fill_n(_cache.begin(), processSize, 0.0f);
     if (_envelopeGain.capacity() != processSize)
         _envelopeGain.resize(processSize);
     // Update envelopes specs
@@ -31,14 +31,14 @@ inline void Audio::DSP::FM::Schema<OperatorCount, Algo, PitchEnv>::process(
 
     if constexpr (Algo == AlgorithmType::Default){
         if constexpr (OperatorCount == 2u) {
-            oneCarrierOneModulator<Accumulate>(output, processSize, outputGain, phaseIndex, key, freqNorm, operators, channels);
+            oneCarrierOneModulator<Accumulate>(output, processSize, outputGain, phaseIndex, key, freqNorm, operators);
         } else if constexpr (OperatorCount == 4u) {
-            twoCM<Accumulate>(output, processSize, outputGain, phaseIndex, key, freqNorm, operators, channels);
+            twoCM<Accumulate>(output, processSize, outputGain, phaseIndex, key, freqNorm, operators);
         } else if constexpr (OperatorCount == 6u) {
-            dx7_05<Accumulate>(output, processSize, outputGain, phaseIndex, key, freqNorm, operators, channels);
+            dx7_05<Accumulate>(output, processSize, outputGain, phaseIndex, key, freqNorm, operators);
         }
     } else
-        processImpl<Accumulate>(output, processSize, outputGain, phaseIndex, key, freqNorm, operators, channels);
+        processImpl<Accumulate>(output, processSize, outputGain, phaseIndex, key, freqNorm, operators);
 }
 
 template<unsigned OperatorCount, Audio::DSP::FM::AlgorithmType Algo, bool PitchEnv>
@@ -46,16 +46,15 @@ template<bool Accumulate>
 inline void Audio::DSP::FM::Schema<OperatorCount, Algo, PitchEnv>::processImpl(
         float *output, const std::uint32_t processSize, const float outputGain,
         const std::uint32_t phaseIndex, const Key key, const float freqNorm,
-        const Internal::OperatorArray<OperatorCount> &operators,
-        const ChannelArrangement channels
+        const Internal::OperatorArray<OperatorCount> &operators
 ) noexcept
 {
     if constexpr (Algo == AlgorithmType::Drum) {
         static_assert(OperatorCount == 4u, "Audio::DSP::FM::Schema<OperatorCount, Drum>::processImpl: OperatorCount must be equal to 4");
-        drum_impl<Accumulate>(output, processSize, outputGain, phaseIndex, key, freqNorm, operators, channels);
+        drum_impl<Accumulate>(output, processSize, outputGain, phaseIndex, key, freqNorm, operators);
     } else if constexpr (Algo == AlgorithmType::Hat) {
         static_assert(OperatorCount == Internal::HelperSpecs[static_cast<unsigned>(Algo)], "Audio::DSP::FM::Schema<OperatorCount, Hat>::processImpl: OperatorCount must be equal to 2");
-        hat_impl<Accumulate>(output, processSize, outputGain, phaseIndex, key, freqNorm, operators, channels);
+        hat_impl<Accumulate>(output, processSize, outputGain, phaseIndex, key, freqNorm, operators);
     } else if constexpr (Algo == AlgorithmType::Piano) {
     }
 }
@@ -83,7 +82,7 @@ template<bool Accumulate, bool Modulate, bool IsCarrier, unsigned OperatorIndex>
 inline void Audio::DSP::FM::Schema<OperatorCount, Algo, PitchEnv>::processOperator(
         const float *input, float *output, const std::uint32_t processSize, const float outputGain,
         const std::uint32_t phaseIndex, const float frequencyNorm, const Key key,
-        const Internal::Operator &op, const ChannelArrangement channels
+        const Internal::Operator &op
 ) noexcept
 {
     constexpr auto GetKeyAmountRate = [](const float amount, const float keyDelta)
@@ -111,7 +110,6 @@ inline void Audio::DSP::FM::Schema<OperatorCount, Algo, PitchEnv>::processOperat
         if constexpr (Modulate) {
             _oscillator.template modulateSemitoneShift<Accumulate, OperatorIndex>(
                 op.waveform,
-                channels,
                 output,
                 _envelopeGain.data(),
                 input,
@@ -125,7 +123,6 @@ inline void Audio::DSP::FM::Schema<OperatorCount, Algo, PitchEnv>::processOperat
         } else {
             _oscillator.template semitoneShift<Accumulate, OperatorIndex>(
                 op.waveform,
-                channels,
                 output,
                 _envelopeGain.data(),
                 _pitchCache.data(),
@@ -140,7 +137,6 @@ inline void Audio::DSP::FM::Schema<OperatorCount, Algo, PitchEnv>::processOperat
         if constexpr (Modulate) {
             _oscillator.template modulate<Accumulate, OperatorIndex>(
                 op.waveform,
-                channels,
                 output,
                 _envelopeGain.data(),
                 input,
@@ -153,7 +149,6 @@ inline void Audio::DSP::FM::Schema<OperatorCount, Algo, PitchEnv>::processOperat
         } else {
             _oscillator.template generate<Accumulate, OperatorIndex>(
                 op.waveform,
-                channels,
                 output,
                 _envelopeGain.data(),
                 processSize,

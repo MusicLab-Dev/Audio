@@ -40,90 +40,90 @@ public:
 
     /** @brief Generate a waveform using runtime specialization */
     template<bool Accumulate, unsigned Index = 0u, bool IncrementPhase = true, typename Type>
-    void generate(const Generator::Waveform waveform, const ChannelArrangement channels, Type *output, const std::size_t outputSize,
+    void generate(const Generator::Waveform waveform, Type *output, const std::size_t outputSize,
             const Key key, const float frequencyNorm, const std::uint32_t indexOffset, const DB gain) noexcept
     {
         if constexpr (IncrementPhase) {
-            _phaseIndex[key][Index].setPhase(Generator::Generate<Accumulate>(waveform, channels, output, outputSize, frequencyNorm, _phaseIndex[key][Index].phase(), indexOffset, gain));
+            _phaseIndex[key][Index].setPhase(Generator::Generate<Accumulate>(waveform, output, outputSize, frequencyNorm, _phaseIndex[key][Index].phase(), indexOffset, gain));
         } else {
-            Generator::Generate<Accumulate>(waveform, channels, output, outputSize, frequencyNorm, _phaseIndex[key][Index].phase(), indexOffset, gain);
+            Generator::Generate<Accumulate>(waveform, output, outputSize, frequencyNorm, _phaseIndex[key][Index].phase(), indexOffset, gain);
         }
     }
 
     template<bool Accumulate, unsigned Index = 0u, bool IncrementPhase = true, typename Type>
-    void generate(const Generator::Waveform waveform, const ChannelArrangement channels, Type *output, const Type *input, const std::size_t outputSize,
+    void generate(const Generator::Waveform waveform, Type *output, const Type *input, const std::size_t outputSize,
             const Key key, const float frequencyNorm, const std::uint32_t indexOffset, const DB gain) noexcept
     {
         if constexpr (IncrementPhase) {
-            _phaseIndex[key][Index].setPhase(Generator::Generate<Accumulate>(waveform, channels, output, input, outputSize, frequencyNorm, _phaseIndex[key][Index].phase(), indexOffset, gain));
+            _phaseIndex[key][Index].setPhase(Generator::Generate<Accumulate>(waveform, output, input, outputSize, frequencyNorm, _phaseIndex[key][Index].phase(), indexOffset, gain));
         } else {
-            Generator::Generate<Accumulate>(waveform, channels, output, input, outputSize, frequencyNorm, _phaseIndex[key][Index].phase(), indexOffset, gain);
-        }
-    }
-
-    /** @brief Modulate a waveform using runtime specialization */
-    template<bool Accumulate, unsigned Index = 0u, bool IncrementPhase = true, typename Type>
-    void modulate(const Generator::Waveform waveform, const ChannelArrangement channels, Type *output, const Type *modulation, const std::size_t outputSize,
-            const Key key, const float frequencyNorm, const std::uint32_t indexOffset, const DB gain) noexcept
-    {
-        if constexpr (IncrementPhase) {
-            _phaseIndex[key][Index].setPhase(Generator::Modulate<Accumulate>(waveform, channels, output, modulation, outputSize, frequencyNorm, _phaseIndex[key][Index].phase(), indexOffset, gain));
-        } else {
-            Generator::Modulate<Accumulate>(waveform, channels, output, modulation, outputSize, frequencyNorm, _phaseIndex[key][Index].phase(), indexOffset, gain);
-        }
-    }
-    template<bool Accumulate, unsigned Index = 0u, bool IncrementPhase = true, typename Type>
-    void modulate(const Generator::Waveform waveform, const ChannelArrangement channels, Type *output, const Type *input, const Type *modulation, const std::size_t outputSize,
-            const Key key, const float frequencyNorm, const std::uint32_t indexOffset, const DB gain) noexcept
-    {
-        if constexpr (IncrementPhase) {
-            _phaseIndex[key][Index].setPhase(Generator::Modulate<Accumulate>(waveform, channels, output, input, modulation, outputSize, frequencyNorm, _phaseIndex[key][Index].phase(), indexOffset, gain));
-        } else {
-            Generator::Modulate<Accumulate>(waveform, channels, output, input, modulation, outputSize, frequencyNorm, _phaseIndex[key][Index].phase(), indexOffset, gain);
+            Generator::Generate<Accumulate>(waveform, output, input, outputSize, frequencyNorm, _phaseIndex[key][Index].phase(), indexOffset, gain);
         }
     }
 
     /** @brief Modulate a waveform using runtime specialization */
     template<bool Accumulate, unsigned Index = 0u, bool IncrementPhase = true, typename Type>
-    void semitoneShift(const Generator::Waveform waveform, const ChannelArrangement channels, Type *output, const Type *semitone, const std::size_t outputSize,
+    void modulate(const Generator::Waveform waveform, Type *output, const Type *modulation, const std::size_t outputSize,
             const Key key, const float frequencyNorm, const std::uint32_t indexOffset, const DB gain) noexcept
     {
         if constexpr (IncrementPhase) {
-            _phaseIndex[key][Index].setPhase(Generator::SemitoneShift<Accumulate>(waveform, channels, output, semitone, outputSize, frequencyNorm, _phaseIndex[key][Index].phase(), indexOffset, gain));
+            _phaseIndex[key][Index].setPhase(Generator::Modulate<Accumulate>(waveform, output, modulation, outputSize, frequencyNorm, _phaseIndex[key][Index].phase(), indexOffset, gain));
         } else {
-            Generator::SemitoneShift<Accumulate>(waveform, channels, output, semitone, outputSize, frequencyNorm, _phaseIndex[key][Index].phase(), indexOffset, gain);
+            Generator::Modulate<Accumulate>(waveform, output, modulation, outputSize, frequencyNorm, _phaseIndex[key][Index].phase(), indexOffset, gain);
         }
     }
     template<bool Accumulate, unsigned Index = 0u, bool IncrementPhase = true, typename Type>
-    void semitoneShift(const Generator::Waveform waveform, const ChannelArrangement channels, Type *output, const Type *input, const Type *semitone, const std::size_t outputSize,
+    void modulate(const Generator::Waveform waveform, Type *output, const Type *input, const Type *modulation, const std::size_t outputSize,
             const Key key, const float frequencyNorm, const std::uint32_t indexOffset, const DB gain) noexcept
     {
         if constexpr (IncrementPhase) {
-            _phaseIndex[key][Index].setPhase(Generator::SemitoneShift<Accumulate>(waveform, channels, output, input, semitone, outputSize, frequencyNorm, _phaseIndex[key][Index].phase(), indexOffset, gain));
+            _phaseIndex[key][Index].setPhase(Generator::Modulate<Accumulate>(waveform, output, input, modulation, outputSize, frequencyNorm, _phaseIndex[key][Index].phase(), indexOffset, gain));
         } else {
-            Generator::SemitoneShift<Accumulate>(waveform, channels, output, input, semitone, outputSize, frequencyNorm, _phaseIndex[key][Index].phase(), indexOffset, gain);
+            Generator::Modulate<Accumulate>(waveform, output, input, modulation, outputSize, frequencyNorm, _phaseIndex[key][Index].phase(), indexOffset, gain);
         }
     }
 
     /** @brief Modulate a waveform using runtime specialization */
     template<bool Accumulate, unsigned Index = 0u, bool IncrementPhase = true, typename Type>
-    void modulateSemitoneShift(const Generator::Waveform waveform, const ChannelArrangement channels, Type *output, const Type *modulation, const Type *semitone, const std::size_t outputSize,
+    void semitoneShift(const Generator::Waveform waveform, Type *output, const Type *semitone, const std::size_t outputSize,
             const Key key, const float frequencyNorm, const std::uint32_t indexOffset, const DB gain) noexcept
     {
         if constexpr (IncrementPhase) {
-            _phaseIndex[key][Index].setPhase(Generator::ModulateSemitoneShift<Accumulate>(waveform, channels, output, modulation, semitone, outputSize, frequencyNorm, _phaseIndex[key][Index].phase(), indexOffset, gain));
+            _phaseIndex[key][Index].setPhase(Generator::SemitoneShift<Accumulate>(waveform, output, semitone, outputSize, frequencyNorm, _phaseIndex[key][Index].phase(), indexOffset, gain));
         } else {
-            Generator::ModulateSemitoneShift<Accumulate>(waveform, channels, output, modulation, semitone, outputSize, frequencyNorm, _phaseIndex[key][Index].phase(), indexOffset, gain);
+            Generator::SemitoneShift<Accumulate>(waveform, output, semitone, outputSize, frequencyNorm, _phaseIndex[key][Index].phase(), indexOffset, gain);
         }
     }
     template<bool Accumulate, unsigned Index = 0u, bool IncrementPhase = true, typename Type>
-    void modulateSemitoneShift(const Generator::Waveform waveform, const ChannelArrangement channels, Type *output, const Type *input, const Type *modulation, const Type *semitone, const std::size_t outputSize,
+    void semitoneShift(const Generator::Waveform waveform, Type *output, const Type *input, const Type *semitone, const std::size_t outputSize,
             const Key key, const float frequencyNorm, const std::uint32_t indexOffset, const DB gain) noexcept
     {
         if constexpr (IncrementPhase) {
-            _phaseIndex[key][Index].setPhase(Generator::ModulateSemitoneShift<Accumulate>(waveform, channels, output, input, modulation, semitone, outputSize, frequencyNorm, _phaseIndex[key][Index].phase(), indexOffset, gain));
+            _phaseIndex[key][Index].setPhase(Generator::SemitoneShift<Accumulate>(waveform, output, input, semitone, outputSize, frequencyNorm, _phaseIndex[key][Index].phase(), indexOffset, gain));
         } else {
-            Generator::ModulateSemitoneShift<Accumulate>(waveform, channels, output, input, modulation, semitone, outputSize, frequencyNorm, _phaseIndex[key][Index].phase(), indexOffset, gain);
+            Generator::SemitoneShift<Accumulate>(waveform, output, input, semitone, outputSize, frequencyNorm, _phaseIndex[key][Index].phase(), indexOffset, gain);
+        }
+    }
+
+    /** @brief Modulate a waveform using runtime specialization */
+    template<bool Accumulate, unsigned Index = 0u, bool IncrementPhase = true, typename Type>
+    void modulateSemitoneShift(const Generator::Waveform waveform, Type *output, const Type *modulation, const Type *semitone, const std::size_t outputSize,
+            const Key key, const float frequencyNorm, const std::uint32_t indexOffset, const DB gain) noexcept
+    {
+        if constexpr (IncrementPhase) {
+            _phaseIndex[key][Index].setPhase(Generator::ModulateSemitoneShift<Accumulate>(waveform, output, modulation, semitone, outputSize, frequencyNorm, _phaseIndex[key][Index].phase(), indexOffset, gain));
+        } else {
+            Generator::ModulateSemitoneShift<Accumulate>(waveform, output, modulation, semitone, outputSize, frequencyNorm, _phaseIndex[key][Index].phase(), indexOffset, gain);
+        }
+    }
+    template<bool Accumulate, unsigned Index = 0u, bool IncrementPhase = true, typename Type>
+    void modulateSemitoneShift(const Generator::Waveform waveform, Type *output, const Type *input, const Type *modulation, const Type *semitone, const std::size_t outputSize,
+            const Key key, const float frequencyNorm, const std::uint32_t indexOffset, const DB gain) noexcept
+    {
+        if constexpr (IncrementPhase) {
+            _phaseIndex[key][Index].setPhase(Generator::ModulateSemitoneShift<Accumulate>(waveform, output, input, modulation, semitone, outputSize, frequencyNorm, _phaseIndex[key][Index].phase(), indexOffset, gain));
+        } else {
+            Generator::ModulateSemitoneShift<Accumulate>(waveform, output, input, modulation, semitone, outputSize, frequencyNorm, _phaseIndex[key][Index].phase(), indexOffset, gain);
         }
     }
 

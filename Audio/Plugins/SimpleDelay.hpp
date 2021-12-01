@@ -119,7 +119,8 @@ public:
     virtual void onAudioParametersChanged(void);
 
 private:
-    DSP::DelayLineUnique<float, DSP::DelayLineDesign::Default> _delay;
+    DSP::DelayLineUnique<float, DSP::DelayLineDesign::Default> _delayLeft;
+    DSP::DelayLineUnique<float, DSP::DelayLineDesign::Default> _delayRight;
     Buffer _inputCache;
 };
 

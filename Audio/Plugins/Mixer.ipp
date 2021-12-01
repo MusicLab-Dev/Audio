@@ -32,23 +32,44 @@ inline void Audio::Mixer::receiveAudio(BufferView output)
         //     std::cout << std::setprecision(4) << "min: " << min << ", max: " << max << std::endl;
     };
 
-    const float gainOutFrom = ConvertDecibelToRatio(static_cast<float>(getControlPrev(0u)));
-    const float gainOutTo = ConvertDecibelToRatio(static_cast<float>(outputVolume()));
+    const float gainFrom = ConvertDecibelToRatio(static_cast<float>(getControlPrev(0u)));
+    const float gainTo = ConvertDecibelToRatio(static_cast<float>(outputVolume()));
 
-    const auto outSize = output.size<float>();
+    const auto outChannelSize = audioSpecs().processBlockSize;
     auto *out = output.data<float>();
 
-    std::memcpy(out, _cache.data<float>(), outSize * sizeof(float));
-    DSP::Gain::Apply<float>(out, outSize, gainOutFrom, gainOutTo);
+    const auto channels = static_cast<std::size_t>(audioSpecs().channelArrangement);
+
+    std::memcpy(out, _cache.data<float>(), outChannelSize * channels * sizeof(float));
+
+    // static float Phase { 0.0f };
+    // for (auto i = 0u; i < outChannelSize; ++i) {
+    //     // LRLR
+    //     // out[2 * i] = std::sin(Phase) / 2.0f;
+    //     // out[2 * i + 1] = std::sin(Phase) >= 0.0 ? 0.25f : 0.25f;
+
+    //     // LLRR
+    //     out[i] = std::sin(Phase) / 2.0f;
+    //     out[i + outChannelSize] = std::sin(Phase) / 4.0f;
+    //     // out[i + outChannelSize] = std::sin(Phase) >= 0.0 ? 0.25f : 0.25f;
+
+    //     Phase += 2.0f * M_PI * 0.01f;
+    //     while (Phase >= 2.0f * M_PI)
+    //         Phase -= 2.0f * M_PI;
+    // }
+
+
+    DSP::Gain::ApplyStereo<float>(out, outChannelSize, channels, gainFrom, gainTo);
     PrintRangeClip(output);
 }
 
 inline void Audio::Mixer::sendAudio(const BufferViews &inputs)
 {
     DSP::Merge<float>(inputs, _cache, 1.0f, false);
-    DSP::Gain::Apply<float>(
+    DSP::Gain::ApplyStereo<float>(
         _cache.data<float>(),
-        _cache.size<float>(),
+        audioSpecs().processBlockSize,
+        static_cast<std::size_t>(audioSpecs().channelArrangement),
         ConvertDecibelToRatio(static_cast<float>(getControlPrev(1u))),
         ConvertDecibelToRatio(static_cast<float>(inputGain()))
     );

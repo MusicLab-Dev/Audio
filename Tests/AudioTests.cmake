@@ -27,7 +27,7 @@ set(AudioTestsSources
     ${AudioTestsDir}/tests_Interpolation.cpp
 
     # ${AudioTestsDir}/tests_SchedulerTask.cpp
-    # ${AudioTestsDir}/tests_Device.cpp
+    ${AudioTestsDir}/tests_Device.cpp
     # ${AudioTestsDir}/tests_UtilsMidi.cpp
 )
 
