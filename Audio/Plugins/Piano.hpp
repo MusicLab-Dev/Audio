@@ -26,8 +26,8 @@ class Audio::Piano final : public Audio::IPlugin
         ),
         /* Plugin description */
         TR_TABLE(
-            TR(English, "Piano allow to generate audio waveforms and play them as notes"),
-            TR(French, "Piano allow to generate audio waveforms and play them as notes")
+            TR(English, "Piano synthesizer"),
+            TR(French, "Synthétiseur de piano")
         ),
         /* Plugin flags */
         FLAGS(AudioOutput, NoteInput, NoChildren),

@@ -26,8 +26,8 @@ class Audio::Arpeggiator final : public Audio::IPlugin
         ),
         /* Plugin description */
         TR_TABLE(
-            TR(English, "Arpeggiator allow to generate notes depending on other ones"),
-            TR(French, "L'arpégiateur permet de généner des notes à partir d'autres notes")
+            TR(English, "Generates note sequences"),
+            TR(French, "Produit des séquences de notes")
         ),
         /* Plugin flags */
         FLAGS(NoteInput, NoteOutput),
@@ -57,13 +57,13 @@ class Audio::Arpeggiator final : public Audio::IPlugin
                 )
             ),
             TR_TABLE(
-                TR(English, "Arpeggiator mode"),
-                TR(French, "Mode de l'arpégiateur")
+                TR(English, "Mode"),
+                TR(French, "Mode")
             ),
             /* Control's description */
             TR_TABLE(
-                TR(English, "Arpeggiator mode"),
-                TR(French, "Mode de l'arpégiateur")
+                TR(English, "Notes sequence mode"),
+                TR(French, "Mode de séquence des notes")
             ),
             /* Control's short name */
             TR_TABLE(
@@ -108,8 +108,8 @@ class Audio::Arpeggiator final : public Audio::IPlugin
             ),
             /* Control's description */
             TR_TABLE(
-                TR(English, "Note length"),
-                TR(French, "Longueur des notes")
+                TR(English, "Note length in the whole sequence"),
+                TR(French, "Longueur des notes dans la séquence générée")
             ),
             /* Control's short name */
             TR_TABLE(
@@ -130,8 +130,8 @@ class Audio::Arpeggiator final : public Audio::IPlugin
                 TR(French, "Nombre de notes")
             ),
             TR_TABLE(
-                TR(English, "Note count"),
-                TR(French, "Nombre de notes")
+                TR(English, "Note count used for sequence generation"),
+                TR(French, "Nombre de notes utilisé pour la séquence générée")
             ),
             /* Control's short name */
             TR_TABLE(

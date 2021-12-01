@@ -28,8 +28,8 @@ class Audio::Snare final : public Audio::IPlugin
         ),
         /* Plugin description */
         TR_TABLE(
-            TR(English, "Snare allow to generate spicy kicks"),
-            TR(French, "Snare allow to generate spicy kicks")
+            TR(English, "Snare drum synthesizer"),
+            TR(French, "Synthétiseur de caisse claire")
         ),
         /* Plugin flags */
         FLAGS(AudioOutput, NoteInput, NoChildren),

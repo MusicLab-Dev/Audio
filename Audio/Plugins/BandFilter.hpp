@@ -26,8 +26,8 @@ class Audio::BandFilter final : public Audio::IPlugin
         ),
         /* Plugin description */
         TR_TABLE(
-            TR(English, "Band Filter allow to filter audio signal"),
-            TR(French, "Le filtre bande permet de filtrer de l'audio")
+            TR(English, "Filter audio signal with two cutoff frequencies"),
+            TR(French, "Filtre l'audio avec deux fréquences de coupure")
         ),
         /* Plugin flags */
         FLAGS(AudioInput, AudioOutput),

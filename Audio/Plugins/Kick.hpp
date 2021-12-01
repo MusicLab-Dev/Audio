@@ -28,8 +28,8 @@ class Audio::Kick final : public Audio::IPlugin
         ),
         /* Plugin description */
         TR_TABLE(
-            TR(English, "Kick allow to generate spicy kicks"),
-            TR(French, "Kick allow to generate spicy kicks")
+            TR(English, "Electronic kick synthesizer"),
+            TR(French, "Synthétiseur de kick électronique")
         ),
         /* Plugin flags */
         FLAGS(AudioOutput, NoteInput, NoChildren),

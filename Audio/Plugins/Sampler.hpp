@@ -28,8 +28,8 @@ class Audio::Sampler final : public Audio::IPlugin
         ),
         /* Plugin description */
         TR_TABLE(
-            TR(English, "Sampler allow to load an audio file and play it as a note"),
-            TR(French, "Le sampleur permet de charger un fichier audio et de le jouer comme une note")
+            TR(English, "Load an audio file and play it"),
+            TR(French, "Charge un fichier audio pour le jouer")
         ),
         /* Plugin flags */
         FLAGS(AudioOutput, NoteInput, SingleExternalInput, NoChildren),

@@ -28,7 +28,7 @@
             TR(English, "Out") \
         ), \
         TR_TABLE( \
-            TR(English, "decibels") \
+            TR(English, "dB") \
         ) \
     )
 
@@ -47,6 +47,6 @@
             TR(English, "In") \
         ), \
         TR_TABLE( \
-            TR(English, "decibels") \
+            TR(English, "dB") \
         ) \
     )

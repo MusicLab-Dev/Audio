@@ -32,8 +32,8 @@ class Audio::Hat final : public Audio::IPlugin
         ),
         /* Plugin description */
         TR_TABLE(
-            TR(English, "Hat allow to generate spicy kicks"),
-            TR(French, "Hat allow to generate spicy kicks")
+            TR(English, "Hi-hat synthesizer"),
+            TR(French, "Synthétiseur de charleston")
         ),
         /* Plugin flags */
         FLAGS(AudioOutput, NoteInput, NoChildren),

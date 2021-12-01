@@ -26,8 +26,8 @@ class Audio::CutoffFilter final : public Audio::IPlugin
         ),
         /* Plugin description */
         TR_TABLE(
-            TR(English, "Basic Filter allow to filter audio signal"),
-            TR(French, "Le filtre basique permet de filtrer de l'audio")
+            TR(English, "Filter audio signal with a single cutoff frequency"),
+            TR(French, "Filtre l'audio avec une seule fréquence de coupure")
         ),
         /* Plugin flags */
         FLAGS(AudioInput, AudioOutput),

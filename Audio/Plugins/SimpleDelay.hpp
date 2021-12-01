@@ -23,8 +23,8 @@ class Audio::SimpleDelay final : public Audio::IPlugin
         ),
         /* Plugin description */
         TR_TABLE(
-            TR(English, "SimpleDelay allow to mix multiple audio source"),
-            TR(French, "Le mixeur permet de mixer plusieurs sources sonore")
+            TR(English, "Add delay to audio and creates echos"),
+            TR(French, "Ajoute du delai à l'audio et créé des échos")
         ),
         /* Plugin flags */
         FLAGS(AudioInput, AudioOutput),
